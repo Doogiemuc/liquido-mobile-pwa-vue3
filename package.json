@@ -1,0 +1,48 @@
+{
+  "name": "liquido-mobile-pwa-vue3",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+		"start": "vue-cli-service serve",
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "test:unit": "vue-cli-service test:unit",
+    "test:e2e": "vue-cli-service test:e2e",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "axios": "^0.24.0",
+    "bootstrap": "^5.1.3",
+    "bootstrap-vue-3": "^0.1.0",
+    "core-js": "^3.6.5",
+    "fontawesome": "^5.6.3",
+    "loglevel": "^1.8.0",
+    "populating-cache": "^5.7.0",
+    "qrcode": "^1.5.0",
+    "register-service-worker": "^1.7.1",
+    "sortablejs": "^1.14.0",
+    "tiny-emitter": "^2.1.0",
+    "uuid": "^8.3.2",
+    "vue": "^3.0.0",
+    "vue-i18n": "^9.2.0-beta.25",
+    "vue-router": "^4.0.0-0",
+    "vuedraggable": "^2.24.3"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.3.0",
+    "@vue/cli-plugin-e2e-cypress": "~4.5.0",
+    "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-plugin-pwa": "~4.5.0",
+    "@vue/cli-plugin-router": "^4.5.15",
+    "@vue/cli-plugin-unit-mocha": "^4.5.15",
+    "@vue/cli-service": "^4.5.15",
+    "@vue/compiler-sfc": "^3.0.0",
+    "@vue/test-utils": "^2.0.0-0",
+    "babel-eslint": "^10.1.0",
+    "chai": "^4.1.2",
+    "cross-env": "^7.0.3",
+    "eslint-plugin-vue": "^7.0.0",
+    "sass": "^1.26.5",
+    "sass-loader": "^8.0.2"
+  }
+}

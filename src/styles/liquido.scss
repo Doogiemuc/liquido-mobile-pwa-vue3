@@ -1,0 +1,186 @@
+/**
+ * These styles are imported in root-app.vue so they are a available to every component.
+ */
+
+
+/** LIQUIDO - beautifull brand mark */
+.liquido:after {
+	content: "LIQUIDO";
+	font-family: 'Libre Baskerville', serif;
+	color: $primary;
+}
+
+/* TODO: How to find right base font size for everything? MAYBE depending on screen size?
+html {
+	font-size: 16px;   
+}
+*/
+body {
+	background-color: $app-background;
+}
+
+/** No iOS native button and input styling */
+button, [type="button"], [type="reset"], [type="submit"], input {
+	-webkit-appearance: none !important;
+	-moz-appearance: none !important;
+	appearance: none !important;
+	cursor: pointer;
+}
+
+.noselect {
+	-webkit-touch-callout: none; /* iOS Safari */
+		-webkit-user-select: none; /* Safari */
+			-khtml-user-select: none; /* Konqueror HTML */
+				-moz-user-select: none; /* Old versions of Firefox */
+				-ms-user-select: none; /* Internet Explorer/Edge */
+						user-select: none; /* Non-prefixed version, currently
+																	supported by Chrome, Opera and Firefox */
+}
+
+/*
+ no margin-bottom after last paragraph in alers and card-bodies. 
+ Why is this not the default in bootstrap???
+ */
+.alert, .card-body {
+	p:last-child {
+		margin-bottom: 0;					
+	}
+}
+
+/*
+ * The outer wrapper of the Vue app
+ * Need to be more CSS specific than bootstrap's default! So therefore MUTS wrap everything in #app 
+ */
+#app {
+	margin: 0 auto;  
+	position: relative;
+	height: 100vh;					// make sure the app is at least as high as the screen, so that background color is shown.
+	width: 100%;
+	max-width: $app-max-width;	// eg. when app is shown in the browser
+	overflow-x: hidden;
+	overflow-y: scroll;
+	background-color: $app-background;
+
+	/* All links, including header and footer. */
+	a {
+		color: $primary
+	}
+
+	/* #app is the container div that scrolls up and down. */
+	#appContent {
+		margin: 0;	
+		background-color: $app-background;
+		
+		padding-top: 2.5rem;		// space behind liquido-header
+		padding-bottom: 100px;  // space behind navbar-bottom!
+		padding-left: 10px;     // smaller than bootsraps default 15px. But still enough for iOS scrollbar.
+		padding-right: 10px;
+	}
+
+	/* Top headline for all pages */
+	.page-title {
+		font-family: 'Libre Baskerville', serif;
+		margin: 1rem 0;
+		text-align: center;
+	}
+
+	h1,h2,h3,h4,h5,h6 {
+		font-family: 'Libre Baskerville', serif;
+	}
+
+	/* The bootstrap defaults are way to big on mobile screens! */
+	h1 { font-size: 1.75rem }
+  h2 { font-size: 1.50rem; }
+	h3 { font-size: 1.25rem; }
+	h4 { font-size: 1.00rem; }
+	h5 { font-size: 1rem; }  // not used in LIQUIDO
+	h6 { font-size: 1rem; }
+	
+	.alert {
+		padding: 0.5rem;
+	}
+
+	.chat-bubble {
+		margin-bottom: 1rem;
+		opacity: 1;
+		transform: none;
+		max-height: 1000px;
+		-webkit-transition: all 0.5s ease;
+		-moz-transition: all 0.5s ease;
+		-o-transition: all 0.5s ease;
+		transition: all 0.5s ease;
+		.card-body {
+			padding: 0.5rem;
+			ul {
+				padding-inline-start: 25px;
+			}
+			p:last-child {
+				margin-bottom: 0;
+			}
+		}
+	}
+
+	.input-bubble {
+		background-color: $input-bg;
+		.card-header {
+			padding: 10px;
+		}
+		.card-body {
+			padding: 10px;
+		}
+		.description-textarea {
+			width: 100%;
+		}
+	}
+	
+	.text-small {
+		font-size: 80%;
+		color: $secondary;
+	}
+
+	.chat-right {
+		background-color: $input-bg;
+		margin-left: 2rem;
+		margin-bottom: 1rem;
+	}
+
+	.transition-all {
+		-webkit-transition: all 0.5s ease;
+		-moz-transition: all 0.5s ease;
+		-o-transition: all 0.5s ease;
+		transition: all 0.5s ease;
+	}
+	.hide-left {
+		opacity: 0;
+		transform: translateX(-20px);
+	}
+	.hide-right {
+		opacity: 0;
+		transform: translateX(20px);
+	}
+	.collapse-max-height {
+		display: none !important;
+		/*
+		max-height: 0;
+		overflow: hidden;
+		margin-top: 0;
+		margin-bottom: 0;
+		border: none;
+		*/
+	}
+
+	/* Info bubble for user */
+	.liquido-info {
+		color: #DDE;
+		background-color: $liquido-info-background;	
+		border: 1px solid #aaaabb;
+	}
+
+	/* Message to admin. Always used with <i class="fas fa-shield-alt"></i>	*/
+	.alert-admin {
+		color: #DDE !important;
+		background-color: #302e41 !important;	
+		border: 1px solid #aaaabb !important;
+	}
+	
+}
