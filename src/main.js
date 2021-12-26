@@ -81,10 +81,10 @@ const globalTranslations = {
 // Create VueI18n instance for translations.
 const i18n = new createI18n({
 	locale: "de",
-	//fallbackLocale: "de",
-	warnHtmlInMessage: false,
-	silentFallbackWarn: true,
-	messages: globalTranslations,
+	fallbackLocale: "de",
+	warnHtmlInMessage: 'off', // disable of the Detected HTML in message
+	//silentFallbackWarn: true,
+	messages: globalTranslations
 })
 
 //TODO: sanity check config for required attributes

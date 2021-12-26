@@ -70,6 +70,7 @@
 //import liquidoInput from "../components/liquido-input"
 import pollPanel from "../components/poll-panel"
 import EventBus from "@/services/event-bus"
+import api from "@/services/liquido-graphql-client"
 
 const pollStatusOrder = {
 	ELABORATION: 0,
@@ -146,7 +147,7 @@ export default {
 			}
 		},
 		userIsAdmin() {
-			return this.$api.isAdmin()
+			return api.isAdmin()
 		},
 		allPolls() {
 			// Implementation note:
@@ -157,12 +158,12 @@ export default {
 			// So VUE's reactive updates do not work when the data changes in the cache.
 			// Therefore we have to force a recompute of this "computed" value with a nice hack:
 			this.forceRefreshComputed;		
-			let polls = this.$api.getCachedPolls()
+			let polls = api.getCachedPolls()
 			return polls
 		},
 		filteredPolls() {
 			this.forceRefreshComputed;
-			return this.$api.getCachedPolls(this.pollStatusFilter)
+			return api.getCachedPolls(this.pollStatusFilter)
 				.filter((poll) => this.matchesSearch(poll))
 				.sort((p1,p2) => {
 					//sort polls by status
@@ -174,13 +175,13 @@ export default {
 			return this.filteredPolls.length === 0 // && this.searchQuery && this.searchQuery.trim().length > 0
 		},
 		hasPollInElaboration() {
-			return this.$api.getCachedPolls("ELABORATION").length > 0
+			return api.getCachedPolls("ELABORATION").length > 0
 		},
 		hasPollInVoting() {
-			return this.$api.getCachedPolls("VOTING").length > 0
+			return api.getCachedPolls("VOTING").length > 0
 		},
 		hasFinishedPoll() {
-			return this.$api.getCachedPolls("FINISHED").length > 0
+			return api.getCachedPolls("FINISHED").length > 0
 		}
 	},
 	created() {
@@ -195,7 +196,7 @@ export default {
 
 		// update polls in cache when navigating to this page
 		this.loading = true
-		this.$api.getPolls()
+		api.getPolls()
 			.then(() => {
 				this.loading = false
 			})

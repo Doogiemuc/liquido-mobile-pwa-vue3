@@ -260,6 +260,7 @@
 import config from "config"
 import QRCode from "qrcode"
 import liquidoInput from "@/components/liquido-input"
+import api from "@/services/liquido-graphql-client"
 const log = require("loglevel")
 
 const eMailRegEx = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,64}$/
@@ -503,7 +504,7 @@ export default {
 				picture: "Avatar1.png",      //TODO: let user change his Avatar later
 				//website: ...
 			}
-			this.$api.createNewTeam(this.team.teamName, admin)
+			api.createNewTeam(this.team.teamName, admin)
 				.then((team) => {
 					this.team = team
 					this.createTeamQRCode()
@@ -517,7 +518,7 @@ export default {
 					let errCode = err && err.response && err.response && err.response.data ? err.response.data.liquidoErrorCode : undefined
 					// https://babeljs.io/docs/en/babel-plugin-proposal-optional-chaining  Here Babel is cool. Ey, you need this cool top notch language feature. Just "install" it :-)
 					//MAYBE:  let errCode = err?.response?.data?.liquidoErrorCode  
-					if (errCode === this.$api.err.TEAM_WITH_SAME_NAME_EXISTS) {
+					if (errCode === api.err.TEAM_WITH_SAME_NAME_EXISTS) {
 						this.$root.$refs.rootPopupModal.showError(this.$t("teamWithSameNameExists"), this.$t("Error"))
 					} else {
 						this.$root.$refs.rootPopupModal.showError(this.$t("cannotCreateNewTeam"), this.$t("Error"))
@@ -554,7 +555,7 @@ export default {
 				picture: "Avatar1.png",      //TODO: let user change his Avatar later
 				//website: ...
 			}
-			this.$api.joinTeam(this.inviteCode, newMember)
+			api.joinTeam(this.inviteCode, newMember)
 				.then(team => {
 					this.flowState = 12
 					this.team = team
@@ -565,7 +566,7 @@ export default {
 				})
 				.catch(err => {
 					let errCode = err && err.response && err.response && err.response.data ? err.response.data.liquidoErrorCode : undefined
-					if (errCode === this.$api.err.CANNOT_JOIN_TEAM_INVITE_CODE_INVALID) {
+					if (errCode === api.err.CANNOT_JOIN_TEAM_INVITE_CODE_INVALID) {
 						this.$root.$refs.rootPopupModal.showError(this.$t("cannotJoinTeamInviteCodeInvalid"), this.$t("Error"))	
 					} else {
 						log.info("Cannot join team", err)

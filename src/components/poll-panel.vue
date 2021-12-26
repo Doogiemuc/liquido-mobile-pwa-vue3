@@ -72,6 +72,7 @@
 
 <script>
 import moment from "moment"
+import api from "@/services/liquido-graphql-client"
 
 export default {
 	i18n: {
@@ -129,7 +130,7 @@ export default {
 		},
 
 		lawSubtitleClasses(law) {
-			let currentUser = this.$api.getCachedUser() || {}
+			let currentUser = api.getCachedUser() || {}
 			return { 
 				"law-subtitle": true,
 				"liked": law.isLikedByCurrentUser, 
@@ -138,7 +139,7 @@ export default {
 		},
 
 		isCreatedByCurrentUser(law) {
-			let currentUser = this.$api.getCachedUser() || {}
+			let currentUser = api.getCachedUser() || {}
 			return law.createdBy.id === currentUser.id
 		},
 
@@ -147,7 +148,7 @@ export default {
 		},
 
 		clickLike(pollId, proposalId) {
-			this.$api.likeProposal(pollId, proposalId)
+			api.likeProposal(pollId, proposalId)
 		},
 
 		toggleCollapse() {

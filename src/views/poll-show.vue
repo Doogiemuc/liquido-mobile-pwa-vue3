@@ -99,6 +99,7 @@
 <script>
 import pollPanel from "../components/poll-panel"
 import popupModal from "@/components/popup-modal"
+import api from "@/services/liquido-graphql-client"
 const log = require("loglevel")
 
 export default {
@@ -158,7 +159,7 @@ export default {
 			return this.$t("poll")
 		},
 		userIsAdmin() {
-			return this.$api.isAdmin()
+			return api.isAdmin()
 		},
 		/** User can add his own proposal if the poll is in status ELABORATION and he did not add a proposal to this poll yet. */
 		showAddProposal() {
@@ -166,7 +167,7 @@ export default {
 			if (!this.poll.proposals || this.poll.proposals.length === 0) {
 				return true
 			}
-			let currentUser = this.$api.getCachedUser()
+			let currentUser = api.getCachedUser()
 			if (currentUser && currentUser.isAdmin) return true
 			return this.poll.proposals.filter((prop) => prop.createdBy.id === currentUser.id).length === 0
 		},
@@ -196,7 +197,7 @@ export default {
 			this.loadingPoll = true
 			// Here we do not force a refresh. Fetch from cache if possible.
 			// (When user clicks on cast vote we load everything freshly.)
-			return this.$api.getPollById(this.pollId)
+			return api.getPollById(this.pollId)
 				.then(receivedPoll => {
 					this.poll = receivedPoll
 					this.loadingPoll = false
@@ -224,7 +225,7 @@ export default {
 		clickStartVote() {
 			if (this.startVoteLoading) return  // do not allow double click
 			this.startVoteLoading = true
-			this.$api.startVotingPhase(this.poll.id).then(poll => {
+			api.startVotingPhase(this.poll.id).then(poll => {
 				this.startVoteLoading = false
 				this.poll = poll  // startVotingPhase returns updated poll in new status
 				this.$refs["votingPhaseStartedModal"].show()
@@ -239,12 +240,12 @@ export default {
 		clickFinishVote() {
 			if (this.finishVoteLoading) return  // do not allow double click
 			this.finishVoteLoading = true
-			this.$api.finishVotingPhase(this.poll.id).then(winner => {
+			api.finishVotingPhase(this.poll.id).then(winner => {
 				this.finishVoteLoading = false
 				// Locally update poll status also in cache. No need to reload poll from backend
 				this.poll.status = "FINISHED"
 				this.poll.winner = winner
-				this.$api.pollsCache.put("poll/"+this.poll.id, this.poll)
+				api.pollsCache.put("poll/"+this.poll.id, this.poll)
         document.getElementsByTagName("html").scrollTop = 0
 				//$("html, body").animate({ scrollTop: 0 }, 500)
 			}).catch(err => {

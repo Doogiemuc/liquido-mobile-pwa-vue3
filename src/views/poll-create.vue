@@ -42,6 +42,7 @@
 <script>
 import config from "config"
 import liquidoInput from "../components/liquido-input"
+import api from "@/services/liquido-graphql-client"
 const log = require("loglevel")
 
 export default {
@@ -87,7 +88,7 @@ export default {
 			this.$router.push("/polls")
 		},
 		clickCreateNewPoll() {
-			return this.$api.createPoll(this.pollTitle)
+			return api.createPoll(this.pollTitle)
 				.then(createdPoll => {
 					log.info("New poll created", createdPoll)
 					this.$router.push("/polls/" + createdPoll.id)

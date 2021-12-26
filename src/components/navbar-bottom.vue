@@ -32,6 +32,7 @@
 
 <script>
 import EventBus from "@/services/event-bus"
+import api from "@/services/liquido-graphql-client"
 
 export default {
 	name: "LiquidoFooter",
@@ -54,16 +55,16 @@ export default {
 	computed: {
 		pollsInElaboration() {
 			this.forceRefreshComputed;
-			let res = this.$api.getCachedPolls("ELABORATION")
+			let res = api.getCachedPolls("ELABORATION")
 			return res
 		},
 		pollsInVoting() {
 			this.forceRefreshComputed;
-			return this.$api.getCachedPolls("VOTING")
+			return api.getCachedPolls("VOTING")
 		},
 		pollsFinished() {
 			this.forceRefreshComputed;
-			return this.$api.getCachedPolls("FINISHED")
+			return api.getCachedPolls("FINISHED")
 		},
 		teamButtonClass() {
 			this.forceRefreshComputed;

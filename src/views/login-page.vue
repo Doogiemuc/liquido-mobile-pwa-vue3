@@ -112,6 +112,7 @@
 <script>
 import config from "config"
 import liquidoInput from "@/components/liquido-input"
+import api from "@/services/liquido-graphql-client"
 
 const REQUEST_THROTTLE_SECS = 10
 
@@ -201,16 +202,16 @@ export default {
 	methods: {
 		/** Quickly login as an admin user. This is available as a button in the mobile UI when in DEV env.  */
 		devLoginAdmin() {
-			this.$api.logout()
-			this.$api.devLogin(config.devLogin.adminEmail, config.devLogin.adminTeamname, config.devLogin.token).then(() => {
+			api.logout()
+			api.devLogin(config.devLogin.adminEmail, config.devLogin.adminTeamname, config.devLogin.token).then(() => {
 				this.$router.push({name: "teamHome"})
 			}).catch(err => console.error("DevLogin Admin failed!", err))
 		},
 
 		/** Quickly login as a team member. This is available as a button in the mobile UI when in DEV env.  */
 		devLoginMember() {
-			this.$api.logout()
-			this.$api.devLogin(config.devLogin.memberEmail, config.devLogin.memberTeamname, config.devLogin.token).then(() => {
+			api.logout()
+			api.devLogin(config.devLogin.memberEmail, config.devLogin.memberTeamname, config.devLogin.token).then(() => {
 				this.$router.push({name: "teamHome"})
 			}).catch(err => console.error("DevLogin Member failed!", err))
 		},
@@ -219,8 +220,8 @@ export default {
 		requestEmailToken() {
 			console.log("requestEmailToken")
 			if (this.emailInputState !== true) return  // When user presses return and input state is not yet valid
-			this.$api.logout()  // delete any previously stored JWT
-			this.$api.requestEmailToken(this.emailInput)
+			api.logout()  // delete any previously stored JWT
+			api.requestEmailToken(this.emailInput)
 				.then(() => {
 					console.log("Email login link sent successfully")
 					this.emailErrorMessage = undefined
@@ -230,7 +231,7 @@ export default {
 					this.$root.scrollToBottom()
 					if (err.response &&	
 							err.response.data &&
-							err.response.data.liquidoErrorCode === this.$api.err.CANNOT_LOGIN_EMAIL_NOT_FOUND) 
+							err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_EMAIL_NOT_FOUND) 
 					{
 						console.log("There is no user with email: "+this.emailInput)
 						this.emailSentSuccessfully = false
@@ -260,12 +261,12 @@ export default {
 				}
 			}, 1000);
 
-			this.$api.logout()
+			api.logout()
 			this.authToken = undefined
 			this.tokenErrorMessage = undefined
 			console.debug("requestAuthToken", this.mobilephone)
 
-			this.$api.requestAuthToken(this.mobilephone)
+			api.requestAuthToken(this.mobilephone)
 				.then(res => {
 					console.debug("Auth token requested successfull.", res)
 					this.tokenSentSuccessfully = true
@@ -274,7 +275,7 @@ export default {
 				.catch(err => {
 					if (err.response &&
 							err.response.data &&
-							err.response.data.liquidoErrorCode === this.$api.err.CANNOT_LOGIN_MOBILE_NOT_FOUND) {
+							err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_MOBILE_NOT_FOUND) {
 						this.waitUntilNextRequestSecs = 0
 						this.tokenSentSuccessfully = false
 						this.tokenErrorMessage = this.$t("MobilephoneNotFound")
@@ -289,7 +290,7 @@ export default {
 
 		loginWithAuthToken() {
 			this.tokenErrorMessage = undefined
-			this.$api.loginWithAuthToken(this.mobilephone, this.authToken)
+			api.loginWithAuthToken(this.mobilephone, this.authToken)
 				.then(() => {
 					this.$router.push({name: "teamHome"})
 				})
@@ -297,16 +298,16 @@ export default {
 					// Show a usefull, human readable error message that actually describes what happend
 					this.tokenSentSuccessfully = false
 					if (err.response &&	err.response.data) {
-						if(err.response.data.liquidoErrorCode === this.$api.err.CANNOT_LOGIN_TOKEN_INVALID) {
+						if(err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_TOKEN_INVALID) {
 							console.log("The entered auth token was invalid.")
 							this.tokenErrorMessage = this.$t("TokenInvalid")
 
 						} else
-						if(err.response.data.liquidoErrorCode === this.$api.err.CANNOT_LOGIN_MOBILE_NOT_FOUND) {
+						if(err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_MOBILE_NOT_FOUND) {
 							console.log("No user with that mobilephone.")
 							this.tokenErrorMessage = this.$t("TokenDoesNotBelongToMobilephone")
 						} else
-						if(err.httpStatus === 401 || err.response.data.liquidoErrorCode === this.$api.err.UNAUTHORIZED) {
+						if(err.httpStatus === 401 || err.response.data.liquidoErrorCode === api.err.UNAUTHORIZED) {
 							console.log("Cannot login with token. User is not authorized.")
 							this.tokenErrorMessage = this.$t("TokenInvalid") 
 						}

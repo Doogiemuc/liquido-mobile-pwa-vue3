@@ -77,6 +77,7 @@
 <script>
 import config from "config"
 import QRCode from "qrcode"
+import api from "@/services/liquido-graphql-client"
 
 export default {
 	i18n: {
@@ -108,21 +109,21 @@ export default {
 	},
 	computed: {
 		currentUserName() { 
-			let cachedUser = this.$api.getCachedUser()
+			let cachedUser = api.getCachedUser()
 			return cachedUser ? cachedUser.name : ""
 		},
 		isAdmin() {
-			return this.$api.isAdmin()
+			return api.isAdmin()
 		},
 		teamHasPolls() {
-			return this.$api.getCachedPolls().length > 0
+			return api.getCachedPolls().length > 0
 		},
 		inviteLinkURL() {
 			return config.inviteLinkPrefix + this.team.inviteCode
 		},
 	},
 	created() {
-		this.team = this.$api.getCachedTeam()
+		this.team = api.getCachedTeam()
 	},
 	mounted() {
 		let QRcodeOpts = {
@@ -155,7 +156,7 @@ export default {
 		},
 
 		clickLogout() {
-			this.$api.logout()
+			api.logout()
 			this.$router.push({name: "login"})  //TODO: Forward to a polite "byebye" page.
 		}
 	},

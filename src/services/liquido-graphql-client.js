@@ -85,7 +85,7 @@ const fetchTeamFunc = function(path) {
 		console.debug("fetchTeamFunc: Fetch own team from backend")
 		let graphQL = `query { team ${JQL.TEAM} }`
 		return graphQlQuery(graphQL).then(res => {
-			EventBus.$emit(EventBus.POLLS_LOADED, res.data.team.polls)
+			EventBus.emit(EventBus.POLLS_LOADED, res.data.team.polls)
 			return res.data.team
 		})
 	} else {
@@ -114,7 +114,7 @@ const fetchPollFunc = function(path) {
 		console.debug("fetchPollFunc: Fetch all polls of team from backend")
 		let graphQL = `query { polls ${JQL.POLL} }`
 		return graphQlQuery(graphQL).then(res => {
-			EventBus.$emit(EventBus.POLLS_LOADED, res.data.polls)
+			EventBus.emit(EventBus.POLLS_LOADED, res.data.polls)
 			return res.data.polls
 		})
 	} else if (path[0].polls) {
@@ -122,7 +122,7 @@ const fetchPollFunc = function(path) {
 		let pollId = path[0].polls
 		let graphQL = `query { poll(pollId:${pollId}) ${JQL.POLL} }`
 		return graphQlQuery(graphQL).then(res => {
-			EventBus.$emit(EventBus.POLL_LOADED, res.data.poll)  // notify listeners that ONE poll has been (re)loaded from the backend
+			EventBus.emit(EventBus.POLL_LOADED, res.data.poll)  // notify listeners that ONE poll has been (re)loaded from the backend
 			return res.data.poll
 		})
 	} else {
@@ -189,7 +189,7 @@ let graphQlApi = {
 		this.putPollsIntoCache(team.polls)
 		localStorage.setItem(this.LIQUIDO_JWT_KEY, jwt)
 		axios.defaults.headers.common["Authorization"] = "Bearer " + jwt
-		EventBus.$emit(EventBus.LOGIN, {team, user, jwt})
+		EventBus.emit(EventBus.LOGIN, {team, user, jwt})
 		console.debug("Login <"+user.email+"> into team '" + team.teamName  + "'")
 	},
 
@@ -201,7 +201,7 @@ let graphQlApi = {
 		axios.defaults.headers.common["Authorization"] = undefined
 		this.teamCache.emptyCache()
 		this.pollsCache.emptyCache()
-		EventBus.$emit(EventBus.LOGOUT, userEmail)
+		EventBus.emit(EventBus.LOGOUT, userEmail)
 	},
 
 	/* ===== Synchronous utility methods that do not call the backend ========= */
@@ -249,7 +249,7 @@ let graphQlApi = {
 			log.warn("Need array of polls to putPollsIntoCache!")
 			return
 		}
-		EventBus.$emit(EventBus.POLLS_LOADED, pollsArray)
+		EventBus.emit(EventBus.POLLS_LOADED, pollsArray)
 		pollsArray.forEach(poll => {
 
 			this.pollsCache.put("polls/"+poll.id, poll)
@@ -479,7 +479,7 @@ let graphQlApi = {
 				let poll = res.data.likeProposal
 				this.pollsCache.put("polls/"+poll.id, poll)
 				console.debug(`User likes proposal.id=${proposalId} in poll.id=${pollId}`)
-				EventBus.$emit(EventBus.POLL_LOADED, poll)
+				EventBus.emit(EventBus.POLL_LOADED, poll)
 				return poll
 			})
 	},

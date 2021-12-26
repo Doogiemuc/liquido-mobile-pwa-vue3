@@ -108,8 +108,8 @@
 import config from "config"
 import lawPanel from "@/components/law-panel"
 import popupModal from "@/components/popup-modal"
-
-//import Sortable from 'sortablejs'
+import api from "@/services/liquido-graphql-client"
+//not used anymore:   import Sortable from 'sortablejs'
 import draggable from "vuedraggable"
 import _ from "lodash"
 const log = require("loglevel")
@@ -180,7 +180,7 @@ export default {
 		/** 
 		 * Force refresh of the poll we want to cast a vote on. Load the from the backend.
 		 */
-		let loadPoll = () => this.$api.getPollById(this.pollId, true).then(poll => {
+		let loadPoll = () => api.getPollById(this.pollId, true).then(poll => {
 			this.poll = poll
 			if (!this.poll) throw new Error("Cannot find poll(id=" + this.pollId + ")") //TODO: show user error message to user. offer back button
 			return poll
@@ -191,14 +191,14 @@ export default {
 		 * TODO: We could make this more secury by letting the user provide his own voterTokenSecret.
 		 *       But then a human would need to remember a secret. And humans are not good in remembering things.
 		 */
-		let getVoterToken = () => this.$api.getVoterToken(config.voterTokenSecret)
+		let getVoterToken = () => api.getVoterToken(config.voterTokenSecret)
 			.catch(err => console.warn("Cannot get voterToken of user", err))
 
 		/**
 		 * Check if current user already coted in this poll. Then he would have a ballot.
 		 * Keep in mind, that the ballot of a user can only be fetched, if the user's secret voterToken is known.
 		 */
-		let getExistingBallot = (voterToken) => this.$api.getBallot(this.pollId, voterToken).then(ballot => {
+		let getExistingBallot = (voterToken) => api.getBallot(this.pollId, voterToken).then(ballot => {
 			this.existingBallot = ballot  // may be undefined!
 			if (this.existingBallot) this.isFirstVote = false
 			return ballot
@@ -304,9 +304,9 @@ export default {
 			//TODO: start a timer for timeout
 
 			log.debug("CAST VOTE: poll.id="+this.poll.id, "voteOrderIds", voteOrderIds)
-			this.$api.getVoterToken(config.voterTokenSecret).then((voterToken) => {
+			api.getVoterToken(config.voterTokenSecret).then((voterToken) => {
 				console.debug("Received voter token. Now casting vote ...")
-				this.$api.castVote(this.poll.id, voteOrderIds, voterToken).then(castVoteResponse => {
+				api.castVote(this.poll.id, voteOrderIds, voterToken).then(castVoteResponse => {
 					console.info("Vote casted successfully.", castVoteResponse)
 					this.existingBallot = castVoteResponse.ballot
 					this.voteCount = castVoteResponse.voteCount
@@ -322,7 +322,7 @@ export default {
 
 		async verifyBallot() {
 			if (!this.existingBallot || this.ballotIsVerified) return
-			this.$api.verifyBallot(this.poll.id, this.existingBallot.checksum).then(ballot => {
+			api.verifyBallot(this.poll.id, this.existingBallot.checksum).then(ballot => {
 				if (!ballot) {
 					console.warn("Could not find a ballot for that checksum.")
 				} else {

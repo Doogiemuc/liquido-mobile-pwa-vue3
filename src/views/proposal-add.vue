@@ -129,6 +129,7 @@
 import pollPanel from "../components/poll-panel"
 import liquidoInput from "../components/liquido-input"
 import popupModal from "@/components/popup-modal"
+import api from "@/services/liquido-graphql-client"
 import faSolidIconsFree from "@/styles/fontawesome-solid-icons-free.json"
 
 export default {
@@ -196,7 +197,7 @@ export default {
 		},
 	},
 	created() {
-		this.$api.getPollById(this.pollId, true).then(poll => this.poll = poll)
+		api.getPollById(this.pollId, true).then(poll => this.poll = poll)
 	},
 	mounted() {	},
 	methods: {
@@ -237,7 +238,7 @@ export default {
 
 		/** Save newly added proposal in backend. */
 		saveProposal() {
-			this.$api.addProposal(this.poll.id, this.proposal.title, this.proposal.description, this.iconName)
+			api.addProposal(this.poll.id, this.proposal.title, this.proposal.description, this.iconName)
 				.then(() => this.$refs["proposalSuccessfullyAddedModal"].show())
 				.catch(err => {
 					console.error("Cannot add proposal", err)
