@@ -136,9 +136,9 @@
 					id="joinedTeamGoToTeamButton"
 					variant="primary"
 					class="float-right mb-1"
-					@click="$router.push('/team')"
+					@click="gotoTeam"
 				>
-					{{ $t("goToTeam") }}
+					{{ $t("gotoTeam") }}
 					<i class="fas fa-angle-double-right" />
 				</b-button>
 			</b-card>
@@ -193,9 +193,9 @@
 						@keyup.enter="createNewTeam()"
 					/>
 
-					<small class="ml-1 mb-1">{{ $t("youWillBecomeAdmin") }}</small>
+					<small class="ml-1">{{ $t("youWillBecomeAdmin") }}</small>
 
-					<div class="d-flex justify-content-between align-items-end">
+					<div class="d-flex justify-content-between align-items-center mt-3">
 						<small :class="{ invisible: flowState !== 20 }" class="ml-1">
 							<a href="#" tabindex="4" @click="cancelCreateNewTeam()">{{ $t("Cancel") }}</a>
 						</small>
@@ -215,28 +215,32 @@
 
 			<!-- New team created successfully (flowState == 22) -->
 
-			<b-card
-				id="newTeamCreatedBubble"
-				:class="{ 'collapse-max-height': flowState !== 22 }"
-				class="chat-bubble shadow-sm"
-			>
+			<b-card	id="newTeamCreatedBubble"	:class="{ 'collapse-max-height': flowState !== 22 }" class="chat-bubble shadow-sm">
 				<p>{{ $t("teamCreated") }}</p>
-				<p>
-					{{ $t("shareThisLink") }}
+				<p class="text-center mb-2">
 					<a id="inviteLink" :href="inviteLinkURL" @click.prevent="shareLink()">
-						{{ inviteLinkURL }}
+						{{ $t("shareThisLink", {inviteCode: team.inviteCode}) }}
 						<i class="fas fa-external-link-alt" />
 					</a>
 				</p>
-				<p>
-					{{ $t("tellInvitationCode") }}
-					<b id="newTeamInviteCode">{{ team.inviteCode }}</b>
-				</p>
+			</b-card>
+
+			<b-card	:class="{ 'collapse-max-height': flowState !== 22 }" class="chat-bubble shadow-sm">
 				<p>{{ $t("scanQrCode") }}</p>
 				<div class="text-center">
 					<img id="qrCodeImg" src="" class="qr-code">
 				</div>
 				<p v-html="$t('teamInfo')" />
+				<b-button
+					id="gotoTeamButton"
+					variant="primary"
+					class="float-right mb-3"
+					@click="gotoTeam"
+				>
+					<i class="fas fa-users" />
+					{{ $t("gotoTeam") }}
+					<i class="fas fa-angle-double-right" />
+				</b-button>
 			</b-card>
 
 			<b-card :class="{ 'collapse-max-height': flowState !== 22 }" class="chat-bubble shadow-sm">
@@ -301,15 +305,14 @@ export default {
 				inviteCode: "Einladungscode",
 				inviteCodeInvalid: "Einladungscode muss genau 6 Zeichen lang sein.",
 				yourMobilephone: "Deine Handynummer",
-				mobilephonePlaceholder: "+49 151 1234567",
+				mobilephonePlaceholder: "+49 555 111111",
 				mobilephoneInvalid: "Keine gültige Handynummer",
 				yourEMail: "Deine E-Mail",
 				emailPlaceholder: "info{'@'}domain.de",
 				emailInvalid: "E-Mail ungültig",
 
-				joinedTeamSuccessfully: 
-					"Herzlich willkommen im Team <b>{teamName}</b>. Viel Spaß beim Abstimmen und Wählen!",
-				goToTeam: "Zum Team",
+				joinedTeamSuccessfully: "Herzlich willkommen im Team <b>{teamName}</b>. Viel Spaß beim Abstimmen und Wählen!",
+				gotoTeam: "Zum Team",
 
 				createNewTeamButton: "Neues Team",
 				teamName: "Team Name",
@@ -317,13 +320,13 @@ export default {
 				adminEmail: "Admin E-Mail",
 				youWillBecomeAdmin: "Du wirst Admin des neuen Teams.",
 
-				teamCreated: "Ok, dein Team ist angelegt. Lade jetzt deine Freunde in dein Team ein:",
-				shareThisLink: "Teile diesen Link",
+				teamCreated: "Ok, dein Team ist angelegt. Du kannst jetzt deine Freunde in dein Team einladen.",
+				shareThisLink: "Teile diesen Link ({inviteCode})",
 				tellInvitationCode: "Oder nutze einfach diesen Einadungscode:",
 				scanQrCode: "Oder lass sie diesen QR code scannen:",
-				teamInfo: "Du findest diese Infos später jederzeit wieder auf der <a href='/team'>Team Seite</a> (<i class='fas fa-users'></i>).",
+				teamInfo: "Du findest diese Infos später jederzeit wieder auf eurer Team Seite.",
 				pollInfo: 
-					"Möchtest du jetzt gleich eine erste Abstimung (<i class='fas fa-poll'></i>) für dein Team erstellen. Jedes Teammitglied kann dann " +
+					"Möchtest du jetzt gleich eine erste Abstimung (<i class='fas fa-poll'></i>) für dein Team erstellen? Jedes Teammitglied kann dann " +
 					"seinen eigenen Wahlvorschlag (<i class='fas fa-vote-yea'></i>) hinzufügen.",
 				createPoll: "Abstimmung anlegen",
 
@@ -418,6 +421,9 @@ export default {
 	 */
 	mounted() {
 		document.getElementsByTagName("html").scrollTop = 0
+
+		//TODO: Check if user is already logged in. If so, then welcome him.
+
 		this.flowState = 0
     this.startChatAnimation()
 	},
@@ -566,6 +572,10 @@ export default {
 			})
 		},
 
+		gotoTeam() {
+			this.$router.push({name: "teamHome"})
+		},
+
 		gotoCreatePoll() {
 			this.$router.push({name: "createPoll"})
 		},
@@ -648,6 +658,9 @@ export default {
 	transition: all 0.5s ease;
 	right: 0;
 	top: 0;
+}
+#createNewTeamOkButton {
+	width: 50%;
 }
 .moveToCenterFromLeft {
 	left: 50% !important;

@@ -110,7 +110,9 @@ export default {
 		}
 	},
 	mounted() {
-		myModal = new Modal(document.getElementById(this.id))
+		myModal = new Modal(document.getElementById(this.id), {
+			backdrop: "static"
+		})
 	},
 	methods: {
 		/** Show the modal. Can optionally pass a message. */

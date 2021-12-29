@@ -150,7 +150,7 @@ export default {
 			})
 		},
 
-		/** scroll to top of page */
+		/** Scroll to top of page. No animation. */
 		scrollToTop() {
 			this.$nextTick(() => {
 				document.getElementById("app").scrollTop = 0
@@ -158,11 +158,11 @@ export default {
 		},
 
 		/** Animate scrolling to the very bottom of the page. */
-		scrollToBottom() {
+		scrollToBottom(durationMs = 1000) {
 			this.$nextTick(() => {
 				let appHeight = document.getElementById("app").offsetHeight
 				let elem = document.getElementById("app")
-				this.animate(elem, "scrollTop", appHeight, 2000)
+				this.animate(elem, "scrollTop", appHeight, durationMs)
 			})
 		},
 
