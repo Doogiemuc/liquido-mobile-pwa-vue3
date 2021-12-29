@@ -130,7 +130,7 @@ import pollPanel from "../components/poll-panel"
 import liquidoInput from "../components/liquido-input"
 import popupModal from "@/components/popup-modal"
 import api from "@/services/liquido-graphql-client"
-import faSolidIconsFree from "@/styles/fontawesome-solid-icons-free.json"
+import faSolidIconsFree from "@/styles/fontawesome-solid-icons-free.json"  // List of free fontawesome icon names
 
 export default {
 	i18n: {

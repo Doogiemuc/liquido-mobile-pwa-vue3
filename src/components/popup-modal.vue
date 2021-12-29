@@ -13,7 +13,7 @@
 					<slot name="modal-header">
 						<i :class="headerIconClass" class="bounce-anim-icon"></i>
 						<div class="header-icon-shadow bounce-anim-shadow">&nbsp;</div>
-						<h5 v-if="myTitle" id="modalLabel" class="modal-title">{{ myTitle }}</h5>
+						<h1 v-if="myTitle" id="modalLabel" class="modal-title">{{ myTitle }}</h1>
 						<button v-if="showHeaderClose" type="button" class="close" data-dismiss="modal" aria-label="Close">
 							<span aria-hidden="true">&times;</span>
 						</button>
@@ -27,7 +27,6 @@
 						<button v-if="secondaryButtonText" id="modalSecondaryButton" type="button" class="btn btn-secondary flex-grow-1" @click="clickSecondary">{{ secondaryButtonText }}</button>
 						<button id="modalPrimaryButton" type="button" class="btn btn-primary flex-grow-1" data-dismiss="modal" @click="clickPrimary">
 							{{ primaryButtonText }}
-							<i class="fas fa-angle-double-right" />
 						</button>
 					</slot>
 				</div>
@@ -51,6 +50,10 @@
  * 
  * Will emit an event "clickPrimary", when primary button is clicked
  */
+
+import { Modal } from 'bootstrap'
+let myModal
+
 export default {
 	name: "PopupModal",
 	props: {
@@ -106,13 +109,16 @@ export default {
 			}
 		}
 	},
+	mounted() {
+		myModal = new Modal(document.getElementById(this.id))
+	},
 	methods: {
 		/** Show the modal. Can optionally pass a message. */
 		show(msg, title, type) {
 			if (title) this.myTitle = title
 			if (msg) this.myMessage = msg
 			this.myType = type || "info"
-			document.getElementById(this.id).modal("show")
+			myModal.show()
 		},
 		showSuccess(msg, title) {
 			this.show(msg, title, "success")
@@ -127,13 +133,13 @@ export default {
 			this.show(msg, title, "warning")
 		},
 		hide() {
-			document.getElementById(this.id).modal("hide")
+			myModal.hide()
 		},
-		close() {   // be nice to your callers :-) offer hide and close
-			document.getElementById(this.id).modal("hide")
+		close() {   // be nice to your callers :-) offer hide and close wording
+			myModal.hide()
 		},
 		toggle() {
-			document.getElementById(this.id).modal("toggle")
+			myModal.toggle()
 		},
 		clickPrimary() {
 			this.$emit("clickPrimary", this.id)
@@ -182,7 +188,6 @@ export default {
 		margin: 0 auto;
 		background-color: rgba(0, 0, 0, 0);
 		border-radius: 50%;
-		//border: 1px solid red; // for debugging :-)
 		box-shadow: -5px 1.5rem 10px 2px rgba(0, 0, 0, 0.5);
 	}
 	.header-icon-danger {

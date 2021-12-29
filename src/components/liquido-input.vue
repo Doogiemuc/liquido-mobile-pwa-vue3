@@ -205,7 +205,6 @@ export default {
 	},
 	watch: {
 		"state": function() {
-			console.log("liquido-input state changed to"+this.state)
 			this.$emit("update:state", this.state)
 		}
 	},

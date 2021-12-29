@@ -315,11 +315,11 @@ export default {
 				teamName: "Team Name",
 				teamNameInvalid: "Bitte mindestens 6 Zeichen als Teamname!",
 				adminEmail: "Admin E-Mail",
-				youWillBecomeAdmin: "Du wirst der Admin des neuen Teams.",
+				youWillBecomeAdmin: "Du wirst Admin des neuen Teams.",
 
 				teamCreated: "Ok, dein Team ist angelegt. Lade jetzt deine Freunde in dein Team ein:",
 				shareThisLink: "Teile diesen Link",
-				tellInvitationCode: "Sage ihnen deinen Einadungscode:",
+				tellInvitationCode: "Oder nutze einfach diesen Einadungscode:",
 				scanQrCode: "Oder lass sie diesen QR code scannen:",
 				teamInfo: "Du findest diese Infos später jederzeit wieder auf der <a href='/team'>Team Seite</a> (<i class='fas fa-users'></i>).",
 				pollInfo: 
@@ -422,6 +422,33 @@ export default {
     this.startChatAnimation()
 	},
 	methods: {
+		/**
+		 * Show the first chat bubbles, one by one
+		 */
+		startChatAnimation() {
+			if (this.chatAnimationStarted) return  // start chat animation only once
+			this.chatAnimationStarted = true
+			let smallDelay = 500  //ms
+			let mediumDelay = 2500 // ms
+
+			// If we are running inside a Cypress test, then speedup animation.
+			if (window.Cypress || process.env.NODE_ENV === "development") {
+				smallDelay = 100
+				mediumDelay = 200
+			}
+
+			window.setTimeout(() => {
+				this.flowState = 1
+			}, smallDelay)
+			window.setTimeout(() => {
+				this.flowState = 2
+			}, mediumDelay)
+			window.setTimeout(() => {
+				this.flowState = 3
+				this.$root.scrollToBottom()
+			}, smallDelay + mediumDelay)
+		},
+
 		/* username must not be empty and contain at least n chars */
 		isUsernameValid(val) {
 			return val !== undefined && val !== null && val.trim().length >= config.usernameMinLength
@@ -510,8 +537,7 @@ export default {
 					this.createTeamQRCode()
 					this.flowState = 22
 					this.$nextTick(() => {
-						let headerHeight = this.$root.$refs["liquido-header"].height
-						this.$root.scrollElemToTop("#newTeamCreatedBubble", headerHeight)
+						this.$root.scrollElemToTop(document.getElementById("newTeamCreatedBubble"))
 					})
 				})
 				.catch((err) => {			// on error show modal
@@ -560,7 +586,7 @@ export default {
 					this.flowState = 12
 					this.team = team
 					this.$nextTick(() => {
-						let headerHeight = this.$root.$refs["liquido-header"].height
+						let headerHeight = this.$root.$refs["liquido-header"].offsetHeight
 						this.$root.scrollElemToTop("#joinedTeamBubble", headerHeight)
 					})
 				})
@@ -574,33 +600,6 @@ export default {
 					}					
 					this.flowState = 10
 				})
-		},
-
-
-		// Here comes some UX magic :-)
-
-		startChatAnimation() {
-			if (this.chatAnimationStarted) return  // start chat animation only once
-			this.chatAnimationStarted = true
-			let smallDelay = 500  //ms
-			let mediumDelay = 2500 // ms
-
-			// If we are running inside a Cypress test, then speedup animation.
-			if (window.Cypress || process.env.NODE_ENV === "development") {
-				smallDelay = 100
-				mediumDelay = 200
-			}
-
-			window.setTimeout(() => {
-				this.flowState = 1
-			}, smallDelay)
-			window.setTimeout(() => {
-				this.flowState = 2
-			}, mediumDelay)
-			window.setTimeout(() => {
-				this.flowState = 3
-				this.$root.scrollToBottom()
-			}, smallDelay + mediumDelay)
 		},
 
 		shareLink() {

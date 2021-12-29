@@ -41,7 +41,7 @@ export default {
 	},
 	computed: {
 		height() {
-			return document.getElementById("liquidoHeader").height()
+			return document.getElementById("liquidoHeader").offsetHeight
 		},
 	},
 	mounted() {

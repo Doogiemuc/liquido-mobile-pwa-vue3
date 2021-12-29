@@ -161,10 +161,8 @@ export default {
 		scrollToBottom() {
 			this.$nextTick(() => {
 				let appHeight = document.getElementById("app").offsetHeight
-				console.log("Scroll to bottom of app: ", appHeight)
 				let elem = document.getElementById("app")
 				this.animate(elem, "scrollTop", appHeight, 2000)
-				//no more JQery :-) $("html").animate({ scrollTop: $("#app").height() }, 1000)
 			})
 		},
 
