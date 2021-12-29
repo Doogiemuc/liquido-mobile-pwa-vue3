@@ -4,7 +4,7 @@ import loginPage from "@/views/login-page"
 import teamHome from "@/views/team-home"
 import pollsPage from "@/views/polls"
 import showPoll from "@/views/poll-show"
-import config from "config"
+//import config from "config"
 const log = require("loglevel")
 if (process.env.NODE_ENV === "development") log.enableAll()
 
@@ -99,7 +99,7 @@ const router = createRouter({
 	//vue-router History mode needs web-server configuration https://router.vuejs.org/guide/essentials/history-mode.html#example-server-configurations
 	//VUE2: mode: "history",     // hash -> with "#" in URL    or "history" -> needs web server configuration
   history: createWebHistory(),
-	base: config.BASE_URL || "/",
+	//base: config.BASE_URL || "/",
 	/*
 	scrollBehavior(to, from, savedPosition) {
 		if (savedPosition) {

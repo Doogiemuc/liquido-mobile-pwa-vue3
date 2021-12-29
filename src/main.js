@@ -83,7 +83,7 @@ const i18n = new createI18n({
 	locale: "de",
 	fallbackLocale: "de",
 	warnHtmlInMessage: 'off', // disable of the Detected HTML in message
-	//silentFallbackWarn: true,
+	silentFallbackWarn: true,
 	messages: globalTranslations
 })
 

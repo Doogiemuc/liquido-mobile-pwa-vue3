@@ -6,7 +6,7 @@
 		<input
 			:id="id"
 			:name="name"
-			:value="value"
+			:value="modelValue"
 			:class="validClass"
 			:type="type"
 			:placeholder="placeholder"
@@ -15,6 +15,9 @@
 			:minlength="minlength"
 			:maxlength="maxlength"
 			:pattern="pattern"
+			@input="onInput"
+			@keyup="keyup"
+			@blur="blur"
 			class="form-control"
 		>
 		<div class="iconRight">
@@ -77,8 +80,8 @@ export default {
 		/** ID that will be set directly on the inner HTML <input> DOM element */
 		id: { type: String, required: true },
 
-		/** Vue reactive value that can be bound as v-model */
-		value: { type: String, required: false, default: undefined },
+		/** Vue3 reactive value that can be bound as v-model. NEW NAME "modelValue" IN VUE3!!! */
+		modelValue: { type: String, required: false, default: undefined },
 
 		/** 
 		 * Type of the input: (default: text)
@@ -142,6 +145,7 @@ export default {
 		 */
 		forceValidateOn: { type: String, required: false, default: "blur" },
 	},
+	emits: ["update:modelValue"],  // this event is emitted, when the value of the inner <input> changes.
 	data() {
 		return {
 			/**
@@ -178,7 +182,7 @@ export default {
 				}
 			)
 		},
-    */
+		*/
 
 		/**
 		 * Compute wether to add the is-valid or is-invalid pseudo class depending on the input's "state"
@@ -192,7 +196,7 @@ export default {
 			}
 		},
 		counterVal() {
-			let len = this.value ? this.value.length : 0
+			let len = this.modelValue ? this.modelValue.length : 0
 			return len + "/" + this.maxlength
 		},
 		showCounterIfValid() {
@@ -201,6 +205,7 @@ export default {
 	},
 	watch: {
 		"state": function() {
+			console.log("liquido-input state changed to"+this.state)
 			this.$emit("update:state", this.state)
 		}
 	},
@@ -209,8 +214,8 @@ export default {
 	},
 	methods: {
 		defaultValidFunc(val) {
-			if (this.value && this.value.length < this.minlength) return false
-			if (this.value && this.value.length > this.maxlength) return false
+			if (this.modelValue && this.modelValue.length < this.minlength) return false
+			if (this.modelValue && this.modelValue.length > this.maxlength) return false
 			if (this.required && !val) return false
 			switch (this.type.toLowerCase()) {
 				case "email": return this.isValidEmail(val);
@@ -231,11 +236,19 @@ export default {
 			return val && urlRegEx.test(val)
 		},
 
+		/** 
+		 * When DOM input event is fired on the inner HTML <input>, 
+		 * then fire VUE update event, so that the parent component's value 
+		 * can be updated. */
+		onInput(evt) {
+			this.$emit('update:modelValue', evt.target.value)
+		},
+
 		/** prevent entering more than maxlength digits for type="number". (For type="text" the browser does that) */
 		keydown(evt) {
 			if ((this.type === "number" || this.type === "integer") && 
 					/[0-9]/.test(evt.key) && 
-					this.value && this.value.length >= this.maxlength) 
+					this.modelValue && this.modelValue.length >= this.maxlength) 
 			{
 				evt.preventDefault()
 				evt.stopPropagation()
@@ -267,7 +280,7 @@ export default {
 		 * @param force enable error message when fields value is invalid
 		 */
 		validateField(force = false) {
-			let valid = this.internalValidFunc(this.value)	
+			let valid = this.internalValidFunc(this.modelValue)	
 			if (valid) {
 				this.state = true
 			} else {

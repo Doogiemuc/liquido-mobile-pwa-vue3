@@ -293,7 +293,7 @@ export default {
 					"Wahlvorschläge nach seiner eigenen Priorität. Liquido berechnet daraus dann mit einem cleveren Algorithmus den Sieger der Wahl.</p>",
 				whatsYourName: "Darf ich fragen wie du heißt?",
 				yourNickname: "Dein Spitzname",
-				userNameInvalid: "Bitte mindestens 4 Zeichen!",
+				userNameInvalid: "Bitte mindestens " + config.usernameMinLength + " Zeichen!",
 				niceToMeetYou: "Hallo <b>{nickname}</b> ! Schön dich kennen zu lernen.",
 				createOrJoin: "Möchtest du <ul><li>mit einem Einladungscode einem bestehenden <b>Team beitreten</b></li><li>oder möchtest du ein <b>neues Team gründen?</b></li></ul>",
 
@@ -422,7 +422,7 @@ export default {
     this.startChatAnimation()
 	},
 	methods: {
-		/* username must not be empty and contain at least 4 chars */
+		/* username must not be empty and contain at least n chars */
 		isUsernameValid(val) {
 			return val !== undefined && val !== null && val.trim().length >= config.usernameMinLength
 		},
@@ -593,11 +593,9 @@ export default {
 
 			window.setTimeout(() => {
 				this.flowState = 1
-				this.$root.scrollToBottom()
 			}, smallDelay)
 			window.setTimeout(() => {
 				this.flowState = 2
-				this.$root.scrollToBottom()
 			}, mediumDelay)
 			window.setTimeout(() => {
 				this.flowState = 3

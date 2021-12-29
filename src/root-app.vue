@@ -1,12 +1,7 @@
 <template>
-	<div id="app">
+	<div id="rootApp">
 		<liquido-header ref="liquido-header" :back-link="backLink" />
-		<router-view id="appContent" class="router-view container-lg" v-slot="{ Component }">
-			<transition :name="transitionName">
-				<keep-alive>
-					<component :is="Component" />
-				</keep-alive>
-			</transition>
+		<router-view id="appContent" class="router-view container-lg">
 		</router-view>
 		<navbar-bottom v-if="showNavbarBottom"></navbar-bottom>
 		<popup-modal 
@@ -127,18 +122,49 @@ export default {
 		// Here comes some HTML UX magic.
 		//
 
+		/**
+		 * INTERNAL: One step in an animation
+		 * adapted https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
+		 */
+		step(timestamp, obj, attr, startTime, startValue, finalValue, durationMs) {
+			if (startTime === undefined) startTime = timestamp
+			const elapsed = timestamp - startTime
+			obj[attr] = startValue + (finalValue - startValue) * (elapsed / durationMs)
+			if (elapsed < durationMs) {
+				window.requestAnimationFrame(timestamp => {
+					this.step(timestamp, obj, attr, startTime, startValue, finalValue, durationMs)
+				})
+			} else {
+				obj[attr] = finalValue  // make sure we have exactly the final value when animation finishes after durationMs
+			}
+		},
+		
+		/**
+		 * Animate obj[attr] vom its current startVlaue to a finalValu in durationMs milliseconds.
+		 */
+		animate(obj, attr, finalValue, durationMs) {
+			let startTime
+			let startValue = obj[attr]
+			window.requestAnimationFrame(timestamp => {
+				this.step(timestamp, obj, attr, startTime, startValue, finalValue, durationMs)
+			})
+		},
+
 		/** scroll to top of page */
 		scrollToTop() {
 			this.$nextTick(() => {
-				document.getElementsByTagName("html")[0].scrollTop = 0
+				document.getElementById("app").scrollTop = 0
 			})
 		},
 
 		/** Animate scrolling to the very bottom of the page. */
 		scrollToBottom() {
 			this.$nextTick(() => {
-        console.log("TODO: scrollToBottom not implemented yet")
-				//$("html").animate({ scrollTop: $("#app").height() }, 1000)
+				let appHeight = document.getElementById("app").offsetHeight
+				console.log("Scroll to bottom of app: ", appHeight)
+				let elem = document.getElementById("app")
+				this.animate(elem, "scrollTop", appHeight, 2000)
+				//no more JQery :-) $("html").animate({ scrollTop: $("#app").height() }, 1000)
 			})
 		},
 
@@ -148,12 +174,15 @@ export default {
 		 * @param {String} elem JQuery selector for dom elem
 		 * @param {Number} margin margin below headerHeight in pixels (default 0)
 		 */
-		scrollElemToTop(/*elem, margin = 0*/) {
-			//let scrollTop = $("#app").scrollTop() + $(elem).offset().top - margin
+		scrollElemToTop(elem) {
+			elem.scrollIntoView({ behavior: 'smooth' });
+			/* no more JQuery
+			let scrollTop = $("#app").scrollTop() + $(elem).offset().top - margin
 			this.$nextTick(() => {
         console.log("TODO: scrollElemToTop not implemented yet")
-				//$("html").animate({ scrollTop: scrollTop }, 1000)
+				$("html").animate({ scrollTop: scrollTop }, 1000)
 			})
+			*/
 		},
 
 		/** Check if the bottom of elem is scrolled into view */

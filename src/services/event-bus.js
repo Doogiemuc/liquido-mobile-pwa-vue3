@@ -1,6 +1,6 @@
 /**
- * Event-bus is a very lightweight vuex.
- * Here we simply use the $emit functionality of Vue components.
+ * Event-bus is a very lightweight VUEX.
+ * Here we simply use tiny-emitter as a global event bus.
  * Other components can fire events eg. `EventBus.emit(EventBus.LOGIN)`
  * and listeners can subscribe with `EventBus.on(EventBus.LOGIN, function(evt) { ... })
  */
