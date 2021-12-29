@@ -6,7 +6,7 @@
 			<button type="button" class="btn btn-primary" @click="devLoginAdmin">
 				<i class="fas fa-shield-alt"></i> {{ $t("DevLoginAdmin") }}
 			</button>
-			<button type="button" class="btn btn-primary ml-3" @click="devLoginMember">
+			<button type="button" class="btn btn-primary ms-3" @click="devLoginMember">
 				{{ $t("DevLoginMember") }}
 			</button>
 		</div>

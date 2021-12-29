@@ -17,7 +17,7 @@
 			</liquido-input>
 
 			<div class="d-flex justify-content-between align-items-center">
-				<small class="ml-1">
+				<small class="ms-1">
 					<a href="#" @click="cancelCreatePoll()">{{ $t("Cancel") }}</a>
 				</small>
 				<b-button

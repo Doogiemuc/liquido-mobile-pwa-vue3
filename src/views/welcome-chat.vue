@@ -112,7 +112,7 @@
 					/>
 
 					<div class="d-flex justify-content-between align-items-end">
-						<small :class="{ invisible: flowState !== 10 }" class="ml-1">
+						<small :class="{ invisible: flowState !== 10 }" class="ms-1">
 							<a href="#" tabindex="4" @click="cancelJoinTeam()">{{ $t("Cancel") }}</a>
 						</small>
 						<b-button
@@ -196,7 +196,7 @@
 					<small class="ml-1">{{ $t("youWillBecomeAdmin") }}</small>
 
 					<div class="d-flex justify-content-between align-items-center mt-3">
-						<small :class="{ invisible: flowState !== 20 }" class="ml-1">
+						<small :class="{ invisible: flowState !== 20 }" class="ms-1">
 							<a href="#" tabindex="4" @click="cancelCreateNewTeam()">{{ $t("Cancel") }}</a>
 						</small>
 						<b-button
