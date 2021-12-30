@@ -74,7 +74,7 @@ const globalTranslations = {
 		Finished: "Abgeschlossen",
 
 		NetworkOffline: "Du bist offline. Bitte schalte dein WLAN ein.",
-		BackendNotReachable: "Ich kann den LIQUIDO Server gerade nicht erreichen. Bitte veruche es später noch einmal.",
+		BackendNotReachable: "Ich kann den LIQUIDO Server gerade nicht erreichen. Bitte versuche es später noch einmal.",
 	},
 }
 

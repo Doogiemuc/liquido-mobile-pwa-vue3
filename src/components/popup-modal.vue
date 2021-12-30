@@ -25,7 +25,7 @@
 				<div class="modal-footer">
 					<slot name="modal-footer">
 						<button v-if="secondaryButtonText" id="modalSecondaryButton" type="button" class="btn btn-secondary flex-grow-1" @click="clickSecondary">{{ secondaryButtonText }}</button>
-						<button id="modalPrimaryButton" type="button" class="btn btn-primary flex-grow-1" data-dismiss="modal" @click="clickPrimary">
+						<button id="modalPrimaryButton" type="button" class="btn btn-primary flex-grow-1" data-bs-dismiss="modal" @click="clickPrimary">
 							{{ primaryButtonText }}
 						</button>
 					</slot>
@@ -67,6 +67,7 @@ export default {
 		primaryButtonText: { type: String, required: false, default: function() { return "Ok" } },
 		secondaryButtonText: { type: String, required: false, default: undefined },
 	},
+	emits: ["clickPrimary", "clickSecondary"],
 	data() {
 		return {
 			// the (unmutuable!) props set the initial values. These data values are then used in templates and can be updated.

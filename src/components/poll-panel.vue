@@ -166,7 +166,10 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+
+<style lang="scss">
+/* BUG: this does not work when style is "scoped"
+
 /* size of proposal image */
 $proposal_img_size: 32px;
 
@@ -175,15 +178,17 @@ $proposal_img_size: 32px;
 		cursor: pointer;
 	}
 
-	.card-header {
-		margin: 0;
-		padding: 0;
+	.card-header {   
 		border-bottom: none;
+		margin: 0;
+		padding: 0.25rem 10px;
 		.poll-panel-title {
 			// same as .law-title
+			font-family: 'Libre Baskerville', serif;
 			color: $primary;
-			margin: 8px 10px;
-			font-size: 1.0rem !important;
+			padding: 0;
+			margin: 0;
+			font-size: 1.2rem !important;  // Need more space for longer poll titles
 			font-weight: bold;
 			white-space: nowrap;
 			overflow: hidden;
@@ -231,7 +236,7 @@ $proposal_img_size: 32px;
 		.law-title {
 			margin-bottom: 0px;
 			padding: 0;
-			font-size: 0.8rem !important;
+			font-size: 1rem !important;
 			line-height: 18px;
 			white-space: nowrap;
 			overflow: hidden;

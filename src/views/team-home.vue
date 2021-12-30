@@ -20,19 +20,23 @@
 
 		<div class="clearfix" />
 
-		<b-card-group id="memberCards" class="mb-3" deck>
-			<b-card v-for="admin in team.admins" :key="admin.id" :img-src="getImgUrl(admin.picture)" img-alt="Avatar" img-top>
-				<i class="fas fa-shield-alt admin-shield"></i>
-				<b-card-text class="text-center">
-					<b>{{ admin.name }}</b>
-				</b-card-text>
-			</b-card>
-			<b-card v-for="member in team.members" :key="member.id" :img-src="getImgUrl(member.picture)" img-alt="Avatar" img-top>
-				<b-card-text class="text-center">
-					{{ member.name }}
-				</b-card-text>
-			</b-card>
-		</b-card-group>
+		<div id="memberCards" class="row row-cols-3 g-2 mb-3">
+			<div class="col" v-for="admin in team.admins" :key="admin.id">
+				<b-card :img-src="getImgUrl(admin.picture)" img-alt="Avatar" img-top>
+					<i class="fas fa-shield-alt admin-shield"></i>
+					<b-card-text>
+						<b>{{ admin.name }}</b>
+					</b-card-text>
+				</b-card>
+			</div>
+			<div class="col" v-for="member in team.members" :key="member.id">
+				<b-card :img-src="getImgUrl(member.picture)" img-alt="Avatar" img-top>
+					<b-card-text>
+						{{ member.name }}
+					</b-card-text>
+				</b-card>
+			</div>
+		</div>
 
 		<div v-if="isAdmin" class="alert alert-admin">
 			<i class="fas fa-shield-alt float-right"></i>
@@ -96,7 +100,7 @@ export default {
 				gotoPolls: "Zu euren Abstimmungen",
 				inviteNewMembers: "Teammitglieder einladen",
 				inviteLink: "Einladunglink teilen:",
-				inviteCode: "Einladungscode eingeben:",
+				inviteCode: "Einladungscode:",
 				qrCode: "QR Code scannen:",
 				logout: "Logout"
 			},
@@ -175,6 +179,16 @@ export default {
 	right: 5px;
 }
 
+
+#memberCards {
+	.card-body {
+		margin: 0;
+		padding: 0;
+		text-align: center;
+	}
+}
+
+/*
 @media (min-width: 320px) {
 	#memberCards {
 		// Keep three columns down to 320px
@@ -187,9 +201,6 @@ export default {
     flex-flow: row wrap;
 		justify-content: space-between;
 		.card {
-			width: 30%;
-			max-width: 30%;
-			min-width: 30%;
 			margin: 0 0 20px 0;
 			.card-body {
 				padding: 5px;
@@ -197,12 +208,14 @@ export default {
 		}
 	}
 }
+*/
 
+//TODO: This needs to be corrected globally for every card! */
 #teamInfo {
 	.card-header {
 		padding: 10px;
 		h2 {
-			font-size: 1.2rem;
+			font-size: 1.4rem;
 			margin: 0;
 		}
 	}
@@ -210,4 +223,5 @@ export default {
 		padding: 10px;
 	}
 }
+
 </style>
