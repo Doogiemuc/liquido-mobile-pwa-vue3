@@ -4,6 +4,7 @@ import loginPage from "@/views/login-page"
 import teamHome from "@/views/team-home"
 import pollsPage from "@/views/polls"
 import showPoll from "@/views/poll-show"
+import api from "@/services/liquido-graphql-client"
 //import config from "config"
 const log = require("loglevel")
 if (process.env.NODE_ENV === "development") log.enableAll()
@@ -128,11 +129,11 @@ const IS_ANONYMOUS = -99
  * @return A Promise that will resolve to the login data or reject when no or invalid JWT.
  */
 async function tryToAuthenticate() {
-	if (router.app.$api.isAuthenticated()) return Promise.resolve(IS_ALREADY_AUTHENTICATED);  // although JWT could be expired, but this way we save one backend call
-	let jwt = localStorage.getItem(router.app.$api.LIQUIDO_JWT_KEY);
+	if (api.isAuthenticated()) return Promise.resolve(IS_ALREADY_AUTHENTICATED);  // although JWT could be expired, but this way we save one backend call
+	let jwt = localStorage.getItem(api.LIQUIDO_JWT_KEY);
 	if (jwt) {
 		console.log("Attempting to login with JWT from localStorage ...", jwt)
-		return router.app.$api.loginWithJwt(jwt)
+		return api.loginWithJwt(jwt)
 			.then(res => {
 				log.info("Successfully authenticated from localStorage")
 				return Promise.resolve(res)
@@ -140,10 +141,10 @@ async function tryToAuthenticate() {
 			.catch(err => {
 				// return liquido error code, eg. JWT_TOKEN_EXPIRED or JWT_TOKEN_INVALID
 				let errCode = err.response &&	err.response.data ? err.response.data.liquidoErrorCode : -1
-				if (errCode === router.app.$api.err.JWT_TOKEN_EXPIRED || errCode === router.app.$api.err.JWT_TOKEN_INVALID) {
+				if (errCode === api.err.JWT_TOKEN_EXPIRED || errCode === api.err.JWT_TOKEN_INVALID) {
 					//TODO: Can I refresh the token in this case? Or should I forward returning user to login page?
 					log.debug("Removing expired JWT from localStorage")
-					router.app.$api.logout()
+					api.logout()
 				} else {
 					log.error("Cannot login with JWT", err)
 				}
@@ -172,26 +173,28 @@ async function tryToAuthenticate() {
  *   IF route is public then continue
  *   ELSE IF he navigates to "/" forward him to "/welcome"
  *   ELSE forward to "/login"
+ * 
+ * VUE Router next (for VUE 3)
+ * https://next.router.vuejs.org/guide/advanced/navigation-guards.html#navigation-guards
  */
-router.beforeEach((routeTo, routeFrom, next) => {
-	//Keep in mind that next() must exactly be called once in this method.
+router.beforeEach(async (routeTo, routeFrom) => {
 	//log.debug("beforeEach ENTER", routeFrom.path, "=>", routeTo.path)
-	tryToAuthenticate().then(() => {
+	return tryToAuthenticate().then(() => {
 		log.debug("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
 		if (routeTo.path === "/" || routeTo.path === "/index.html") {
-			next({name: "teamHome"})
+			return {name: "teamHome"}  
 		} else {
-			next()
+			return true // allow navigation
 		}
 	}).catch(() => {
 		if (process.env.NODE_ENV === "development")
 			log.debug("vue-router: anonymous", routeFrom.path, "=>", routeTo.path)
 		if (routeTo.meta.public) {
-			next()
+			return true
 		} else if (routeTo.path === "/" || routeTo.path === "/index.html") {
-			next({name: "welcome"})
+			return {name: "welcome"}
 		}	else {		
-			next({name: "login"})
+			return {name: "login"}
 		}
 	})
 })
