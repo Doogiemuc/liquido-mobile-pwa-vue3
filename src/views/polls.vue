@@ -18,11 +18,11 @@
 				/>
 			</transition-group>
 
-			<p v-if="allPolls.length === 0 && !loading" v-html="$t('noPollYet')" />
+			<p v-if="allPolls.length === 0 && !loading" class="text-center" v-html="$t('noPollYet')" />
 
 			<p v-if="searchResultIsEmpty" class="text-center" @click="clearSearch" v-html="$t('noPollsMatchSearch')" />
 
-			<div class="search-wrapper">
+			<div v-if="allPolls.length > 3" class="search-wrapper">
 				<input id="searchInput" v-model="searchQuery" type="text" :placeholder="$t('Search')">
 				<i class="fas fa-search search-icon"></i>
 			</div>
@@ -172,7 +172,7 @@ export default {
 				
 		},
 		searchResultIsEmpty() {
-			return this.filteredPolls.length === 0 // && this.searchQuery && this.searchQuery.trim().length > 0
+			return this.allPolls.length >0 && this.filteredPolls.length === 0 && this.searchQuery && this.searchQuery.trim().length > 0
 		},
 		hasPollInElaboration() {
 			return api.getCachedPolls("ELABORATION").length > 0
@@ -211,7 +211,12 @@ export default {
 	methods: {
 		/** set (or clear) the current pollStatusFilter */
 		setPollFilter(newFilterValue) {
-			if (newFilterValue === undefined || newFilterValue.match(/ELABORATION|VOTING|FINISHED/)) {
+			console.log("setPollFilter", newFilterValue)
+			if (newFilterValue === "ELABORATION" || 
+					newFilterValue === "VOTING" || 
+					newFilterValue === "FINISHED" ||
+					newFilterValue === undefined) 
+			{
 				this.pollStatusFilter = newFilterValue
 			}
 		},
@@ -277,6 +282,7 @@ export default {
 .poll-list {
 	margin: 0 -3px;
 	padding: 10px;
+	color: $secondary;
 	background-color: $poll-list-background;
 }
 .poll-panel {
@@ -284,15 +290,14 @@ export default {
 	max-height: 300px;
 	&:not(:last-child) {
 		margin-bottom: 1rem;
-	}
-	
+	}	
 }
 
 /* Vue list transitions */
-.poll-list-enter, .poll-list-leave-to {
+.poll-list-leave-to {
 	opacity: 0;
 	max-height: 0;
-	margin-bottom: 0;
+	margin-bottom: 0rem !important;
 }
 /*
 .poll-list-leave-active {

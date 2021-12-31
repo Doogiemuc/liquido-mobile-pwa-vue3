@@ -145,7 +145,7 @@ export default {
 		 */
 		forceValidateOn: { type: String, required: false, default: "blur" },
 	},
-	emits: ["update:modelValue"],  // this event is emitted, when the value of the inner <input> changes.
+	emits: ["update:modelValue", "update:state", "keyup", "blur"],  // this event is emitted, when the value of the inner <input> changes.
 	data() {
 		return {
 			/**
