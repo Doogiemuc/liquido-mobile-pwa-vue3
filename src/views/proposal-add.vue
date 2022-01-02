@@ -5,7 +5,7 @@
 		</h2>
 
 		<div v-if="!poll.proposals || poll.proposals.length == 0" class="alert liquido-info mb-3">
-			<i class="fas fa-info-circle float-right" />
+			<i class="fas fa-info-circle float-end" />
 			<p v-html="$t('noProposalYet', {pollTitle: poll.title})" />
 		</div>
 

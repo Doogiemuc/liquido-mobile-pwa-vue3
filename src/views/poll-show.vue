@@ -12,19 +12,19 @@
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
 			<div v-html="$t('cannotFindPoll', {pollId: pollId})" />
-			<b-button variant="primary" class="float-right" @click="gotoPolls()">
+			<b-button variant="primary" class="float-end" @click="gotoPolls()">
 				{{ $t("Back") }}
 			</b-button>
 		</div>
 
 		<div v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" class="alert liquido-info mb-3">
-			<i class="fas fa-info-circle float-right" />
+			<i class="fas fa-info-circle float-end" />
 			<p v-html="$t('pollInElaborationInfo')" />
 		</div>
 
 		<div v-if="showAddProposal" class="alert liquido-info mb-3">
 			<p v-html="$t('addProposalInfo')" />
-			<b-button id="addProposalButton" variant="primary" class="float-right" @click="clickAddProposal()">
+			<b-button id="addProposalButton" variant="primary" class="float-end" @click="clickAddProposal()">
 				{{ $t("addProposal") }}
 				<i class="fas fa-angle-double-right" />
 			</b-button>
@@ -33,7 +33,7 @@
 
 		<div v-if="poll.status === 'VOTING' && !poll.usersBallot" class="alert liquido-info mb-3">
 			<p v-html="$t('votingPhaseInfo')" />
-			<b-button id="goToCastVoteButton" variant="primary" class="float-right" @click="clickCastVote()">
+			<b-button id="goToCastVoteButton" variant="primary" class="float-end" @click="clickCastVote()">
 				<i class="fas fa-person-booth" />
 				{{ $t("goToCastVote") }}
 				<i class="fas fa-angle-double-right" />
@@ -43,7 +43,7 @@
 
 		<div v-if="poll.status === 'VOTING' && poll.usersBallot" class="alert liquido-info mb-3">
 			<p v-html="$t('alreadyVotedInfo')" />
-			<b-button variant="primary" class="float-right" @click="clickCastVote()">
+			<b-button variant="primary" class="float-end" @click="clickCastVote()">
 				<i class="fas fa-person-booth" />
 				{{ $t("editOwnVote") }}
 				<i class="fas fa-angle-double-right" />
@@ -60,9 +60,9 @@
 		</div>
 
 		<div v-if="showStartVotingPhase" class="alert alert-admin mb-3">
-			<i class="fas fa-shield-alt float-right"></i>
+			<i class="fas fa-shield-alt float-end"></i>
 			<p v-html="$t('startVotingPhaseInfo')" />
-			<b-button id="startVoteButton" :disabled="startVoteLoading" variant="primary" class="float-right" @click="clickStartVote()">
+			<b-button id="startVoteButton" :disabled="startVoteLoading" variant="primary" class="float-end" @click="clickStartVote()">
 				<b-spinner v-if="startVoteLoading" small />
 				<i v-else class="fas fa-user-shield" />
 				{{ $t("startVotingPhase") }}
@@ -71,9 +71,9 @@
 		<div class="clearfix mb-3" />
 
 		<div v-if="showFinishVotingPhase" class="alert alert-admin mb-3">
-			<i class="fas fa-shield-alt float-right"></i>
+			<i class="fas fa-shield-alt float-end"></i>
 			<p v-html="$t('finishVotingPhaseInfo', {numBallots: poll.numBallots})" />
-			<b-button id="finishVoteButton" :disabled="finishVoteLoading" variant="primary" class="float-right" @click="clickFinishVote()">
+			<b-button id="finishVoteButton" :disabled="finishVoteLoading" variant="primary" class="float-end" @click="clickFinishVote()">
 				<b-spinner v-if="finishVoteLoading" small />
 				<i v-else class="fas fa-user-shield" />
 				{{ $t("finishVotingPhase") }}

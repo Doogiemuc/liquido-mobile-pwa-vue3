@@ -50,8 +50,13 @@ export default {
 
 		// Cannot simply do this with a computed property, because this.$api.isAuthenticated is not reactive.
 		//TODO: Can we make it reactive? maybe with Vue.$set ?
-		EventBus.on(EventBus.LOGIN,  () => this.isAuthenticated = true)
-		EventBus.on(EventBus.LOGOUT, () => this.isAuthenticated = false)
+		console.log("Mounted")
+		EventBus.on(EventBus.Event.LOGIN,  () => {
+			this.isAuthenticated = true
+		})
+		EventBus.on(EventBus.Event.LOGOUT, () => {
+			this.isAuthenticated = false
+		})
 	},
 	methods: {
     /* DEPRECATED

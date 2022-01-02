@@ -24,7 +24,7 @@
 					id="createPollButton"
 					:disabled="createPollButtonDisabled"
 					variant="primary"
-					class="float-right"
+					class="float-end"
 					@click="clickCreateNewPoll()"
 				>
 					{{ $t("create") }}

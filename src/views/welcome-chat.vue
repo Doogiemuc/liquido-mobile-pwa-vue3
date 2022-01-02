@@ -135,7 +135,7 @@
 				<b-button
 					id="joinedTeamGoToTeamButton"
 					variant="primary"
-					class="float-right mb-1"
+					class="float-end mb-1"
 					@click="gotoTeam"
 				>
 					{{ $t("gotoTeam") }}
@@ -234,7 +234,7 @@
 				<b-button
 					id="gotoTeamButton"
 					variant="primary"
-					class="float-right mb-3"
+					class="float-end mb-3"
 					@click="gotoTeam"
 				>
 					<i class="fas fa-users" />
@@ -248,7 +248,7 @@
 				<b-button
 					id="gotoCreatePollButton"
 					variant="primary"
-					class="float-right mb-3"
+					class="float-end mb-3"
 					@click="gotoCreatePoll()"
 				>
 					<i class="fas fa-user-shield" />

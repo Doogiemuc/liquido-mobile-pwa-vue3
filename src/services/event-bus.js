@@ -1,8 +1,8 @@
 /**
  * Event-bus is a very lightweight VUEX.
  * Here we simply use tiny-emitter as a global event bus.
- * Other components can fire events eg. `EventBus.emit(EventBus.LOGIN)`
- * and listeners can subscribe with `EventBus.on(EventBus.LOGIN, function(evt) { ... })
+ * Other components can fire events eg. `EventBus.emit(EventBus.Event.LOGIN)`
+ * and listeners can subscribe with `EventBus.on(EventBus.Event.LOGIN, function(evt) { ... })
  */
 
  import Emitter from 'tiny-emitter'
@@ -19,3 +19,6 @@ eventBus.Event = {
 }
 
 export default eventBus
+
+
+//MAYBE: This could also be implemented with the new VUE3 provide/inject mechanism: https://v3.vuejs.org/guide/component-provide-inject.html

@@ -19,20 +19,21 @@
 				id="myDraggable"
 				v-model="proposalsInBallot"
 				class="draggable"
+				item-key="id"
 				:disabled="loading || castVoteLoading"
 				:swap-threshold="0.5"
 				:delay="40"
 				:animation="500"
 				:can-scroll-x="false"
 			>
-				<law-panel
-					v-for="(prop) in proposalsInBallot"
-					ref="proposalInBallot"
-					:key="prop.id"
-					:law="prop"
-					:read-only="true"
-					:collapse="true"
-				/>
+				<template #item="{element}">
+					<law-panel
+						ref="proposalInBallot"
+						:law="element"
+						:read-only="true"
+						:collapse="true"
+					/>
+				</template>
 			</draggable>
 			<div class="collapse-icon-wrapper">
 				<a
@@ -56,7 +57,7 @@
 		</div>
 
 		<div v-if="isUpdatableBallot" id="isUpdateableBallotInfo" class="alert liquido-info">
-			<i class="fas fa-info-circle float-right" />
+			<i class="fas fa-info-circle float-end" />
 			<p v-html="$t('updateBallotInfo')"></p>
 		</div>
 
@@ -98,7 +99,7 @@
 		></popup-modal>
 		
 		<div class="alert liquido-info">
-			<i class="fas fa-info-circle float-right" />
+			<i class="fas fa-info-circle float-end" />
 			<p v-html="$t('castVoteInfo')"></p>
 		</div>
 	</div>
@@ -109,9 +110,8 @@ import config from "config"
 import lawPanel from "@/components/law-panel"
 import popupModal from "@/components/popup-modal"
 import api from "@/services/liquido-graphql-client"
-//not used anymore:   import Sortable from 'sortablejs'
-import draggable from "vuedraggable"
-import _ from "lodash"
+import draggable from "vuedraggable"  // next
+import _ from "lodash"  // for cloneDeep
 const log = require("loglevel")
 
 export default {
@@ -206,7 +206,7 @@ export default {
 
 		/**
 		 * TODO: when the user has already voted, then sort the proposals in this poll according to the user's vote.
-		 *
+		
 		let setVoteOrder = () => {
 			let proposalsById = {}
 			this.poll.proposals.forEach(prop => proposalsById[prop.id] = prop)
@@ -219,7 +219,9 @@ export default {
 			this.loading = false
 		}
 		*/
+	
 
+		
 		let delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 		
 		/**
@@ -228,39 +230,48 @@ export default {
      * @param {Number} b start value
      * @param {Number} c value delta (b + c = end value)
      * @param {Number} d final value of time at the end, e.g. 1
-		 */
+		 */ 
 		function easeOutCubic (t, b, c, d) {
 			return c * ((t = t / d - 1) * t * t + 1) + b;
 		}
 
 		/**
 		 * If this is the first time that the user votes at all,
-		 * then show a little UX animation as a hint, that proposals can be dragged.
+		 * then show a little UX animation as a hint 
+		 * that proposals can be dragged.
+		 * 
+		 * Move the top proposal in a cubic circular motion to the bottom.
 		 */
 		let showDraggingHint = async function() {
 			let element = document.querySelector("#myDraggable > div")
 			element.classList.add("sortable-chosen")
-			const delayMs = 10
-			const dragHeight = element.height() * 3
-			const dragWidth  = 15;
-			const steps = dragHeight / 2
-			for (let time = 0; time < 1; time = time + 1/steps) {
-				let i  = easeOutCubic(time, 0, 1, 1)
-				let dx = Math.sin(i * Math.PI) * 20
-				let dy = i * dragHeight
-				element.offset({ top: element.offsetTop + dy, left: element.offsetLeft + dx })
-				await delay(delayMs)
-			}
-			for (let time = 1; time >= 0; time = time - 1/steps) {
+			const delayMs = 5
+			const dragHeight = element.clientHeight * 2
+			const dragWidth  = dragHeight / 10
+			const step = 1 / dragHeight
+			const startX = element.style.left
+			const startY = element.style.top
+			for (let time = 0; time < 1; time += step) {
 				let i  = easeOutCubic(time, 0, 1, 1)
 				let dx = Math.sin(i * Math.PI) * dragWidth
 				let dy = i * dragHeight
-				element.offset({ top: element.offsetTop + dy, left: element.offsetLeft + dx })
+				element.style.top = dy + "px"
+				element.style.left = dx + "px"
 				await delay(delayMs)
 			}
-			//element.offset(elemPos)		
+			for (let time = 1; time >= 0; time -= step) {
+				let i  = easeOutCubic(time, 0, 1, 1)
+				let dx = Math.sin(i * Math.PI) * dragWidth
+				let dy = i * dragHeight
+				element.style.top = dy + "px"
+				element.style.left = dx + "px"
+				await delay(delayMs)
+			}
+			element.style.top = startY
+			element.style.left = startX
 			element.classList.remove("sortable-chosen")
 		}
+		
 
 		loadPoll()
 			.then(getVoterToken)

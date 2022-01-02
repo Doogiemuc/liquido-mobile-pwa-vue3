@@ -10,7 +10,7 @@
 				id="gotoPollsButton"
 				variant="primary"
 				size="m"
-				class="float-right mb-3"
+				class="float-end mb-3"
 				@click="gotoPolls()"
 			>
 				{{ $t("gotoPolls") }}
@@ -39,7 +39,7 @@
 		</div>
 
 		<div v-if="isAdmin" class="alert alert-admin">
-			<i class="fas fa-shield-alt float-right"></i>
+			<i class="fas fa-shield-alt float-end"></i>
 			<p v-html="$t('introForOneAdmin')"></p>
 		</div>
 
@@ -82,6 +82,8 @@
 import config from "config"
 import QRCode from "qrcode"
 import api from "@/services/liquido-graphql-client"
+
+//TODO: If there are more than 15 members in a team, then show a shorter list
 
 export default {
 	i18n: {
@@ -181,6 +183,7 @@ export default {
 
 
 #memberCards {
+	width: 100%;
 	.card-body {
 		margin: 0;
 		padding: 0;
@@ -188,27 +191,6 @@ export default {
 	}
 }
 
-/*
-@media (min-width: 320px) {
-	#memberCards {
-		// Keep three columns down to 320px
-		display: -ms-flexbox;
-    display: -webkit-box;
-    display: flex;
-    -ms-flex-flow: row wrap;
-    -webkit-box-orient: horizontal;
-    -webkit-box-direction: normal;
-    flex-flow: row wrap;
-		justify-content: space-between;
-		.card {
-			margin: 0 0 20px 0;
-			.card-body {
-				padding: 5px;
-			}
-		}
-	}
-}
-*/
 
 //TODO: This needs to be corrected globally for every card! */
 #teamInfo {

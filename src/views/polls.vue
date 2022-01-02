@@ -51,9 +51,11 @@
 		</div>
 	
 		<div v-if="userIsAdmin" class="my-5 alert alert-admin">
-			<i class="fas fa-shield-alt float-right"></i>
-			{{ $t('onlyAdminCanCreateNewPolls') }}
-			<b-button variant="primary" class="float-right" @click="gotoCreatePoll()">
+			<p>
+				<i class="fas fa-shield-alt float-end"></i>
+				{{ $t('onlyAdminCanCreateNewPolls') }}
+			</p>
+			<b-button variant="primary" class="float-end" @click="gotoCreatePoll()">
 				<i class="fas fa-shield-alt" /> {{ $t("createPoll") }} <i class="fas fa-angle-double-right" />
 			</b-button>
 		</div>
@@ -96,7 +98,7 @@ export default {
 				pollsInVotingInfo: "In diesen Abstimmungen kannst du jetzt deine Stimme abgeben.",
 				finishedPollsInfo: "Diese Abstimmung sind abgschlossen.",
 				noPollYet: "Euer Admin hat bisher noch keine Abstimmung erstellt.",
-				noPollsMatchSearch: "- Keine Treffer für diese Suche -",
+				noPollsMatchSearch: "- Keine Treffer -",
 				noPollsInElaboration: "Aktuell gibt es gerade keine Abstimmungen mit Wahlvorschläge die noch diskutiert werden können.",
 				noPollsInVoting: "Es läuft gerade keine Abstimmungen, in der du deine Stimmen abgegeben könntest.",
 				noFinishedPolls: "In eurem Team gibt es bisher noch keine abgeschlossenen Abstimmungen.",
@@ -172,7 +174,7 @@ export default {
 				
 		},
 		searchResultIsEmpty() {
-			return this.allPolls.length >0 && this.filteredPolls.length === 0 && this.searchQuery && this.searchQuery.trim().length > 0
+			return this.allPolls.length > 0 && this.filteredPolls.length === 0 /* && this.searchQuery && this.searchQuery.trim().length > 0 */
 		},
 		hasPollInElaboration() {
 			return api.getCachedPolls("ELABORATION").length > 0
@@ -190,9 +192,9 @@ export default {
 			this.pollStatusFilter = this.status
 		}
 		// or status can be changed with an event (navbar-bottom does that)
-		EventBus.on(EventBus.SET_POLLS_FILTER, (newFilterValue) => this.setPollFilter(newFilterValue))
-		EventBus.on(EventBus.POLL_LOADED, () => this.pollsChanged())
-		EventBus.on(EventBus.POLLS_LOADED, () => this.pollsChanged())  // event param "polls" is not used here
+		EventBus.on(EventBus.Event.SET_POLLS_FILTER, (newFilterValue) => this.setPollFilter(newFilterValue))
+		EventBus.on(EventBus.Event.POLL_LOADED, () => this.pollsChanged())
+		EventBus.on(EventBus.Event.POLLS_LOADED, () => this.pollsChanged())  // event param "polls" is not used here
 
 		// update polls in cache when navigating to this page
 		this.loading = true

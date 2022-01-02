@@ -42,7 +42,7 @@ export default {
 	},
 	data() {
 		return {
-			collapsed: this.collapse  // switch for classes
+			collapsed: this.collapse			// this.collapsed  will toggle the "collapse-law-panel" CSS class
 		}
 	},
 	computed: {
@@ -68,9 +68,6 @@ export default {
 					return "fas fa-university"
 			}
 		},
-	},
-	mounted() {
-		//if (!this.expanded) this.toggleCollapse()
 	},
 	methods: {
 		formatDate(dateVal) {

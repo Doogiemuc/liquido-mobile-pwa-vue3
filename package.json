@@ -25,7 +25,7 @@
     "vue": "^3.0.0",
     "vue-i18n": "^9.2.0-beta.26",
     "vue-router": "^4.0.0-0",
-    "vuedraggable": "^2.24.3"
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.3.0",

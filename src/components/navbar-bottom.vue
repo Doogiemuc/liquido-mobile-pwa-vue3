@@ -104,17 +104,17 @@ export default {
 		}		
 	},
 	created() {
-		EventBus.on(EventBus.POLLS_LOADED, () => {  // MUST use arrow-function to keep `this` reference!
+		EventBus.on(EventBus.Event.POLLS_LOADED, () => {  // MUST use arrow-function to keep `this` reference!
 			// hack to make computed properties refresh their value
 			// https://logaretm.com/blog/2019-10-11-forcing-recomputation-of-computed-properties/
 			//console.log("POLLS_LOADED .........")
 			this.forceRefreshComputed++;  
 		})
-		EventBus.on(EventBus.POLL_LOADED, () => {
+		EventBus.on(EventBus.Event.POLL_LOADED, () => {
 			//console.log("navbar-bottom POLLS_LOADED")
 			this.forceRefreshComputed++;
 		})
-		EventBus.on(EventBus.LOGIN, () => {
+		EventBus.on(EventBus.Event.LOGIN, () => {
 			//console.log("LOGIN ====")
 			this.forceRefreshComputed++;
 		})
@@ -149,7 +149,7 @@ export default {
 						default:
 							this.selectedItem = -1
 					}
-					EventBus.emit(EventBus.SET_POLLS_FILTER, this.$route.params.status)
+					EventBus.emit(EventBus.Event.SET_POLLS_FILTER, this.$route.params.status)
 				}
 			}
 		},
@@ -173,11 +173,11 @@ export default {
 			let newPollStatusFilter = undefined
 			if (this.selectedItem === 0 || this.selectedItem === 1) {
 				this.selectedItem = -1  // filter for all types of polls when 
-				EventBus.emit(EventBus.SET_POLLS_FILTER, undefined)
+				EventBus.emit(EventBus.Event.SET_POLLS_FILTER, undefined)
 			} else {
 				this.selectedItem = 1
 				newPollStatusFilter = "ELABORATION"
-				EventBus.emit(EventBus.SET_POLLS_FILTER, "ELABORATION")
+				EventBus.emit(EventBus.Event.SET_POLLS_FILTER, "ELABORATION")
 			}
 			if (this.$route && this.$route.name !== "polls") {
 				this.$router.push({name: "polls", params: { status: newPollStatusFilter }})
@@ -188,11 +188,11 @@ export default {
 			let newPollStatusFilter = undefined
 			if (this.selectedItem === 0 || this.selectedItem === 2) {
 				this.selectedItem = -1
-				EventBus.emit(EventBus.SET_POLLS_FILTER, undefined)
+				EventBus.emit(EventBus.Event.SET_POLLS_FILTER, undefined)
 			} else {
 				this.selectedItem = 2
 				newPollStatusFilter = "VOTING"
-				EventBus.emit(EventBus.SET_POLLS_FILTER, "VOTING")
+				EventBus.emit(EventBus.Event.SET_POLLS_FILTER, "VOTING")
 			}
 			if (this.$route && this.$route.name !== "polls") {
 				this.$router.push({name: "polls", params: { status: newPollStatusFilter }})
@@ -203,11 +203,11 @@ export default {
 			let newPollStatusFilter = undefined
 			if (this.selectedItem === 0 || this.selectedItem === 3) {
 				this.selectedItem = -1
-				EventBus.emit(EventBus.SET_POLLS_FILTER, undefined)
+				EventBus.emit(EventBus.Event.SET_POLLS_FILTER, undefined)
 			} else {
 				this.selectedItem = 3
 				newPollStatusFilter = "FINISHED"
-				EventBus.emit(EventBus.SET_POLLS_FILTER, "FINISHED")
+				EventBus.emit(EventBus.Event.SET_POLLS_FILTER, "FINISHED")
 			}
 			if (this.$route && this.$route.name !== "polls") {
 				this.$router.push({name: "polls", params: { status: newPollStatusFilter }})
