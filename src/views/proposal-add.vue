@@ -107,13 +107,9 @@
 			ref="proposalSuccessfullyAddedModal"
 			type="success"
 			:message="$t('createdSuccessfully')"
+			:primaryButtonText="$t('gotoPoll')"
+			@clickPrimary="gotoPoll"			
 		>
-			<template #modal-footer>
-				<button id="modalPrimaryButton" type="button" class="btn btn-primary flex-grow-1" data-dismiss="modal" @click="gotoPoll">
-					{{ $t('gotoPoll') }}
-					<i class="fas fa-angle-double-right" />
-				</button>
-			</template>
 		</popup-modal>
 		
 		<popup-modal 
@@ -238,11 +234,13 @@ export default {
 
 		/** Save newly added proposal in backend. */
 		saveProposal() {
-			api.addProposal(this.poll.id, this.proposal.title, this.proposal.description, this.iconName)
-				.then(() => this.$refs["proposalSuccessfullyAddedModal"].show())
+			return api.addProposal(this.poll.id, this.proposal.title, this.proposal.description, this.chosenIcon)
+				.then(() => {
+					this.$refs["proposalSuccessfullyAddedModal"].showSuccess()
+				})
 				.catch(err => {
 					console.error("Cannot add proposal", err)
-					this.$refs["proposalAddErrorModal"].show()
+					this.$refs["proposalAddErrorModal"].showError()
 				})
 		},
 

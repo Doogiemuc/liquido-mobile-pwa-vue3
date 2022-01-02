@@ -190,7 +190,6 @@ let graphQlApi = {
 		localStorage.setItem(this.LIQUIDO_JWT_KEY, jwt)
 		axios.defaults.headers.common["Authorization"] = "Bearer " + jwt
 		console.debug("Login <"+user.email+"> into team '" + team.teamName  + "'")
-		console.log("======== ", EventBus.Event.LOGIN)
 		EventBus.emit(EventBus.Event.LOGIN, {team, user, jwt})
 	},
 
@@ -207,9 +206,11 @@ let graphQlApi = {
 
 	/* ===== Synchronous utility methods that do not call the backend ========= */
 
-	/** Check if there currently is an authenticated user. This is called quite often and needs to be sync and fast. */
+	/** 
+	 * Check if there currently is an authenticated user. 
+	 * This is called quite often and needs to be sync and fast!
+	 */
 	isAuthenticated() {
-		console.log("isAuthenticated => ", axios.defaults.headers.common["Authorization"] !== undefined && this.getCachedUser() !== undefined)
 		return axios.defaults.headers.common["Authorization"] !== undefined && this.getCachedUser() !== undefined
 	},
 

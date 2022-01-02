@@ -267,6 +267,7 @@ export default {
 	align-items: center;
 	justify-content: center;
 	margin: 1rem 0.5rem 0.5rem 0.5rem;
+	padding-top: 0.5rem;
 	color: $secondary;
 }
 #searchInput {

@@ -301,7 +301,6 @@ export default {
 						if(err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_TOKEN_INVALID) {
 							console.log("The entered auth token was invalid.")
 							this.tokenErrorMessage = this.$t("TokenInvalid")
-
 						} else
 						if(err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_MOBILE_NOT_FOUND) {
 							console.log("No user with that mobilephone.")

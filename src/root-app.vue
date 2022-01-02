@@ -112,7 +112,7 @@ export default {
 					this.$refs.rootPopupModal.showWarning(this.$t("BackendNotReachable"))
 				} else {
 					// This can only happen when backend is down while client clicks.
-					console.error("Backend is not reachable at all", res)  
+					console.error("No network. Backend is not reachable at all", res)  
 					this.$refs.rootPopupModal.showWarning(this.$t("NetworkOffline"))
 					//TODO: Do something: Show a general "offline" message (or implement an offline mode?)
 				}

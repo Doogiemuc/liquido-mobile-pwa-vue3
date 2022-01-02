@@ -52,7 +52,6 @@
  */
 
 import { Modal } from 'bootstrap'
-let myModal
 
 export default {
 	name: "PopupModal",
@@ -73,7 +72,8 @@ export default {
 			// the (unmutuable!) props set the initial values. These data values are then used in templates and can be updated.
 			myMessage: this.message,
 			myTitle: this.title,
-			myType: this.type
+			myType: this.type,
+			myModal: undefined  // reference to Bootstrap Modal instanace. Will be set in "mounted()"
 		}
 	},
 	computed: {
@@ -111,17 +111,17 @@ export default {
 		}
 	},
 	mounted() {
-		myModal = new Modal(document.getElementById(this.id), {
+		this.myModal = new Modal(document.getElementById(this.id), {
 			backdrop: "static"
 		})
 	},
 	methods: {
-		/** Show the modal. Can optionally pass a message. */
+		/** Show the modal. Can optionally pass a message and a title. */
 		show(msg, title, type) {
-			if (title) this.myTitle = title
 			if (msg) this.myMessage = msg
-			this.myType = type || "info"
-			myModal.show()
+			if (title) this.myTitle = title
+			if (type) this.myType = type
+			this.myModal.show()
 		},
 		showSuccess(msg, title) {
 			this.show(msg, title, "success")
@@ -136,13 +136,13 @@ export default {
 			this.show(msg, title, "warning")
 		},
 		hide() {
-			myModal.hide()
+			this.myModal.hide()
 		},
 		close() {   // be nice to your callers :-) offer hide and close wording
-			myModal.hide()
+			this.myModal.hide()
 		},
 		toggle() {
-			myModal.toggle()
+			this.myModal.toggle()
 		},
 		clickPrimary() {
 			this.$emit("clickPrimary", this.id)
