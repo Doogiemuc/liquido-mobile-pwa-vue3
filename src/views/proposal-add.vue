@@ -87,7 +87,7 @@
 				</li>
 			</ul>
 			<div class="card-body">
-				<div class="d-flex justify-content-between align-items-end">
+				<div class="d-flex justify-content-between align-items-center">
 					<span class="cancel-link" @click="goBack">{{ $t("Cancel") }}</span>
 					<button
 						id="saveProposalButton"

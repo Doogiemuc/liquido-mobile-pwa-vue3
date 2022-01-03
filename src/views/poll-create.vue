@@ -17,9 +17,7 @@
 			</liquido-input>
 
 			<div class="d-flex justify-content-between align-items-center">
-				<small class="ms-1">
-					<a href="#" @click="cancelCreatePoll()">{{ $t("Cancel") }}</a>
-				</small>
+				<span class="cancel-link" @click="goBack">{{ $t("Cancel") }}</span>
 				<b-button
 					id="createPollButton"
 					:disabled="createPollButtonDisabled"
@@ -84,8 +82,8 @@ export default {
 		isPollTitleValid(val) {
 			return val !== undefined && val !== null && val.trim().length >= config.pollTitleMinLength
 		},
-		cancelCreatePoll() {
-			this.$router.push("/polls")
+		goBack() {
+			this.$router.go(-1)
 		},
 		clickCreateNewPoll() {
 			return api.createPoll(this.pollTitle)
@@ -100,5 +98,10 @@ export default {
 </script>
 
 <style lang="scss">
-
+.cancel-link {
+	font-size: 12px;
+	//margin-left: 10px;
+	color: $secondary;
+	cursor: pointer;
+}
 </style>

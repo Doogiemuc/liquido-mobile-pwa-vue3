@@ -1,7 +1,10 @@
 <template>
 	<div id="rootApp">
 		<liquido-header ref="liquido-header" :back-link="backLink" />
-		<router-view id="appContent" class="router-view container-lg">
+		<router-view v-slot="{ Component }">
+			<transition :name="transitionName">
+				<component :is="Component" id="appContent" class="router-view container-lg"/>
+			</transition>
 		</router-view>
 		<navbar-bottom v-if="showNavbarBottom"></navbar-bottom>
 		<popup-modal 
@@ -96,6 +99,7 @@ export default {
 			if (fromOrder < toOrder) { this.transitionName = "slide-left" } else
 			if (fromOrder > toOrder) { this.transitionName = "slide-right"}
 			else { this.transitionName = "fade" }  // default is fade
+			console.log("transitionName", this.transitionName)
 		},
 	},
 	created() {
@@ -204,6 +208,8 @@ export default {
 .router-view {
 	transition: all 0.5s ease-in-out;
 }
+
+// Fade transtition
 .fade-enter,
 .fade-leave-to {
 	opacity: 0;
@@ -213,7 +219,8 @@ export default {
 	width: 100%;
 }
 
-.slide-left-enter,
+// slide-left and slide-right transitions
+.slide-left-enter-from,
 .slide-right-leave-to {
 	-webkit-transform: translate(100%, 0);
 	transform: translate(100%, 0);
@@ -224,11 +231,12 @@ export default {
 	width: 100%;
 }
 .slide-left-leave-to,
-.slide-right-enter {
+.slide-right-enter-from {
 	-webkit-transform: translate(-100%, 0);
 	transform: translate(-100%, 0);
 }
 
+/* slide-up  ... not used
 .slide-up-enter {
 	-webkit-transform: translate(0, 100%);
 	transform: translate(0, 100%);
@@ -241,5 +249,6 @@ export default {
 	-webkit-transform: translate(0, 0);
 	transform: translate(0, 0);
 }
+*/
 
 </style>
