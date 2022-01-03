@@ -49,7 +49,8 @@ button, [type="button"], [type="reset"], [type="submit"], input {
 
 /*
  * The outer wrapper of the Vue app
- * Need to be more CSS specific than bootstrap's default! So therefore MUTS wrap everything in #app 
+ * Need to be more CSS specific than bootstrap's default! 
+ * So therefore MUST wrap all our rules in id selector "#app"
  */
 #app {
 	margin: 0 auto;  
@@ -72,7 +73,7 @@ button, [type="button"], [type="reset"], [type="submit"], input {
 		background-color: $app-background;
 		
 		padding-top: 2.5rem;		// space behind liquido-header
-		padding-bottom: 100px;  // space behind navbar-bottom!
+		padding-bottom: 10px;   // On pages that show the navbar-bottom you need more padding at the bottom
 		padding-left: 10px;     // smaller than bootsraps default 15px. But still enough for iOS scrollbar.
 		padding-right: 10px;
 	}

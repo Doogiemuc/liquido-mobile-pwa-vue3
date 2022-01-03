@@ -451,7 +451,7 @@ export default {
 			}, mediumDelay)
 			window.setTimeout(() => {
 				this.flowState = 3
-				this.$root.scrollToBottom()
+				//this.$root.scrollToBottom()
 			}, smallDelay + mediumDelay)
 		},
 
@@ -596,8 +596,7 @@ export default {
 					this.flowState = 12
 					this.team = team
 					this.$nextTick(() => {
-						let headerHeight = this.$root.$refs["liquido-header"].offsetHeight
-						this.$root.scrollElemToTop("#joinedTeamBubble", headerHeight)
+						this.$root.scrollElemToTop(document.getElementById("joinedTeamBubble"))
 					})
 				})
 				.catch(err => {

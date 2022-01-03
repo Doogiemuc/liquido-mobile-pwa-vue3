@@ -198,6 +198,9 @@ export default {
 	},
 	mounted() {
 		this.$root.scrollToTop()
+
+		//TODO: When user is already logged in (JWT from local storage), THEN show a message. (User can jump to his team.)
+	
 	},
 	methods: {
 		/** Quickly login as an admin user. This is available as a button in the mobile UI when in DEV env.  */

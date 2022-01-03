@@ -45,12 +45,11 @@ export default {
 		},
 	},
 	mounted() {
-		// make header smaller when user scrolls down
+		//MAYBE: make header smaller when user scrolls down
 		//$("#app").scroll(this.transitionHeader)
 
 		// Cannot simply do this with a computed property, because this.$api.isAuthenticated is not reactive.
 		//TODO: Can we make it reactive? maybe with Vue.$set ?
-		console.log("Mounted")
 		EventBus.on(EventBus.Event.LOGIN,  () => {
 			this.isAuthenticated = true
 		})

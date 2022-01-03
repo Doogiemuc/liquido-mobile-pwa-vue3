@@ -21,5 +21,19 @@
 // Cypress.Commands.add("dismiss", { prevSubject: 'optional'}, (subject, options) => { ... })
 //
 //
-// -- This is will overwrite an existing command --
+// -- This will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+
+
+/**
+ * This can be used to login a given user.
+ * If you have a JWT, then you can directly use it:
+ * 
+ *     localStorage.setItem("LIQUIDO_JWT", jwt)
+ *     cy.visit("/")
+ */
+Cypress.Commands.add("devLogin", (email, teamName, token) => {
+	cy.visit("/devLogin?email="+email+"&teamName="+teamName+"&token="+token).then((res => {
+		console.log("Cypress command devLogin", res)
+	}))
+})

@@ -99,7 +99,6 @@ export default {
 			if (fromOrder < toOrder) { this.transitionName = "slide-left" } else
 			if (fromOrder > toOrder) { this.transitionName = "slide-right"}
 			else { this.transitionName = "fade" }  // default is fade
-			console.log("transitionName", this.transitionName)
 		},
 	},
 	created() {
@@ -135,6 +134,7 @@ export default {
 			if (startTime === undefined) startTime = timestamp
 			const elapsed = timestamp - startTime
 			obj[attr] = startValue + (finalValue - startValue) * (elapsed / durationMs)
+			console.log("animte", obj[attr])
 			if (elapsed < durationMs) {
 				window.requestAnimationFrame(timestamp => {
 					this.step(timestamp, obj, attr, startTime, startValue, finalValue, durationMs)
@@ -165,27 +165,25 @@ export default {
 		/** Animate scrolling to the very bottom of the page. */
 		scrollToBottom(durationMs = 1000) {
 			this.$nextTick(() => {
-				let appHeight = document.getElementById("app").offsetHeight
-				let elem = document.getElementById("app")
-				this.animate(elem, "scrollTop", appHeight, durationMs)
+				let appContentHeight = document.getElementById("appContent").offsetHeight
+				let appElem = document.getElementById("app")
+				this.animate(appElem, "scrollTop", appContentHeight, durationMs)
 			})
 		},
 
 		/**
 		 * scroll an HTML elemant right under the header
 		 * (as far up as possible, depending on content below the elem)
-		 * @param {String} elem JQuery selector for dom elem
-		 * @param {Number} margin margin below headerHeight in pixels (default 0)
+		 * @param {Object} elem the dom elem
+		 * @param {Number} durationMs duration of scroll animation (default = 500 ms)
 		 */
-		scrollElemToTop(elem) {
-			elem.scrollIntoView({ behavior: 'smooth' });
-			/* no more JQuery
-			let scrollTop = $("#app").scrollTop() + $(elem).offset().top - margin
-			this.$nextTick(() => {
-        console.log("TODO: scrollElemToTop not implemented yet")
-				$("html").animate({ scrollTop: scrollTop }, 1000)
-			})
-			*/
+		scrollElemToTop(elem, durationMs = 500) {
+			//This would exist, but not in Safari for iOS :-(  elem.scrollIntoView({ behavior: 'smooth' });
+			let headerHeight = document.getElementById("liquidoHeader").offsetHeight + 10
+			let appElem = document.getElementById("app")
+			let scrollTopFinalValue = elem.offsetTop - headerHeight
+			console.log("scrollElemToTop", elem, scrollTopFinalValue)
+			this.animate(appElem, "scrollTop", scrollTopFinalValue, durationMs)
 		},
 
 		/** Check if the bottom of elem is scrolled into view */
