@@ -2,7 +2,7 @@
 	<b-card :id="law.id" no-body class="law-panel" :class="{'collapse-law-panel' : collapsed}">
 		<div class="d-flex">
 			<div>
-				<img :src="'https://picsum.photos/seed/' + law.id + '/100'" alt="Law image" class="law-image">
+				<i class="fas fa-fw" :class="'fa-' + law.icon" />
 			</div>
 			<div class="d-flex flex-column text-truncate">
 				<h4 class="law-title">
@@ -18,7 +18,7 @@
 							}"
 							class="fa-thumbs-up"
 						/>
-						&nbsp;{{ law.numSupporters }}
+						&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
 					</div>
 				</div>
 			</div>
@@ -31,6 +31,10 @@
 </template>
 
 <script>
+
+// Law-panel is only used when single laws need to be shown in in cast-vote view! 
+// All other views use poll-panel!
+
 import moment from "moment"
 
 export default {

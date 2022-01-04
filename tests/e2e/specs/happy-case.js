@@ -241,21 +241,22 @@ context('Happy Case', () => {
 		
 		// AND our proposal that can be liked
 		cy.get('#gotoPollsButton').click()
-		cy.get('.proposal-header-text').contains(fix.proposalTitle).get('.like-button > .far').parent().as('likeButton')
-		
-		let numLikes = -999
-		cy.get('@likeButton')
-			// AND like button has no likes yet
-			.then($likeButton => {
-				numLikes = new Number($likeButton[0].textContent)
-				assert.isTrue(numLikes == 0, "Initial number of likes should be 0 here")
-			})
-			// WHEN clicking on the like button of our proposal
+
+		// I am still struggling to get used to thwat cypress commands yield.
+		// Here we need to use a special syntax of contains. (And find instead of children *sic*) 
+		// https://docs.cypress.io/api/commands/contains#Selector
+
+		// AND there are no likes yet
+		cy.contains('div.proposal-header-text', fix.proposalTitle).find('.numLikes')
+			.should('have.text', 0)
+
+			// WHEN clicking the like button
 			.click()
-			// THEN there should be exactly one more like
-			.then($likeButton => {
-				cy.wrap($likeButton).should('contain.text', numLikes + 1)
-			})
+
+		// THEN there should be exatly one like
+		// Bugfix. Need to fetch the element again, because VUE exchanged the DOM elememnt.
+		cy.contains('div.proposal-header-text', fix.proposalTitle).find('.numLikes')
+			.should('have.text', 1)
 	})
 
 	it("[Admin] Admin starts voting phase", function() {

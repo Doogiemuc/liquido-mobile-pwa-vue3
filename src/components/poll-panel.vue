@@ -29,7 +29,6 @@
 				<div class="proposal-header d-flex">
 					<div class="law-image">
 						<i class="fas fa-fw" :class="'fa-' + law.icon" />
-						<!--img :src="'https://picsum.photos/seed/' + law.id + '/100'" alt="Law image" class="law-image" -->
 					</div>
 					<div class="proposal-header-text d-flex flex-column text-truncate">
 						<h2 class="law-title">
@@ -37,10 +36,10 @@
 						</h2>
 						<div :class="lawSubtitleClasses(law)">
 							<div v-if="canLike(law)" class="like-button" @click.stop.prevent="clickLike(poll.id, law.id)">
-								<i class="far fa-thumbs-up" />&nbsp;{{ law.numSupporters }}
+								<i class="far fa-thumbs-up" />&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
 							</div>
 							<div v-else class="like-button" @click.stop.prevent="">
-								<i class="fas fa-thumbs-up" />&nbsp;{{ law.numSupporters }}
+								<i class="fas fa-thumbs-up" />&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
 							</div>
 							<div class="created-date">
 								<i class="far fa-clock" />&nbsp;{{ formatDate(law.createdAt) }}
