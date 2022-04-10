@@ -18,7 +18,7 @@
 			<liquido-input
 				id="mobilephoneInput"
 				v-model="mobilephone"
-        v-model.sync="mobilephoneInputState"
+        v-model:state="mobilephoneInputState"
 				type="mobilephone"
 				class="mb-3"
 				:label="$t('yourMobilephone')"
@@ -39,7 +39,7 @@
 				<liquido-input
 					id="authTokenInput"
 					v-model="authToken"
-          v-model.state="authTokenInputState"
+          v-model:state="authTokenInputState"
 					type="text"
 					placeholder="<123456>"
 					class="mb-3"
@@ -73,7 +73,7 @@
 			<liquido-input
 				id="loginEmailInput"
 				v-model="emailInput"
-				v-model.state="emailInputState"
+				v-model:state="emailInputState"
         type="email"
 				class="mb-3"
 				:label="$t('yourEMail')"
@@ -141,7 +141,7 @@ export default {
 				SendLink: "Link zuschicken",
 				emailPlaceholder: "info{'@'}domain.de",
 				emailInvalid: "E-Mail ungültig",
-				EmailSentSuccessfully: "Ok, die Email mit deinem Login Link wurde verschickt.",
+				EmailSentSuccessfully: "Ok, Email wurde verschickt. Klicke in der E-Mail auf den Login Link.",
 				CouldNotSendEmail: "Es gab ein Problem beim Verschicken der E-Mail. Bitte versuche es später noch einmal.",
 				UserWithThatEmailNotFound: "Tut mir leid, ich kenne niemanden mit dieser E-Mail Adresse. Möchtest du dich <a href='/welcome'>zuerst registrieren</a>?",
 
@@ -154,25 +154,26 @@ export default {
 	},
 	components: { liquidoInput },
 	props: {
+		// These props are set from URL parameters, e.g. when user logs in via the email link
 		email: { type: String, required: false, default: undefined },
-		teamName: { type: String, required: false, default: undefined },
+		emailToken: { type: String, required: false, default: undefined },		// one time token from email (calles "token=" in URL query!)
 	},
 	data() {
 		return {
 			// Login via email
 			emailInput: "",
-			emailInputState: null,		// synced states from liquido-inputs
+			emailInputState: null,					// synced states from liquido-inputs
 			emailSentSuccessfully: false,
 			emailErrorMessage: undefined,
 
 			// auth token (via SMS)
 			mobilephone: "",
-			authToken: undefined,
+			authToken: undefined,						// twilio authToken from SMS 
 			mobilephoneInputState: null,    // synced states from liquido-inputs
 			authTokenInputState: null,      // synced states from liquido-inputs
 			waitUntilNextRequestSecs: 0,    // Throttling: Only allow request auth token once every few seconds
-			tokenSentSuccessfully: false,  // token request returned success from backend. SMS should have been sent successfully
-			tokenErrorMessage: undefined,       // we show different error messages, depending on error code from backend
+			tokenSentSuccessfully: false,  	// token request returned success from backend. SMS should have been sent successfully
+			tokenErrorMessage: undefined,   // we show different error messages, depending on error code from backend
 
 			//TODO: count failed login attempts and then offer additional help
 		}
@@ -199,8 +200,12 @@ export default {
 	mounted() {
 		this.$root.scrollToTop()
 
+		// if email and token is passed, then log in user
+		if (this.email && this.token) {
+			this.loginWithEMailToken()
+		}
+
 		//TODO: When user is already logged in (JWT from local storage), THEN show a message. (User can jump to his team.)
-	
 	},
 	methods: {
 		/** Quickly login as an admin user. This is available as a button in the mobile UI when in DEV env.  */
@@ -219,11 +224,95 @@ export default {
 			}).catch(err => console.error("DevLogin Member failed!", err))
 		},
 
+		// =============== login via Twillio (SMS) authToken ==================
+
+		/** 
+		 * Request a on time token for authentication. 
+		 * Be nice to our backend API. We only allow this request once every n seconds.
+		 */
+		requestAuthToken() {
+			if (this.waitUntilNextRequestSecs > 0) return
+			this.waitUntilNextRequestSecs = REQUEST_THROTTLE_SECS
+
+			let requestThrottler = setInterval(() => {
+				if (this.waitUntilNextRequestSecs > 0) {
+					this.waitUntilNextRequestSecs--
+				} else {
+					clearInterval(requestThrottler)
+					this.waitUntilNextRequestSecs = 0
+				}
+			}, 1000);
+
+			api.logout()
+			this.authToken = undefined
+			this.tokenErrorMessage = undefined
+			this.emailErrorMessage = undefined
+			// send devLoginToken, so that beckend fakes the request and will not call Twilio
+			let devLoginToken = ["development", "local", "test"].includes(process.env.NODE_ENV) ? config.devLogin.token : undefined
+			console.debug("requestAuthToken for", this.mobilephone, devLoginToken)
+
+			api.requestAuthToken(this.mobilephone, devLoginToken)
+				.then(res => {
+					console.debug("Auth token requested successfull.", res)
+					this.tokenSentSuccessfully = true
+					this.tokenErrorMessage = undefined
+				})
+				.catch(err => {
+					if (err.response &&
+							err.response.data &&
+							err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_MOBILE_NOT_FOUND) {
+						this.waitUntilNextRequestSecs = 0
+						this.tokenSentSuccessfully = false
+						this.tokenErrorMessage = this.$t("MobilephoneNotFound")
+					} else {
+						console.error("Cannot requestAuthToken", err)
+						this.waitUntilNextRequestSecs = 1
+						this.tokenSentSuccessfully = false
+						this.tokenErrorMessage = this.$t("RequestAuthTokenError")
+					}
+				})
+		},
+
+		/**
+		 * Login with the autoToken that the user has received and
+		 * that he has manually entered. (2FA)
+		 */
+		loginWithAuthToken() {
+			this.tokenErrorMessage = undefined
+			api.loginWithAuthToken(this.mobilephone, this.authToken)
+				.then(() => {
+					this.$router.push({name: "teamHome"})
+				})
+				.catch(err => {
+					// Show a usefull, human readable error message that actually describes what happend
+					this.tokenSentSuccessfully = false
+					if (err.response &&	err.response.data) {
+						if(err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_MOBILE_NOT_FOUND) {
+							console.log("No user with that mobilephone.")
+							this.tokenErrorMessage = this.$t("TokenDoesNotBelongToMobilephone")
+						} else {
+							console.log("Cannot login with token. User is not authorized.")
+							this.tokenErrorMessage = this.$t("TokenInvalid") 
+						}
+					} else {
+						console.error("Something is wrong with our auth backend", err)
+						this.tokenErrorMessage = this.$t("TokenInvalid") 
+					}					
+				})
+		},
+
+
+
+		// ============== Login via Email link =================
+
+
 		/** Send a magic link that the user can login with for the next n hours. */
 		requestEmailToken() {
 			console.log("requestEmailToken")
 			if (this.emailInputState !== true) return  // When user presses return and input state is not yet valid
-			api.logout()  // delete any previously stored JWT
+			this.tokenErrorMessage = undefined
+			this.emailErrorMessage = undefined
+			api.logout()  					// delete any previously stored JWT
 			api.requestEmailToken(this.emailInput)
 				.then(() => {
 					console.log("Email login link sent successfully")
@@ -247,79 +336,28 @@ export default {
 				})
 		},
 
-		/** 
-		 * Request a on time token for authentication. 
-		 * Be nice to our backend API. We only allow this request once every n seconds.
+		/**
+		 * Login with authToken from E-Mail.
+		 * This is called directly, when query parameters are passed.
 		 */
-		requestAuthToken() {
-			if (this.waitUntilNextRequestSecs > 0) return
-			this.waitUntilNextRequestSecs = REQUEST_THROTTLE_SECS
-
-			let requestThrottler = setInterval(() => {
-				if (this.waitUntilNextRequestSecs > 0) {
-					this.waitUntilNextRequestSecs--
-				} else {
-					clearInterval(requestThrottler)
-					this.waitUntilNextRequestSecs = 0
-				}
-			}, 1000);
-
-			api.logout()
-			this.authToken = undefined
+		loginWithEMailToken() {
 			this.tokenErrorMessage = undefined
-			console.debug("requestAuthToken", this.mobilephone)
-
-			api.requestAuthToken(this.mobilephone)
-				.then(res => {
-					console.debug("Auth token requested successfull.", res)
-					this.tokenSentSuccessfully = true
-					this.tokenErrorMessage = undefined
-				})
-				.catch(err => {
-					if (err.response &&
-							err.response.data &&
-							err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_MOBILE_NOT_FOUND) {
-						this.waitUntilNextRequestSecs = 0
-						this.tokenSentSuccessfully = false
-						this.tokenErrorMessage = this.$t("MobilephoneNotFound")
-					} else {
-						console.error("Cannot requestAuthToken", err)
-						this.waitUntilNextRequestSecs = 1
-						this.tokenSentSuccessfully = false
-						this.tokenErrorMessage = this.$t("RequestAuthTokenError")
-					}
-				})
-		},
-
-		loginWithAuthToken() {
-			this.tokenErrorMessage = undefined
-			api.loginWithAuthToken(this.mobilephone, this.authToken)
+			this.emailErrorMessage = undefined
+			api.loginWithEmailToken(this.email, this.emailToken)   
 				.then(() => {
 					this.$router.push({name: "teamHome"})
 				})
 				.catch(err => {
-					// Show a usefull, human readable error message that actually describes what happend
+					console.error("Cannot login with email token", err)
 					this.tokenSentSuccessfully = false
-					if (err.response &&	err.response.data) {
-						if(err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_TOKEN_INVALID) {
-							console.log("The entered auth token was invalid.")
-							this.tokenErrorMessage = this.$t("TokenInvalid")
-						} else
-						if(err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_MOBILE_NOT_FOUND) {
-							console.log("No user with that mobilephone.")
-							this.tokenErrorMessage = this.$t("TokenDoesNotBelongToMobilephone")
-						} else
-						if(err.httpStatus === 401 || err.response.data.liquidoErrorCode === api.err.UNAUTHORIZED) {
-							console.log("Cannot login with token. User is not authorized.")
-							this.tokenErrorMessage = this.$t("TokenInvalid") 
-						}
-					} else {
-						console.error("Something is wrong with our auth backend", err)
-						this.tokenErrorMessage = this.$t("TokenInvalid") 
-					}					
+					this.tokenErrorMessage = undefined
+					this.emailErroMessage = this.$t("EmailTokenInvalid")
 				})
 		},
 
+
+
+		/** Register button at the bottom of the page */
 		clickRegister() {
 			this.$router.push({name: "welcome"})
 		}

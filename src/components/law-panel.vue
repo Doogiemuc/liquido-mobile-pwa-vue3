@@ -1,7 +1,7 @@
 <template>
 	<b-card :id="law.id" no-body class="law-panel" :class="{'collapse-law-panel' : collapsed}">
 		<div class="d-flex">
-			<div>
+			<div class="law-image">
 				<i class="fas fa-fw" :class="'fa-' + law.icon" />
 			</div>
 			<div class="d-flex flex-column text-truncate">
@@ -109,7 +109,12 @@ $proposal_img_size: 32px;
 		margin-bottom: 5px;
 	}
 	.law-image {
-		border-radius: 5px;
+		color: white;
+		background-color: lightgray;
+		border-radius: 50%;
+		border: 1px solid lightgray;
+		text-align: center;
+		font-size: 1.2em;
 		min-width: $proposal_img_size;
 		max-width: $proposal_img_size;
 		width: $proposal_img_size;

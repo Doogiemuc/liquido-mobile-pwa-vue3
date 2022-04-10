@@ -21,6 +21,10 @@ const routes = [
 		path: "/login",
 		name: "login",
 		component: loginPage,
+		props: route => ({
+			email: route.query.email,
+			emailToken: route.query.token
+		}),
 		meta: {
 			public: true
 		}

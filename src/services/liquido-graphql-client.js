@@ -145,21 +145,26 @@ pollsCache.put("polls", [])  // make sure there is at least an empty array, unti
  * Sophisticated logging of HTTP error messages is crucial!
  */
 axios.interceptors.response.use(function (response) {
-	// Any status code that lie within the range of 2xx cause this function to trigger
+	// Any status code that lies within the range of 2xx cause this function to trigger
 	return response;
 }, function (error) {
-
-	//handle general connection errors.
-	if (error.data && error.data.includes("ECONNREFUSED")) return Promise.reject(error)
-	
 	// Any status codes that falls outside the range of 2xx cause this function to trigger
-	if (error.response.status >= 500) console.error("liquido-graphql-api ERROR:", error)
+	if (!error.response) {
+		console.warn("Network error: no response at all")
+	} else 
+	if (error.data && error.data.includes("ECONNREFUSED")) {
+		console.warn("Network connection refused.")
+	} else
+	if (error.response && error.response.status >= 500) { 
+		console.error("liquido-graphql-api ERROR:", error) 
+	} else
 	if (error.response && error.response.data) {
 		let msg = "liquido-graphql-api: " + error.response.data.message
 		if (error.response.data.liquidoErrorPayload)
 			msg += "\n" + JSON.stringify(error.response.data.liquidoErrorPayload)
 		console.debug(msg, error.response.data)
-		log.error(msg)
+	} else {
+		console.error("liquido-graphql-api: Fatal Error", error)
 	}
 	return Promise.reject(error);
 });
@@ -295,13 +300,27 @@ let graphQlApi = {
 		return graphQlQuery(graphQL)  // no return value
 	},
 
-	//TODO: loginWithEmailToken
+	/**
+	 * login with link from email (contains email and authToken)
+	 */
+	loginWithEmailToken(email, authToken) {
+		if (!email) throw new Error("Need email to log in!")
+		if (!authToken) throw new Error("Need authToken to log in!")
+		let graphQL = `query { loginWithEmailToken(email: "${email}", authToken: "${authToken}") ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
+		return graphQlQuery(graphQL).then(res => {
+			this.login(res.data.loginWithAuthToken.team, res.data.loginWithAuthToken.user, res.data.loginWithAuthToken.jwt)
+			return res.data.loginWithEmailToken
+		})
+	},
 
 	/**
-	 * Request auth token for login. This will send an SMS.
+	 * Request auth token for login. 
+	 * Backend will call Twilio API to send a one time login token to the user
+	 * @param mobilephone Users mobilephone that must exist in the DB
+	 * @param devLoginToken (optional) TESTs can send the devLoginToken to fake the request.
 	 */
-	requestAuthToken(mobilephone) {
-		let graphQL = `query { authToken(mobilephone: "${mobilephone}") }`
+	requestAuthToken(mobilephone, devLoginToken) {
+		let graphQL = `query { authToken(mobilephone: "${mobilephone}", devLoginToken: "${devLoginToken}") }`
 		return graphQlQuery(graphQL)
 	},
 
@@ -555,27 +574,29 @@ let graphQlApi = {
 		return graphQlQuery(graphQL)
 	},
 
-	/** Liquido backend error codes. See LiquidoException.java */
+	/** Liquido backend error codes. Must match LiquidoException.java from backend*/
 	err: {
-		TEAM_WITH_SAME_NAME_EXISTS: 1,
+		CANNOT_REGISTER_NEED_EMAIL: 1,
+		CANNOT_REGISTER_NEED_MOBILEPHONE: 1,
 
-		//Join Team errors
-		CANNOT_JOIN_TEAM_INVITE_CODE_INVALID: 10, 
-		CANNOT_JOIN_TEAM_ALREADY_MEMBER: 11, 						// there already is a member : or admin) with the same email
-		CANNOT_JOIN_TEAM_ALREADY_ADMIN: 12, 
-		CANNOT_REGISTER_NEED_EMAIL: 13, 
-		CANNOT_REGISTER_NEED_MOBILEPHONE: 14, 
-		CANNOT_CREATE_TWILIO_USER: 15, 
-		USER_EMAIL_EXISTS: 16,                           // user with that email  already exists
-		USER_MOBILEPHONE_EXISTS: 17,                     // user with that mobilephone already exists
+		// Create New Team
+		TEAM_WITH_SAME_NAME_EXISTS: 10,
+		CANNOT_CREATE_TEAM_ALREADY_REGISTERED: 11,			// Edge case: When a user is already registered and want's to create a team, ...
+		// Join a team
+		CANNOT_JOIN_TEAM_INVITE_CODE_INVALID: 12,
+		CANNOT_JOIN_TEAM_ALREADY_MEMBER: 13,						// there already is a member (or admin) with the same email or mobilephone
+		CANNOT_JOIN_TEAM_ALREADY_ADMIN: 14,
+		CANNOT_CREATE_TWILIO_USER: 15,
+		USER_EMAIL_EXISTS: 16,                         // user with that email already exists
+		USER_MOBILEPHONE_EXISTS: 17,                   // user with that mobilephone already exists
 
 		//Login Errors
-		CANNOT_LOGIN_MOBILE_NOT_FOUND: 20, 					// when requesting an SMS login token and mobile number is not known
-		CANNOT_LOGIN_EMAIL_NOT_FOUND: 21,    				// when requesting a login email and email is not known
-		CANNOT_LOGIN_TOKEN_INVALID: 22,      				// when a email or sms login token is invalid or expired
-		CANNOT_LOGIN_TEAM_NOT_FOUND: 23,            // when changing team
-		CANNOT_LOGIN_USER_NOT_MEMBER_OF_TEAM: 24,   // when changing team and user is not member of target team
-		CANNOT_LOGIN_INTERNAL_ERROR: 25, 		        // when sending of email is not possible
+		CANNOT_LOGIN_MOBILE_NOT_FOUND: 20,					// when requesting an SMS login token and mobile number is not known
+		CANNOT_LOGIN_EMAIL_NOT_FOUND: 21,   				// when requesting a login email and email is not known
+		CANNOT_LOGIN_TOKEN_INVALID: 22,     				// when a email or sms login token is invalid or expired
+		CANNOT_LOGIN_TEAM_NOT_FOUND: 23,           // when changing team
+		CANNOT_LOGIN_USER_NOT_MEMBER_OF_TEAM: 24,  // when changing team and user is not member or admin of target team
+		CANNOT_LOGIN_INTERNAL_ERROR: 25,	// when sending of email is not possible
 
 		//JWT Erros
 		JWT_TOKEN_INVALID: 30, 

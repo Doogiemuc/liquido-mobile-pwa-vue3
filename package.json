@@ -9,7 +9,7 @@
     "test:e2e": "vue-cli-service test:e2e",
     "lint": "vue-cli-service lint",
     "start": "vue-cli-service serve",
-		"cypress": "cypress open"
+		"cypress": "NODE_ENV='test' cypress open"
   },
   "dependencies": {
     "axios": "^0.24.0",

@@ -29,7 +29,7 @@ import popupModal from "@/components/popup-modal"
 import mobileLogViewer from "@/components/mobile-debug-log.vue"
 import api from "@/services/liquido-graphql-client"
 
-/** Pages will slide from right to left in this order 
+/** Pages will slide from right to left in this order */
 const page_order = {
 	"index": 0,
 	"welcome": 1,
@@ -41,7 +41,7 @@ const page_order = {
 	"addProposal": 7,
 	"castVote": 8,
 }
-*/
+
 
 /** Liquido Root App */
 export default {
@@ -91,7 +91,6 @@ export default {
 	// watch the `$route` to determine the transition to use
 	// https://router.vuejs.org/guide/advanced/transitions.html#per-route-transition
 	watch: {
-		/*
 		$route(to, from) {
 			this.transitionName = ""
 			const fromOrder = page_order[from.name]
@@ -100,11 +99,8 @@ export default {
 			if (fromOrder < toOrder) { this.transitionName = "slide-left" } else
 			if (fromOrder > toOrder) { this.transitionName = "slide-right"}
 			else { this.transitionName = "fade" }  // default is fade
-			
+			this.scrollToTop()  // always scroll to top on every new page
 		},
-		*/
-	},
-	created() {
 	},
 	mounted() {
 		api.pingApi()

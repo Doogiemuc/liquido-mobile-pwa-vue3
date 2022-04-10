@@ -204,6 +204,7 @@ export default {
 		}
 	},
 	watch: {
+		/** Watch internal state and publish it's value for parent components */
 		"state": function() {
 			this.$emit("update:state", this.state)
 		}

@@ -142,8 +142,12 @@ export default {
 			return law.createdBy.id === currentUser.id
 		},
 
+		/** 
+		 * A proposal can be liked, when its in ELABORATION, not already liked
+		 * and not created by the currently logged in user.
+		 */
 		canLike(law) {
-			return !this.readOnly && !law.isLikedByCurrentUser && !this.isCreatedByCurrentUser(law)
+			return law.status === "ELABORATION" &&  !law.isLikedByCurrentUser && !this.isCreatedByCurrentUser(law)
 		},
 
 		clickLike(pollId, proposalId) {
