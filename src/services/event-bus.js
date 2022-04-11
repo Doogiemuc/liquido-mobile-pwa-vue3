@@ -15,7 +15,7 @@ eventBus.Event = {
 	LOGOUT: "logout",												// Fires after logout is completed.
 	POLLS_LOADED: "polls-loaded",  					// Fires when an array of polls was loaded from backend. Event param is the list of newly loaded polls
 	POLL_LOADED: "poll-loaded",    					// One poll was loaded from the backend. Event param is that one poll
-	SET_POLLS_FILTER: "set-polls-filter"		// Can be fired to set the filter on the polls page
+	POLL_FILTER_CHANGED: "polls-filter-changed"	// Fired by navbar-bottom, when user clicked on filter
 }
 
 export default eventBus

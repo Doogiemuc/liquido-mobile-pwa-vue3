@@ -177,6 +177,9 @@ export default {
 $proposal_img_size: 32px;
 
 .poll-panel {
+
+  border: none !important;
+
 	&:not(.read-only) {
 		cursor: pointer;
 	}
@@ -186,8 +189,7 @@ $proposal_img_size: 32px;
 		margin: 0;
 		padding: 0.25rem 10px;
 		.poll-panel-title {
-			// same as .law-title
-			font-family: 'Libre Baskerville', serif;
+			// font-family: 'Libre Baskerville', serif;  // same as .law-title
 			color: $primary;
 			padding: 0;
 			margin: 0;
@@ -225,7 +227,7 @@ $proposal_img_size: 32px;
 
 	// law-panel inside poll panel - list of proposals in poll
 	.proposal-list-group-item {
-		height: 8rem;
+		height: 8.2rem;
 		overflow: hidden;
 		padding: 10px;
 		transition: height 0.5s;
@@ -237,7 +239,7 @@ $proposal_img_size: 32px;
 			margin-bottom: 5px;
 		}
 		.law-title {
-			margin-bottom: 0px;
+			margin-bottom: 3px;
 			padding: 0;
 			font-size: 1rem !important;
 			line-height: 18px;
@@ -313,12 +315,20 @@ $proposal_img_size: 32px;
 		}
 	}
 
+	/*
+	// sepearator between proposals when poll-panel is expanded
 	.proposal-list-group-item:not(:first-child):not(.collapsed-law-panel) .proposal-separator {
 		position: absolute;
 		left: 10px;
 		right: 10px;
 		top: 1px;
 		border-top: 1px solid rgba(0,0,0, 0.1)
+	}
+	*/
+
+	//BUGFIX for bootstrap: inherit border-radius in list-group-flush wrapper
+	.list-group-flush {
+		border-radius: inherit;
 	}
 }
 

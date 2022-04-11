@@ -181,10 +181,10 @@ async function tryToAuthenticate() {
  * VUE Router next (for VUE 3)
  * https://next.router.vuejs.org/guide/advanced/navigation-guards.html#navigation-guards
  */
-router.beforeEach(async (routeTo, routeFrom) => {
+router.beforeEach(async (routeTo /*, routeFrom*/) => {
 	//log.debug("beforeEach ENTER", routeFrom.path, "=>", routeTo.path)
 	return tryToAuthenticate().then(() => {
-		log.debug("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
+		//log.debug("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
 		if (routeTo.path === "/" || routeTo.path === "/index.html") {
 			return {name: "teamHome"}  
 		} else {
@@ -192,7 +192,7 @@ router.beforeEach(async (routeTo, routeFrom) => {
 		}
 	}).catch(() => {
 		if (process.env.NODE_ENV === "development")
-			log.debug("vue-router: anonymous", routeFrom.path, "=>", routeTo.path)
+			//log.debug("vue-router: anonymous", routeFrom.path, "=>", routeTo.path)
 		if (routeTo.meta.public) {
 			return true
 		} else if (routeTo.path === "/" || routeTo.path === "/index.html") {

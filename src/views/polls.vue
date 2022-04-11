@@ -20,7 +20,9 @@
 
 			<p v-if="allPolls.length === 0 && !loading" class="text-center" v-html="$t('noPollYet')" />
 
-			<p v-if="searchResultIsEmpty" class="text-center" @click="clearSearch" v-html="$t('noPollsMatchSearch')" />
+			<div v-if="searchResultIsEmpty" class="alert liquido-info text-center" @click="clearSearchAndFilter">
+				<p>{{ $t('noPollsMatchSearch') }}</p>
+			</div>
 
 			<div v-if="allPolls.length > 3" class="search-wrapper">
 				<input id="searchInput" v-model="searchQuery" type="text" :placeholder="$t('Search')">
@@ -187,12 +189,11 @@ export default {
 		}
 	},
 	created() {
-		// status CAN be passed as parameter or Vue prop
-		if (this.status && this.status.match(/ELABORATION|VOTING|FINISHED/)) {
-			this.pollStatusFilter = this.status
-		}
+		//status CAN be passed as parameter or Vue prop
+		if (this.status) this.setPollFilter(this.status)
+
 		// or status can be changed with an event (navbar-bottom does that)
-		EventBus.on(EventBus.Event.SET_POLLS_FILTER, (newFilterValue) => this.setPollFilter(newFilterValue))
+		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (newFilterValue) => this.setPollFilter(newFilterValue))
 		EventBus.on(EventBus.Event.POLL_LOADED, () => this.pollsChanged())
 		EventBus.on(EventBus.Event.POLLS_LOADED, () => this.pollsChanged())  // event param "polls" is not used here
 
@@ -252,8 +253,10 @@ export default {
 			return false
 		},
 
-		clearSearch() {
+		clearSearchAndFilter() {
+			console.log("Clear Search")
 			this.searchQuery = undefined
+			this.setPollFilter(undefined)
 		}
 	},
 }
@@ -275,6 +278,7 @@ export default {
 	border: 0;
 	flex-grow: 1;
 	max-width: 200px;
+	margin-right: 0.5rem;
 	border-bottom: 1px solid $secondary;
 	background-color: $poll-list-background;
 	&:focus {
@@ -283,30 +287,34 @@ export default {
 }
 
 .poll-list {
-	margin: 0 -3px;
+	margin: 0 -10px;
 	padding: 10px;
 	color: $secondary;
-	background-color: $poll-list-background;
-}
-.poll-panel {
+	//background-color: $poll-list-background;
 	transition: all 1s;
-	max-height: 300px;
-	&:not(:last-child) {
-		margin-bottom: 1rem;
-	}	
+
+	.poll-panel {
+		transition: all 1s;
+		max-height: 80vh;  // One poll should not be larger higher than the screen, when it has a lot of proposals, even when expanded
+		overflow: hidden;
+		&:not(:last-child) {
+			margin-bottom: 10px;
+		}	
+	}
 }
 
 /* Vue list transitions */
-.poll-list-leave-to {
-	opacity: 0;
-	max-height: 0;
+.poll-list-leave-to, .poll-list-enter-from {
+	//opacity: 0;
+	max-height: 0 !important;
 	margin-bottom: 0rem !important;
 }
 /*
 .poll-list-leave-active {
-	border: 1px solid red;
+	border: 1px solid red !important;
 }
 */
+
 
 .iconRight {
 	color: $primary;

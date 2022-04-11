@@ -34,21 +34,27 @@
 import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
 
+
+
 export default {
 	name: "LiquidoFooter",
 	i18n: {
 		messages: {
-			en: {
+			de: {
 				discuss: "diskutieren",
 				vote: "abstimmen",
-				finished: "entschieden"  // abgeschlossen?  final? fertig?  verb: entscheiden?
+				finished: "entschieden"   // abgeschlossen?  final? fertig?  verb: entscheiden?
+			},
+			en: {
+				discuss: "discuss",
+				vote: "vote",
+				finished: "finished"  
 			}
 		}
 	},
 	data() { 
 		return {
-			selectedItem: -1,         // selectedItem in navbar.  -1 - show all polls,  0 - teamhome, 
-			menueOpen: false,
+			selectedItem: -1,         // selectedItem in navbar.  -1 - show all polls,  1 - discuss, 2 - vote, 3 - finished
 			forceRefreshComputed: 0   
 		} 
 	},
@@ -65,12 +71,6 @@ export default {
 		pollsFinished() {
 			this.forceRefreshComputed;
 			return api.getCachedPolls("FINISHED")
-		},
-		teamButtonClass() {
-			this.forceRefreshComputed;
-			return { 
-				selected: this.selectedItem === 0
-			}
 		},
 		discussButtonClass() {
 			return { 
@@ -90,36 +90,37 @@ export default {
 				disabled: this.pollsFinished.length === 0
 			}
 		},
-		menueButtonClass() {
-			return { 
-				selected: this.menueOpen
-			}
-		}
 	},
 	watch: {
+		/*
 		// when navigating via URL, updated navbar accordingly
-		"$route.name": function(/*routeName*/) {
+		"$route.name": function(routeName) {
 			//console.log("navbar-bottom route.name changed to ", routeName)
-			this.updateNavBar()
-		}		
+			if (this.$route.params)
+				this.setPollFilter(this.$route.params.status)
+		}
+		*/	
 	},
 	created() {
 		EventBus.on(EventBus.Event.POLLS_LOADED, () => {  // MUST use arrow-function to keep `this` reference!
 			// hack to make computed properties refresh their value
 			// https://logaretm.com/blog/2019-10-11-forcing-recomputation-of-computed-properties/
-			//console.log("POLLS_LOADED .........")
 			this.forceRefreshComputed++;  
 		})
 		EventBus.on(EventBus.Event.POLL_LOADED, () => {
-			//console.log("navbar-bottom POLLS_LOADED")
 			this.forceRefreshComputed++;
 		})
 		EventBus.on(EventBus.Event.LOGIN, () => {
-			//console.log("LOGIN ====")
 			this.forceRefreshComputed++;
 		})
-		// Check what needs to be the selectedItem, depending on this.$route.name
-		this.updateNavBar()
+		// Check what needs to be the selected, depending on (query) params
+		/*
+		if (this.$route.query && this.$route.query.status) {
+			this.setPollFilter(this.$route.query.status)
+		} else if (this.$route.params && this.$route.params.status) {
+			this.setPollFilter(this.$route.params.status)
+		}
+		*/
 	},
 	mounted() {
 		//console.log("navbar-bottom mounted: forceRefreshComputed")
@@ -127,31 +128,27 @@ export default {
 	},
 	methods: {
 
-		/**
-		 * When the current route was changed by navigation
-		 * then update the navbar accordingly.
-		 */
-		updateNavBar() {
-			if (this.$route.name === "teamHome") {
-				this.selectedItem = 0
-			} else if (this.$route.name === "polls") {
-				if (this.$route.params) {	
-					switch (this.$route.params.status) {
-						case "ELABORATION":
-							this.selectedItem = 1
-							break
-						case "VOTING":
-							this.selectedItem = 2
-							break
-						case "FINISHED":
-							this.selectedItem = 3
-							break
-						default:
-							this.selectedItem = -1
-					}
-					EventBus.emit(EventBus.Event.SET_POLLS_FILTER, this.$route.params.status)
-				}
+		setPollFilter(newFilterValue) {
+			console.log("Navbar.setPollFilter", newFilterValue)
+			switch (newFilterValue) {
+				case "ELABORATION":
+					this.selectedItem = 1
+					break
+				case "VOTING":
+					this.selectedItem = 2
+					break
+				case "FINISHED":
+					this.selectedItem = 3
+					break
+				default:
+					newFilterValue = undefined
+					this.selectedItem = -1
 			}
+			// If we are not on the polls page already, then navigate there.
+			if (this.$route && this.$route.name !== "polls") {
+				this.$router.push({name: "polls", params: { status: newFilterValue }})
+			}
+			EventBus.emit(EventBus.Event.POLL_FILTER_CHANGED, newFilterValue)
 		},
 
 		goToTeam() {
@@ -170,53 +167,30 @@ export default {
 		 * then select all three and show all types of polls.
 		 */
 		clickPollsInDiscussion() {
-			let newPollStatusFilter = undefined
 			if (this.selectedItem === 0 || this.selectedItem === 1) {
-				this.selectedItem = -1  // filter for all types of polls when 
-				EventBus.emit(EventBus.Event.SET_POLLS_FILTER, undefined)
+				this.setPollFilter(undefined)
 			} else {
-				this.selectedItem = 1
-				newPollStatusFilter = "ELABORATION"
-				EventBus.emit(EventBus.Event.SET_POLLS_FILTER, "ELABORATION")
+				this.setPollFilter("ELABORATION")
 			}
-			if (this.$route && this.$route.name !== "polls") {
-				this.$router.push({name: "polls", params: { status: newPollStatusFilter }})
-			}
+			
 		},
 
 		clickPollsInVoting() {
-			let newPollStatusFilter = undefined
 			if (this.selectedItem === 0 || this.selectedItem === 2) {
-				this.selectedItem = -1
-				EventBus.emit(EventBus.Event.SET_POLLS_FILTER, undefined)
+				this.setPollFilter(undefined)
 			} else {
-				this.selectedItem = 2
-				newPollStatusFilter = "VOTING"
-				EventBus.emit(EventBus.Event.SET_POLLS_FILTER, "VOTING")
-			}
-			if (this.$route && this.$route.name !== "polls") {
-				this.$router.push({name: "polls", params: { status: newPollStatusFilter }})
+				this.setPollFilter("VOTING")
 			}
 		},
 
 		clickFinishedPolls() {
-			let newPollStatusFilter = undefined
 			if (this.selectedItem === 0 || this.selectedItem === 3) {
-				this.selectedItem = -1
-				EventBus.emit(EventBus.Event.SET_POLLS_FILTER, undefined)
+				this.setPollFilter(undefined)
 			} else {
-				this.selectedItem = 3
-				newPollStatusFilter = "FINISHED"
-				EventBus.emit(EventBus.Event.SET_POLLS_FILTER, "FINISHED")
-			}
-			if (this.$route && this.$route.name !== "polls") {
-				this.$router.push({name: "polls", params: { status: newPollStatusFilter }})
+				this.setPollFilter("FINISHED")
 			}
 		},
 
-		toggleMenue() {
-			this.menueOpen = !this.menueOpen
-		}
 	},
 }
 </script>
