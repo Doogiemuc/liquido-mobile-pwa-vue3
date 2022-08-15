@@ -71,6 +71,7 @@ export default {
     */
 
 		goBack() {
+			console.log("Back", this.backLink)
 			if (this.backLink === "BACK") this.$router.go(-1)
 			else if (this.backLink) this.$router.push(this.backLink)
 		},

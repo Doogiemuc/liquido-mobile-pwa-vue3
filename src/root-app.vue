@@ -18,7 +18,7 @@
 			:secondary-button-text="modalSecondaryButtonText"
 		>
 		</popup-modal>
-		<mobile-log-viewer v-if="showDebugLog"></mobile-log-viewer>
+		<mobile-log-viewer ref="mobileLogViewRef" v-if="showDebugLog"></mobile-log-viewer>
 	</div>
 </template>
 
@@ -85,7 +85,7 @@ export default {
 			return this.$route.path.match(/(polls|polls\/\d+)$/)
 		},
 		showDebugLog() {
-			return false
+			return true
 		}
 	},
 	// watch the `$route` to determine the transition to use
@@ -119,10 +119,12 @@ export default {
 					//TODO: Do something: Show a general "offline" message (or implement an offline mode?)
 				}
 			})
+
+			//this.$refs["mobileLogViewRef"].redefineConsoleMethods()
 	},
 	methods: {
 		//
-		// Here comes some HTML UX magic.
+		// These methods are available as this.$root.<method> in all vue sub components of root-app
 		//
 
 		/**
@@ -144,7 +146,14 @@ export default {
 		},
 		
 		/**
-		 * Animate obj[attr] vom its current startVlaue to a finalValu in durationMs milliseconds.
+		 * Animate obj[attr] vom its current startVlaue to a finalValue in durationMs milliseconds.
+		 * The animation will be performed with the window.requestAnimationFrame() method.
+		 * 
+		 * @param obj a javascript object
+		 * @param attr name of attribute in obj that shall be animated
+		 * @param finalValue the final value that obj[attr] shall be animated to
+		 * @param durationMs how long the duration shall take in milliseconds
+		 * 
 		 */
 		animate(obj, attr, finalValue, durationMs) {
 			let startTime

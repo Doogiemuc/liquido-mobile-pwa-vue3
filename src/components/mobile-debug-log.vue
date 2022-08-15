@@ -52,11 +52,20 @@
  * Tap the small ribbon at the bottom of the screen to open the console drawer.
  */
 
-import debugLog from "./mobile-debug-log.js"
+// log levels
+/* eslint-disable no-unused-vars */
+const LEVEL = {
+	SILENT: 5,
+	ERROR:  4,
+	WARN:   3,
+	INFO:   2,
+	LOG:    2,  // log == info
+	DEBUG:  1,
+	TRACE:  0,
+	ALL:   -1
+}
 
-
-const MAX_MESSAGE_LEN = 200
-
+const LEVEL_NAMES = ["TRACE", "DEBUG", "INFO", "WARN", "ERROR", "SILENT"]
 
 export default {
 	name: "MobileDebugLog",
@@ -68,11 +77,14 @@ export default {
 			// currently active filter (log message includes)
 			filterStr: "",
 
-			// always show the last row of the log
+			// automatically always scroll to the last bottom row into view
 			showLastRow: true,
 
 			// break long messages
 			lineBreak: false,
+
+			// maximum length of a log method before it will be truncated
+			maxMessageLen: 200,
 
 			// show every second line with an alternate color. (see getRowClass)
 			alternatingRows: true,
@@ -85,8 +97,17 @@ export default {
 				{ key: "message", name: "msg", width: undefined, show: true }
 			],
 
-			// reactive reference to logEntries that we can watch for changes
-			logEntries: debugLog.logEntries
+			// Only log messages at or above this level will be shown (by default, show all)
+			logLevel: LEVEL.ALL,
+
+			// all entries in the log. Will be truncated to MAX_LOG_ENTRIES
+			logEntries: [],
+
+			// Maximum number of log lines to keep
+			MAX_LOG_ENTRIES: 999,
+
+			// when logging was started. Delta is shown in timestamp col
+			startTime: Date.now(),
 		}
 	},
 	computed: {
@@ -101,26 +122,109 @@ export default {
 			})
 		}
 	},
-	watch: {
-		"logEntries": function() {
-			if (this.showLastRow)	this.scrollToBottom()
-		}
-	},
 	created() {
-		if (process.env.NODE_ENV === "mobile") debugLog.redefineConsoleMethods()
+		// when on mobile the redefine console.log methods (because there is no browser log on mobile)
+		//if (process.env.NODE_ENV === "mobile") 
+		//this.redefineConsoleMethods()
 	},
 	mounted() {
-		debugLog.debug("Mobile Debug log started.")
+		this.debug("Mobile Debug log started.")
 	},
 	methods: {
 		
+		// =================== log methods =====================
+
+		error(args) {
+			this.logAtLevel(LEVEL.ERROR, args)
+		},
+
+		warn(args) {
+			this.logAtLevel(LEVEL.WARN, args)
+		},
+
+		info(args) {
+			this.logAtLevel(LEVEL.INFO, args)
+		},
+
+		log(args) { 				// this.log() is synonym for this.info()
+			this.logAtLevel(LEVEL.INFO, args)
+		},   
+
+		debug(args) {
+			this.logAtLevel(LEVEL.DEBUG, args)
+		},
+
+		trace(args) {
+			this.logAtLevel(LEVEL.TRACE, args)
+		},
+
+		/** 
+		 * Create a log message at the given level.
+		 * The message will be shown in our mobile-debug-log drawer AND
+		 * in the normal browser console.
+		 * @param level log level as INT
+		 * @param args log message (may be a string or an object that will be serialized when shown)
+		 */
+		logAtLevel(level, args) {
+			if (!Number.isInteger(level)) level = LEVEL.INFO
+			if (level < this.logLevel) return
+			this.logEntries.push({
+				timestamp: Date.now() - this.startTime,
+				level: level,
+				message: args
+			})
+			if (this.logEntries.length > this.MAX_LOG_ENTRIES) {
+				this.logEntries.shift()
+			}
+			if (this.showLastRow)	this.scrollToBottom()
+		},
+
+
+		// ================== utility methods =================
+
+
+		/**
+		 * You CAN redefine the default console.log, console.debug, console.warn, ... methods,
+		 * so that they will also log to the mobile-debug-log. All messages will still also
+		 * appear in the browsers console (if you are in a browser).
+		 * 
+		 * But there are some caveats:
+		 * - You will loose the information which module logged the original message. All messages will come from mobile-debug-log.vue
+		 * - Be carefull, that no one else is also redefining these methods, e.g. the logLevel lib does this: https://github.com/pimterry/loglevel/issues/129
+		 * 
+		 * The alternative is to call the above this.log, this.info, ... methods direcdtly
+		 */
+		redefineConsoleMethods() {
+			console.info("VUE mobile-debug-log mounted has overwritten console.log() functions.")
+			let that = this;
+			["trace", "debug", "info", "warn", "error", "log"].forEach(function(methodName) {
+				let origMethod = console[methodName]
+				console[methodName] = function(...args) {
+					// log to our own mobile debugLog
+					that.logAtLevel(LEVEL[methodName], args)
+					// if console in this environment (browser/node/...) has this method, then also log to the original method
+					if (origMethod !== undefined) origMethod(...args) 
+				}
+			})
+			
+		},
+
+		/**
+		 * Internally mobile-debug-log works with integer levels
+		 * This is used to show the actual names of log levels in the drawer column.
+		 */
+		getLevelName(levelAsInt) {
+			if (!Number.isInteger(levelAsInt)) return levelAsInt
+			return LEVEL_NAMES[levelAsInt]
+		},
+
 		/** get display value for entry in col */
 		getColValue(col, entry) {
 			switch (col.key) {
 				case "timestamp": 
 					return entry.timestamp;
 				case "level": 
-					return debugLog.getLevelName(entry.level).toUpperCase()
+					return this.getLevelName(entry.level)
 				case "message": 
 					return this.toString(entry.message)
 				default:
@@ -129,15 +233,15 @@ export default {
 		},
 
 		/** 
-		 * Convert valto a string in the same way as the browser does. 
-		 * Truncate result to MAX_MESSAGE_LEN
+		 * Convert val to a string in the same way as the browser does. 
+		 * Truncate result to maxMessageLen
 		 */
 		toString(val) {
 			let str = val
 			if (Array.isArray(val)) {
 				str = val.map(v => typeof v === "object" ? JSON.stringify(v) : v).join(" ")	
 			}
-			if (str.length > MAX_MESSAGE_LEN) str = str.substr(0, MAX_MESSAGE_LEN)+" ..."
+			if (str.length > this.maxMessageLen) str = str.substr(0, this.maxMessageLen)+" ..."
 			return str
 		},
 
@@ -156,7 +260,7 @@ export default {
 		},
 		
 		clearLog() {
-			debugLog.clearLog()
+			this.logEntries = []
 		},
 
 		/** this is automatically called when showLastRow is active */
@@ -178,7 +282,7 @@ export default {
 		},
 
 		getRowClass(entry, idx) {
-			let res = debugLog.getLevelName(entry.level)
+			let res = this.getLevelName(entry.level)
 			if (this.alternatingRows && (idx % 2 === 0)) res += " alternate-row"
 			return res
 		},

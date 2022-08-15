@@ -5,6 +5,7 @@
 		:data-poll-status="poll.status"
 		no-body
 		class="poll-panel" 
+		:class="{'read-only': readOnly}"
 		@click="goToPoll(poll.id)"
 	>
 		<template #header>
