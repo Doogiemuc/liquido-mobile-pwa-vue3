@@ -35,7 +35,9 @@
 // Law-panel is only used when single laws need to be shown in in cast-vote view! 
 // All other views use poll-panel!
 
-import moment from "moment"
+import dayjs from "dayjs"
+import localizedFormat from 'dayjs/plugin/localizedFormat'
+dayjs.extend(localizedFormat)
 
 export default {
 	name: "LawCard",
@@ -75,7 +77,7 @@ export default {
 	},
 	methods: {
 		formatDate(dateVal) {
-			return moment(dateVal).format("L")
+			return dayjs(dateVal).format("L")
 		},
 		toggleCollapse() {
 			this.collapsed = !this.collapsed

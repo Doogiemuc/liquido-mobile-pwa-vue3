@@ -3,8 +3,9 @@
  * 
  * Every call to the backend goes through this class.
  * Here we also handle data caching.
- * And login and logout because the currently logged in use with his team is also cached.
+ * And login and logout because the currently logged in user with his team is also cached.
  */
+
 import axios from "axios"
 import config from "config"
 import PopulatingCache from "populating-cache"
@@ -17,8 +18,10 @@ import log from "@/components/mobile-debug-log.js"
 	We do not do (much) error handling here. This lies in the responsibility of the caller
 	We only do simple sanity checks where we can prevent unneccessary calls to the backend.
 
-	The class handles transparent caching of fetched data. Clients do not directly access the cache.
-	Clients can `force` a refetch when needed.
+	The class handles transparent caching of fetched data. Vue components do not directly access the cache.
+	Callers can force a refetch when needed. (I thought about this decission a lot and went back and forth.
+	The alternative would be to make Vue components handle the cache. An let this only be a pure GraphQL client.
+	Component -> GraphQLClient -> Cache    OR   Component -> Cache -> GraphQLClient)
 
 	This is a service class. It does not have a frontend. It does no navigation.
 */
@@ -34,7 +37,34 @@ if (!config || !config.LIQUIDO_API_URL) {
 
 // Configure axios HTTP REST client to point to our graphQL backend
 axios.defaults.baseURL = config.LIQUIDO_API_URL
-const GRAPHQL = "/graphql"
+
+/**
+ * Sophisticated logging of HTTP error messages is crucial!
+ */
+ axios.interceptors.response.use(function (response) {
+	// Any status code that lies within the range of 2xx cause this function to trigger
+	return response;
+}, function (error) {
+	// Any status codes that falls outside the range of 2xx cause this function to trigger
+	if (!error.response) {
+		console.warn("Network error: no response at all")
+	} else 
+	if (error.data && error.data.includes("ECONNREFUSED")) {
+		console.warn("Network connection refused.")
+	} else
+	if (error.response && error.response.status >= 500) { 
+		console.error("liquido-graphql-client: Internal Server Error(500):", error) 
+	}
+
+	// try to log some additional debug info
+	if (error.response && error.response.data) {
+		let msg = "liquido-graphql-client: error.response.data=" + JSON.stringify(error.response.data)
+		if (error.response.data.liquidoErrorPayload)
+			msg += "\nLiquidoErrorPayLoad:", JSON.stringify(error.response.data.liquidoErrorPayload)
+		console.debug(msg)
+	}
+	return Promise.reject(error);
+})
 
 /**
  * This is the central API client that calls the backend.
@@ -43,11 +73,13 @@ const GRAPHQL = "/graphql"
  * @param {String} graphql GraphQL Query. This is NOT JSON! This is GraphQL syntax!
  * @returns GraphQL result as specified by GraphQL-spec { data: {}, errors: [] }
  */
+const GRAPHQL = '/graphql'      // ==================== BASE PATH FOR GRAPHQL endpoint  //TODO: should that be in config.common.js ?
 const graphQlQuery = function(query, variables) {
 	return axios.post(GRAPHQL, { query: query, variables: variables })
 		.then(res => {
 			if (res.errors && res.errors.length > 0) {
 				log.error("graphQlQueryy errors: ", JSON.stringify(res.errors))   // graphQL's way of returning errors
+				//TODO: should I return Promise.reject(res.errors) here?
 			}
 			return res.data // This is the axios HTTP "data". The graphQL response contains another "data" (and an "error") attribute. I know, it's confusing.
 		})  
@@ -60,16 +92,20 @@ const graphQlQuery = function(query, variables) {
 
 
 /** Shorthands for JQL return values */
-const JQL_PROPOSAL =  "{ id, title, description, icon, status, createdAt, numSupporters, isLikedByCurrentUser, createdBy { id name email } }"
-const JQL_POLL = `{ id, title, status, votingStartAt votingEndAt proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL} numBallots duelMatrix { data } }`
-const JQL_TEAM = "team { id, teamName, inviteCode, " +
-		"admins  { id, email, name, website, picture, mobilephone } " +
-		"members { id, email, name, website, picture, mobilephone } " +
+const JQL_USER = "{ id name email mobilephone picture website }"
+const JQL_PROPOSAL =  `{ id title description icon status createdAt numSupporters isLikedByCurrentUser createdBy ${JQL_USER} }`
+const JQL_POLL = `{ id title status votingStartAt votingEndAt proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL} numBallots duelMatrix { data } }`
+const JQL_TEAM = "{ id teamName inviteCode " +
+		`admins ${JQL_USER}  ` +
+		`members ${JQL_USER} ` +
 		`polls ${JQL_POLL} }`
 const JQL = {
 	TEAM: JQL_TEAM,
 	PROPOSAL: JQL_PROPOSAL,  // Javascript cannot reference own object property. So JQL_PROPOSAL must be its own const above. :-(
-	CREATE_OR_JOIN_TEAM_RESULT: `{ ${JQL_TEAM} user { id, email, name, website, picture, mobilephone } jwt }`,  // login data
+	CREATE_OR_JOIN_TEAM_RESULT: `{ ` +
+		`team { id teamName inviteCode admins { name email mobilephone } members { name email mobilephone } } ` +
+		`user { id name email mobilephone } ` + 
+		`jwt }`, 
 	POLL: JQL_POLL,
 }
 
@@ -142,48 +178,25 @@ pollsCache.put("polls", [])  // make sure there is at least an empty array, unti
 
 
 /**
- * Sophisticated logging of HTTP error messages is crucial!
- */
-axios.interceptors.response.use(function (response) {
-	// Any status code that lies within the range of 2xx cause this function to trigger
-	return response;
-}, function (error) {
-	// Any status codes that falls outside the range of 2xx cause this function to trigger
-	if (!error.response) {
-		console.warn("Network error: no response at all")
-	} else 
-	if (error.data && error.data.includes("ECONNREFUSED")) {
-		console.warn("Network connection refused.")
-	} else
-	if (error.response && error.response.status >= 500) { 
-		console.error("liquido-graphql-api ERROR:", error) 
-	} else
-	if (error.response && error.response.data) {
-		let msg = "liquido-graphql-api: " + error.response.data.message
-		if (error.response.data.liquidoErrorPayload)
-			msg += "\n" + JSON.stringify(error.response.data.liquidoErrorPayload)
-		console.debug(msg, error.response.data)
-	} else {
-		console.error("liquido-graphql-api: Fatal Error", error)
-	}
-	return Promise.reject(error);
-});
-
-/**
  * ===================== exported API methods =======================
  */
 let graphQlApi = {
 
+	/**
+	 * Ping GraphQL backend API and check if everything is setup correctly.
+	 * @returns response to HTTP HEAD request. (This might be a 401 - access denied)
+	 */
 	async pingApi() {
-		return axios.post(GRAPHQL, {query: "query { ping }"})
+		return axios.head('/_ping')  // ping baseUrl set via config
 	},
 
 	/**
 	 * Login user into team. Store JWT for future requests.
-	 * Will also put currentUser, team and jwt into the `teamCache`
+	 * Will also put currentUser, team and jwt into the `teamCache`.
+	 * This is called with the response data from a createNewTeam() or jointTeam() call.
 	 * @param {Object} team Team with members[] and polls[]
 	 * @param {Object} user currently logged in user
-	 * @param {String} jwt JsonWebToken
+	 * @param {String} jwt JsonWebToken received from server
 	 */
 	login(team, user, jwt) {
 		this.teamCache.put(this.TEAM_KEY, team)
@@ -207,6 +220,17 @@ let graphQlApi = {
 		this.teamCache.emptyCache()
 		this.pollsCache.emptyCache()
 		EventBus.emit(EventBus.Event.LOGOUT, userEmail)
+	},
+
+	//TODO: changeTeam / login into another team
+
+	/**
+	 * This sets a special header `jwtTokenString` which is used by the
+	 * MongoDB Atlas GraphQL endpoint.
+	 * @param {String} jwt JsonWebToken
+	 */
+	setJwtTokenString(jwt) {
+		axios.defaults.headers.common["jwtTokenString"] = jwt
 	},
 
 	/* ===== Synchronous utility methods that do not call the backend ========= */
@@ -259,7 +283,6 @@ let graphQlApi = {
 		}
 		EventBus.emit(EventBus.Event.POLLS_LOADED, pollsArray)
 		pollsArray.forEach(poll => {
-
 			this.pollsCache.put("polls/"+poll.id, poll)
 		})
 	},
@@ -369,7 +392,8 @@ let graphQlApi = {
 
 	/**
 	 * Create a new team. 
-	 * @param {Object} newTeam teamName, adminName, adminEmail and adminMobilephone
+	 * @param {String} teamName name of new team
+	 * @param {Object} admin first admin of new team 
 	 */
 	async createNewTeam(teamName, admin) {
 		let graphQL = `mutation createNewTeam($teamName: String!, $admin: UserModelInput!) { ` + 
@@ -378,11 +402,11 @@ let graphQlApi = {
 			teamName: teamName,
 			admin: admin
 		}
+		console.log("createNewTeam Query:\n", graphQL, "variables:\n", JSON.stringify(variables))
 
-		//let graphQL = `mutation { createNewTeam(teamName: "${teamName}", adminName: "${admin.name}",` +
-		//	`adminMobilephone: "${admin.mobilephone}", adminEmail: "${admin.email}", adminPicture: "${admin.picture}") ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		return graphQlQuery(graphQL, variables)
 			.then(res => {
+				console.log("CreateNewTeam returned\n", JSON.stringify(res, null, 2))
 				let team = res.data.createNewTeam.team
 				this.login(
 					team,
@@ -618,7 +642,7 @@ let graphQlApi = {
 		INVALID_POLL_STATUS: 62, 
 		PUBLIC_CHECKSUM_NOT_FOUND: 63, 
 		CANNOT_ADD_SUPPORTER: 64, 							// e.g. when user tries to support his own proposal
-
+		
 		CANNOT_CALCULATE_UNIQUE_RANKED_PAIR_WINNER: 70, 		// this is only used in the exceptional situation, that no unique winner can be calculated in RankedPairVoting
 		CANNOT_VERIFY_CHECKSUM: 80, 						// ballot's checksum could not be verified
 

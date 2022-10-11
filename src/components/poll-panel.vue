@@ -71,8 +71,10 @@
 </template>
 
 <script>
-import moment from "moment"
 import api from "@/services/liquido-graphql-client"
+import dayjs from "dayjs"
+import localizedFormat from 'dayjs/plugin/localizedFormat'
+dayjs.extend(localizedFormat)
 
 export default {
 	i18n: {
@@ -117,7 +119,7 @@ export default {
 	},
 	methods: {
 		formatDate(dateVal) {
-			return moment(dateVal).format("L")
+			return dayjs(dateVal).format("L")
 		},
 
 		proposalListGroupItemClasses(propId) {

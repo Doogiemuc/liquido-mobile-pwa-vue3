@@ -310,7 +310,7 @@ export default {
 
 		async clickCastVote() {
 			this.castVoteLoading = true
-			let voteOrderIds = this.proposalsInBallot.map(proposal => +proposal.id)
+			let voteOrderIds = this.proposalsInBallot.map(proposal => proposal.id)
 
 			//TODO: start a timer for timeout
 

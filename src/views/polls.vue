@@ -112,6 +112,7 @@ export default {
 			},
 		},
 	},
+	name: "PollComponent",
 	components: { pollPanel },
 	props: {
 		status: { type: String, required: false, default: undefined },
