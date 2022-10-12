@@ -5,7 +5,13 @@
 
 const path = require("path")
 
+/**
+ * @type {import('@vue/cli-service').ProjectOptions}
+ */
 module.exports = {
+	publicPath: process.env.NODE_ENV === 'production'
+    ? '/liquido-mobile'
+    : '/',
 	devServer: {
 		port: 3001,   // Port for frontend when developing.
 		proxy: {      // Problems with CORS? Vue Dev serve can proxy API requests for your: https://cli.vuejs.org/config/#devserver-proxy
