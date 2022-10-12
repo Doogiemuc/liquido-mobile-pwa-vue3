@@ -36,6 +36,17 @@ module.exports = {
         // https://stackoverflow.com/questions/30030031/passing-environment-dependent-variables-in-webpack
         "config": path.join(__dirname, "config/config."+process.env.NODE_ENV)
       }
-    }
+    },
+		/*
+		plugins: [
+			new webpack.DefinePlugin({
+				PRODUCTION: JSON.stringify(process.env.NODE_ENV === 'production'),
+				// prevent console warning from vue-i18n:  https://stackoverflow.com/questions/66140411/you-are-running-the-esm-bundler-build-of-vue-i18n-it-is-recommended-to-configur
+				__VUE_I18N_FULL_INSTALL__: true,
+        __VUE_I18N_LEGACY_API__: false,
+        __INTLIFY_PROD_DEVTOOLS__: false,
+			})
+		]
+		*/
   }
 }

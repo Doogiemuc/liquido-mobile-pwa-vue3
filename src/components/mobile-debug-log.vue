@@ -3,13 +3,13 @@
 	<div class="mobile-debug-log" :class="{'collapsed': collapsed}">
 		<div class="mobile-debug-icon" @click="collapsed = !collapsed">&Laplacetrf;</div>
 		<div class="log-header">
-			<div class="line-break" :class="{'active-button': lineBreak}" @click="lineBreak = !lineBreak">brk</div>
-			<div class="show-all-cols" @click="showAllCols">cols</div>
+			<div class="line-break-button" :class="{'active-button': lineBreak}" @click="lineBreak = !lineBreak">brk</div>
+			<div class="show-all-cols" @click="showAllCols">all</div>
 			<div class="filter">
 				<input v-model="filterStr" type="text" class="filter-input" placeholder="Filter" />
 			</div>
 			<div class="clear-log" @click="clearLog">cls</div>
-			<div class="show-last-row" :class="{'active-button': showLastRow}" @click="toggleShowLastRow">end</div>
+			<div class="show-last-row" :class="{'active-button': showLastRow}" @click="toggleShowLastRow">&#8582;</div>
 		</div>
 		<div id="log-entries-table-wrapper">
 			<table class="log-entries-table">
@@ -30,7 +30,7 @@
 					</td>
 				</tr>
 				<tr v-if="filteredEntries.length === 0">
-					<td :colspan="shownColumns.length" class="empty-log">
+					<td :colspan="shownColumns.length" class="empty-log-icon">
 						&bemptyv;
 					</td>
 				</tr>
@@ -92,7 +92,7 @@ export default {
 			// Columns in the log. Each columns has a FIXED with, except the last one!
 			// This is the only way to not let the table overflow its wrapper DIV.
 			columns: [
-				{ key: "timestamp", name: "ms", width: "40px", show: true },
+				{ key: "timestamp", name: "sec", width: "40px", show: true },
 				{ key: "level", name: "lvl", width: "40px", show: true },
 				{ key: "message", name: "msg", width: undefined, show: true }
 			],
@@ -125,7 +125,7 @@ export default {
 	created() {
 		// when on mobile the redefine console.log methods (because there is no browser log on mobile)
 		//if (process.env.NODE_ENV === "mobile") 
-		//this.redefineConsoleMethods()
+		this.redefineConsoleMethods()
 	},
 	mounted() {
 		this.debug("Mobile Debug log started.")
@@ -169,7 +169,7 @@ export default {
 			if (!Number.isInteger(level)) level = LEVEL.INFO
 			if (level < this.logLevel) return
 			this.logEntries.push({
-				timestamp: Date.now() - this.startTime,
+				timestamp: Math.round((Date.now() - this.startTime) / 1000),
 				level: level,
 				message: args
 			})
@@ -321,6 +321,7 @@ export default {
 			left: calc(50% - 30px);
 			width: 50px;
 			height: 30px;
+			cursor: pointer;
 			color: black;
 			background: #AAA;
 			font-size: 25px;
@@ -343,7 +344,8 @@ export default {
 			display: flex;
 			flex-direction: row;
 			justify-content: space-between;
-			padding: 5px 10px;
+			padding: 1px 10px;
+			border-top: 1px solid rgba(0, 0, 0, 0.5);
 		}
 
 		.filter-input {
@@ -368,7 +370,7 @@ export default {
 			flex-grow: 1;
 		}
 
-		.empty-log {
+		.empty-log-icon {
 			text-align: center;
 			color: lightgrey;
 			font-size: 20px;
@@ -386,6 +388,9 @@ export default {
 				background-color: lightgrey;
 				font-weight: bold;
 				font-size: 12px;
+				.timestamp, .level {
+					cursor: pointer;
+				}
 				td {
 					text-align: center;
 					padding: 2px 1px; 
@@ -420,17 +425,20 @@ export default {
 		}
 	}
 
-
 	.line-break {
 		white-space: normal;
-		padding-left: 1em;
-    text-indent: -1em;
+		//padding-left: 1em;
+    //text-indent: -1em;
 	}
 
 	.no-wrap {
 		white-space: nowrap;
 		overflow-x: hidden;
 		text-overflow: ellipsis;
+	}
+
+	.line-break-button, .show-all-cols, .show-last-row, .clear-log {
+		cursor: pointer;
 	}
 
 	tr.error {
