@@ -8,7 +8,7 @@
 		aria-hidden="true"
 	>
 		<div class="modal-dialog" :class="{'modal-dialog-centered': centered}">
-			<div class="modal-content" :class="modalContentClass">
+			<div class="modal-content shadow" :class="modalContentClass">
 				<div class="modal-header">
 					<slot name="modal-header">
 						<i :class="headerIconClass" class="bounce-anim-icon"></i>

@@ -25,46 +25,42 @@
 				/>
 			</b-card>
 
-			<div :class="{ 'collapse-max-height': flowState < 4 }" class="transition-all">
-				<b-card :class="{ 'hide-left': flowState < 4 }" class="chat-bubble shadow-sm">
-					<b-card-text v-html="$t('niceToMeetYou', { nickname: user.name })" />
-				</b-card>
-			</div>
-
-
+			<b-card :class="{ 'hide-left': flowState < 4 }" class="chat-bubble shadow-sm">
+				<b-card-text v-html="$t('niceToMeetYou', { nickname: user.name })" />
+			</b-card>
+			
 			<!-- create or join a team buttons -->
-			<div :class="{ 'collapse-max-height': flowState < 5 }" class="transition-all">
-				<b-card	id="createOrJoinBubble"	:class="{ 'hide-left': flowState < 5 }"	class="chat-bubble shadow-sm">
-					<b-card-text v-html="$t('createOrJoin')" />
-				</b-card>
+			<b-card	id="createOrJoinBubble"	:class="{ 'hide-left': flowState < 5 }"	class="chat-bubble shadow-sm">
+				<b-card-text v-html="$t('createOrJoin')" />
+			</b-card>
 
-				<div id="joinOrCreateButtons" :class="{ 'hide-left': flowState < 6 }" class="mb-3 transition-all">
-					<button
-						id="joinTeamButton"
-						:class="{
-							'btn-primary': true,
-							'moveToCenterFromLeft active': flowState >= 10 && flowState <= 12,
-							opacity0: ![6,10,11,12].includes(flowState),
-						}"
-						class="btn"
-						@click="chooseJoinTeam()"
-					>
-						{{ $t("joinTeamButton") }}
-					</button>
-					<button
-						id="createNewTeamButton"
-						:class="{
-							'btn-primary': true,
-							'moveToCenterFromRight active': flowState >= 20,
-							opacity0: [10,11,12].includes(flowState),
-						}"
-						class="btn"
-						@click="chooseCreateNewTeam()"
-					>
-						{{ $t("createNewTeamButton") }}
-					</button>
-				</div>
+			<div id="joinOrCreateButtons" :class="{ 'hide-left': flowState < 6 }" class="mb-3 transition-all">
+				<button
+					id="joinTeamButton"
+					:class="{
+						'btn-primary': true,
+						'moveToCenterFromLeft active': flowState >= 10 && flowState <= 12,
+						opacity0: ![6,10,11,12].includes(flowState),
+					}"
+					class="btn"
+					@click="chooseJoinTeam()"
+				>
+					{{ $t("joinTeamButton") }}
+				</button>
+				<button
+					id="createNewTeamButton"
+					:class="{
+						'btn-primary': true,
+						'moveToCenterFromRight active': flowState >= 20,
+						opacity0: [10,11,12].includes(flowState),
+					}"
+					class="btn"
+					@click="chooseCreateNewTeam()"
+				>
+					{{ $t("createNewTeamButton") }}
+				</button>
 			</div>
+			
 
 			<!-- Join a team - form (flowState == 10) -->
 			<b-card :class="{ 'collapse-max-height': ![10,11,12].includes(flowState) }" class="chat-bubble chat-right">
@@ -434,8 +430,8 @@ export default {
 		startChatAnimation() {
 			if (this.chatAnimationStarted) return  // start chat animation only once
 			this.chatAnimationStarted = true
-			let smallDelay = 500  //ms
-			let mediumDelay = 2500 // ms
+			let smallDelay = 500   // ms
+			let mediumDelay = 2000 // ms
 
 			// If we are running inside a Cypress test, then speedup animation.
 			if (window.Cypress || process.env.NODE_ENV === "development") {

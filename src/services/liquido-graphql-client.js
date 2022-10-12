@@ -103,8 +103,8 @@ const JQL = {
 	TEAM: JQL_TEAM,
 	PROPOSAL: JQL_PROPOSAL,  // Javascript cannot reference own object property. So JQL_PROPOSAL must be its own const above. :-(
 	CREATE_OR_JOIN_TEAM_RESULT: `{ ` +
-		`team { id teamName inviteCode admins { name email mobilephone } members { name email mobilephone } } ` +
-		`user { id name email mobilephone } ` + 
+		`team ${JQL_TEAM} ` +
+		`user ${JQL_USER} ` + 
 		`jwt }`, 
 	POLL: JQL_POLL,
 }
