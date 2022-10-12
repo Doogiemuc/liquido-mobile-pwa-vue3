@@ -10,7 +10,7 @@
 
 export default {
 	configSource: "common",
-	BASE_URL: "/",                   				// URL path to index.html on client
+	BASE_URL: "/",                   				// Used for loading JS libs in browser. MUST end with '/'
 	LIQUIDO_API_URL: "/liquido-api/v3",  		// Path to Backend API. This will be proxied by Vue devServer in dev. See vue.config.js
 	
 	usernameMinLength: 5,

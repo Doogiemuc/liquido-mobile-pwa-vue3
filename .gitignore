@@ -11,6 +11,11 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 .DS_Store
 
+# Cypress videos from tests
+*.mp4
+
+config/*.production.js
+
 # Runtime data
 pids
 *.pid
@@ -104,4 +109,4 @@ dist
 
 # TernJS port file
 .tern-port
-.DS_Store
+
