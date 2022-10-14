@@ -1,0 +1,10 @@
+{
+  "name": "LIQUIDO",
+  "short_name": "LIQUIDO",
+  "theme_color": "#9fb6d4",
+  "background_color": "#a5b4c6",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/"
+}
