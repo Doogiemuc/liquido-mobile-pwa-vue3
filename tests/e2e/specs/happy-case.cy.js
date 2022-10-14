@@ -68,8 +68,9 @@ context('Happy Case', () => {
 		//WHEN we create a new team
 		cy.visit("/")
 		cy.get("#welcome-chat")
-		cy.get('#userNameInput', {timeout: 8000}).type(fix.adminName).type("{enter}")  // implicitly checks that #userNameInput is not disabled
-		cy.get('#createNewTeamButton').click()
+		cy.get('#userNameInput', {timeout: 8000}).type(fix.adminName).type("{enter}")    // implicitly checks that #userNameInput is not disabled
+		
+		cy.get('#createNewTeamButton').should('be.visible').click()  // Need to wait for button to become visible, because of andimation.
 		cy.get('#teamNameInput').type(fix.teamName)
 		cy.get('#adminMobilephoneInput').type(fix.adminMobilephone)
 		cy.get('#adminEmailInput').type(fix.adminEmail)
@@ -157,7 +158,7 @@ context('Happy Case', () => {
 		//WHEN joining a team
 		cy.visit("/")
 		cy.get('#userNameInput', {timeout: 8000}).type(fix.userName).type("{enter}")  // implicitly checks that #userNameInput is not disabled
-		cy.get('#joinTeamButton').click()
+		cy.get('#joinTeamButton').should('be.visible').click()
 		cy.get('#inviteCodeInput').type(fix.inviteCode)
 		cy.get('#userMobilephoneInput').type(fix.userMobilePhone)
 		cy.get('#userEmailInput').type(fix.userEmail)

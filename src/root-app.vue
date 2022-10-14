@@ -42,7 +42,6 @@ const page_order = {
 	"castVote": 8,
 }
 
-
 /** Liquido Root App */
 export default {
 	name: "LiquidoApp",
@@ -85,7 +84,7 @@ export default {
 			return this.$route.path.match(/(polls|polls\/\d+)$/)
 		},
 		showDebugLog() {
-			return true
+			return process.env.NODE_ENV !== 'production'
 		}
 	},
 	// watch the `$route` to determine the transition to use

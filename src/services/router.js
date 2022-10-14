@@ -5,7 +5,7 @@ import teamHome from "@/views/team-home"
 import pollsPage from "@/views/polls"
 import showPoll from "@/views/poll-show"
 import api from "@/services/liquido-graphql-client"
-//import config from "config"
+import config from "config"
 const log = require("loglevel")
 if (process.env.NODE_ENV === "development") log.enableAll()
 
@@ -101,9 +101,10 @@ const routes = [
 ]
 
 const router = createRouter({
-	//vue-router History mode needs web-server configuration https://router.vuejs.org/guide/essentials/history-mode.html#example-server-configurations
-	//VUE2: mode: "history",     // hash -> with "#" in URL    or "history" -> needs web server configuration
-  history: createWebHistory(),
+	// The history mode withouth hash "#" needs a special web-server configuration! 
+	// https://router.vuejs.org/guide/essentials/history-mode.html#example-server-configurations
+	// Its advantage is that it provides clean SEO conform URLs, e.g. /liquido-mobile/login
+  history: createWebHistory(config.BASE_URL),  // createWebHashHistory(config.BASE_URL),
 	//base: config.BASE_URL || "/",
 	/*
 	scrollBehavior(to, from, savedPosition) {
@@ -181,10 +182,10 @@ async function tryToAuthenticate() {
  * VUE Router next (for VUE 3)
  * https://next.router.vuejs.org/guide/advanced/navigation-guards.html#navigation-guards
  */
-router.beforeEach(async (routeTo /*, routeFrom*/) => {
-	//log.debug("beforeEach ENTER", routeFrom.path, "=>", routeTo.path)
+router.beforeEach(async (routeTo, routeFrom) => {
+	console.log("beforeEach ENTER", routeFrom.path, "=>", routeTo.path)
 	return tryToAuthenticate().then(() => {
-		//log.debug("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
+		console.log("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
 		if (routeTo.path === "/" || routeTo.path === "/index.html") {
 			return {name: "teamHome"}  
 		} else {
@@ -192,7 +193,7 @@ router.beforeEach(async (routeTo /*, routeFrom*/) => {
 		}
 	}).catch(() => {
 		if (process.env.NODE_ENV === "development")
-			//log.debug("vue-router: anonymous", routeFrom.path, "=>", routeTo.path)
+			console.log("vue-router: anonymous", routeFrom.path, "=>", routeTo.path)
 		if (routeTo.meta.public) {
 			return true
 		} else if (routeTo.path === "/" || routeTo.path === "/index.html") {
