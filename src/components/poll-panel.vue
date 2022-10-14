@@ -9,15 +9,15 @@
 		@click="goToPoll(poll.id)"
 	>
 		<template #header>
-			<h1 v-if="readOnly" class="read-only poll-panel-title">
-				<i :class="iconForPoll" />
+			<h2 v-if="readOnly" class="read-only poll-panel-title">
+				<i class="poll-title-icon" :class="iconForPoll" />
 				&nbsp;{{ poll.title }}
-			</h1>
-			<h1 v-else class="poll-panel-title">
+			</h2>
+			<h2 v-else class="poll-panel-title">
 				<i class="fas fa-angle-double-right goto-poll-icon" />
-				<i :class="iconForPoll" />
+				<i  class="poll-title-icon" :class="iconForPoll" />
 				&nbsp;{{ poll.title }}
-			</h1>
+			</h2>
 		</template>
 		<div v-if="!poll.proposals || poll.proposals.length === 0" class="card-body">
 			<p class="text-secondary">
@@ -32,9 +32,9 @@
 						<i class="fas fa-fw" :class="'fa-' + law.icon" />
 					</div>
 					<div class="proposal-header-text d-flex flex-column text-truncate">
-						<h2 class="law-title">
+						<h3 class="law-title">
 							{{ law.title }}
-						</h2>
+						</h3>
 						<div :class="lawSubtitleClasses(law)">
 							<div v-if="canLike(law)" class="like-button" @click.stop.prevent="clickLike(poll.id, law.id)">
 								<i class="far fa-thumbs-up" />&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
@@ -104,7 +104,7 @@ export default {
 			if (!this.poll) return undefined
 			switch (this.poll.status) {
 				case "ELABORATION":
-					return "far fa-comments"   // or fa-poll?
+					return "far fa-comments"        // or fa-poll?
 				case "VOTING":
 					return "fas fa-person-booth"    // or fa-vote-yea?
 				case "FINISHED":
@@ -188,11 +188,11 @@ $proposal_img_size: 32px;
 	}
 
 	.card-header {   
-		border-bottom: none;
+		//border-bottom: none;
 		margin: 0;
-		padding: 0.25rem 10px;
+		padding: 0.5rem 10px;
 		.poll-panel-title {
-			// font-family: 'Libre Baskerville', serif;  // same as .law-title
+			//font-family: 'Libre Baskerville', serif;  // same as .law-title
 			color: $primary;
 			padding: 0;
 			margin: 0;
@@ -203,11 +203,17 @@ $proposal_img_size: 32px;
 			text-overflow: ellipsis;
 		}
 	}
-		
+	
+	.poll-title-icon {
+		width: $proposal_img_size - 3;
+		text-align: center;
+	} 
+
 	.goto-poll-icon {
 		line-height: 1.2; // same as .card-header > h3
 		float: right;
 	}
+
 	.collapse-icon {
 		position: absolute;
 		font-size: 1.2rem;
@@ -236,13 +242,13 @@ $proposal_img_size: 32px;
 		transition: height 0.5s;
 		border: none;
 		&.collapsed-law-panel {
-			height: 18px + $proposal_img_size;
+			height: 16px + $proposal_img_size;  // just right enough to not see the description.
 		}			
 		.proposal-header-text {
-			margin-bottom: 5px;
+			margin-bottom: 2px;
 		}
 		.law-title {
-			margin-bottom: 3px;
+			margin-bottom: 0;
 			padding: 0;
 			font-size: 1rem !important;
 			line-height: 18px;
@@ -286,7 +292,7 @@ $proposal_img_size: 32px;
 			min-height: $proposal_img_size;
 			max-height: $proposal_img_size;
 			height: $proposal_img_size;
-			margin-right: 10px;
+			margin-right: 8px;
 		}
 
 		.law-description {

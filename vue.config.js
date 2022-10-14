@@ -9,8 +9,8 @@ const path = require("path")
  * @type {import('@vue/cli-service').ProjectOptions}
  */
 module.exports = {
-	publicPath: process.env.NODE_ENV === 'production'
-    ? '/liquido-mobile'
+	publicPath: process.env.NODE_ENV === 'int'   //TODO: can I load this from config.<env>.js file to have it in one place?
+    ? '/liquido-mobile'    			// 'if you set this to a subdir, eg. /liquido-mobile', then you MUST also change BASE_URL in config.<env>.js
     : '/',
 	devServer: {
 		port: 3001,   // Port for frontend when developing.

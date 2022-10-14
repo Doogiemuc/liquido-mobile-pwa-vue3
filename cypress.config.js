@@ -1,6 +1,7 @@
 const { defineConfig } = require('cypress')
 
 module.exports = defineConfig({
+	//TODO: set different configuraiton parameters according to NODE_ENV: LOCAL,TEST,INT,PROD
   env: {
     LIQUIDO_API: 'http://localhost:8080/liquido-api',
     devLoginToken: '998877',

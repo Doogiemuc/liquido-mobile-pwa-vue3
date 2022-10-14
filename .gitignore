@@ -11,7 +11,8 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 .DS_Store
 
-# Cypress videos from tests
+# Cypress screenshots & videos from tests
+tests/e2e/screenshots
 *.mp4
 
 config/*.production.js

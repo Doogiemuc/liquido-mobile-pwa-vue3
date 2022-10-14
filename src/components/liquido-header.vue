@@ -71,14 +71,14 @@ export default {
     */
 
 		goBack() {
-			console.log("Back", this.backLink)
+			//console.log("Back", this.backLink)
 			if (this.backLink === "BACK") this.$router.go(-1)
 			else if (this.backLink) this.$router.push(this.backLink)
 		},
 
 		clickLiquidoTitle() {
 			/*
-			//TOOD: what todo when clicking header? Where to go?
+			//TOOD: what todo when clicking header? Where to go? => Maybe List of polls?
 			if (this.$route.path !== "/welcome" && this.$route.path !== "/polls" && this.$route.path !== "/login") {
 				this.$router.push({name: "polls"})
 			}

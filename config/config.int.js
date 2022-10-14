@@ -1,11 +1,15 @@
 //
-// Configuration for LIQUIDO mobile PWA in INT environment
+// Configuration for LIQUIDO mobile PWA in INT environment   (AWS local apache on lightsail instance)
 //
-import _ from "lodash"
 import commonConfig from "./config.common.js"
 
-let config = {
-	LIQUIDO_API_URL: 'http://liquido-int-env.aws:8080/liquido-api/',  // will be proxied by Vue devServer. See vue.config.js
+let intConfig = {
+	configSource: "int",
+	LIQUIDO_API_URL: "http://52.59.209.46:7180/liquido-api/v3",
+	BASE_URL: "/liquido-mobile/",   // Base URL for router and links in HTML head must end with '/'
+	voterTokenSecret: "intVoterTokenSecret234",
 }
 
-export default _.merge(commonConfig, config)
+let mergedConfig = { ...commonConfig, ...intConfig }
+
+export default mergedConfig

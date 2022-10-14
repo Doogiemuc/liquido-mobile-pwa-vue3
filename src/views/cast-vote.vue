@@ -35,17 +35,6 @@
 					/>
 				</template>
 			</draggable>
-			<div class="collapse-icon-wrapper">
-				<a
-					v-if="poll && poll.proposals && poll.proposals.length > 0"
-					class="collapse-icon"
-					:class="{'collapsed' : collapsed}"
-					href="#"
-					@click="toggleBallotCollapse()"
-				>
-					<i class="fa" />
-				</a>
-			</div>
 		</b-card>
 
 		<div v-if="canCastVote" class="text-center mb-5">
@@ -68,7 +57,7 @@
 			<div class="text-center mb-2">
 				<b-button id="verifyBallotButton" variant="primary" size="sm" @click="verifyBallot">
 					{{ existingBallot.checksum }}
-					<i v-if="ballotIsVerified" class="fas fa-check-circle"></i>
+					<i v-if="ballotIsVerified" class="fas fa-check-circle text-success"></i>
 				</b-button>
 			</div>
 			<p v-if="ballotIsVerified" id="ballotIsVerifiedInfo">
@@ -101,6 +90,10 @@
 		<div class="alert liquido-info">
 			<i class="fas fa-info-circle float-end" />
 			<p v-html="$t('castVoteInfo')"></p>
+		</div>
+
+		<div class="text-muted cursor-pointer mt-5" @click="gotoPolls">
+			<i class="fas fa-angle-left"></i> {{ $t('backToPolls') }}
 		</div>
 	</div>
 </template>
@@ -136,12 +129,12 @@ export default {
 				voteCastedSuccessfully: "Deine Stimme wurde erfolgreich gezählt.",
 				voteUpdatedSuccessfully: "Deine Stimme wurde erfolgreich aktualisiert.",
 				voteCastError: "Es gab leider einen technischen Fehler beim Abgeben deiner Stimme. Bitte versuche es später noch einmal.",
-				backToPolls: "Zurück zur den Abstimmungen",
 				updateBallotInfo: "Du hast in dieser Abstimmung bereits eine Stimme abgegeben. In <span class='liquido'></span> kannst du deinen Stimmzettel " + 
 					"auch jetzt noch ändern, so lange die Wahlphase dieser Abstimmung noch läuft.",
 				checksumOfYourBallot: "Mit dieser Checksumme kannst du prüfen ob dein Stimmzettel korrekt gezählt wurde:",
 				verifyBallotButton: "Prüfen",
-				ballotIsVerified: "Deine Stimme wurde erfolgreich gezählt."
+				ballotIsVerified: "Deine Stimme wurde erfolgreich gezählt.",
+				backToPolls: "Zurück zu euren Abstimmungen"
 			},
 		},
 	},
@@ -299,7 +292,7 @@ export default {
 		
 	},
 	methods: {
-		/** Collapse the descriptions of all proposals in the ballot */
+		/** Collapse the descriptions of all proposals in the ballot (not used) */
 		toggleBallotCollapse() {
 			this.$refs["proposalInBallot"].forEach(pollPanel => {
 				//console.log("toogle collapse on", pollPanel)
@@ -347,6 +340,10 @@ export default {
 			})
 		},
 
+		gotoPolls() {
+			this.$router.push({name: "polls"})
+		}
+
 	},
 }
 </script>
@@ -376,8 +373,8 @@ export default {
 	background-color: $input-bg;
 	padding: 1rem;
 
-	.law-panel {
-		margin-bottom: 1rem;  // need some space between proposals to make it easier to drag & sort them
+	.law-panel:not(:last-child) {
+		margin-bottom: 0.5rem;  // need some space between proposals to make it easier to drag & sort them
 		cursor: grab;
 	}
 
@@ -427,7 +424,9 @@ export default {
 	margin: 0 auto;
 }
 
-
+.cursor-pointer {
+	cursor: pointer;
+}
 
 
 </style>

@@ -11,6 +11,8 @@ let team1 = undefined
 let team2 = undefined
 let poll1 = undefined
 
+let jwtSecret = "liquido_jwt_secret_that_must_be_very_long%"
+
 function createLiquidoJwt(name, email, mobilephone) {
 	return jsonwebtoken.sign(
 		{ 
@@ -18,7 +20,7 @@ function createLiquidoJwt(name, email, mobilephone) {
 			email: email,
 			mobilephone: mobilephone 
 		}, 
-		config.jwtSecret,
+		jwtSecret,
 		{ 
 			expiresIn: Math.floor(Date.now() / 1000) + (60 * 60),
 			audience: "liquido-users",
