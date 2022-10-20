@@ -1,0 +1,17 @@
+# Apache2 URL rewrite rules that are needed for VUE router WebHistoryMode
+# https://router.vuejs.org/guide/essentials/history-mode.html#memory-mode
+# This file needs to be uploaded to where you host the PWA.
+
+<IfModule mod_negotiation.c>
+  Options -MultiViews
+</IfModule>
+
+# You must adapt RewriteBase if your serve LIQUIDO index.html from a subdirectory of your webspace!
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
