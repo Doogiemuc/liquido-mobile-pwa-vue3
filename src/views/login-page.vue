@@ -25,7 +25,7 @@
 				:placeholder="$t('mobilephonePlaceholder')"
 				:invalid-feedback="$t('mobilephoneInvalid')"
 			/>
-			<div class="text-right">
+			<div class="text-end">
 				<button id="requestTokenButton" :disabled="requestTokenButtonDisabled" class="btn btn-primary" @click="requestAuthToken">
 					<div v-if="waitUntilNextRequestSecs > 0">
 						{{ $t('TokenSent') }}&nbsp;<b-spinner small />
@@ -81,7 +81,7 @@
 				:invalid-feedback="$t('emailInvalid')"
 				@keypress.enter="requestEmailToken"
 			/>
-			<div class="text-right">
+			<div class="text-end">
 				<button id="requestEmailButton" type="button" :disabled="sendLinkButtonDisabled" class="btn btn-primary" @click="requestEmailToken">
 					{{ $t("SendLink") }}
 				</button>
@@ -156,7 +156,7 @@ export default {
 	props: {
 		// These props are set from URL parameters, e.g. when user logs in via the email link
 		email: { type: String, required: false, default: undefined },
-		emailToken: { type: String, required: false, default: undefined },		// one time token from email (calles "token=" in URL query!)
+		emailToken: { type: String, required: false, default: undefined },		// one time token from email (called "token=" in URL query!)
 	},
 	data() {
 		return {
@@ -247,8 +247,8 @@ export default {
 			this.authToken = undefined
 			this.tokenErrorMessage = undefined
 			this.emailErrorMessage = undefined
-			// send devLoginToken, so that beckend fakes the request and will not call Twilio
-			let devLoginToken = ["development", "local", "test"].includes(process.env.NODE_ENV) ? config.devLogin.token : undefined
+			// WHEN testUser loggs in, THEN also send devLoginToken, so that backend fakes the request and will not call Twilio.
+			let devLoginToken = this.mobilephone === config.devLogin.mobilephone ? config.devLogin.token : undefined
 			console.debug("requestAuthToken for", this.mobilephone, devLoginToken)
 
 			api.requestAuthToken(this.mobilephone, devLoginToken)

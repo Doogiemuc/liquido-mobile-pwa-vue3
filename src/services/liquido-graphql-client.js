@@ -182,12 +182,21 @@ pollsCache.put("polls", [])  // make sure there is at least an empty array, unti
  */
 let graphQlApi = {
 
+  // Implementation note: All API methods do not have any error handling.
+	// There is only some logging in the axios interceptor above.
+	// If something goes wrong, then the caller is responsible to catch()
+	// and process the error.
+
 	/**
 	 * Ping GraphQL backend API and check if everything is setup correctly.
 	 * @returns response to HTTP HEAD request. (This might be a 401 - access denied)
 	 */
 	async pingApi() {
 		return axios.head('/_ping')  // ping baseUrl set via config
+			.then(res => {
+				console.log("Ok, LIQUIDO backend is reachable at ", config.LIQUIDO_API_URL)
+				return res
+			})
 	},
 
 	/**
@@ -419,6 +428,20 @@ let graphQlApi = {
 			// There is deliberately no error handling here, because we can't handle the error in this method :-)
 			// Only catch errors if you can do something about it. Otherwise simply let the rejection bubble up the call chain.
 			// Further up some UI method will do something about the error, e.g. show an meaningful error message to the user.
+	},
+
+	/**
+	 * Get info about a team that I like to join, when I have an inviteCode
+	 * @param {String} inviteCode a team's inviteCode
+	 * @returns the team
+	 */
+	async getTeamForInviteCode(inviteCode) {
+		let graphQL = `query { getTeamForInviteCode(inviteCode: "${inviteCode}") ${JQL.TEAM} }`
+		let variables = {
+			inviteCode: inviteCode
+		}
+		return graphQlQuery(graphQL, variables)
+			.then(res => res.data.getTeamForInviteCode)
 	},
 
 	async joinTeam(inviteCode, member) {

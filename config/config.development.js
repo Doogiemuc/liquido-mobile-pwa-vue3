@@ -7,16 +7,10 @@ let devConfig = {
 	configSource: "development",
 	//default from config.common.js: LIQUIDO_API_URL: "/liquido-api/v3",  // will be proxied by Vue devServer. See vue.config.js
 	voterTokenSecret: "devVoterTokenSecret",
-	inviteLinkPrefix: "http://www.liquido.me/invite?inviteCode=",
 
-	devLogin: {
-		// default logins for login page only available in NODE_ENV=development
-		adminEmail: "adminTeamOne@liquido.me",
-		adminTeamname: "TeamOne",
-		memberEmail: "member0@TeamOne.org",
-		memberTeamname: "TeamOne",
-		token: 998877,
-	}
+	//can point local dev environment to some other backend, eg.
+	//LIQUIDO_API_URL: "http://52.59.209.46:7180/liquido-api/v3",
+
 }
 let mergedConfig = { ...commonConfig, ...devConfig }  // Mind the parameter order _merge(target, sources...)
 

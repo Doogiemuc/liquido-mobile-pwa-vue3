@@ -104,8 +104,9 @@ export default {
 	mounted() {
 		api.pingApi()
 			.catch(res => {
+				console.log("============", res)
 				if (res.response && res.response.status === 401) {
-					console.info("Login is expired")
+					console.log("Login is expired")
 					if (this.$route.name !== "login") this.$router.push({name: "login"})
 				} else
 				if (res.response && res.response.status > 200) {

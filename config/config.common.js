@@ -18,8 +18,20 @@ export default {
 	pollTitleMinLength: 10,
 	avatarPath: "./img/avatars",
 	voterTokenSecret: "dummyVoterTokenSecret",  // change this for production builds !!!
-	inviteLinkPrefix: "http://www.liquido.me/invite?inviteCode=",
+	inviteLinkPrefix: "http://localhost:3001/welcome?inviteCode=",
 
-	//TODO: implement these settings per Team!
+	//TODO: implement these settings per Team! in the backend!
 	allowMembersToInvite: true,
+
+	// This is used in tests. Also tests against PROD
+	devLogin: {
+		adminEmail: "adminTeamOne@liquido.vote",
+		adminTeamname: "AdminTeamOne",
+		mobilephone: "+495551237334",
+
+		memberEmail: "member0@TeamOne.org",
+		memberTeamname: "AdminTeamOne",
+
+		token: 998877,
+	}
 }

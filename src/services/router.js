@@ -7,7 +7,7 @@ import showPoll from "@/views/poll-show"
 import api from "@/services/liquido-graphql-client"
 import config from "config"
 const log = require("loglevel")
-if (process.env.NODE_ENV === "development") log.enableAll()
+/*if (process.env.NODE_ENV === "development") */  log.enableAll()
 
 const routes = [
 	{
@@ -47,6 +47,9 @@ const routes = [
 		path: "/welcome",
 		name: "welcome",
 		component: welcomeChat,
+		props: route => ({
+			inviteCodeQueryParam: route.query.inviteCode
+		}),
 		meta: {
 			public: true
 		}
@@ -131,13 +134,14 @@ const IS_ANONYMOUS = -99
  * IF this fails, then remove the (expired or invalid) JWT from localstorage
  * ELSE return login information
  * 
- * @return A Promise that will resolve to the login data or reject when no or invalid JWT.
+ * @return A Promise that will resolve to the login data or reject when no, invalid or expired JWT.
  */
 async function tryToAuthenticate() {
 	if (api.isAuthenticated()) return Promise.resolve(IS_ALREADY_AUTHENTICATED);  // although JWT could be expired, but this way we save one backend call
 	let jwt = localStorage.getItem(api.LIQUIDO_JWT_KEY);
+	log.debug("tryToAuthenticate jwt: ", jwt)
 	if (jwt) {
-		console.log("Attempting to login with JWT from localStorage ...", jwt)
+		log.debug("Attempting to login with JWT from localStorage ...", jwt)
 		return api.loginWithJwt(jwt)
 			.then(res => {
 				log.info("Successfully authenticated from localStorage")
@@ -182,18 +186,17 @@ async function tryToAuthenticate() {
  * VUE Router next (for VUE 3)
  * https://next.router.vuejs.org/guide/advanced/navigation-guards.html#navigation-guards
  */
-router.beforeEach(async (routeTo, routeFrom) => {
-	console.log("beforeEach ENTER", routeFrom.path, "=>", routeTo.path)
+router.beforeEach(async (routeTo, routeFrom ) => {
+	log.debug("beforeEach ENTER", routeFrom.path, "=>", routeTo.path)
 	return tryToAuthenticate().then(() => {
-		console.log("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
+		log.debug("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
 		if (routeTo.path === "/" || routeTo.path === "/index.html") {
 			return {name: "teamHome"}  
 		} else {
-			return true // allow navigation
+			return true // allow authenticated navigation
 		}
 	}).catch(() => {
-		if (process.env.NODE_ENV === "development")
-			console.log("vue-router: anonymous", routeFrom.path, "=>", routeTo.path)
+		log.debug("vue-router: anonymous", routeFrom.path, "=>", routeTo.path)
 		if (routeTo.meta.public) {
 			return true
 		} else if (routeTo.path === "/" || routeTo.path === "/index.html") {

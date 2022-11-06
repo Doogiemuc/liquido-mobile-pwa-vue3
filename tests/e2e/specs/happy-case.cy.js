@@ -5,6 +5,8 @@
  */
 //import { inspect } from 'util'  // better than JSON.stringify
 
+
+import config from "../../../config/config.test.js"
 const { expect } = require("chai");
 
 let now = Date.now() % 100000
@@ -86,11 +88,9 @@ context('Happy Case', () => {
 		})
 		
 		// AND there is an invite link with inviteCode
-		//cy.get('#newTeamInviteCode').invoke('text').should('have.length.of.at.least', 6)
-		cy.get('#inviteLink').then(elems => {
-			expect(elems[0], "Need #inviteLink elem").to.exist
-			let matches = elems[0].href.match(/http.*inviteCode=([a-zA-Z0-9]+)$/)
-			fix.inviteCode = matches[1]  // first matching group, ie. the inviteCode
+		cy.get('#inviteLink').invoke("attr", "data-invitecode").then(inviteCode => {   // "data-invitecode" attribute in case!
+			expect(inviteCode).to.have.length(config.inviteCodeLength)
+			fix.inviteCode = inviteCode
 			console.log("New team inviteCode=", fix.inviteCode)
 			cy.log("InviteCode="+fix.inviteCode)
 		})

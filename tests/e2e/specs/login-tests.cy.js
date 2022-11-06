@@ -11,11 +11,7 @@ let now = Date.now() % 10000
 console.log("Running Cypress login-test.js (test_uuid="+now+")", "NODE_ENV="+process.env.NODE_ENV)
 
 context('Login Test', () => {
-	/** Test fixtures, fixed test data */
-	before(() => {
-		
-	})
-
+	/** Load test fixtures, fixed test data */
 	beforeEach(() => {
 		console.log("===================================================")
 		console.log("    TEST CASE >>>", Cypress.mocha.getRunner().suite.ctx.currentTest.title, "<<<")
@@ -71,25 +67,27 @@ context('Login Test', () => {
 
 		//WHEN enter (mock) SMS authToken
 		cy.get("#authTokenInput").type(this.fix.devLogin.token).type("{enter}")
+
 		//THEN user is logged in and teamHome is shown
 		cy.get("#team-home")
 	})
 
-	it.only('(Simulate) Login via Email', function() {
+	it('(Simulate) Login via Email', function() {
 		//GIVEN on login page
 		cy.visit("/login")
 		cy.get("#login-page")
 
-		//WHEN enter mobile phone of test admin user
+		//WHEN test user enters his email
 		cy.get("#loginEmailInput").type(this.fix.admin.email).type("{enter}")
-		// AND click request SMS token button
+		// AND click request Email button
 		cy.get("#requestEmailButton").click()
 
+		//THEN email is sent.
+		cy.get("#emailSuccessMessage").should("exist")
+		cy.get("#emailErrorMessage").should("not.exist")
 
-
-		//THEN user is logged in and teamHome is shown
-		//cy.get("#team-home")
-
+		//Now user clicks on the link in the email
+		//TODO: get login link from eg. mailtrap.io
 	})
 
 })

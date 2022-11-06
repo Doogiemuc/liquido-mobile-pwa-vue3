@@ -123,6 +123,10 @@ button, [type="button"], [type="reset"], [type="submit"], input {
 		}
 	}
 
+	.chat-bubble-error {
+		background-color: lightcoral;
+	}
+
 	.input-bubble {
 		background-color: $input-bg;
 		.card-header {
