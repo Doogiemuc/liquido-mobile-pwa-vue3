@@ -52,7 +52,7 @@
 				></liquido-input>
 			</b-collapse>
 			<div 
-				v-if="tokenSentSuccessfully" 
+				v-if="tokenSentSuccessfully && !tokenErrorMessage" 
 				id="tokenSuccessMessage"
 				class="alert alert-success mt-3"
 			>
@@ -131,7 +131,6 @@ export default {
 				authTokenInputInvalid: "Der Login-Token hat genau sechs Ziffern.",
 				MobilephoneNotFound: "Tut mir leid, ich kenne diese Telefonnummer in LIQUIDO nicht. Bitte <a href='/'>registriere dich zuerst.</a>",
 				TokenInvalid: "Der eingegebene Login-Token wurde nicht akzeptiert. Hast du dich vielleicht einfach nur vertippt? Bitte versuche es noch einmal.",
-				TokenDoesNotBelongToMobilephone: "Dieser Login-Token gehört jemand anderem. Du darfst dich nur mit <b>deinem Token von deinem Handy</b> einloggen.",
 				AuthtokenSentSuccessfully: "Ok, die SMS wurde verschickt. Bitte gib den Login-Token aus der SMS ein.",
 				RequestAuthTokenError: "Login-Token konnte nicht angefordert werden. Bitte versuche es noch einmal.",
 
@@ -284,20 +283,9 @@ export default {
 					this.$router.push({name: "teamHome"})
 				})
 				.catch(err => {
-					// Show a usefull, human readable error message that actually describes what happend
-					this.tokenSentSuccessfully = false
-					if (err.response &&	err.response.data) {
-						if(err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_MOBILE_NOT_FOUND) {
-							console.log("No user with that mobilephone.")
-							this.tokenErrorMessage = this.$t("TokenDoesNotBelongToMobilephone")
-						} else {
-							console.log("Cannot login with token. User is not authorized.")
-							this.tokenErrorMessage = this.$t("TokenInvalid") 
-						}
-					} else {
-						console.error("Something is wrong with our auth backend", err)
-						this.tokenErrorMessage = this.$t("TokenInvalid") 
-					}					
+					// Show a human readable error message
+					console.error("Entered auth token is not valid", err)
+					this.tokenErrorMessage = this.$t("TokenInvalid") 
 				})
 		},
 

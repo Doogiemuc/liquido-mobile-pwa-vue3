@@ -88,7 +88,7 @@ context('Happy Case', () => {
 		})
 		
 		// AND there is an invite link with inviteCode
-		cy.get('#inviteLink').invoke("attr", "data-invitecode").then(inviteCode => {   // "data-invitecode" attribute in case!
+		cy.get('#inviteLink').invoke("attr", "data-invitecode").then(inviteCode => {   // "data-invitecode" attribute in lowercase!
 			expect(inviteCode).to.have.length(config.inviteCodeLength)
 			fix.inviteCode = inviteCode
 			console.log("New team inviteCode=", fix.inviteCode)

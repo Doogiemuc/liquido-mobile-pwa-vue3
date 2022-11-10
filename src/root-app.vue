@@ -102,9 +102,9 @@ export default {
 		},
 	},
 	mounted() {
+		//TODO: should I move this to main.js?  Would be first. But there I cannot display any error.
 		api.pingApi()
 			.catch(res => {
-				console.log("============", res)
 				if (res.response && res.response.status === 401) {
 					console.log("Login is expired")
 					if (this.$route.name !== "login") this.$router.push({name: "login"})
@@ -113,7 +113,6 @@ export default {
 					console.error("Network seems ok, but cannot ping backend", res)
 					this.$refs.rootPopupModal.showWarning(this.$t("BackendNotReachable"))
 				} else {
-					// This can only happen when backend is down while client clicks.
 					console.error("No network. Backend is not reachable at all", res)  
 					this.$refs.rootPopupModal.showWarning(this.$t("NetworkOffline"))
 					//TODO: Do something: Show a general "offline" message (or implement an offline mode?)

@@ -355,6 +355,7 @@ export default {
 	},
 	data() {
 		return {
+			// user data from input fields
 			user: {
 				name: undefined,
 				email: undefined,
@@ -373,7 +374,7 @@ export default {
 
 			// Our polite and nice chat bot logic :-)
 			// Chat bubbles are consecutively blended in along these states.
-			//TODO: create a plantUML flow chart for this.  /welcome -> IF logged in THEN Greet -> create new Team or join team, ...
+			//TODO: create a plantUML flow chart for this.  /welcome -> IF logged in THEN Greet -> create new Team or join team, switch team?
 			FLOW: {
 				Start: 0,
 				Welcome: 1,											// animate / fade-in the next chat-bubble
@@ -580,7 +581,9 @@ export default {
 					//MAYBE:  let errCode = err?.response?.data?.liquidoErrorCode  
 					if (errCode === api.err.TEAM_WITH_SAME_NAME_EXISTS) {
 						this.$root.$refs.rootPopupModal.showError(this.$t("teamWithSameNameExists"), this.$t("Error"))
-					} else {
+					} else 
+					//TODO: if moblephone or email is already registered, THEN forward to login
+					{
 						this.$root.$refs.rootPopupModal.showError(this.$t("cannotCreateNewTeam"), this.$t("Error"))
 						log.error("Cannot create new team", err)
 					}
