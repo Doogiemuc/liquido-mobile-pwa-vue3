@@ -1,5 +1,5 @@
 <template>
-	<header id="liquidoHeader" class="liquido-header shadow-sm">
+	<header id="liquidoHeader" class="liquido-header">
 		<div class="header-left">
 			<a v-if="backLink" href="#" @click="goBack">
 				<i class="fas fa-angle-left" />
@@ -108,11 +108,11 @@ export default {
 	color: $primary;
 	background-color: $header-bg;
 	border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+	box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.6);
 	font-size: 1.5rem;
 	display: flex;
 	flex-direction: row;
 	
-
 	.header-left {
 		width: 2em;
 		text-align: left;

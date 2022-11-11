@@ -7,7 +7,35 @@
 		</div>
 
 		<!-- list of polls -->
-		<div v-if="!loading" class="poll-list">
+		<div v-if="!loading">
+			<transition-group name="poll-list" tag="div">
+				<div class="poll-list-2">
+					<b-row v-for="poll in filteredPolls" :key="poll.id" class="poll-panel-2" @click="goToPoll(poll.id)">
+						<b-col class="poll-icon-col">
+							<div class="poll-image"><i class="fas fa-fw fa-university"></i></div>
+						</b-col>
+						<b-col class="poll-col-2">
+							<h3 class="poll-title">
+								{{ poll.title }}
+							</h3>
+							<div class="poll-footer">
+								<div v-if="poll.status === 'VOTING'">
+									<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
+									<i class="far fa-calendar-alt"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}
+								</div>
+								<div v-else-if="poll.status === 'FINISHED'">
+									<i class="far fa-check-circle"></i>&nbsp;{{ $t('finishedPoll') }}
+								</div>
+								<div v-else>
+									<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
+								</div>
+							</div>
+						</b-col>
+					</b-row>
+				</div>
+			</transition-group>
+		
+			<!-- list of polls (previous version with poll panels)
 			<transition-group name="poll-list" tag="div">
 				<poll-panel 
 					v-for="poll in filteredPolls"
@@ -17,10 +45,11 @@
 					class="shadow-sm"
 				/>
 			</transition-group>
+			-->
 
 			<p v-if="allPolls.length === 0 && !loading" class="text-center" v-html="$t('noPollYet')" />
 
-			<div v-if="searchResultIsEmpty" class="alert liquido-info text-center" @click="clearSearchAndFilter">
+			<div v-if="searchResultIsEmpty" id="emptySearchResultInfo" class="alert liquido-info text-center" @click="clearSearchAndFilter">
 				<p>{{ $t('noPollsMatchSearch') }}</p>
 			</div>
 
@@ -30,10 +59,6 @@
 			</div>
 		</div>
 		
-		<div v-if="pollStatusFilter === undefined && allPolls.length > 0" class="alert text-muted">
-			<p v-html="$t('allPollsInfo')" />
-		</div>
-
 		<div v-if="pollStatusFilter === 'ELABORATION'" class="alert text-muted">
 			<p v-if="hasPollInElaboration" v-html="$t('pollsInElaborationInfo')" />
 			<p v-else v-html="$t('noPollsInElaboration')" />
@@ -52,7 +77,7 @@
 			<p v-if="!hasFinishedPoll && hasPollInVoting" v-html="$t('butPollInVoting')" />
 		</div>
 	
-		<div v-if="userIsAdmin" class="my-5 alert alert-admin">
+		<div v-if="userIsAdmin" id="createPollInfo" class="alert alert-admin">
 			<p>
 				<i class="fas fa-shield-alt float-end"></i>
 				{{ $t('onlyAdminCanCreateNewPolls') }}
@@ -70,11 +95,10 @@
  * I think meanwhile I redesigned it dozens of times ... and yet it's not perfect :-)
  */
 
-
-//import liquidoInput from "../components/liquido-input"
-import pollPanel from "../components/poll-panel"
+//import pollPanel from "../components/poll-panel"
 import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
+import dayjs from "dayjs"
 
 const pollStatusOrder = {
 	ELABORATION: 0,
@@ -93,7 +117,6 @@ export default {
 				butPollInVoting: "However there is a poll in which you can vote.",
 			},
 			de: {
-				allPollsInfo: "Klicke auf eine Abstimmung für weitere Details.",
 				pollsInElaborationInfo: 
 					"Diese Abstimmungen stehen gerade zur Diskussion. Weitere Wahlvorschläge können hinzugefügt werden. " +
 					"Nachdem euer Admin dann die Abstimmungsphase gestartet hat, könnt ihr jeweils eure Stimme abgeben.",
@@ -109,11 +132,14 @@ export default {
 				onlyAdminCanCreateNewPolls: "Nur du als Admin dieses Teams kannst neue Abstimmungen erstellen. " +
 					"Jeder im Team kann dann seinen Wahlvorschlag zur Abstimmung hinzufügen.",
 				createPoll: "Neue Abstimmung anlegen",
+				votes: "0 Stimmen | 1 Stimme | {n} Stimmen",
+				daysLeft: "Wahl Abgeschlossen | ein Tag noch | noch {n} Tage",
+				numProposals: "Noch keine Wahlvorschläge | ein Wahlvorschlag | {n} Wahlvorschläge",
 			},
 		},
 	},
 	name: "PollComponent",
-	components: { pollPanel },
+	//components: { pollPanel },
 	props: {
 		status: { type: String, required: false, default: undefined },
 	},
@@ -225,6 +251,21 @@ export default {
 			}
 		},
 
+		/** 
+		 * How many days are left for vorting?
+		 * Always return at least "1" day, until poll is in VOTING.
+		 */
+		daysLeft(poll) {
+			if (poll.votingEndAt && poll.status === "VOTING") {
+				let end = dayjs(poll.votingEndAt)
+				let diff = end.diff(dayjs(), "day")
+				return diff > 0 ? diff : 1
+			} else {
+				return 0
+			}
+
+		},
+
 		/**
 		 * Called when the data of one or all polls was updated or reloaded from the backend
 		 * Force a refresh of computed values to update the view.
@@ -232,6 +273,10 @@ export default {
 		pollsChanged() {
 			//console.log("pollsChanged")
 			this.forceRefreshComputed++
+		},
+
+		goToPoll(pollId) {
+			this.$router.push("/polls/" + pollId)
 		},
 
 		gotoCreatePoll() {
@@ -264,27 +309,87 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.poll-list-2 {
+	margin-top: 2em;
+}
+.poll-panel-2 {
+	position: relative;
+	cursor: pointer;
+	&:first-child {
+		.poll-col-2{
+			border-top: 1px solid rgba(0,0,0, 0.1);
+		}
+	}
+	.poll-icon-col {
+		flex: 0 0 40px;  // do not grow or shrink, fixed width
+		display: flex;
+		align-items: center;
+	}
+	.poll-col-2 {
+		margin-right: 10px;
+		padding: 2em 0;
+		border-bottom: 1px solid rgba(0,0,0, 0.1);
+	}
+	
+	.poll-image {
+		color: white;
+		background-color: lightgray;
+		border-radius: 50%;
+		border: 1px solid lightgray;
+		text-align: center;
+		font-size: 1.5em;
+		line-height: 1.2;
+		min-width: 32px;
+		max-width: 32px;
+		width: 32px;
+		min-height: 32px;
+		max-height: 32px;
+		height: 32px;
+	}
+	.poll-title {
+		color: $primary;
+		//font-family: Helvetica, sans-serif;
+		//font-size: 1.1rem;
+		font-weight: bold;
+		margin: 0;
+	}
+	.poll-footer {
+		font-size: 80%;
+		color: #bbb;
+		i:not(:first-child) {
+			margin-left: 10px;
+		}
+	}
+}
+
+
+
+
+
 
 .search-wrapper {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	justify-content: center;
-	margin: 1rem 0.5rem 0.5rem 0.5rem;
-	padding-top: 0.5rem;
+	text-align: center;
+	margin: 2rem 0;
 	color: $secondary;
+	.search-icon {
+		transform: translateX(-150%);
+	}
 }
 #searchInput {
 	color: $secondary;
 	border: 0;
 	flex-grow: 1;
 	max-width: 200px;
+	padding: 5px;
 	margin-right: 0.5rem;
-	border-bottom: 1px solid $secondary;
-	background-color: $poll-list-background;
+	border-bottom: 1px solid rgba(0,0,0, 0.1);
+	//background-color: $poll-list-background;
 	&:focus {
     outline: 0;
 	}
+}
+#emptySearchResultInfo {
+	cursor: pointer;
 }
 
 .poll-list {
@@ -316,9 +421,9 @@ export default {
 }
 */
 
-
-.iconRight {
-	color: $primary;
+#createPollInfo {
+	margin-top: 8rem;
 }
+
 
 </style>

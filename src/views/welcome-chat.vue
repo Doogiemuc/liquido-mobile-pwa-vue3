@@ -226,7 +226,7 @@
 				<p>{{ $t("teamCreated") }}</p>
 				<p class="text-center mb-2">
 					<a id="inviteLink" :href="inviteLinkURL" :data-invitecode="team.inviteCode" @click.prevent="shareLink()">
-						{{ $t("shareThisLink", {inviteCode: team.inviteCode}) }}
+						{{ $t("shareThisLink", {teamName: team.name, inviteCode: team.inviteCode}) }}
 						<i class="fas fa-external-link-alt" />
 					</a>
 				</p>
@@ -330,8 +330,8 @@ export default {
 				adminEmail: "Admin E-Mail",
 				youWillBecomeAdmin: "Du wirst der Admin des neuen Teams.",
 
-				teamCreated: "Ok, dein neues Team ist angelegt. Du kannst deine Freunde in dein Team einladen.",
-				shareThisLink: "Teile diesen Link ({inviteCode})",
+				teamCreated: "Ok, dein neues Team ist angelegt. Mit diesem Link kannst du deine Freunde in dein Team einladen:",
+				shareThisLink: "LIQUIDO Einladung: {{teamName}} ({inviteCode})",
 				tellInvitationCode: "Oder nutze einfach diesen Einadungscode:",
 				scanQrCode: "Oder lass sie diesen QR code scannen:",
 				teamInfo: "Du findest diese Infos später jederzeit wieder auf eurer Team Seite.",

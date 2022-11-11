@@ -8,7 +8,7 @@
 			<b-spinner small />&nbsp;{{ $t('Loading') }}
 		</div>
 		
-		<poll-panel v-if="poll.id" :poll="poll" :read-only="true" class="shadow my-3" />
+		<poll-panel v-if="poll.id" :poll="poll" :read-only="true" class="shadow" />
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
 			<div v-html="$t('cannotFindPoll', {pollId: pollId})" />
@@ -109,10 +109,10 @@ export default {
 			de: {
 				cannotFindPoll: "<h4>Fehler</h4><hr/><p>Diese Abstimmung konnte nicht gefunden werden.</p>",
 				pollInElaborationInfo:
-					"<p>Dieser Abstimmung ist in der <em>Diskussionphase</em>.</p>" +
+					"<p>Dieser Abstimmung ist in der <b>Diskussionphase</b>.</p>" +
 					"<p>Diskutiert die Wahlvorschläge miteinander. In diese Phase kann jeder seinen eigenen Vorschlag noch weiter anpassen und verbessern." +
 					"Wahlvorschläge können noch so lange angepasst und verbessert werden, bis euer Admin dann die <em>Wahlphase</em> für diese Abstimmung startet.</p>",
-				addProposalInfo: "Du kannst deinen eigenen Wahlvorschlag zu dieser Abstimmung hinzufügen.",
+				addProposalInfo: "Und du kannst auch noch deinen eigenen Wahlvorschlag zu dieser Abstimmung hinzufügen.",
 				addProposal: "Vorschlag hinzufügen",
 				startVotingPhaseInfo: 
 					"Hallo Admin! Möchstest du die Wahlphase für diese Abstimmung starten? Dann sind die Wahlvorschläge fixiert und dein Team kann abstimmen.",
@@ -257,4 +257,8 @@ export default {
 }
 </script>
 
-<style lang="scss"></style>
+<style scoped>
+.poll-panel {
+	margin-bottom: 3rem;
+}
+</style>

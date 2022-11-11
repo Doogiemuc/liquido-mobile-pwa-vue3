@@ -26,6 +26,15 @@
 		</div>
 
 		<b-list-group v-else flush>
+			<a
+				v-if="poll.proposals && poll.proposals.length > 0"
+				class="collapse-icon"
+				:class="{'collapsed' : collapsed}"
+				href="#"
+				@click.stop.prevent="toggleCollapse()"
+			>
+				<i class="fa" />
+			</a>
 			<b-list-group-item v-for="law in poll.proposals" :key="law.id" class="proposal-list-group-item" :class="proposalListGroupItemClasses(law.id)">
 				<div class="proposal-header d-flex">
 					<div class="law-image">
@@ -58,15 +67,6 @@
 				<div class="proposal-separator"></div>
 			</b-list-group-item>
 		</b-list-group>
-		<a
-			v-if="poll.proposals && poll.proposals.length > 0"
-			class="collapse-icon"
-			:class="{'collapsed' : collapsed}"
-			href="#"
-			@click.stop.prevent="toggleCollapse()"
-		>
-			<i class="fa" />
-		</a>
 	</b-card>
 </template>
 
@@ -181,7 +181,7 @@ $proposal_img_size: 32px;
 
 .poll-panel {
 
-  border: none !important;
+  //border: none !important;
 
 	&:not(.read-only) {
 		cursor: pointer;
@@ -217,7 +217,7 @@ $proposal_img_size: 32px;
 	.collapse-icon {
 		position: absolute;
 		font-size: 1.2rem;
-		bottom: 0;
+		bottom: 3px;
 		right: 3px;
 		opacity: 0.5;
 	}
@@ -324,16 +324,15 @@ $proposal_img_size: 32px;
 		}
 	}
 
-	/*
+	
 	// sepearator between proposals when poll-panel is expanded
-	.proposal-list-group-item:not(:first-child):not(.collapsed-law-panel) .proposal-separator {
+	.proposal-list-group-item:not(:last-child):not(.collapsed-law-panel) .proposal-separator {
 		position: absolute;
 		left: 10px;
 		right: 10px;
-		top: 1px;
+		bottom: 1px;
 		border-top: 1px solid rgba(0,0,0, 0.1)
 	}
-	*/
 
 	//BUGFIX for bootstrap: inherit border-radius in list-group-flush wrapper
 	.list-group-flush {
