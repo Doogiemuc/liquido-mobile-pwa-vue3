@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+		<meta name="description" content="A modern aproach to Liquid Democracy.">
+    <link rel="shortcut icon" href="./img/icons/favicon.ico">
+		<link rel="stylesheet" href="./css/marvle-mobile-devices-frame.min.css" type="text/css">
+    <title>LIQUIDO</title>
+		<style>
+			body {
+				background-color: white;
+			}
+			.loading-title {
+				font-family: 'Segoe UI', sans-serif;
+				font-size: 24px;
+				text-align: center;
+				color: #0a54a3;
+				margin-top: 10px;
+			}
+
+			.center-device {
+				display: flex;
+				justify-content: center;
+				margin-top: 1rem;
+			}
+
+			/* Kudos to https://github.com/marvelapp/devices.css for their template, that we adapt here. */ 
+			.iphone-x-taskbar {
+				display: flex;
+				align-items: center;             /* vertical */
+				justify-content: space-between;  /* horizontal */
+				height: 40px;  /* same height as .notch */
+				background-color: darkgray;
+			}
+			#taskbar-clock {
+				font-family: "Segoe UI", sans-serif;
+				font-size: 14px;
+				margin-left: 25px;
+			}
+			.taskbar-icons {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+				margin-right: 15px;
+				width: 65px;
+			}
+
+			.liquido-iframe {
+				border: none;
+				width: 100%;
+				height: calc(100% - 40px);
+			}
+
+			/* BUGFIX: .marvel-device.iphone-x .shadow interfers with bootstrap .shadow
+			#rootApp .shadow {
+				border-radius: 0;
+				width: inherit;
+				height: inherit;
+				position: relative;
+				background: none;
+			} */
+		</style>
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but LIQUIDO doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+		
+		<div class="center-device">
+			<div class="marvel-device iphone-x">
+				<div class="notch">
+						<div class="camera"></div>
+						<div class="speaker"></div>
+				</div>
+				<div class="top-bar"></div>
+				<div class="sleep"></div>
+				<div class="bottom-bar"></div>
+				<div class="volume"></div>
+				<div class="overflow">
+						<div class="shadow shadow--tr"></div>
+						<div class="shadow shadow--tl"></div>
+						<div class="shadow shadow--br"></div>
+						<div class="shadow shadow--bl"></div>
+				</div>
+				<div class="inner-shadow"></div>
+				<div class="screen">
+					<div class="iphone-x-taskbar">
+						<div id="taskbar-clock"></div>
+						<div class="taskbar-icons">
+							<div class="taskbar-reception">
+								<img src="/img/iOS-icons/cellular-signal-bars.svg" width="16" height="16">
+							</div>
+							<div class="taskbar-wlan">
+								<img src="/img/iOS-icons/ios-wifi.svg" width="20" height="20">
+							</div>
+							<div class="taskbar-battery">
+								<img src="/img/iOS-icons/ios-battery-full.svg" width="20" height="20">
+							</div>
+						</div>
+					</div>
+					<iframe src="/" class="liquido-iframe"></iframe>
+					<!--div id="app">
+						<h1 class="loading-title">LIQUIDO is loading ...</h1>
+					</div -->
+				</div>
+			</div>
+		</div>
+
+		<script>
+			let now = new Date();
+			let time = now.getHours() + ":" + now.getMinutes();
+			document.getElementById("taskbar-clock").textContent = time;
+		</script>
+
+  </body>
+</html>

@@ -22,6 +22,11 @@ This is a HTML5 based mobile application. A PWA - progressive web application.
 
  # Further References
 
+ # Very nice starter Template One Page Landing Page
+
+  - Kudos to https://github.com/marvelapp/devices.css for their css only iOS mobile phone frame, that we adapt here.
+  - Bootstrap https://bootstrapmade.com/demo/FlexStart/
+
  ## MongoDB Atlas & GraphQL
 
 Very nice howto

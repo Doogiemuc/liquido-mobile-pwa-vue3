@@ -210,7 +210,7 @@ export default {
 		/** Quickly login as an admin user. This is available as a button in the mobile UI when in DEV env.  */
 		devLoginAdmin() {
 			api.logout()
-			api.devLogin(config.devLogin.adminEmail, config.devLogin.adminTeamname, config.devLogin.token).then(() => {
+			api.devLogin(config.devLogin.admin.email, config.devLogin.teamName, config.devLogin.token).then(() => {
 				this.$router.push({name: "teamHome"})
 			}).catch(err => console.error("DevLogin Admin failed!", err))
 		},
@@ -218,7 +218,7 @@ export default {
 		/** Quickly login as a team member. This is available as a button in the mobile UI when in DEV env.  */
 		devLoginMember() {
 			api.logout()
-			api.devLogin(config.devLogin.memberEmail, config.devLogin.memberTeamname, config.devLogin.token).then(() => {
+			api.devLogin(config.devLogin.member.email, config.devLogin.teamName, config.devLogin.token).then(() => {
 				this.$router.push({name: "teamHome"})
 			}).catch(err => console.error("DevLogin Member failed!", err))
 		},

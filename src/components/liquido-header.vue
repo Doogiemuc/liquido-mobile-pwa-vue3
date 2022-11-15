@@ -10,7 +10,7 @@
 			<span class="liquido" @click="clickLiquidoTitle()" />
 		</div>
 		<div class="header-right">
-			<a v-if="isAuthenticated" href="#" aria-label="Team Home" @click="clickTeamIcon()">
+			<a v-if="showTeamIcon" href="#" aria-label="Team Home" @click="clickTeamIcon()">
 				<i class="fas fa-users" />
 			</a>
 		</div>
@@ -43,6 +43,9 @@ export default {
 		height() {
 			return document.getElementById("liquidoHeader").offsetHeight
 		},
+		showTeamIcon() {
+			return this.$route.name !== "welcome" && this.isAuthenticated
+		}
 	},
 	mounted() {
 		//MAYBE: make header smaller when user scrolls down
@@ -86,9 +89,7 @@ export default {
 		},
 
 		clickTeamIcon() {
-			if (this.$route.path === "/welcome") {
-				this.$router.push({name: "login"})
-			} else if (this.$route.path !== "/team") {
+			if (this.$route.name !== "teamHome") {
 				this.$router.push({name: "teamHome"})
 			}
 		},

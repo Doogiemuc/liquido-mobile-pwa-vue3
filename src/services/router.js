@@ -141,7 +141,7 @@ async function tryToAuthenticate() {
 	let jwt = localStorage.getItem(api.LIQUIDO_JWT_KEY);
 	log.debug("tryToAuthenticate jwt: ", jwt)
 	if (jwt) {
-		log.debug("Attempting to login with JWT from localStorage ...", jwt)
+		log.debug("Attempting to login with JWT from localStorage ...")
 		return api.loginWithJwt(jwt)
 			.then(res => {
 				log.info("Successfully authenticated from localStorage")
@@ -186,8 +186,8 @@ async function tryToAuthenticate() {
  * VUE Router next (for VUE 3)
  * https://next.router.vuejs.org/guide/advanced/navigation-guards.html#navigation-guards
  */
-router.beforeEach(async (routeTo, routeFrom ) => {
-	log.debug("beforeEach ENTER", routeFrom.path, "=>", routeTo.path)
+router.beforeEach(async (routeTo, routeFrom) => {
+	//log.debug("beforeEach ENTER", routeFrom.path, "=>", routeTo.path)
 	return tryToAuthenticate().then(() => {
 		log.debug("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
 		if (routeTo.path === "/" || routeTo.path === "/index.html") {
@@ -196,7 +196,7 @@ router.beforeEach(async (routeTo, routeFrom ) => {
 			return true // allow authenticated navigation
 		}
 	}).catch(() => {
-		log.debug("vue-router: anonymous", routeFrom.path, "=>", routeTo.path)
+		//log.debug("vue-router: anonymous", routeFrom.path, "=>", routeTo.path)
 		if (routeTo.meta.public) {
 			return true
 		} else if (routeTo.path === "/" || routeTo.path === "/index.html") {

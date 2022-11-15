@@ -1,12 +1,6 @@
 <template>
 	<div id="rootApp">
 		<liquido-header ref="liquido-header" :back-link="backLink" />
-		<router-view v-slot="{ Component }">
-			<transition :name="transitionName">
-				<component :is="Component" id="appContent" class="router-view container-lg"/>
-			</transition>
-		</router-view>
-		<navbar-bottom v-if="showNavbarBottom"></navbar-bottom>
 		<popup-modal 
 			id="rootPopupModal"
 			ref="rootPopupModal"
@@ -18,6 +12,13 @@
 			:secondary-button-text="modalSecondaryButtonText"
 		>
 		</popup-modal>
+		<router-view v-slot="{ Component }">
+			<transition :name="transitionName">
+				<component :is="Component" id="appContent" class="router-view container-lg"/>
+			</transition>
+		</router-view>
+		<navbar-bottom v-if="showNavbarBottom"></navbar-bottom>
+		
 		<mobile-log-viewer ref="mobileLogViewRef" v-if="showDebugLog"></mobile-log-viewer>
 	</div>
 </template>
@@ -186,6 +187,7 @@ export default {
 		 */
 		scrollElemToTop(elem, durationMs = 500) {
 			//This would exist, but not in Safari for iOS :-(  elem.scrollIntoView({ behavior: 'smooth' });
+			if (!elem) return
 			let headerHeight = document.getElementById("liquidoHeader").offsetHeight + 10
 			let appElem = document.getElementById("app")
 			let scrollTopFinalValue = elem.offsetTop - headerHeight

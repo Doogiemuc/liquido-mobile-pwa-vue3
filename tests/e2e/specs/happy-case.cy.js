@@ -61,7 +61,7 @@ context('Happy Case', () => {
 		cy.visit("/")
 	})
 
-	it('[Admin] Create new team, poll and add first proposal', function() {
+	it('[Admin] Create new team', function() {
 		//GIVEN some prepared test data
 		assert.isString(fix.adminName)
 		assert.isString(fix.teamName)
@@ -94,7 +94,35 @@ context('Happy Case', () => {
 			console.log("New team inviteCode=", fix.inviteCode)
 			cy.log("InviteCode="+fix.inviteCode)
 		})
-		cy.get('#gotoCreatePollButton').click()
+	})
+
+	it('[Admin] Returning admin is automatically logged in', function() {
+		//GIVEN a team and a jwt
+		assert.isString(fix.teamName, "Need to be logged into a team already.")
+		assert.isString(fix.adminJWT, "Need adminJWT from last test step.")
+
+		// WHEN we simulate that the jwt is stored in localStorage
+		localStorage.setItem("LIQUIDO_JWT", fix.adminJWT)
+		//  AND admin visits the root start page
+		cy.visit("/")
+		// THEN we are automatically forwarded to correct team-home.
+		cy.get("#team-home.page-title").should('contain.text', fix.teamName)
+		cy.get("#team-home-user-welcome").should("contain.text", fix.adminName)
+
+		// AND his avatar image is loaded successfully
+		cy.get("#memberCards .card img").should('be.visible').and(($img) => {
+			// "naturalWidth" and "naturalHeight" are set when the image was loaded
+			expect($img[0].naturalWidth).to.be.greaterThan(1)
+		})
+	})
+
+	it('[Admin] Create first poll and proposal', function() {
+		assert.isString(fix.adminJWT, "Need adminJWT to create firt poll")
+
+		//GIVEN a logged in admin
+		localStorage.setItem("LIQUIDO_JWT", fix.adminJWT)
+		cy.visit("/polls")
+		cy.get('#createPollButton').click()
 
 		// ============= create poll
 		//GIVEN
@@ -119,28 +147,6 @@ context('Happy Case', () => {
 		cy.get('#poll-show')
 		cy.get('.law-title').should('contain.text', fix.proposalTitle)
 
-	})
-
-	//TODO: create test with mocked error response to check error modal
-
-	it('[Admin] Returning admin is automatically logged in', function() {
-		//GIVEN a team and a jwt
-		assert.isString(fix.teamName, "Need to be logged into a team already.")
-		assert.isString(fix.adminJWT, "Need adminJWT from last test step.")
-
-		// WHEN we simulate that the jwt is stored in localStorage
-		localStorage.setItem("LIQUIDO_JWT", fix.adminJWT)
-		//  AND admin visits the root start page
-		cy.visit("/")
-		// THEN we are automatically forwarded to correct team-home.
-		cy.get("#team-home.page-title").should('contain.text', fix.teamName)
-		cy.get("#team-home-user-welcome").should("contain.text", fix.adminName)
-
-		// AND his avatar image is loaded successfully
-		cy.get("#memberCards .card img").should('be.visible').and(($img) => {
-			// "naturalWidth" and "naturalHeight" are set when the image was loaded
-			expect($img[0].naturalWidth).to.be.greaterThan(1)
-		})
 	})
 	
 	it('[User] Join team', function() {
@@ -180,9 +186,8 @@ context('Happy Case', () => {
 		cy.get("#gotoPollsButton").click()
 		cy.get("#polls")
 
-		//THEN poll with proposal should be shown
-		cy.get('.poll-panel-title').should('contain.text', fix.pollTitle)
-		cy.get('.poll-panel .law-title').should('contain.text', fix.proposalTitle)
+		//THEN our poll should be shown
+		cy.get('.poll-title').should('contain.text', fix.pollTitle)
 	})
 
 	
@@ -200,9 +205,10 @@ context('Happy Case', () => {
 
 		//WHEN navigating to team's polls
 		cy.get('#gotoPollsButton').click()
-		//THEN then a poll with the created proposal from above
-		cy.get('.poll-panel-title').should('contain.text', fix.pollTitle)
-		cy.get('.poll-panel .law-title').should('contain.text', fix.proposalTitle)
+		//THEN then a poll with the created proposal from above should be found
+		cy.get('.poll-title').should('contain.text', fix.pollTitle).click()
+		cy.get('.law-title').should('contain.text', fix.proposalTitle)
+		
 		//cy.get('.poll-panel div.list-group').children('.proposal-list-group-item').should('have.length', 1)
 	})
 
@@ -218,7 +224,7 @@ context('Happy Case', () => {
 		cy.get('#gotoPollsButton').click()
 		//THEN we see our poll in elaboration with the correct title
 		cy.get("#pollsInDiscussionArrow").click()
-		cy.contains(".poll-panel-title", fix.pollTitle).click()
+		cy.contains(".poll-title", fix.pollTitle).click()
 		
 		// WHEN user adds a proposal
 		cy.get("#addProposalButton").click()  // This might not be visible, when that user already added a proposal to the poll. => Not happy case
@@ -240,14 +246,15 @@ context('Happy Case', () => {
 		localStorage.setItem("LIQUIDO_JWT", fix.userJWT)
 		cy.visit("/")
 		
-		// AND our proposal that can be liked
+		// WHEN navigating to poll -> proposal
 		cy.get('#gotoPollsButton').click()
+		cy.contains('.poll-title', fix.pollTitle).click()
 
 		// I am still struggling to get used to thwat cypress commands yield.
 		// Here we need to use a special syntax of contains. (And find instead of children *sic*) 
 		// https://docs.cypress.io/api/commands/contains#Selector
 
-		// AND there are no likes yet
+		// THEN there are no likes yet
 		cy.contains('div.proposal-header-text', fix.proposalTitle).find('.numLikes')
 			.should('have.text', 0)
 
@@ -269,7 +276,7 @@ context('Happy Case', () => {
 
 		// AND the poll in elaboration that was created before
 		cy.get('#gotoPollsButton').click()
-		cy.contains(".poll-panel-title", fix.pollTitle).click()
+		cy.contains(".poll-title", fix.pollTitle).click()
 
 		// WHEN admin stars voting phase
 		cy.get("#startVoteButton").click()
@@ -291,7 +298,7 @@ context('Happy Case', () => {
 		// AND a poll in voting
 		cy.get('#gotoPollsButton').click()
 		cy.get("#pollsInVotingArrow").click()
-		cy.contains(".poll-panel-title", fix.pollTitle).click()
+		cy.contains(".poll-title", fix.pollTitle).click()
 		cy.get("#goToCastVoteButton").click()
 		cy.get("#cast-vote-page")
 
@@ -318,7 +325,7 @@ context('Happy Case', () => {
 		cy.visit("/")
 		// AND the poll in elaboration that was created before
 		cy.get('#gotoPollsButton').click()
-		cy.contains(".poll-panel-title", fix.pollTitle).click()
+		cy.contains(".poll-title", fix.pollTitle).click()
 
 		// WHEN admin stars voting phase
 		cy.get("#finishVoteButton").click()

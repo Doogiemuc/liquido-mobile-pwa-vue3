@@ -45,7 +45,7 @@
 							{{ law.title }}
 						</h3>
 						<div :class="lawSubtitleClasses(law)">
-							<div v-if="canLike(law)" class="like-button" @click.stop.prevent="clickLike(poll.id, law.id)">
+							<div v-if="canLike(law)" class="like-button like-button-active" @click.stop.prevent="clickLike(poll.id, law.id)">
 								<i class="far fa-thumbs-up" />&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
 							</div>
 							<div v-else class="like-button" @click.stop.prevent="">
@@ -262,6 +262,9 @@ $proposal_img_size: 32px;
 			font-family: Helvetica, sans-serif;
 			.like-button {
 				display: inline;
+			}
+			.like-button-active {
+				cursor: pointer;
 			}
 			&.liked .like-button {
 				color: green;

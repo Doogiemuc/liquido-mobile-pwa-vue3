@@ -97,8 +97,9 @@
 </template>
 
 <script>
-import pollPanel from "../components/poll-panel"
+import pollPanel from "@/components/poll-panel"
 import popupModal from "@/components/popup-modal"
+import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
 const log = require("loglevel")
 
@@ -186,6 +187,12 @@ export default {
 	},
 	created() {
 		this.loadPoll()
+		EventBus.on(EventBus.Event.POLL_LOADED, (loadedPoll) => {
+			if (loadedPoll.id === this.poll.id) {
+				console.log("poll-show.vue: Poll.id" + this.poll.id + " was reloaded")
+				this.poll = loadedPoll
+			}
+		})
 	},
 	mounted() {},
 	methods: {

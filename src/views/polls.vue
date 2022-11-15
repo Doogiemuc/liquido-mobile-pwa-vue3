@@ -9,30 +9,31 @@
 		<!-- list of polls -->
 		<div v-if="!loading">
 			<transition-group name="poll-list" tag="div">
-				<div class="poll-list-2">
-					<b-row v-for="poll in filteredPolls" :key="poll.id" class="poll-panel-2" @click="goToPoll(poll.id)">
-						<b-col class="poll-icon-col">
-							<div class="poll-image"><i class="fas fa-fw fa-university"></i></div>
-						</b-col>
-						<b-col class="poll-col-2">
-							<h3 class="poll-title">
-								{{ poll.title }}
-							</h3>
-							<div class="poll-footer">
-								<div v-if="poll.status === 'VOTING'">
-									<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
-									<i class="far fa-calendar-alt"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}
-								</div>
-								<div v-else-if="poll.status === 'FINISHED'">
-									<i class="far fa-check-circle"></i>&nbsp;{{ $t('finishedPoll') }}
-								</div>
-								<div v-else>
-									<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
-								</div>
+				<b-row v-for="poll in filteredPolls" :key="poll.id" class="poll-panel-2" @click="goToPoll(poll.id)">
+					<b-col class="poll-icon-col">
+						<div class="poll-image"><i class="fas fa-fw fa-university"></i></div>
+					</b-col>
+					<b-col class="poll-col-2">
+						<h3 class="poll-title">
+							{{ poll.title }}
+						</h3>
+						<div class="poll-footer">
+							<div v-if="poll.status === 'VOTING'">
+								<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
+								<i class="far fa-calendar-alt"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}
 							</div>
-						</b-col>
-					</b-row>
-				</div>
+							<div v-else-if="poll.status === 'FINISHED'">
+								<i class="far fa-check-circle"></i>&nbsp;{{ $t('finishedPoll') }}
+							</div>
+							<div v-else>
+								<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
+							</div>
+						</div>
+						<div class="show-poll-details">
+							<i class="fas fa-angle-right"></i>
+						</div>
+					</b-col>
+				</b-row>
 			</transition-group>
 		
 			<!-- list of polls (previous version with poll panels)
@@ -82,7 +83,7 @@
 				<i class="fas fa-shield-alt float-end"></i>
 				{{ $t('onlyAdminCanCreateNewPolls') }}
 			</p>
-			<b-button variant="primary" class="float-end" @click="gotoCreatePoll()">
+			<b-button id="createPollButton" variant="primary" class="float-end" @click="gotoCreatePoll()">
 				<i class="fas fa-shield-alt" /> {{ $t("createPoll") }} <i class="fas fa-angle-double-right" />
 			</b-button>
 		</div>
@@ -92,7 +93,8 @@
 <script>
 /**
  * This is by far the most important view in the whole app.
- * I think meanwhile I redesigned it dozens of times ... and yet it's not perfect :-)
+ * Meanwhile I redesigned this page dozens of times ... and yet it's not perfect :-)
+ * But it's getting better and better everytiem! :-)
  */
 
 //import pollPanel from "../components/poll-panel"
@@ -181,6 +183,11 @@ export default {
 			return api.isAdmin()
 		},
 		allPolls() {
+			this.forceRefreshComputed;		
+			let polls = api.getCachedPolls()
+			return polls
+		},
+		filteredPolls() {
 			// Implementation note:
 			// We could hold a local copy of all polls in this component. 
 			// But that would need to be updated whenver polls are loaded from the backend.
@@ -188,11 +195,6 @@ export default {
 			// Sadly the javascript Arry.filter method creates a copy of the array.
 			// So VUE's reactive updates do not work when the data changes in the cache.
 			// Therefore we have to force a recompute of this "computed" value with a nice hack:
-			this.forceRefreshComputed;		
-			let polls = api.getCachedPolls()
-			return polls
-		},
-		filteredPolls() {
 			this.forceRefreshComputed;
 			return api.getCachedPolls(this.pollStatusFilter)
 				.filter((poll) => this.matchesSearch(poll))
@@ -309,9 +311,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.poll-list-2 {
-	margin-top: 2em;
-}
 .poll-panel-2 {
 	position: relative;
 	cursor: pointer;
@@ -360,6 +359,15 @@ export default {
 			margin-left: 10px;
 		}
 	}
+	.show-poll-details {
+		position: absolute;
+		top: 50%;
+		right: 10px;
+		transform: translateY(-50%);
+		color: $primary;
+		opacity: 0.5;
+		cursor: pointer
+	}
 }
 
 
@@ -392,6 +400,7 @@ export default {
 	cursor: pointer;
 }
 
+/*
 .poll-list {
 	margin: 0 -10px;
 	padding: 10px;
@@ -408,6 +417,7 @@ export default {
 		}	
 	}
 }
+*/
 
 /* Vue list transitions */
 .poll-list-leave-to, .poll-list-enter-from {

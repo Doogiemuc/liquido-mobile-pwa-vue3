@@ -5,7 +5,7 @@
  * This is different from plain vue environment variables that can be set via .env.production files.
  * https://cli.vuejs.org/guide/mode-and-env.html#environment-variables
  * 
- * LiQUIDO Config is "statically" imported into the scripts.
+ * LIQUIDO Config is "statically" imported into the scripts.
  */
 
 export default {
@@ -23,15 +23,20 @@ export default {
 	//TODO: implement these settings per Team! in the backend!
 	allowMembersToInvite: true,
 
-	// This is used in tests. Also tests against PROD
+	// This is used in tests. 
+	// For testing against prod, this has to match spring's application.local configuratin in PROD!
 	devLogin: {
-		adminEmail: "adminTeamOne@liquido.vote",
-		adminTeamname: "AdminTeamOne",
-		mobilephone: "+495551237334",
-
-		memberEmail: "member0@TeamOne.org",
-		memberTeamname: "AdminTeamOne",
-
+		teamName: "LocalTeam",
+		admin: {
+			name: "Local Admin",
+			email: "adminLocalTeam@liquido.vote",
+			mobilephone: "+4955511111",
+		},
+		member: {
+			name: "Local Member",
+			email: "localTestUser12@liquido.vote",
+			mobilephone: "+4955522222"
+		},		
 		token: 998877,
 	}
 }

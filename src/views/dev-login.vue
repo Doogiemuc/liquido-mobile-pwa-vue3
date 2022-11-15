@@ -13,7 +13,7 @@
 
 <script>
 /**
- * Development login uses for testing. Must provide correcct devLogin.token via query parameter.
+ * Development login used for testing. Must provide correcct devLogin.token via query parameter.
  * When login is successfull, then user is forwarded to teamHome.
  */
 
