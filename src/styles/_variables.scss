@@ -7,15 +7,15 @@
 $app-background: white; // #a5b4c6;							// global background of app
 $app-max-width: 1000px;									// maximum width of the whole app , eg. when shown in a browser
 
-$primary: #0a54a3;  // #007bfF;										// primary color, titles and button backgrounds
-$primary-text: #ffffff;               // text for primary items
-$secondary: #6c757d;									// secondary text foreground
-$header-bg: #9fb6d4; // rgb(220, 236, 255);				// background of fixed header
-$navbar-bg: #9fb6d4; // rgba(220, 236, 255, 0.9);	// background for bottom navbar, a little bit transparent
-$input-bg: #c3cce6; //rgb(180, 171, 255); // background for chat bubbles where user has to enter something
+$primary: #0a54a3;    // #007bfF;			 // primary color, titles and button backgrounds
+$primary-text: #ffffff;                 // text for primary buttons
+$secondary: #6c757d;								   	// secondary text foreground
+$header-bg: #a9c6ff;  //   #9fb6d4;   rgb(220, 236, 255);				// background of fixed header
+$navbar-bg: #a9c6ff;  //   #9fb6d4;    rgba(220, 236, 255, 0.9);	// background for bottom navbar, a little bit transparent
+$input-bg: #c3cce6;   //rgb(180, 171, 255); // background for chat bubbles where user has to enter something
 
-$liquido-info-background: #302e41;		  // background for liquido info alert boxes
+$liquido-info-background: #162042;		  // background for liquido info alert boxes
 $admin-info-background: #302e41;          // info boxes for admin
 $poll-list-background: #1e1e50;				// background behind the list of polls on the page that shows all polls.
 
-// There are some more variables in bootstrap that you can use.
+// There are also some more variables in bootstrap that you can use.

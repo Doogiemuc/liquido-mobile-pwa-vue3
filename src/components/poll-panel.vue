@@ -18,14 +18,6 @@
 				<i  class="poll-title-icon" :class="iconForPoll" />
 				&nbsp;{{ poll.title }}
 			</h2>
-		</template>
-		<div v-if="!poll.proposals || poll.proposals.length === 0" class="card-body">
-			<p class="text-secondary">
-				<small>{{ $t("noProposalsInPollYet") }}</small>
-			</p>
-		</div>
-
-		<b-list-group v-else flush>
 			<a
 				v-if="poll.proposals && poll.proposals.length > 0"
 				class="collapse-icon"
@@ -35,6 +27,14 @@
 			>
 				<i class="fa" />
 			</a>
+		</template>
+
+		<div v-if="!poll.proposals || poll.proposals.length === 0" class="card-body">
+			<p class="text-secondary">
+				<small>{{ $t("noProposalsInPollYet") }}</small>
+			</p>
+		</div>
+		<b-list-group v-else flush>
 			<b-list-group-item v-for="law in poll.proposals" :key="law.id" class="proposal-list-group-item" :class="proposalListGroupItemClasses(law.id)">
 				<div class="proposal-header d-flex">
 					<div class="law-image">
@@ -54,10 +54,10 @@
 							<div class="created-date">
 								<i class="far fa-clock" />&nbsp;{{ formatDate(law.createdAt) }}
 							</div>
-							<div v-if="isCreatedByCurrentUser(law)" class="createdby-user">
+							<!-- div v-if="isCreatedByCurrentUser(law)" class="createdby-user">
 								<i class="fas fa-user" />&nbsp;{{ law.createdBy.name }}
-							</div>
-							<div v-else class="createdby-user">
+							</div -->
+							<div class="createdby-user">
 								<i class="far fa-user" />&nbsp;{{ law.createdBy.name }}
 							</div>
 						</div>
@@ -217,17 +217,17 @@ $proposal_img_size: 32px;
 	.collapse-icon {
 		position: absolute;
 		font-size: 1.2rem;
-		bottom: 3px;
-		right: 3px;
-		opacity: 0.5;
+		top: 3px;
+		right: 5px;
+		//opacity: 0.5;
 	}
 
 	.collapse-icon .fa:before {
-		content: "\f139";
+		content: "\f107";
 	}
 
 	.collapse-icon.collapsed .fa:before {
-		content: "\f13a";
+		content: "\f106";
 	}
 
 	.card-body {
@@ -257,7 +257,7 @@ $proposal_img_size: 32px;
 			text-overflow: ellipsis;
 		}
 		.law-subtitle {
-			font-size: 10px;
+			font-size: 12px;
 			color: #bbb;
 			font-family: Helvetica, sans-serif;
 			.like-button {
@@ -267,7 +267,7 @@ $proposal_img_size: 32px;
 				cursor: pointer;
 			}
 			&.liked .like-button {
-				color: green;
+				color: $primary;
 			}
 			.created-date {
 				display: inline;
@@ -277,9 +277,11 @@ $proposal_img_size: 32px;
 				display: inline;
 				margin-left: 1em;
 			}
+			/*
 			&.own-proposal {
 				color: green;
 			}
+			*/
 		}
 
 		.law-image {
@@ -302,7 +304,7 @@ $proposal_img_size: 32px;
 			font-size: 12px;
 			overflow: hidden;
 		}
-		//TODO: only in browser (not on mobile) -  only for polls in ELABORATION
+		//TODO: only in browser (not on mobile) -  only for polls in ELABORATION - and only if can like
 		.like-button:hover {
 			color: green !important;
 		}

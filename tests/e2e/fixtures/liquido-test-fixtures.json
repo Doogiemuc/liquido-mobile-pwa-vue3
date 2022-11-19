@@ -1,8 +1,9 @@
 {
   "admin": {
-    "email": "adminTeamOne@liquido.vote",
-    "mobilephone": "+495551237334"
-  },
+		"name": "Local Admin",
+		"email": "adminLocalTeam@liquido.vote",
+		"mobilephone": "+4955511111"
+	},
   "devLogin": {
     "token": "998877"
   }

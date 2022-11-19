@@ -6,10 +6,10 @@ console.log("WELCOME to LIQUIDO!")
 
 import config from "config"  // automatically mapped to environment specific config file config/config.<env>.jsin vue.config.js as a webpack alias
 const log = require("loglevel")
-//if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
+if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
 	log.enableAll()
 	console.log("NODE_ENV="+process.env.NODE_ENV+"   LIQUIDO configuration:\n", config)
-//}
+}
 
 import { createApp } from 'vue'
 import RootApp from "@/root-app.vue"

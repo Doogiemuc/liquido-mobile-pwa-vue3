@@ -22,6 +22,9 @@ module.exports = {
 			}
 		}
 	},
+	pwa: {
+    themeColor: '#FFF'  // https://forum.vuejs.org/t/vue-cli-3-where-i-change-theme-color-for-address-bar/29951/7 .   *sic*
+  },
   css: {
     loaderOptions: {
       sass: {

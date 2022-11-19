@@ -18,7 +18,6 @@
 			</transition>
 		</router-view>
 		<navbar-bottom v-if="showNavbarBottom"></navbar-bottom>
-		
 		<mobile-log-viewer ref="mobileLogViewRef" v-if="showDebugLog"></mobile-log-viewer>
 	</div>
 </template>
