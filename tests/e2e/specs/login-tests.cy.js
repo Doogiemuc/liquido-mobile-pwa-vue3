@@ -10,15 +10,13 @@
 let now = Date.now() % 10000
 console.log("Running Cypress login-test.js (test_uuid="+now+")", "NODE_ENV="+process.env.NODE_ENV)
 
+
 context('Login Test', () => {
-	/** Load test fixtures, fixed test data */
+	
 	beforeEach(() => {
 		console.log("===================================================")
 		console.log("    TEST CASE >>>", Cypress.mocha.getRunner().suite.ctx.currentTest.title, "<<<")
 		console.log("===================================================")
-		cy.fixture("liquido-test-fixtures.json").as("fix").then(testFixtures => {
-			console.log("Loaded test fixtures", testFixtures)
-		})
 	})
 
 	it('Anonymous access should lead to welcome-chat', function() {
@@ -57,7 +55,7 @@ context('Login Test', () => {
 		cy.get("#login-page")
 
 		//WHEN enter mobile phone of test admin user
-		cy.get("#mobilephoneInput").type(this.fix.admin.mobilephone)
+		cy.get("#mobilephoneInput").type(Cypress.env("admin").mobilephone)
 		// AND click request SMS token button
 		cy.get("#requestTokenButton").click()
 
@@ -66,7 +64,7 @@ context('Login Test', () => {
 		cy.get("#tokenErrorMessage").should("not.exist")
 
 		//WHEN enter (mock) SMS authToken
-		cy.get("#authTokenInput").type(this.fix.devLogin.token).type("{enter}")
+		cy.get("#authTokenInput").type(Cypress.env("devLoginToken")).type("{enter}")
 
 		//THEN user is logged in and teamHome is shown
 		cy.get("#team-home")
@@ -78,7 +76,7 @@ context('Login Test', () => {
 		cy.get("#login-page")
 
 		//WHEN test user enters his email
-		cy.get("#loginEmailInput").type(this.fix.admin.email).type("{enter}")
+		cy.get("#loginEmailInput").type(Cypress.env("admin").email).type("{enter}")
 		// AND click request Email button
 		cy.get("#requestEmailButton").click()
 

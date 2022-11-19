@@ -1,3 +1,9 @@
+# do not publish PROD secrets
+cypress.config.PROD.js
+
+
+
+
 # Logs
 logs
 *.log
