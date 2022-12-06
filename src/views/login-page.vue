@@ -38,7 +38,7 @@
 			<b-collapse v-model="tokenSentSuccessfully" class="mt-3">
 				<liquido-input
 					id="authTokenInput"
-					v-model="authToken"
+					v-model="twillioAuthToken"
           v-model:state="authTokenInputState"
 					type="text"
 					placeholder="<123456>"
@@ -155,7 +155,7 @@ export default {
 	props: {
 		// These props are set from URL parameters, e.g. when user logs in via the email link
 		email: { type: String, required: false, default: undefined },
-		emailToken: { type: String, required: false, default: undefined },		// one time token from email (called "token=" in URL query!)
+		emailToken: { type: String, required: false, default: undefined },
 	},
 	data() {
 		return {
@@ -167,7 +167,7 @@ export default {
 
 			// auth token (via SMS)
 			mobilephone: "",
-			authToken: undefined,						// twilio authToken from SMS 
+			twillioAuthToken: undefined,		// twilio authToken from SMS 
 			mobilephoneInputState: null,    // synced states from liquido-inputs
 			authTokenInputState: null,      // synced states from liquido-inputs
 			waitUntilNextRequestSecs: 0,    // Throttling: Only allow request auth token once every few seconds
@@ -200,7 +200,7 @@ export default {
 		this.$root.scrollToTop()
 
 		// if email and token is passed, then log in user
-		if (this.email && this.token) {
+		if (this.email && this.emailToken) {
 			this.loginWithEMailToken()
 		}
 
@@ -243,11 +243,11 @@ export default {
 			}, 1000);
 
 			api.logout()
-			this.authToken = undefined
+			this.twillioAuthToken = undefined
 			this.tokenErrorMessage = undefined
 			this.emailErrorMessage = undefined
 			// WHEN testUser loggs in, THEN also send devLoginToken, so that backend fakes the request and will not call Twilio.
-			let devLoginToken = this.mobilephone === config.devLogin.mobilephone ? config.devLogin.token : undefined
+			let devLoginToken = this.mobilephone === config.devLogin.admin.mobilephone ? config.devLogin.token : undefined
 			console.debug("requestAuthToken for", this.mobilephone, devLoginToken)
 
 			api.requestAuthToken(this.mobilephone, devLoginToken)
@@ -278,7 +278,7 @@ export default {
 		 */
 		loginWithAuthToken() {
 			this.tokenErrorMessage = undefined
-			api.loginWithAuthToken(this.mobilephone, this.authToken)
+			api.loginWithAuthToken(this.mobilephone, this.twillioAuthToken)
 				.then(() => {
 					this.$router.push({name: "teamHome"})
 				})

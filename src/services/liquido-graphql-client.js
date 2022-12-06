@@ -339,9 +339,10 @@ let graphQlApi = {
 		if (!email) throw new Error("Need email to log in!")
 		if (!authToken) throw new Error("Need authToken to log in!")
 		let graphQL = `query { loginWithEmailToken(email: "${email}", authToken: "${authToken}") ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
-		return graphQlQuery(graphQL).then(res => {
-			this.login(res.data.loginWithAuthToken.team, res.data.loginWithAuthToken.user, res.data.loginWithAuthToken.jwt)
-			return res.data.loginWithEmailToken
+		return graphQlQuery(graphQL).then(response => {
+			let res = response.data.loginWithEmailToken
+			this.login(res.team, res.user, res.jwt)
+			return res
 		})
 	},
 
@@ -363,9 +364,10 @@ let graphQlApi = {
 		if (!mobilephone) throw new Error("Need mobilephone to log in!")
 		if (!authToken) throw new Error("Need authToken to log in!")
 		let graphQL = `query { loginWithAuthToken(mobilephone: "${mobilephone}", authToken: "${authToken}") ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
-		return graphQlQuery(graphQL).then(res => {
-			this.login(res.data.loginWithAuthToken.team, res.data.loginWithAuthToken.user, res.data.loginWithAuthToken.jwt)
-			return res.data.loginWithAuthToken
+		return graphQlQuery(graphQL).then(response => {
+			let res = response.data.loginWithAuthToken
+			this.login(res.team, res.user, res.jwt)
+			return res
 		})
 	},
 

@@ -23,7 +23,7 @@ const routes = [
 		component: loginPage,
 		props: route => ({
 			email: route.query.email,
-			emailToken: route.query.token
+			emailToken: route.query.emailToken
 		}),
 		meta: {
 			public: true
@@ -37,7 +37,7 @@ const routes = [
 		props: route => ({ 
 			email: route.query.email,
 			teamName: route.query.teamName,
-			token: route.query.token
+			emailToken: route.query.emailToken
 		}),
 		meta: {
 			public: true

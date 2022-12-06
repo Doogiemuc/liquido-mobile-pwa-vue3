@@ -6,7 +6,6 @@
  * Registration is already covered in happy-case.js
  */
 
-
 let now = Date.now() % 10000
 console.log("Running Cypress login-test.js (test_uuid="+now+")", "NODE_ENV="+process.env.NODE_ENV)
 
@@ -86,6 +85,40 @@ context('Login Test', () => {
 
 		//Now user clicks on the link in the email
 		//TODO: get login link from eg. mailtrap.io
+
+		// GIVEN the received email message
+		cy.request({
+			url: Cypress.env("mailtrap").messagesUrl,
+			headers: {
+				"Api-Token": Cypress.env("mailtrap").apiToken
+			}
+		}).then(res => {
+			let messages = res.body
+			messages.sort((a,b) => a.created_at < b.created_at)    // sort newest message first
+			//  AND the HTML body of the message
+			cy.request({
+				url: Cypress.env("mailtrap").messagesUrl+"/"+messages[0].id+"/body.html",
+				headers: {
+					"Api-Token": Cypress.env("mailtrap").apiToken
+				}
+			}).then(res2 => {
+				// THEN the mail body contains a loginLink
+				let messageHtml = res2.body
+				console.log("msaasdfb body", messageHtml)
+				const regex = /<a.*?id='loginLink'.*href='(.*?)'>/;   // LIQUIDO HTML messages use single quotes!
+				let match = messageHtml.match(regex)
+				console.log(match)
+				assert.isArray(match, "Cannot find loginLink in email body.")
+				
+				let loginLink = match[1] // first capturing group
+				assert.isString(loginLink)
+				console.log("LoginLink", loginLink)
+
+				cy.visit(loginLink)
+				cy.get("#team-home")
+			})
+		})
+
 	})
 
 })

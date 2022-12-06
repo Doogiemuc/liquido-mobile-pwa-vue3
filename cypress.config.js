@@ -1,7 +1,6 @@
 const { defineConfig } = require('cypress')
 
 module.exports = defineConfig({
-	//TODO: set different configuraiton parameters according to NODE_ENV: LOCAL,TEST,INT,PROD
   env: {
     LIQUIDO_API: 'http://localhost:8080/liquido-api',
     devLoginToken: '998877',
@@ -13,6 +12,10 @@ module.exports = defineConfig({
 			mobilephone: "+4955511111",
 			website: "www.liquido.vote"
 		},
+		mailtrap: {
+			messagesUrl: "https://mailtrap.io/api/accounts/1416880/inboxes/1983138/messages",
+			apiToken: "13d57536b61611395106a3992fc32bec"
+		}
   },
   viewportWidth: 375,
   viewportHeight: 667,
@@ -21,13 +24,6 @@ module.exports = defineConfig({
 	video: false,
   videosFolder: 'tests/e2e/videos',
   e2e: {
-    // We've imported your old cypress plugins here.
-    // You may want to clean this up later by importing these.
-		/*
-    setupNodeEvents(on, config) {
-      return require('./tests/e2e/plugins/index.js')(on, config)
-    },
-		*/
     baseUrl: 'http://localhost:3001/',
     specPattern: 'tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}',
     supportFile: 'tests/e2e/support/index.js',
