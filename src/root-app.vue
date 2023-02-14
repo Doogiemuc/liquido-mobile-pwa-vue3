@@ -115,7 +115,7 @@ export default {
 				} else {
 					console.error("No network. Backend is not reachable at all", res)  
 					this.$refs.rootPopupModal.showWarning(this.$t("NetworkOffline"))
-					//TODO: Do something: Show a general "offline" message (or implement an offline mode?)
+					//TODO: Do something: Show a general "offline" message at the top and implement an offline mode(?)
 				}
 			})
 

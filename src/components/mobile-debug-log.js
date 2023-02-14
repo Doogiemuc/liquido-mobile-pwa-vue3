@@ -91,6 +91,10 @@ export default {
 	// Be carefull that no one else is also doing this, e.g. logLevel does this: https://github.com/pimterry/loglevel/issues/129
 	// AND you loose the information which module logged the message. Everything will come from mobile-debug-log.vue
 	// Better call the this.info/debug/log/error methods directly.
+
+	//This might be an interesting alternative clever hacky way of doing it:
+	// https://stackoverflow.com/questions/9559725/extending-console-log-without-affecting-log-line?rq=1
+	
 	redefineConsoleMethods() {
 		console.info("VUE mobile-debug-log mounted has overwritten console.log() functions.")
 		let that = this;

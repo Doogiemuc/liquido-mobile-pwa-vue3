@@ -124,7 +124,7 @@ export default {
 	},
 	created() {
 		// when on mobile the redefine console.log methods (because there is no browser log on mobile)
-		//if (process.env.NODE_ENV === "mobile") 
+		//if (process.env.NODE_ENV === "mobile")
 		//this.redefineConsoleMethods()
 	},
 	mounted() {

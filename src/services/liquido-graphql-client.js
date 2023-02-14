@@ -10,6 +10,7 @@ import axios from "axios"
 import config from "config"
 import PopulatingCache from "populating-cache"
 import EventBus from "@/services/event-bus"
+//TODO: log network calls into my mobile debug log: 
 import log from "@/components/mobile-debug-log.js"
 
 /*
@@ -49,7 +50,8 @@ axios.defaults.baseURL = config.LIQUIDO_API_URL
 	if (!error.response) {
 		console.warn("Network error: no response at all")
 	} else 
-	if (error.data && error.data.includes("ECONNREFUSED")) {
+	if (error.data && error.data.includes("ECONNREFUSED") ||
+		error.response && error.response.body && error.response.body.includes("ECONNREFUSED")) {
 		console.warn("Network connection refused.")
 	} else
 	if (error.response && error.response.status >= 500) { 
