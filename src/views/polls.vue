@@ -50,7 +50,7 @@
 
 			<p v-if="allPolls.length === 0 && !loading" class="text-center" v-html="$t('noPollYet')" />
 
-			<div v-if="searchResultIsEmpty" id="emptySearchResultInfo" class="alert liquido-info text-center" @click="clearSearchAndFilter">
+			<div v-if="searchResultIsEmpty" id="emptySearchResultInfo" class="text-center" @click="clearSearchAndFilter">
 				<p>{{ $t('noPollsMatchSearch') }}</p>
 			</div>
 

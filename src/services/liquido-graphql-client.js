@@ -11,7 +11,7 @@ import config from "config"
 import PopulatingCache from "populating-cache"
 import EventBus from "@/services/event-bus"
 //TODO: log network calls into my mobile debug log: 
-import log from "@/components/mobile-debug-log.js"
+//import log from "@/components/mobile-debug-log.js"
 
 /*
   # Architecture design decisions in liquido-graphql-client.js
@@ -31,9 +31,9 @@ import log from "@/components/mobile-debug-log.js"
 //TODO: refactor / split into api-client.js, local-cache.js and liquido-auth.js  <= not that easy!
 
 if (!config || !config.LIQUIDO_API_URL) {
-	log.error("liquido-graphql-client: ERROR I have no config!")
+	console.error("liquido-graphql-client: ERROR I have no config!")
 } else {
-	log.debug("liquido-graphql-client => " + config.LIQUIDO_API_URL)
+	console.debug("liquido-graphql-client => " + config.LIQUIDO_API_URL)
 }
 
 // Configure axios HTTP REST client to point to our graphQL backend
@@ -56,6 +56,8 @@ axios.defaults.baseURL = config.LIQUIDO_API_URL
 	} else
 	if (error.response && error.response.status >= 500) { 
 		console.error("liquido-graphql-client: Internal Server Error(500):", error) 
+	} else {
+		console.error("Unknown HTTP error", error)
 	}
 
 	// try to log some additional debug info
@@ -79,35 +81,36 @@ const GRAPHQL = '/graphql'      // ==================== BASE PATH FOR GRAPHQL en
 const graphQlQuery = function(query, variables) {
 	return axios.post(GRAPHQL, { query: query, variables: variables })
 		.then(res => {
-			if (res.errors && res.errors.length > 0) {
-				log.error("graphQlQueryy errors: ", JSON.stringify(res.errors))   // graphQL's way of returning errors
-				//TODO: should I return Promise.reject(res.errors) here?
+			if (res.data && res.data.errors && res.data.errors.length > 0) {
+				console.error("graphQlQuery() error: ", JSON.stringify(res.errors))   // graphQL's way of returning errors
+				return Promise.reject(res.data.errors)  //TODO: should I return Promise.reject(res.errors) here?
 			}
 			return res.data // This is the axios HTTP "data". The graphQL response contains another "data" (and an "error") attribute. I know, it's confusing.
 		})  
 		.catch(err => {
-			log.error("graphQlQuery throws: ", err)
-			return Promise.reject(err)
+			console.log("ERROR: graphQlQuery throws: ")
+			console.log(err)
+			return Promise.reject("error")
 		})
 }
 
 
 
 /** Shorthands for JQL return values */
-const JQL_USER = "{ id name email mobilephone picture website }"
-const JQL_PROPOSAL =  `{ id title description icon status createdAt numSupporters isLikedByCurrentUser createdBy ${JQL_USER} }`
-const JQL_POLL = `{ id title status votingStartAt votingEndAt proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL} numBallots duelMatrix { data } }`
-const JQL_TEAM = "{ id teamName inviteCode " +
-		`admins ${JQL_USER}  ` +
-		`members ${JQL_USER} ` +
-		`polls ${JQL_POLL} }`
+const JQL_USER = `{ id name email mobilephone picture website } `
+const JQL_TEAM_MEMBER = `{ role joinedAt user ${JQL_USER} } `
+const JQL_PROPOSAL =  `{ id title description icon status createdAt numSupporters createdBy ${JQL_USER} } `  // isLikedByCurrentUser 
+const JQL_POLL = `{ id title status votingStartAt votingEndAt proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `  //TODO: numBallots duelMatrix { data }
+const JQL_TEAM = `{ id teamName inviteCode ` +
+		`members ${JQL_TEAM_MEMBER} ` +
+		`polls ${JQL_POLL} } `
 const JQL = {
 	TEAM: JQL_TEAM,
 	PROPOSAL: JQL_PROPOSAL,  // Javascript cannot reference own object property. So JQL_PROPOSAL must be its own const above. :-(
 	CREATE_OR_JOIN_TEAM_RESULT: `{ ` +
 		`team ${JQL_TEAM} ` +
 		`user ${JQL_USER} ` + 
-		`jwt }`, 
+		`jwt } `, 
 	POLL: JQL_POLL,
 }
 
@@ -211,12 +214,10 @@ let graphQlApi = {
 	 */
 	login(team, user, jwt) {
 		this.teamCache.put(this.TEAM_KEY, team)
-		// Set user.isAdmin = true if user is admin. This must of course also be secured in the backend!
-		if (team.admins.find(u => u.id === user.id)) user.isAdmin = true
 		this.teamCache.put(this.CURRENT_USER_KEY, user)
 		this.teamCache.put(this.JWT_KEY, jwt)
 		this.putPollsIntoCache(team.polls)
-		localStorage.setItem(this.LIQUIDO_JWT_KEY, jwt)
+		//if (localStorage != null) localStorage.setItem(this.LIQUIDO_JWT_KEY, jwt)
 		axios.defaults.headers.common["Authorization"] = "Bearer " + jwt
 		console.debug("Login <"+user.email+"> into team '" + team.teamName  + "'")
 		EventBus.emit(EventBus.Event.LOGIN, {team, user, jwt})
@@ -226,8 +227,8 @@ let graphQlApi = {
 		axios.defaults.headers.common["Authorization"] = undefined
 		let userEmail = this.getCachedUser() ? this.getCachedUser().email : ""
 		console.debug("Logout <"+userEmail+">")
-		localStorage.removeItem(this.LIQUIDO_JWT_KEY)
-		axios.defaults.headers.common["Authorization"] = undefined
+		//if (localStorage != null) localStorage.removeItem(this.LIQUIDO_JWT_KEY)
+		delete axios.defaults.headers.common["Authorization"]
 		this.teamCache.emptyCache()
 		this.pollsCache.emptyCache()
 		EventBus.emit(EventBus.Event.LOGOUT, userEmail)
@@ -279,7 +280,7 @@ let graphQlApi = {
 		let cachedUser = this.getCachedUser()
 		let team        = this.getCachedTeam()
 		if (!cachedUser || !team || !team.admins) return false
-		return team.admins.map(admin => admin.id).includes(cachedUser.id)
+		return team.members.filter(tm => tm.role == "ADMIN").map(admin => admin.user.id).includes(cachedUser.id)
 	},
 
 	/**
@@ -289,7 +290,7 @@ let graphQlApi = {
 	 */
 	putPollsIntoCache(pollsArray) {
 		if (!Array.isArray(pollsArray)) {
-			log.warn("Need array of polls to putPollsIntoCache!")
+			console.warn("Need array of polls to putPollsIntoCache!")
 			return
 		}
 		EventBus.emit(EventBus.Event.POLLS_LOADED, pollsArray)
@@ -409,7 +410,7 @@ let graphQlApi = {
 	 * @param {Object} admin first admin of new team 
 	 */
 	async createNewTeam(teamName, admin) {
-		let graphQL = `mutation createNewTeam($teamName: String!, $admin: UserModelInput!) { ` + 
+		let graphQL = `mutation createNewTeam($teamName: String!, $admin: UserEntityInput!) { ` + 
 			` createNewTeam(teamName: $teamName, admin: $admin) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		let variables = {
 			teamName: teamName,
@@ -419,7 +420,7 @@ let graphQlApi = {
 
 		return graphQlQuery(graphQL, variables)
 			.then(res => {
-				console.log("CreateNewTeam returned\n", JSON.stringify(res, null, 2))
+				//console.log("CreateNewTeam returned\n", JSON.stringify(res, null, 2))
 				let team = res.data.createNewTeam.team
 				this.login(
 					team,
@@ -449,7 +450,7 @@ let graphQlApi = {
 	},
 
 	async joinTeam(inviteCode, member) {
-		let graphQL = `mutation joinTeam($inviteCode: String!, $member: UserModelInput!) { ` + 
+		let graphQL = `mutation joinTeam($inviteCode: String!, $member: UserEntityInput!) { ` + 
 			` joinTeam(inviteCode: $inviteCode, member: $member) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		let variables = {
 			inviteCode: inviteCode,

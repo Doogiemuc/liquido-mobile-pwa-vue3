@@ -185,7 +185,7 @@ export default {
 		 *       But then a human would need to remember a secret. And humans are not good in remembering things.
 		 */
 		let getVoterToken = () => api.getVoterToken(config.voterTokenSecret)
-			.catch(err => console.warn("Cannot get voterToken of user", err))
+			.catch(err => console.error("Cannot get voterToken of user", err))
 
 		/**
 		 * Check if current user already coted in this poll. Then he would have a ballot.
@@ -199,11 +199,11 @@ export default {
 
 		/**
 		 * TODO: when the user has already voted, then sort the proposals in this poll according to the user's vote.
-		
-		let setVoteOrder = () => {
-			let proposalsById = {}
-			this.poll.proposals.forEach(prop => proposalsById[prop.id] = prop)
+		 */
+		let setProposalsInBallot = (ballot) => {
 			if (ballot) {
+				let proposalsById = {}
+				this.poll.proposals.forEach(prop => proposalsById[prop.id] = prop)
 				this.existingBallot = ballot
 				this.proposalInBallot = ballot.voteOrderIds.map(id => proposalsById[id])
 			} else {
@@ -211,9 +211,6 @@ export default {
 			}
 			this.loading = false
 		}
-		*/
-	
-
 		
 		let delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 		
@@ -268,13 +265,10 @@ export default {
 
 		loadPoll()
 			.then(getVoterToken)
-			.then(voterToken => getExistingBallot(voterToken))
+			.then(getExistingBallot)  		// with voter Token, if any
+			.then(setProposalsInBallot)		// set proposals (and sort them in the voteOrder of the users ballot if he already voted)
 			.then(() => {
-				this.proposalsInBallot = _.cloneDeep(this.poll.proposals)
-				//TODO: if there is an existing ballot, then sort proposals in that order
 				this.loading = false
-			})
-			.then(() => {
 				setTimeout(function() {
 					showDraggingHint()
 				}, 1000)
@@ -284,9 +278,7 @@ export default {
 				console.error("Cannot get data to cast vote!", err)
 				this.loading = false
 			})
-		
-
-		
+				
 	},
 	mounted() {
 		

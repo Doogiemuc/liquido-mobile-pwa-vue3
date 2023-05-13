@@ -5,7 +5,7 @@ import commonConfig from "./config.common.js"
 
 let testConfig = {
 	configSource: "test",
-	LIQUIDO_API_URL: "/liquido-api/v3",
+	LIQUIDO_API_URL: "http://localhost:8080",  //  "/liquido-api/v3",
 	BASE_URL: "/",
 	voterTokenSecret: "test44VoterTokenSecret",
 }
