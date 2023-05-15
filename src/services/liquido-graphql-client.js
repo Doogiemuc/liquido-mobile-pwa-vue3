@@ -79,6 +79,7 @@ axios.defaults.baseURL = config.LIQUIDO_API_URL
  */
 const GRAPHQL = '/graphql'      // ==================== BASE PATH FOR GRAPHQL endpoint  //TODO: should that be in config.common.js ?
 const graphQlQuery = function(query, variables) {
+	console.debug("GraphQL Query with " + axios.defaults.headers.common["Authorization"])
 	return axios.post(GRAPHQL, { query: query, variables: variables })
 		.then(res => {
 			if (res.data && res.data.errors && res.data.errors.length > 0) {
