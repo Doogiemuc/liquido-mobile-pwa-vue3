@@ -62,6 +62,7 @@ test('ADMIN:  create new team', async function() {
 		})
 		.catch(err => {
 			console.error("TEST ERROR", err)
+			return Promise.reject(err)
 		})
 	
 	
@@ -133,4 +134,24 @@ test('ADMIN:  load poll (in VOTING)', function() {
 			console.log("getPollById", poll)
 		})
 })
+
+test('MEMBER: cast vote', function() {
+	client.login(t.team, t.member, t.memberJWT)
+	let voteOrderIds = t.poll.proposals.map(p => p.id)
+	return client.getVoterToken("dummySecret")
+		.then(voterToken => {
+			console.log("Got voterToken:", voterToken)
+			expect(voterToken).to.have.lengthOf.at.least(5)
+			return client.castVote(t.poll.id, voteOrderIds, voterToken)
+				.then(res => {
+					console.log("casted Vote", res)
+					expect(res.ballot.checksum).to.have.lengthOf.at.least(5)
+					return res
+				})
+			})
+	
+})
+
+
+
 
