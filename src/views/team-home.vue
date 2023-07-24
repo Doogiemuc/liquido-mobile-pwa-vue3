@@ -21,18 +21,11 @@
 		<div class="clearfix" />
 
 		<div id="memberCards" class="row row-cols-3 g-2 mb-3">
-			<div class="col" v-for="admin in team.admins" :key="admin.id">
-				<b-card :img-src="getImgUrl(admin.picture)" img-alt="Avatar" img-top>
-					<i class="fas fa-shield-alt admin-shield"></i>
+			<div class="col" v-for="member in team.members" :key="member.user.id">
+				<b-card :img-src="getImgUrl(member.user.picture)" img-alt="Avatar" img-top>
+					<i v-if="member.role == 'ADMIN'" class="fas fa-shield-alt admin-shield"></i>
 					<b-card-text>
-						<b>{{ admin.name }}</b>
-					</b-card-text>
-				</b-card>
-			</div>
-			<div class="col" v-for="member in team.members" :key="member.id">
-				<b-card :img-src="getImgUrl(member.picture)" img-alt="Avatar" img-top>
-					<b-card-text>
-						{{ member.name }}
+						{{ member.user.name }}
 					</b-card-text>
 				</b-card>
 			</div>

@@ -2,7 +2,6 @@
   "name": "liquido-mobile-pwa-vue3",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -46,6 +45,7 @@
     "cypress": "^10.10.0",
     "eslint": "^8.22.0",
     "eslint-plugin-vue": "^9.3.0",
+    "sass-loader": "^13.3.2",
     "vitest": "^0.23.4"
   },
   "repository": {

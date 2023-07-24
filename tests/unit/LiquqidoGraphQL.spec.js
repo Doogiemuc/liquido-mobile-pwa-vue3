@@ -48,6 +48,12 @@ beforeAll(async () => {
 	}
 })
 
+test('GET GraphQL schmea', async function() {
+	return client.getGraphQLSchema().then(res => {
+		expect(res.data).to.contain("castVote")
+	})
+})
+
 test('ADMIN:  create new team', async function() {
 	// WHEN creating a new team
 	return client.createNewTeam(fix.team.teamName, fix.admin)
@@ -64,8 +70,6 @@ test('ADMIN:  create new team', async function() {
 			console.error("TEST ERROR", err)
 			return Promise.reject(err)
 		})
-	
-	
 })
 
 test ('MEMBER: joinTeam', async function() {
@@ -130,27 +134,63 @@ test('ADMIN:  load poll (in VOTING)', function() {
 	client.login(t.team, t.admin, t.adminJWT)
 	return client.getPollById(t.poll.id, true)
 		.then(poll => {
+			expect(poll.proposals).to.have.lengthOf.at.least(2)  // Need at least two proposals to be able to cast a vote
 			expect(poll.status).toBe("VOTING")
-			console.log("getPollById", poll)
+			console.log("getPollById returned:", poll)
 		})
 })
 
-test('MEMBER: cast vote', function() {
+test('MEMBER: cast vote', async function() {
 	client.login(t.team, t.member, t.memberJWT)
-	let voteOrderIds = t.poll.proposals.map(p => p.id)
-	return client.getVoterToken("dummySecret")
-		.then(voterToken => {
-			console.log("Got voterToken:", voterToken)
-			expect(voterToken).to.have.lengthOf.at.least(5)
-			return client.castVote(t.poll.id, voteOrderIds, voterToken)
-				.then(res => {
-					console.log("casted Vote", res)
-					expect(res.ballot.checksum).to.have.lengthOf.at.least(5)
-					return res
-				})
-			})
-	
+	let voteOrderIds = t.poll.proposals.map(p => p.id).sort()  // Make sure we vote for the right proposal :-) Need to sort!
+	let voterToken = await getVoterToken("dummySecret")
+	let res = await castVote(t.poll.id, voteOrderIds, voterToken)
+	t.ballot = res.ballot  // save last ballot
 })
+
+test('ADMIN: cast vote', async function() {
+	client.login(t.team, t.admin, t.adminJWT)
+	let voteOrderIds = t.poll.proposals.map(p => p.id).sort()
+	let voterToken = await getVoterToken("dummySecret")
+	let res = await castVote(t.poll.id, voteOrderIds, voterToken)
+})
+
+
+function getVoterToken(voterSecret) {
+	return client.getVoterToken("dummySecret").then(voterToken => {
+		//console.log("Got voterToken:", voterToken)
+		expect(voterToken).to.have.lengthOf.at.least(5)
+		return voterToken
+	})
+}
+
+function castVote(pollId, voteOrderIds, voterToken) {
+	return client.castVote(t.poll.id, voteOrderIds, voterToken).then(res => {
+		console.log("casted Vote", res)
+		expect(res.voteCount).toBeGreaterThanOrEqual(0)
+		expect(res.ballot.checksum).to.have.lengthOf.at.least(5)
+		return res
+	})
+}
+
+test('MEMBER: verify ballot', function() {
+	client.login(t.team, t.member, t.memberJWT)
+	return client.verifyBallot(t.poll.id, t.ballot.checksum)
+		.then(res => {
+			//console.log("verifiyResult", res)
+			expect(res.ballot)
+			console.log("Successfully verified ballot with checksum")
+		})
+})
+
+test('ADMIN:  finish voting phase', function() {
+	client.login(t.team, t.admin, t.adminJWT)
+  return client.finishVotingPhase(t.poll.id).then(winner => {
+		console.log("Finished voting phase of poll:", winner)
+		expect(winner.title).to.equal(fix.proposal1.title)
+	})
+})
+
 
 
 

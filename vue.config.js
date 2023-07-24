@@ -3,6 +3,7 @@
  * https://cli.vuejs.org/guide/
  */
 
+//import path from "path"
 const path = require("path")
 
 /**
@@ -15,7 +16,8 @@ module.exports = {
 	devServer: {
 		port: 3001,   // Port for frontend when developing.
 		proxy: {      // Problems with CORS? Vue Dev serve can proxy API requests for your: https://cli.vuejs.org/config/#devserver-proxy
-			"/liquido-api/v3": {
+			"^/liquido-api/v3": {  // Only proxy API requests. There are others, eg. Webservice "/ws" that sould stay
+				pathRewrite: {'^/liquido-api/v3' : '/'},
 				target: "http://localhost:8080",    // the matched path will be appended to this!
 				//ws: true,
 				//changeOrigin: true

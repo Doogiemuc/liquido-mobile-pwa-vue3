@@ -37,6 +37,6 @@ export default {
 			email: "localTestUser12@liquido.vote",
 			mobilephone: "+4955522222"
 		},		
-		token: 998877,
+		token: "XXXXXXX",
 	}
 }

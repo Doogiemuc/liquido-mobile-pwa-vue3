@@ -193,17 +193,19 @@ let graphQlApi = {
 	// If something goes wrong, then the caller is responsible to catch()
 	// and process the error.
 
-	/**
-	 * Ping GraphQL backend API and check if everything is setup correctly.
-	 * @returns response to HTTP HEAD request. (This might be a 401 - access denied)
-	 */
 	async pingApi() {
-		return axios.head('/_ping')  // ping baseUrl set via config
-			.then(res => {
-				console.log("Ok, LIQUIDO backend is reachable at ", config.LIQUIDO_API_URL)
-				return res
-			})
+		return axios.get('/')
 	},
+
+	/**
+	 * get GraphQL schema.
+	 * This can also be used to check if the API is available
+	 * @returns the GraphQL schema
+	 */ 
+	async getGraphQLSchema() {
+		return axios.get('/graphql/schema.graphql')
+	},
+	
 
 	/**
 	 * Login user into team. Store JWT for future requests.
@@ -294,10 +296,10 @@ let graphQlApi = {
 			console.warn("Need array of polls to putPollsIntoCache!")
 			return
 		}
-		EventBus.emit(EventBus.Event.POLLS_LOADED, pollsArray)
 		pollsArray.forEach(poll => {
 			this.pollsCache.put("polls/"+poll.id, poll)
 		})
+		EventBus.emit(EventBus.Event.POLLS_LOADED, pollsArray)
 	},
 
 	/****************************************************************
@@ -333,7 +335,7 @@ let graphQlApi = {
 	requestEmailToken(email) {
 		if (!email) throw new Error("Need email to log in!")
 		let graphQL = `query { requestEmailToken(email: "${email}") }`
-		return graphQlQuery(graphQL)  // no return value
+		return graphQlQuery(graphQL)
 	},
 
 	/**
@@ -382,27 +384,31 @@ let graphQlApi = {
 	 * @param token valid and correct devLogin.token. Will be validated in backend. This is like a simulated SMS token.
 	 * @return login data with team, user and jwt (same as a joinTeam calls)
 	 */
-	async devLogin(email, teamName, token) {
+	async devLogin(email, teamName, devLoginToken) {
 		if (!["development", "test", "int"].includes(process.env.NODE_ENV))
 			return Promise.reject("devLogin is only allowed in NODE_ENV development, test or int")
-		if (!email || !teamName || !token) 
-			return Promise.reject("Need email, teamName and devlogin.token!")
+		if (!email || !teamName || !devLoginToken) 
+			return Promise.reject("Need email, teamName and devLoginToken!")
+		/*
 		return axios({
 			method: "GET", 
 			url: "/dev/getJWT",
 			params: {
 				email: email,
 				teamName: teamName,
-				token: token
+				token: devLoginToken
 			}
-		}).then(res => {
-			console.log("API: devLogin for <"+email+"> in team '"+teamName+"'", res.data)
-			this.login(res.data.team, res.data.user, res.data.jwt)
-			return res.data
-		}).catch(err => { 
-			console.error("API: devLogin failed: ", err)
-			return Promise.reject("devLogin failed"+JSON.stringify(err))
-		})
+		*/
+		let graphQL = `query { devLogin(email: "${email}", devLoginToken: "${devLoginToken}") ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
+		return graphQlQuery(graphQL)
+			.then(res => {
+				console.log("API: devLogin for <"+email+"> in team '"+teamName+"'", res.data.devLogin)
+				this.login(res.data.devLogin.team, res.data.devLogin.user, res.data.devLogin.jwt)
+				return res.data.devLogin
+			}).catch(err => { 
+				console.error("API: devLogin failed: ", err)
+				return Promise.reject("devLogin failed"+JSON.stringify(err))
+			})
 	},
 
 	/**
@@ -624,7 +630,7 @@ let graphQlApi = {
 		let graphQL = `query { verifyBallot(pollId: "${pollId}", checksum: "${checksum}") ` +
 			`{ level checksum voteOrder { id } } }`  
 		// returns user's ballot if found
-		return graphQlQuery(graphQL)
+		return graphQlQuery(graphQL).then(res => res.data.verifyBallot)
 	},
 
 	/** Liquido backend error codes. Must match LiquidoException.java from backend*/
