@@ -1,14 +1,19 @@
 <template>
 	<div>
-		<h2 id="poll-show" class="page-title text-center">
-			{{ pageTitleLoc }}
-		</h2>
+		<div class="d-flex align-items-center">
+			<a href="#" class="title-backlink" @click="goToPolls">
+				<i class="fas fa-angle-left" />
+			</a>
+			<h1 id="poll-show" class="page-title">
+				&nbsp;{{ pageTitleLoc }}
+			</h1>
+	</div>
 
 		<div v-if="loadingPoll" class="my-3">
 			<b-spinner small />&nbsp;{{ $t('Loading') }}
 		</div>
 		
-		<poll-panel v-if="poll.id" :poll="poll" :read-only="true" class="shadow" />
+		<poll-panel v-if="poll.id" :poll="poll" :read-only="true" class="shadow-sm" />
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
 			<div v-html="$t('cannotFindPoll', {pollId: pollId})" />
@@ -17,12 +22,12 @@
 			</b-button>
 		</div>
 
-		<div v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" class="alert liquido-info mb-3">
+		<div v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" class="alert mb-3">
 			<i class="fas fa-info-circle float-end" />
 			<p v-html="$t('pollInElaborationInfo')" />
 		</div>
 
-		<div v-if="showAddProposal" class="alert liquido-info mb-3">
+		<div v-if="showAddProposal" class="alert mb-3">
 			<p v-html="$t('addProposalInfo')" />
 			<b-button id="addProposalButton" variant="primary" class="float-end" @click="clickAddProposal()">
 				{{ $t("addProposal") }}
@@ -31,7 +36,7 @@
 		</div>
 		<div class="clearfix mb-3" />
 
-		<div v-if="poll.status === 'VOTING' && !poll.usersBallot" class="alert liquido-info mb-3">
+		<div v-if="poll.status === 'VOTING' && !poll.usersBallot" class="alert mb-3">
 			<p v-html="$t('votingPhaseInfo')" />
 			<b-button id="goToCastVoteButton" variant="primary" class="float-end" @click="clickCastVote()">
 				<i class="fas fa-person-booth" />
@@ -41,7 +46,7 @@
 		</div>
 		<div class="clearfix mb-3" />
 
-		<div v-if="poll.status === 'VOTING' && poll.usersBallot" class="alert liquido-info mb-3">
+		<div v-if="poll.status === 'VOTING' && poll.usersBallot" class="alert mb-3">
 			<p v-html="$t('alreadyVotedInfo')" />
 			<b-button variant="primary" class="float-end" @click="clickCastVote()">
 				<i class="fas fa-person-booth" />
@@ -81,7 +86,7 @@
 		</div>
 		<div class="clearfix mb-3" />
 
-		<span class="text-muted" @click="goToPolls()">
+		<span class="text-muted mt-5" @click="goToPolls()">
 			<i class="fas fa-angle-left" />
 			{{ $t("backToPolls") }}
 		</span>
@@ -265,6 +270,12 @@ export default {
 </script>
 
 <style scoped>
+
+.title-backlink {
+	width: 1em;
+	font-size: 1.2rem;
+	line-height: 2.0;
+}
 .poll-panel {
 	margin-bottom: 3rem;
 }

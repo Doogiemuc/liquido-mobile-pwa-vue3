@@ -64,7 +64,7 @@ const globalTranslations = {
 		Laws: "Regeln",
 
 		newPoll: "Neue Abstimmung",
-		allPolls: "Alle eure Abstimmungen",           // this has exactly two lines of text in iPhone, als all the other titles too
+		allPolls: "Alle Abstimmungen",
 		pollInElaboration: "Abstimmung zur Diskussion",
 		pollsInElaboration: "Abstimmungen zur Diskussion",
 		pollInVoting: "Laufende Abstimmung",

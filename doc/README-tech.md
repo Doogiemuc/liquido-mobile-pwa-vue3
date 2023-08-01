@@ -4,7 +4,27 @@ LIQUIDO - A modern aproach to liquid democracy.
 
 This is a HTML5 based mobile application. A PWA - progressive web application.
 
-# TESTS
+
+
+## Layout / Design / UI / UX
+
+No more fixed title at the top. Only the title of the page. Black on white.
+
+Mobile menu bar at the bottom:
+ * Home / Team 
+ * Polls
+ * Search (?)
+ * Settings / About / UserProfile
+
+Poll Detail page:
+ * No menu bar at the bottom
+ * Back sign at the top left
+ * Add Proposal button OR
+ * Big cast vote button
+
+
+
+## TESTS
 
 ### Test Case: Register
 
@@ -13,10 +33,6 @@ This is a HTML5 based mobile application. A PWA - progressive web application.
     Response contains { team user jwt }. 
  3. Store team and user in local cache.                  (welcome-chat.js -> local-cache.js)
  4.	Set jwt in liquido-atlas-client as HTTP HEADER       (welcome-chat.js -> liquido-atlas-client.js)
-
-
-
-
 
 
 

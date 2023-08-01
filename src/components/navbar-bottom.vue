@@ -1,30 +1,46 @@
 <template>
 	<nav id="navbar">
+		<div id="teamButton" class="team-button">
+			<a href="#" aria-label="Team" @click="goToTeam()">
+				<div class="nav-bar-icon">
+					<i class="fas fa-users"></i>
+				</div>
+				<div class="icon-title">{{ $t("team") }}</div>
+			</a>
+		</div>
 		<div id="pollsInDiscussionArrow" :class="discussButtonClass" class="discuss-button">
 			<a href="#" aria-label="Polls to discuss" @click="clickPollsInDiscussion()">
-				<div class="icon-with-badge">
+				<div class="nav-bar-icon">
 					<i class="fas fa-comments"></i>
-					<span v-if="pollsInElaboration.length > 0" class="counter-badge">{{ pollsInElaboration.length }}</span>
+					<span class="counter-badge">{{ pollsInElaboration.length }}</span>
 				</div>
 				<div class="icon-title">{{ $t("discuss") }}</div>
 			</a>
 		</div>
 		<div id="pollsInVotingArrow" :class="voteButtonClass" class="vote-button">
 			<a href="#" aria-label="Polls in voting" @click="clickPollsInVoting()">
-				<div class="icon-with-badge">
+				<div class="nav-bar-icon">
 					<i class="fas fa-person-booth"></i>
-					<span v-if="pollsInVoting.length > 0" class="counter-badge">{{ pollsInVoting.length }}</span>
+					<span class="counter-badge">{{ pollsInVoting.length }}</span>
 				</div>
 				<div class="icon-title">{{ $t("vote") }}</div>
 			</a>
 		</div>
 		<div id="finishedPollsArrow" :class="finishedButtonClass" class="finished-button">
 			<a href="#" aria-label="Finished polls" @click="clickFinishedPolls()">
-				<div class="icon-with-badge">
+				<div class="nav-bar-icon">
 					<i class="fas fa-check-circle"></i>
-					<span v-if="pollsFinished.length > 0" class="counter-badge">{{ pollsFinished.length }}</span>
+					<span class="counter-badge">{{ pollsFinished.length }}</span>
 				</div>
 				<div class="icon-title">{{ $t("finished") }}</div>
+			</a>
+		</div>
+		<div id="infoButton" class="info-button">
+			<a href="#" aria-label="Info" @click="goToInfo()">
+				<div class="nav-bar-icon">
+					<i class="fas fa-info"></i>
+				</div>
+				<div class="icon-title">{{ $t("info") }}</div>
 			</a>
 		</div>
 	</nav>
@@ -41,14 +57,18 @@ export default {
 	i18n: {
 		messages: {
 			de: {
-				discuss: "diskutieren",
-				vote: "abstimmen",
-				finished: "entschieden"   // abgeschlossen?  final? fertig?  verb: entscheiden?
+				team: "Team",
+				discuss: "Debate",
+				vote: "Vote",
+				finished: "Finished",   // abgeschlossen?  final? fertig?  verb: entscheiden?
+				info: "Info"
 			},
 			en: {
-				discuss: "discuss",
-				vote: "vote",
-				finished: "finished"  
+				team: "Team",
+				discuss: "Discuss",  // debate
+				vote: "Vote",
+				finished: "Finished",
+				info: "Info"
 			}
 		}
 	},
@@ -152,20 +172,32 @@ export default {
 		},
 
 		goToTeam() {
+			if (this.selectedItem !== 0) {  // prevent firing an unnecessary event
+				this.selectedItem = 0
+			}
+			this.$router.push({name: "teamHome"})
+		},
+
+		goToInfo() {
 			if (this.selectedItem !== 0) {
 				this.selectedItem = 0
-				this.$router.push({name: "teamHome"})
 			}
+			//this.$router.push({name: "aboutPage"})
 		},
 
 		/**
-		 * When user is on the team page and clicks on any of the poll buttons in the navbar
-		 * then select all three and show all types of polls.
-		 * When all three are selected and user clicks on one of them, 
-		 * then filter only that one type of polls.
-		 * When one poll button is selected and user clicks on it again,
-		 * then select all three and show all types of polls.
+		 * Behaviour of the three buttons in the navbar<
+		 * 
+		 * 1. Debate
+		 * 2. Vote
+		 * 3. Finished
+		 * 
+		 * Initially all three are selected.
+		 * When user clicks one of them, then only this button is selected.
+		 * When user clicks the currently selected button again, 
+		 * then all buttons are selected and all polls are shown.
 		 */
+
 		clickPollsInDiscussion() {
 			if (this.selectedItem === 0 || this.selectedItem === 1) {
 				this.setPollFilter(undefined)
@@ -198,9 +230,9 @@ export default {
 <style lang="scss" scoped>
 
 $arrowColor: white; //#bbcaec;
-$arrowWidth: 10px;
+$arrowWidth: 15px;
 $arrowHeight: 30px;  // half height
-$arrowGap: 5px;
+$arrowGap: 3px;
 
 #navbar {
 	position: fixed;
@@ -209,16 +241,16 @@ $arrowGap: 5px;
 	//height: 2 * $arrowHeight + 4 * $arrowGap;
 	bottom: 0;
 	z-index: 999;
-	font-size: 1.7rem;
-	padding: 10px;
-	margin: 0 auto;
+	font-size: 1.2rem;
+	padding: 10px 5px 20px 5px;  // a bit more padding at the bottom for iOS swipe-up bar
+	margin: 0 0;
 	box-shadow: 0 0 0.25rem rgba(0,0,0,0.6);
 	background-color: $navbar-bg;
 	display: flex;
 	flex-wrap: nowrap;
 	justify-content: space-between;
 	
-	.team-button, .discuss-button, .vote-button, .finished-button, .menue-button {
+	.team-button, .discuss-button, .vote-button, .finished-button, .info-button {
 		text-align: center;
 		margin: 0;
 		padding: 0;
@@ -238,9 +270,9 @@ $arrowGap: 5px;
 	} 
 
 	.discuss-button, .vote-button, .finished-button {
-		min-width: 60px;
+		min-width: 30px;
 		flex-grow: 1;
-		line-height: 1.1;
+		//line-height: 1.1;
 		background-color: $arrowColor;
 		&::after {
 			-webkit-transition: background-color 0.5s ease, border-color 0.5s ease;
@@ -262,7 +294,7 @@ $arrowGap: 5px;
 		}
 	}
 
-	.team-button {
+	.team-button, .info-button {
 		flex-grow: 1;
 		border-top-right-radius: 10px;
 		border-bottom-right-radius: 10px;
@@ -337,27 +369,38 @@ $arrowGap: 5px;
 		}
 	}
 
-	.menue-button {
-		flex-grow: 1;
-		border-top-left-radius: 10px;
-		border-bottom-left-radius: 10px;
-	}
-
-	
 	.selected {
 		a {	color: white !important; }
 		background-color: $primary;
+		.counter-badge {
+			color: $primary !important;
+			border: 1px solid $primary !important;
+		}
 	}
 	.disabled {
-		a { color: grey !important; }
+		a { color: lightgray !important; }
+		.counter-badge {
+			color: lightgray !important;
+			border: 1px solid lightgray !important;
+		}
 	}
 	.disabled.selected {
-		a { color: lightgray !important; }
+		a {
+			opacity: 0.8;
+			color: gray !important; 
+		}
+		.counter-badge {
+			opacity: 0.8;
+			color: $primary !important;
+			background: gray !important;
+			border: 1px solid $primary !important;
+		}
 	}
 
-	.icon-with-badge {
+	.nav-bar-icon {
 		position: relative;
 		display: inline-block;
+		font-size: 22px;
 	}
 	.counter-badge {
 		position: absolute;
@@ -368,19 +411,17 @@ $arrowGap: 5px;
 		background-color: white;
 		border: 1px solid $primary;
 		border-radius: 1em;
-		font-size: 0.4em;
+		font-size: 0.8rem;
 		height: 1.2em;
 		min-width: 1.2em;
-		max-width: 4em;		
-		padding: 0 3px;
 		overflow: hidden;
-		text-overflow: ellipsis;
 		line-height: 1;
-		transform: translate(66%, -40%)
+		transform: translate(10px, -3px)
 	}
 	.icon-title {
-		font-size: 12px;
+		font-size: 10px;
 		text-decoration: none;
+		line-height: 1.0;
 	}
 
 }	

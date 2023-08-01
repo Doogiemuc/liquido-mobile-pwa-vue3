@@ -9,15 +9,15 @@
 		@click="goToPoll(poll.id)"
 	>
 		<template #header>
-			<h2 v-if="readOnly" class="read-only poll-panel-title">
+			<h3 v-if="readOnly" class="read-only poll-panel-title">
 				<i class="poll-title-icon" :class="iconForPoll" />
 				&nbsp;{{ poll.title }}
-			</h2>
-			<h2 v-else class="poll-panel-title">
+			</h3>
+			<h3 v-else class="poll-panel-title">
 				<i class="fas fa-angle-double-right goto-poll-icon" />
 				<i  class="poll-title-icon" :class="iconForPoll" />
 				&nbsp;{{ poll.title }}
-			</h2>
+			</h3>
 			<a
 				v-if="poll.proposals && poll.proposals.length > 0"
 				class="collapse-icon"
@@ -189,23 +189,23 @@ $proposal_img_size: 32px;
 
 	.card-header {   
 		//border-bottom: none;
-		margin: 0;
-		padding: 0.5rem 10px;
+		//margin: 0;
+		padding: 10px;
 		.poll-panel-title {
 			//font-family: 'Libre Baskerville', serif;  // same as .law-title
 			color: $primary;
 			padding: 0;
 			margin: 0;
-			font-size: 1.2rem !important;  // Need more space for longer poll titles
-			font-weight: bold;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
+			//font-size: 1.2rem !important;  // Need more space for longer poll titles
+			//font-weight: bold;
+			//white-space: nowrap;
+			//overflow: hidden;
+			//text-overflow: ellipsis;
 		}
 	}
 	
 	.poll-title-icon {
-		width: $proposal_img_size - 3;
+		width: $proposal_img_size -3;
 		text-align: center;
 	} 
 
@@ -290,7 +290,8 @@ $proposal_img_size: 32px;
 			border-radius: 50%;
 			border: 1px solid lightgray;
 			text-align: center;
-			font-size: 1.2em;
+			//font-size: 1.2em;
+			line-height: $proposal_img_size;
 			min-width: $proposal_img_size;
 			max-width: $proposal_img_size;
 			width: $proposal_img_size;

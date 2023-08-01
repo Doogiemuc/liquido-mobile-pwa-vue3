@@ -211,7 +211,7 @@ export default {
 		devLoginAdmin() {
 			api.logout()
 			api.devLogin(config.devLogin.admin.email, config.devLogin.teamName, config.devLogin.token).then(() => {
-				this.$router.push({name: "teamHome"})
+				this.$router.push({name: "polls"})
 			}).catch(err => console.error("DevLogin Admin failed!", err))
 		},
 
@@ -219,7 +219,7 @@ export default {
 		devLoginMember() {
 			api.logout()
 			api.devLogin(config.devLogin.member.email, config.devLogin.teamName, config.devLogin.token).then(() => {
-				this.$router.push({name: "teamHome"})
+				this.$router.push({name: "polls"})
 			}).catch(err => console.error("DevLogin Member failed!", err))
 		},
 

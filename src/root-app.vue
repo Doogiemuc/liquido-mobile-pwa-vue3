@@ -1,7 +1,7 @@
 <template>
 	<div id="rootApp">
-		<liquido-header ref="liquido-header" :back-link="backLink" />
-		<popup-modal 
+		<!-- liquido-header v-if="false" ref="liquido-header" :back-link="backLink" / -->
+		<popup-modal
 			id="rootPopupModal"
 			ref="rootPopupModal"
 			:type="modalType"
@@ -18,7 +18,7 @@
 			</transition>
 		</router-view>
 		<navbar-bottom v-if="showNavbarBottom"></navbar-bottom>
-		<mobile-log-viewer ref="mobileLogViewRef" v-if="showDebugLog"></mobile-log-viewer>
+		<mobile-log-viewer  v-if="showDebugLog" ref="mobileLogViewRef"></mobile-log-viewer>
 	</div>
 </template>
 
@@ -51,6 +51,7 @@ export default {
 		// These data attributes are reactive and available in EVERY sub-component as this.$root.<attributeName>
 		return {
 			transitionName: "", 	// CSS sliding transition between page components
+			pollStatusFilter: undefined, 
 			// Global popup-modal
 			modalType: "success",
 			modalTitle: "",
@@ -84,7 +85,7 @@ export default {
 			return this.$route.path.match(/(polls|polls\/\d+)$/)
 		},
 		showDebugLog() {
-			return process.env.NODE_ENV !== 'production'
+			return false  // process.env.NODE_ENV !== 'production'
 		}
 	},
 	// watch the `$route` to determine the transition to use
@@ -222,6 +223,7 @@ export default {
 }
 .fade-leave-active {
 	position: absolute;
+	top: 0;
 	width: 100%;
 }
 
@@ -234,6 +236,7 @@ export default {
 .slide-left-leave-active,
 .slide-right-leave-active {
 	position: absolute;
+	top: 0;
 	width: 100%;
 }
 .slide-left-leave-to,

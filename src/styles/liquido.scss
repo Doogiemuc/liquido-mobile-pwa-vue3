@@ -17,6 +17,7 @@ html {
 */
 body {
 	background-color: $app-background;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /** No iOS native button and input styling */
@@ -67,7 +68,7 @@ button, [type="button"], [type="reset"], [type="submit"], input {
 		margin: 0;	
 		background-color: $app-background;
 		
-		padding-top: 50px;		// space behind liquido-header
+		//padding-top: 50px;		// space behind liquido-header
 		padding-bottom: 200px;  // For pages that show the navbar-bottom we need padding at the bottom!
 		padding-left: 10px;     // smaller than bootsraps default 15px. But still enough for iOS scrollbar.
 		padding-right: 10px;
@@ -75,8 +76,8 @@ button, [type="button"], [type="reset"], [type="submit"], input {
 
 	/* Top headline for all pages */
 	.page-title {
-		font-family: 'Libre Baskerville', serif;
-		margin: 1rem 0;
+		//font-family: 'Libre Baskerville', serif;
+		margin: 2rem 0;
 		text-align: center;
 		//font-weight: bold;
 	}
@@ -87,16 +88,17 @@ button, [type="button"], [type="reset"], [type="submit"], input {
 	}
 
 	h1,h2,h3,h4,h5,h6 {
-		font-family: 'Helvetica'; // 'Libre Baskerville', serif;
+		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif  ; // 'Libre Baskerville', serif;
 	}
 	
 	/* The bootstrap defaults are way to big on mobile screens! */
-	h1 { font-size: 1.75rem }
-  h2 { font-size: 1.50rem; }
-	h3 { font-size: 1.25rem; }
-	h4 { font-size: 1.00rem; }
+	h1 { font-size: 1.50rem }
+  h2 { font-size: 1.30rem; }
+	h3 { font-size: 1.20rem; }
+	h4 { font-size: 1.10rem; }
 	h5 { font-size: 1rem; }  // not used in LIQUIDO
 	h6 { font-size: 1rem; }
+	
 	
 	.alert {
 		padding: 0.5rem;

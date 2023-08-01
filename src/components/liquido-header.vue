@@ -10,9 +10,9 @@
 			<span class="liquido" @click="clickLiquidoTitle()" />
 		</div>
 		<div class="header-right">
-			<a v-if="showTeamIcon" href="#" aria-label="Team Home" @click="clickTeamIcon()">
+			<!-- a v-if="showTeamIcon" href="#" aria-label="Team Home" @click="clickTeamIcon()">
 				<i class="fas fa-users" />
-			</a>
+			</a -->
 		</div>
 	</header>
 </template>

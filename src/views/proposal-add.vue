@@ -9,15 +9,6 @@
 			<p v-html="$t('noProposalYet', {pollTitle: poll.title})" />
 		</div>
 
-		<div v-if="poll && poll.proposals && poll.proposals.length > 0">
-			<poll-panel
-				:poll="poll"
-				:collapse="true"
-				:read-only="true"
-				class="shadow-sm mb-3"
-			/>
-		</div>
-
 		<div class="card input-bubble shadow-sm mb-3">
 			<div class="card-header">
 				{{ $t("yourProposal") }}
@@ -102,6 +93,15 @@
 			</div>
 		</div>
 
+		<div v-if="poll && poll.proposals && poll.proposals.length > 0">
+			<poll-panel
+				:poll="poll"
+				:collapse="true"
+				:read-only="true"
+				class="shadow-sm mb-3"
+			/>
+		</div>
+
 		<popup-modal
 			id="proposalSuccessfullyAddedModal"
 			ref="proposalSuccessfullyAddedModal"
@@ -122,6 +122,10 @@
 </template>
 
 <script>
+
+//TODO: use root popup modal
+
+
 import pollPanel from "../components/poll-panel"
 import liquidoInput from "../components/liquido-input"
 import popupModal from "@/components/popup-modal"
@@ -308,7 +312,7 @@ export default {
 }
 
 .cancel-link {
-	font-size: 12px;
+	font-size: 1rem;
 	color: $secondary;
 	cursor: pointer;
 }
