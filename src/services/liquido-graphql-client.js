@@ -282,7 +282,7 @@ let graphQlApi = {
 	isAdmin() {
 		let cachedUser = this.getCachedUser()
 		let team        = this.getCachedTeam()
-		if (!cachedUser || !team || !team.admins) return false
+		if (!cachedUser || !team) return false
 		return team.members.filter(tm => tm.role == "ADMIN").map(admin => admin.user.id).includes(cachedUser.id)
 	},
 

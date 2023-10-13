@@ -665,8 +665,9 @@ export default {
 <style lang="scss">
 
 .login-link {
+	z-index: 999;
 	position: absolute;
-	bottom: 50px;
+	bottom: 80px;
 	right: 10px;
 	color: grey;
 	text-decoration: none;

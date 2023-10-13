@@ -58,14 +58,14 @@ export default {
 		messages: {
 			de: {
 				team: "Team",
-				discuss: "Debate",
-				vote: "Vote",
-				finished: "Finished",   // abgeschlossen?  final? fertig?  verb: entscheiden?
+				discuss: "Debatte",
+				vote: "Abstimmung",
+				finished: "Abgeschl.",   // abgeschlossen?  final? fertig? entschieden?
 				info: "Info"
 			},
 			en: {
 				team: "Team",
-				discuss: "Discuss",  // debate
+				discuss: "Discuss",  // or debate?
 				vote: "Vote",
 				finished: "Finished",
 				info: "Info"

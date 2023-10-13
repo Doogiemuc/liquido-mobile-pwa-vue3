@@ -2,7 +2,7 @@
 	<div>
 		<h1 id="login-page" class="page-title">{{ $t('Login') }}</h1>
 
-		<div v-if="showDevLogin" class="mb-3 text-center">
+		<div v-if="showDevLogin" class="d-flex justify-content-between mb-3">
 			<button type="button" class="btn btn-primary" @click="devLoginAdmin">
 				<i class="fas fa-shield-alt"></i> {{ $t("DevLoginAdmin") }}
 			</button>

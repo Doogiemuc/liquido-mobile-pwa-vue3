@@ -8,7 +8,7 @@
 		:class="{'read-only': readOnly}"
 		@click="goToPoll(poll.id)"
 	>
-		<template #header>
+		<!-- template #header>
 			<h3 v-if="readOnly" class="read-only poll-panel-title">
 				<i class="poll-title-icon" :class="iconForPoll" />
 				&nbsp;{{ poll.title }}
@@ -27,8 +27,25 @@
 			>
 				<i class="fa" />
 			</a>
-		</template>
+		</template -->
 
+		<b-card-body>
+			<a
+				v-if="poll.proposals && poll.proposals.length > 0"
+				class="collapse-icon"
+				:class="{'collapsed' : collapsed}"
+				href="#"
+				@click.stop.prevent="toggleCollapse()"
+			>
+				<i class="fa" />
+			</a>
+			<h6 class="card-subtitle mb-2">
+				{{ this.pollStatusLoc }}
+			</h6>
+			<h1 class="card-title">
+				{{ poll.title }}
+			</h1>
+		</b-card-body>
 		<div v-if="!poll.proposals || poll.proposals.length === 0" class="card-body">
 			<p class="text-secondary">
 				<small>{{ $t("noProposalsInPollYet") }}</small>
@@ -36,14 +53,11 @@
 		</div>
 		<b-list-group v-else flush>
 			<b-list-group-item v-for="law in poll.proposals" :key="law.id" class="proposal-list-group-item" :class="proposalListGroupItemClasses(law.id)">
-				<div class="proposal-header d-flex">
-					<div class="law-image">
-						<i class="fas fa-fw" :class="'fa-' + law.icon" />
-					</div>
+				<div class="proposal-header d-flex justify-content-between">
 					<div class="proposal-header-text d-flex flex-column text-truncate">
-						<h3 class="law-title">
+						<h4 class="law-title">
 							{{ law.title }}
-						</h3>
+						</h4>
 						<div :class="lawSubtitleClasses(law)">
 							<div v-if="canLike(law)" class="like-button like-button-active" @click.stop.prevent="clickLike(poll.id, law.id)">
 								<i class="far fa-thumbs-up" />&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
@@ -61,6 +75,9 @@
 								<i class="far fa-user" />&nbsp;{{ law.createdBy.name }}
 							</div>
 						</div>
+					</div>
+					<div class="law-image">
+						<i class="fas fa-fw" :class="'fa-' + law.icon" />
 					</div>
 				</div>
 				<div class="law-description" v-html="law.description"></div>
@@ -95,7 +112,7 @@ export default {
 	},
 	data() {
 		return {
-			collapsed: this.collapse
+			collapsed: this.collapse || this.poll.status === "FINISHED"
 		}
 	},
 	computed: {
@@ -112,6 +129,14 @@ export default {
 				default:
 					return "far fa-poll"
 			}
+		},
+		pollStatusLoc() {
+			if (!this.poll || !this.poll.id) return this.$t("Poll")
+			if (!this.poll.proposals || this.poll.proposals.length === 0) return this.$t("newPoll")
+			if (this.poll.status === "ELABORATION") return this.$t("pollInElaboration")
+			if (this.poll.status === "VOTING") return this.$t("pollInVoting")
+			if (this.poll.status === "FINISHED") return this.$t("finishedPoll")
+			return this.$t("Poll")
 		}
 	},
 	mounted() {
@@ -181,16 +206,22 @@ $proposal_img_size: 32px;
 
 .poll-panel {
 
-  //border: none !important;
-
 	&:not(.read-only) {
 		cursor: pointer;
 	}
 
+	.card-subtitle {
+		color: $primary;
+		font-size: 0.8rem !important;
+		text-transform: uppercase;
+		font-weight: bold;
+	}
+
 	.card-header {   
+		position: relative;
 		//border-bottom: none;
 		//margin: 0;
-		padding: 10px;
+		//padding: 1em 10px;
 		.poll-panel-title {
 			//font-family: 'Libre Baskerville', serif;  // same as .law-title
 			color: $primary;
@@ -215,26 +246,31 @@ $proposal_img_size: 32px;
 	}
 
 	.collapse-icon {
+		z-index: 999;
 		position: absolute;
 		font-size: 1.2rem;
-		top: 3px;
-		right: 5px;
+		bottom: 0;
+		right: 10px;
 		//opacity: 0.5;
 	}
 
 	.collapse-icon .fa:before {
-		content: "\f107";
+		content: "\f106";
 	}
 
 	.collapse-icon.collapsed .fa:before {
-		content: "\f106";
+		content: "\f107";
 	}
 
 	.card-body {
 		padding: 10px;
 	}
 
-	// law-panel inside poll panel - list of proposals in poll
+	.list-group {
+		margin-bottom: 1em;
+	}
+
+	// list of proposals in poll
 	.proposal-list-group-item {
 		height: 8.2rem;
 		overflow: hidden;
@@ -242,16 +278,16 @@ $proposal_img_size: 32px;
 		transition: height 0.5s;
 		border: none;
 		&.collapsed-law-panel {
-			height: 16px + $proposal_img_size;  // just right enough to not see the description.
+			height: 62px;    // just right enough to not see the description.
 		}			
 		.proposal-header-text {
-			margin-bottom: 2px;
+			margin-bottom: 5px;
 		}
 		.law-title {
-			margin-bottom: 0;
-			padding: 0;
-			font-size: 1rem !important;
-			line-height: 18px;
+			//margin-bottom: 0;
+			//padding: 0;
+			//font-size: 1rem !important;
+			//line-height: 18px;
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
@@ -286,7 +322,7 @@ $proposal_img_size: 32px;
 
 		.law-image {
 			color: white;
-			background-color: lightgray;
+			background-color: $header-bg;
 			border-radius: 50%;
 			border: 1px solid lightgray;
 			text-align: center;
@@ -298,7 +334,6 @@ $proposal_img_size: 32px;
 			min-height: $proposal_img_size;
 			max-height: $proposal_img_size;
 			height: $proposal_img_size;
-			margin-right: 8px;
 		}
 
 		.law-description {
@@ -337,13 +372,15 @@ $proposal_img_size: 32px;
 		left: 10px;
 		right: 10px;
 		bottom: 1px;
-		border-top: 1px solid rgba(0,0,0, 0.1)
+		border-top: 1px solid rgba(0,0,0, 0.05)
 	}
 
 	//BUGFIX for bootstrap: inherit border-radius in list-group-flush wrapper
+	/*
 	.list-group-flush {
 		border-radius: inherit;
 	}
+	*/
 }
 
 </style>

@@ -1,19 +1,16 @@
 <template>
 	<div>
-		<div class="d-flex align-items-center">
-			<a href="#" class="title-backlink" @click="goToPolls">
+		<div class="backlink my-3" @click="goToPolls">
+			<a href="#">
 				<i class="fas fa-angle-left" />
 			</a>
-			<h1 id="poll-show" class="page-title">
-				&nbsp;{{ pageTitleLoc }}
-			</h1>
-	</div>
+		</div>
 
 		<div v-if="loadingPoll" class="my-3">
 			<b-spinner small />&nbsp;{{ $t('Loading') }}
 		</div>
 		
-		<poll-panel v-if="poll.id" :poll="poll" :read-only="true" class="shadow-sm" />
+		<poll-panel v-if="poll.id" :poll="poll" :read-only="true" class="shadow-sm mb-5" />
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
 			<div v-html="$t('cannotFindPoll', {pollId: pollId})" />
@@ -22,21 +19,12 @@
 			</b-button>
 		</div>
 
-		<div v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" class="alert mb-3">
+		<div v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" class="text-muted mb-3">
 			<i class="fas fa-info-circle float-end" />
 			<p v-html="$t('pollInElaborationInfo')" />
 		</div>
 
-		<div v-if="showAddProposal" class="alert mb-3">
-			<p v-html="$t('addProposalInfo')" />
-			<b-button id="addProposalButton" variant="primary" class="float-end" @click="clickAddProposal()">
-				{{ $t("addProposal") }}
-				<i class="fas fa-angle-double-right" />
-			</b-button>
-		</div>
-		<div class="clearfix mb-3" />
-
-		<div v-if="poll.status === 'VOTING' && !poll.usersBallot" class="alert mb-3">
+		<div v-if="poll.status === 'VOTING' && !poll.usersBallot" class="text-muted mb-3">
 			<p v-html="$t('votingPhaseInfo')" />
 			<b-button id="goToCastVoteButton" variant="primary" class="float-end" @click="clickCastVote()">
 				<i class="fas fa-person-booth" />
@@ -46,7 +34,7 @@
 		</div>
 		<div class="clearfix mb-3" />
 
-		<div v-if="poll.status === 'VOTING' && poll.usersBallot" class="alert mb-3">
+		<div v-if="poll.status === 'VOTING' && poll.usersBallot" class="text-muted mb-3">
 			<p v-html="$t('alreadyVotedInfo')" />
 			<b-button variant="primary" class="float-end" @click="clickCastVote()">
 				<i class="fas fa-person-booth" />
@@ -55,7 +43,7 @@
 			</b-button>
 		</div>
 
-		<div v-if="poll.status === 'FINISHED'" id="finishedPollInfo" class="alert liquido-info mb-3">
+		<div v-if="poll.status === 'FINISHED'" id="finishedPollInfo" class="text-muted mb-3">
 			<p>
 				{{ $t('finishedPollInfo', {
 					winnerTitle: poll.winner ? poll.winner.title : "",
@@ -64,7 +52,25 @@
 			</p>
 		</div>
 
-		<div v-if="showStartVotingPhase" class="alert alert-admin mb-3">
+		<div class="clearfix mb-3" />
+
+		<div class="d-flex justify-content-between align-items-center my-5">
+		
+			<div class="text-muted" @click="goToPolls()">
+				<i class="fas fa-angle-left" />
+				{{ $t("backToPolls") }}
+			</div>
+		
+			<b-button v-if="showAddProposal" id="addProposalButton" variant="primary" class="float-end" @click="clickAddProposal()">
+				{{ $t("addProposal") }}
+				<i class="fas fa-angle-double-right" />
+			</b-button>
+		
+		</div>
+
+		<!-- Admin only functions -->
+
+		<div v-if="showStartVotingPhase" class="alert alert-admin my-3">
 			<i class="fas fa-shield-alt float-end"></i>
 			<p v-html="$t('startVotingPhaseInfo')" />
 			<b-button id="startVoteButton" :disabled="startVoteLoading" variant="primary" class="float-end" @click="clickStartVote()">
@@ -73,9 +79,8 @@
 				{{ $t("startVotingPhase") }}
 			</b-button>
 		</div>
-		<div class="clearfix mb-3" />
 
-		<div v-if="showFinishVotingPhase" class="alert alert-admin mb-3">
+		<div v-if="showFinishVotingPhase" class="alert alert-admin my-3">
 			<i class="fas fa-shield-alt float-end"></i>
 			<p v-html="$t('finishVotingPhaseInfo', {numBallots: poll.numBallots})" />
 			<b-button id="finishVoteButton" :disabled="finishVoteLoading" variant="primary" class="float-end" @click="clickFinishVote()">
@@ -84,12 +89,6 @@
 				{{ $t("finishVotingPhase") }}
 			</b-button>
 		</div>
-		<div class="clearfix mb-3" />
-
-		<span class="text-muted mt-5" @click="goToPolls()">
-			<i class="fas fa-angle-left" />
-			{{ $t("backToPolls") }}
-		</span>
 
 		<popup-modal 
 			id="votingPhaseStartedModal"
@@ -116,9 +115,8 @@ export default {
 				cannotFindPoll: "<h4>Fehler</h4><hr/><p>Diese Abstimmung konnte nicht gefunden werden.</p>",
 				pollInElaborationInfo:
 					"<p>Dieser Abstimmung ist in der <b>Diskussionphase</b>.</p>" +
-					"<p>Diskutiert die Wahlvorschläge miteinander. In diese Phase kann jeder seinen eigenen Vorschlag noch weiter anpassen und verbessern." +
-					"Wahlvorschläge können noch so lange angepasst und verbessert werden, bis euer Admin dann die <em>Wahlphase</em> für diese Abstimmung startet.</p>",
-				addProposalInfo: "Und du kannst auch noch deinen eigenen Wahlvorschlag zu dieser Abstimmung hinzufügen.",
+					"<p>Diskutiert die Wahlvorschläge miteinander und fügt neue hinzu. Jeder kann jeder seinen eigenen Vorschlag auch noch anpassen und verbessern. " +
+					"So lange bis euer Admin die <b>Wahlphase</b> für diese Abstimmung startet.</p>",
 				addProposal: "Vorschlag hinzufügen",
 				startVotingPhaseInfo: 
 					"Hallo Admin! Möchstest du die Wahlphase für diese Abstimmung starten? Dann sind die Wahlvorschläge fixiert und dein Team kann abstimmen.",
@@ -271,10 +269,9 @@ export default {
 
 <style scoped>
 
-.title-backlink {
-	width: 1em;
-	font-size: 1.2rem;
-	line-height: 2.0;
+.backlink {
+	width: 3rem;
+	font-size: 1.5rem;
 }
 .poll-panel {
 	margin-bottom: 3rem;

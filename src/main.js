@@ -65,8 +65,9 @@ const globalTranslations = {
 
 		newPoll: "Neue Abstimmung",
 		allPolls: "Alle Abstimmungen",
-		pollInElaboration: "Abstimmung zur Diskussion",
-		pollsInElaboration: "Abstimmungen zur Diskussion",
+		YourPolls: "Eure Abstimmungen",
+		pollInElaboration: "Abstimmung zur Debatte",
+		pollsInElaboration: "Abstimmungen zur Debatte",
 		pollInVoting: "Laufende Abstimmung",
 		pollsInVoting: "Laufende Abstimmungen",
 		finishedPoll: "Abgeschlossene Abstimmung",

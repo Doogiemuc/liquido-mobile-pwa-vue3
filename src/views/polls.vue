@@ -7,35 +7,37 @@
 		</div>
 
 		<!-- list of polls -->
-		<div v-if="!loading" class="poll-list">
-			<transition-group name="poll-list" tag="div">
-				<b-row v-for="poll in filteredPolls" :key="poll.id" class="poll-panel-2" @click="goToPoll(poll.id)">
-					<b-col class="poll-icon-col">
-						<div class="poll-icon"><i :class="iconForPoll(poll)"></i></div>
-					</b-col>
-					<b-col class="poll-col-2">
-						<h3 class="poll-title">
-							{{ poll.title }}
-						</h3>
-						<div class="poll-footer">
-							<div v-if="poll.status === 'VOTING'">
-								<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
-								<i class="far fa-calendar-alt"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}
+		<div v-if="!loading" class="poll-list mb-5">
+			<transition-group name="poll-list" class="poll-list-transition" tag="div">
+				<div v-for="poll in filteredPolls" :key="poll.id" class="poll-panel-wrapper" @click="goToPoll(poll.id)">
+					<b-row class="poll-panel-inner">
+						<b-col class="poll-icon-col">
+							<div class="poll-icon"><i :class="iconForPoll(poll)"></i></div>
+						</b-col>
+						<b-col class="poll-col-2">
+							<h3 class="poll-title">
+								{{ poll.title }}
+							</h3>
+							<div class="poll-footer">
+								<div v-if="poll.status === 'VOTING'">
+									<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
+									<i class="far fa-calendar-alt"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}
+								</div>
+								<div v-else-if="poll.status === 'FINISHED'">
+									<i class="far fa-check-circle"></i>&nbsp;{{ $t('finished') }}
+								</div>
+								<div v-else>
+									<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
+								</div>
 							</div>
-							<div v-else-if="poll.status === 'FINISHED'">
-								<i class="far fa-check-circle"></i>&nbsp;{{ $t('finished') }}
+						</b-col>
+						<b-col class="poll-col-3">
+							<div class="show-poll-details">
+								<i class="fas fa-angle-right"></i>
 							</div>
-							<div v-else>
-								<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
-							</div>
-						</div>
-					</b-col>
-					<b-col class="poll-col-3">
-						<div class="show-poll-details">
-							<i class="fas fa-angle-right"></i>
-						</div>
-					</b-col>
-				</b-row>
+						</b-col>
+					</b-row>
+				</div>
 			</transition-group>
 		
 			<!-- list of polls (previous version with poll panels)
@@ -122,13 +124,13 @@ export default {
 			},
 			de: {
 				pollsInElaborationInfo: 
-					"Diese Abstimmungen stehen gerade zur Diskussion. Weitere Wahlvorschläge können hinzugefügt werden. " +
-					"Nachdem euer Admin dann die Abstimmungsphase gestartet hat, könnt ihr jeweils eure Stimme abgeben.",
+					"<p>Diese Abstimmungen werden gerade noch diksutiert. Weitere Wahlvorschläge können noch hinzugefügt werden.</p>" +
+					"<p>Wenn euer Admin eine Abstimmung startet, könnt ihr darin eure Stimme abgeben.</p>",
 				pollsInVotingInfo: "In diesen Abstimmungen kannst du jetzt deine Stimme abgeben.",
 				finishedPollsInfo: "Diese Abstimmungen sind beendet.",
 				finished: "abgeschlossen",
 				noPollYet: "Euer Admin hat bisher noch keine Abstimmung erstellt.",
-				noPollsMatchSearch: "- Keine Treffer -",
+				noPollsMatchSearch: "- // -",
 				noPollsInElaboration: "Aktuell gibt es gerade keine Abstimmungen mit Wahlvorschläge die noch diskutiert werden können.",
 				noPollsInVoting: "Es läuft gerade keine Abstimmungen, in der du deine Stimmen abgegeben könntest.",
 				noFinishedPolls: "In eurem Team gibt es bisher noch keine abgeschlossenen Abstimmungen.",
@@ -146,20 +148,24 @@ export default {
 	name: "PollsList",
 	//components: { pollPanel },
 	props: {
-		status: { type: String, required: false, default: undefined },
+		//status: { type: String, required: false, default: undefined },
 	},
 	data() {
 		return {
 			loading: true,
 			searchQuery: "",
 			/**current filter for poll status, undefined|ELABORATION|VOTING|FINISHED */
-			pollStatusFilter: undefined,
+			//pollStatusFilter: undefined,
 			forceRefreshComputed: 0   
 		}
 	},
 	computed: {
+		pollStatusFilter() {
+			console.log("poll get computed pollStatusFilter", this.$root.pollStatusFilter)
+			return this.$root.pollStatusFilter
+		},
 		pageTitleLoc() {
-			switch (this.pollStatusFilter) {
+			switch (this.$root.pollStatusFilter) {
 				case "ELABORATION":
 					return this.$t("pollsInElaboration")
 				case "VOTING":
@@ -167,11 +173,11 @@ export default {
 				case "FINISHED":
 					return this.$t("finishedPolls")
 				default:
-					return this.$t("Polls")
+					return this.$t("YourPolls")
 			}
 		},
 		iconForFilter() {
-			switch (this.pollStatusFilter) {
+			switch (this.$root.pollStatusFilter) {
 				case "ELABORATION":
 					return "fas fa-comments"
 				case "VOTING":
@@ -199,7 +205,7 @@ export default {
 			// So VUE's reactive updates do not work when the data changes in the cache.
 			// Therefore we have to force a recompute of this "computed" value with a nice hack:
 			this.forceRefreshComputed;
-			return api.getCachedPolls(this.pollStatusFilter)
+			return api.getCachedPolls(this.$root.pollStatusFilter)
 				.filter((poll) => this.matchesSearch(poll))
 				.sort((p1,p2) => {
 					//sort polls by status
@@ -224,16 +230,10 @@ export default {
 		}
 	},
 	created() {
-		console.log("==== Polls component created", this.pollStatusFilter)
+		console.log("==== Polls component created", this.$root.pollStatusFilter)
 
-		//Initial poll status filter, can be passed as parameter or Vue prop
-		if (this.status) {
-			console.log("got " + this.status + " from parameter or prop")
-			this.setPollFilter(this.status)
-		}
-
-		// or poll status filter can be changed with an event. The navbar-bottom does that, when clicked.
-		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (newFilterValue) => this.setPollFilter(newFilterValue))
+		// When poll filter changes in navbar, then force a recompute of computed values (mainly "filteredPolls")
+		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (/*newFilterValue*/) => this.forceRefreshComputed++)
 
 		// When one or all polls change, the reflect the changes in the UI.
 		EventBus.on(EventBus.Event.POLL_LOADED, () => this.pollsChanged())
@@ -274,18 +274,6 @@ export default {
 					return "fas fa-check-circle"
 				default:
 					return "far fa-vote-yea"
-			}
-		},
-
-		/** set (or clear) the current pollStatusFilter */
-		setPollFilter(newFilterValue) {
-			console.log("Polls.setPollFilter", newFilterValue)
-			if (newFilterValue === "ELABORATION" || 
-					newFilterValue === "VOTING" || 
-					newFilterValue === "FINISHED" ||
-					newFilterValue === undefined) 
-			{
-				this.pollStatusFilter = newFilterValue
 			}
 		},
 
@@ -338,9 +326,9 @@ export default {
 		},
 
 		clearSearchAndFilter() {
-			console.log("Clear Search")
+			console.log("Clear Search and PollFilter")
 			this.searchQuery = undefined
-			this.setPollFilter(undefined)
+			EventBus.emit(EventBus.Event.POLL_FILTER_CHANGED, undefined)
 		}
 	},
 }
@@ -348,18 +336,26 @@ export default {
 
 <style scoped lang="scss">
 .poll-list {
-	margin-bottom: 4rem;
+	
 }
-.poll-panel-2 {
+
+.poll-panel-wrapper {
+	display: grid;
+	grid-template-rows: 1fr;
+	transition: all 0.5s ease-out;
+}
+.poll-panel-inner {
 	position: relative;
 	cursor: pointer;
+	overflow: hidden;
+
 	&:first-child {
 		.poll-col-2{
 			border-top: 1px solid rgba(0,0,0, 0.1);
 		}
 	}
 	.poll-icon-col {
-		flex: 0 0 40px;  // do not grow or shrink, fixed width
+		flex: 0 0 50px;  // do not grow or shrink, fixed width
 		display: flex;
 		align-items: center;
 	}
@@ -369,17 +365,18 @@ export default {
 		border-bottom: 1px solid rgba(0,0,0, 0.1);
 	}
 	.poll-col-3 {
-		flex: 0 0 40px;
+		flex: 0 0 50px;
+		text-align: right;
 	}
 
 	
 	.poll-icon {
 		color: white;
-		background-color: lightgray;
+		background-color: $icon-bg;
 		border-radius: 50%;
-		border: 1px solid lightgray;
+		//border: 1px solid $icon-bg;
 		text-align: center;
-		font-size: 1.5em;
+		font-size: 20px;
 		line-height: 31px;
 		min-width: 32px;
 		max-width: 32px;
@@ -414,10 +411,6 @@ export default {
 }
 
 
-
-
-
-
 .search-wrapper {
 	margin: 4rem 30px 4rem 40px;
 	color: $secondary;
@@ -434,36 +427,21 @@ export default {
 	cursor: pointer;
 }
 
-/*
-.poll-list {
-	margin: 0 -10px;
-	padding: 10px;
-	color: $secondary;
-	//background-color: $poll-list-background;
-	transition: all 1s;
-
-	.poll-panel {
-		transition: all 1s;
-		max-height: 80vh;  // One poll should not be larger higher than the screen, when it has a lot of proposals, even when expanded
-		overflow: hidden;
-		&:not(:last-child) {
-			margin-bottom: 10px;
-		}	
-	}
-}
-*/
-
 /* Vue list transitions */
+
+.poll-list-transition {
+}
+
 .poll-list-leave-to, .poll-list-enter-from {
-	//opacity: 0;
-	max-height: 0 !important;
-	margin-bottom: 0rem !important;
+	opacity: 0;
+	grid-template-rows: 0fr;
+	//height: 0 !important;
+	//max-height: 0 !important;
+	//margin-bottom: 0rem !important;
 }
-/*
-.poll-list-leave-active {
-	border: 1px solid red !important;
+.poll-list-enter-active, .poll-list-leave-active {
+	//border: 1px solid red;
 }
-*/
 
 #createPollInfo {
 	margin-top: 8rem;

@@ -28,6 +28,7 @@ import navbarBottom from "@/components/navbar-bottom"
 import popupModal from "@/components/popup-modal"
 import mobileLogViewer from "@/components/mobile-debug-log.vue"
 import api from "@/services/liquido-graphql-client"
+import EventBus from "@/services/event-bus"
 
 /** Pages will slide from right to left in this order */
 const page_order = {
@@ -103,7 +104,12 @@ export default {
 		},
 	},
 	mounted() {
-		//TODO: should I move this to main.js?  Would be first. But there I cannot display any error.
+		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (newFilter) => {
+			console.log("Root app POLL_FILTER_CHANGED to", newFilter)
+			this.pollStatusFilter = newFilter
+		})
+
+		//TODO: should I move this to main.js? Would be first. But there I cannot display any error.
 		api.pingApi()
 			.catch(res => {
 				if (res.response && res.response.status === 401) {
