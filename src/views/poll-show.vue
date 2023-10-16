@@ -1,16 +1,19 @@
 <template>
 	<div>
-		<div class="backlink my-3" @click="goToPolls">
-			<a href="#">
+		
+
+		<h3 class="poll-status-title">
+			<a href="#" @click="goToPolls" style="text-decoration: none;">
 				<i class="fas fa-angle-left" />
+				{{ this.pageTitleLoc }}
 			</a>
-		</div>
+		</h3>
 
 		<div v-if="loadingPoll" class="my-3">
 			<b-spinner small />&nbsp;{{ $t('Loading') }}
 		</div>
 		
-		<poll-panel v-if="poll.id" :poll="poll" :read-only="true" class="shadow-sm mb-5" />
+		<poll-panel v-if="poll.id" :poll="poll" :read-only="true" class="mb-5" />
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
 			<div v-html="$t('cannotFindPoll', {pollId: pollId})" />
@@ -160,7 +163,7 @@ export default {
 			if (this.poll.status === "ELABORATION") return this.$t("pollInElaboration")
 			if (this.poll.status === "VOTING") return this.$t("pollInVoting")
 			if (this.poll.status === "FINISHED") return this.$t("finishedPoll")
-			return this.$t("poll")
+			return this.$t("Poll")
 		},
 		userIsAdmin() {
 			return api.isAdmin()
@@ -269,9 +272,12 @@ export default {
 
 <style scoped>
 
-.backlink {
-	width: 3rem;
-	font-size: 1.5rem;
+.poll-status-title {
+	margin: 2rem 0;
+	a {
+		color: red;
+		text-decoration: none !important;
+	}
 }
 .poll-panel {
 	margin-bottom: 3rem;

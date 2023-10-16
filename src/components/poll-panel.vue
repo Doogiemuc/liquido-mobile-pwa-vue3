@@ -4,44 +4,11 @@
 		:pollid="poll.id"
 		:data-poll-status="poll.status"
 		no-body
-		class="poll-panel" 
+		class="poll-panel border-0 shadow" 
 		:class="{'read-only': readOnly}"
 		@click="goToPoll(poll.id)"
 	>
-		<!-- template #header>
-			<h3 v-if="readOnly" class="read-only poll-panel-title">
-				<i class="poll-title-icon" :class="iconForPoll" />
-				&nbsp;{{ poll.title }}
-			</h3>
-			<h3 v-else class="poll-panel-title">
-				<i class="fas fa-angle-double-right goto-poll-icon" />
-				<i  class="poll-title-icon" :class="iconForPoll" />
-				&nbsp;{{ poll.title }}
-			</h3>
-			<a
-				v-if="poll.proposals && poll.proposals.length > 0"
-				class="collapse-icon"
-				:class="{'collapsed' : collapsed}"
-				href="#"
-				@click.stop.prevent="toggleCollapse()"
-			>
-				<i class="fa" />
-			</a>
-		</template -->
-
 		<b-card-body>
-			<a
-				v-if="poll.proposals && poll.proposals.length > 0"
-				class="collapse-icon"
-				:class="{'collapsed' : collapsed}"
-				href="#"
-				@click.stop.prevent="toggleCollapse()"
-			>
-				<i class="fa" />
-			</a>
-			<h6 class="card-subtitle mb-2">
-				{{ this.pollStatusLoc }}
-			</h6>
 			<h1 class="card-title">
 				{{ poll.title }}
 			</h1>
@@ -52,38 +19,45 @@
 			</p>
 		</div>
 		<b-list-group v-else flush>
-			<b-list-group-item v-for="law in poll.proposals" :key="law.id" class="proposal-list-group-item" :class="proposalListGroupItemClasses(law.id)">
-				<div class="proposal-header d-flex justify-content-between">
+			<b-list-group-item v-for="prop in poll.proposals" :key="prop.id" class="proposal-list-group-item" :class="proposalListGroupItemClasses(prop.id)">
+				<div class="proposal-separator"></div>
+				<div class="proposal-header d-flex align-items-center">
+					<div class="proposal-image">
+						<i class="fas fa-fw" :class="'fa-' + prop.icon" />
+					</div>
 					<div class="proposal-header-text d-flex flex-column text-truncate">
-						<h4 class="law-title">
-							{{ law.title }}
+						<h4 class="proposal-title">
+							{{ prop.title }}
 						</h4>
-						<div :class="lawSubtitleClasses(law)">
-							<div v-if="canLike(law)" class="like-button like-button-active" @click.stop.prevent="clickLike(poll.id, law.id)">
-								<i class="far fa-thumbs-up" />&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
+						<div :class="propSubtitleClasses(prop)">
+							<div v-if="canLike(prop)" class="like-button like-button-active" @click.stop.prevent="clickLike(poll.id, prop.id)">
+								<i class="far fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
 							</div>
 							<div v-else class="like-button" @click.stop.prevent="">
-								<i class="fas fa-thumbs-up" />&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
+								<i class="fas fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
 							</div>
 							<div class="created-date">
-								<i class="far fa-clock" />&nbsp;{{ formatDate(law.createdAt) }}
+								<i class="far fa-clock" />&nbsp;{{ formatDate(prop.createdAt) }}
 							</div>
-							<!-- div v-if="isCreatedByCurrentUser(law)" class="createdby-user">
-								<i class="fas fa-user" />&nbsp;{{ law.createdBy.name }}
-							</div -->
 							<div class="createdby-user">
-								<i class="far fa-user" />&nbsp;{{ law.createdBy.name }}
+								<i class="far fa-user" />&nbsp;{{ prop.createdBy.name }}
 							</div>
 						</div>
 					</div>
-					<div class="law-image">
-						<i class="fas fa-fw" :class="'fa-' + law.icon" />
-					</div>
+					
 				</div>
-				<div class="law-description" v-html="law.description"></div>
-				<div class="proposal-separator"></div>
+				<div class="proposal-description" v-html="prop.description"></div>
 			</b-list-group-item>
 		</b-list-group>
+		<a
+				v-if="poll.proposals && poll.proposals.length > 0"
+				class="collapse-icon"
+				:class="{'collapsed' : collapsed}"
+				href="#"
+				@click.stop.prevent="toggleCollapse()"
+			>
+			<i class="fa" />
+		</a>
 	</b-card>
 </template>
 
@@ -150,32 +124,35 @@ export default {
 		proposalListGroupItemClasses(propId) {
 			let isWinner = this.poll.winner && propId === this.poll.winner.id
 			return {
-				"collapsed-law-panel" : this.collapsed,
+				"collapsed-proposal-panel" : this.collapsed,
 				"winner": this.poll.status === "FINISHED" && isWinner,
 				"lost": this.poll.status === "FINISHED" && !isWinner,
 			}
 		},
 
-		lawSubtitleClasses(law) {
+		propSubtitleClasses(prop) {
 			let currentUser = api.getCachedUser() || {}
 			return { 
-				"law-subtitle": true,
-				"liked": law.isLikedByCurrentUser, 
-				"own-proposal": law.createdBy.id === currentUser.id
+				"proposal-subtitle": true,
+				"liked": prop.isLikedByCurrentUser, 
+				"own-proposal": prop.createdBy.id === currentUser.id
 			}
 		},
 
-		isCreatedByCurrentUser(law) {
+		isCreatedByCurrentUser(prop) {
 			let currentUser = api.getCachedUser() || {}
-			return law.createdBy.id === currentUser.id
+			return prop.createdBy.id === currentUser.id
 		},
 
 		/** 
-		 * A proposal can be liked, when its in ELABORATION, not already liked
-		 * and not created by the currently logged in user.
+		 * A proposal can be liked, when 
+		 * we are not in readonly mode,
+		 * the proposal is in ELABORATION, 
+		 * it is not already liked
+		 * nor created by the currently logged in user.
 		 */
-		canLike(law) {
-			return law.status === "ELABORATION" &&  !law.isLikedByCurrentUser && !this.isCreatedByCurrentUser(law)
+		canLike(prop) {
+			return !this.readOnly && prop.status === "ELABORATION" &&  !prop.isLikedByCurrentUser && !this.isCreatedByCurrentUser(prop)
 		},
 
 		clickLike(pollId, proposalId) {
@@ -215,6 +192,7 @@ $proposal_img_size: 32px;
 		font-size: 0.8rem !important;
 		text-transform: uppercase;
 		font-weight: bold;
+		margin-top: 5px;
 	}
 
 	.card-header {   
@@ -222,19 +200,17 @@ $proposal_img_size: 32px;
 		//border-bottom: none;
 		//margin: 0;
 		//padding: 1em 10px;
-		.poll-panel-title {
-			//font-family: 'Libre Baskerville', serif;  // same as .law-title
-			color: $primary;
-			padding: 0;
-			margin: 0;
-			//font-size: 1.2rem !important;  // Need more space for longer poll titles
-			//font-weight: bold;
-			//white-space: nowrap;
-			//overflow: hidden;
-			//text-overflow: ellipsis;
-		}
 	}
 	
+	.card-title {
+		font-size: 1.2rem !important;      // Need more space for longer poll titles
+		font-weight: bold;
+		margin-bottom: 0;
+		//white-space: nowrap;
+		//overflow: hidden;
+		//text-overflow: ellipsis;
+	}
+
 	.poll-title-icon {
 		width: $proposal_img_size -3;
 		text-align: center;
@@ -263,47 +239,60 @@ $proposal_img_size: 32px;
 	}
 
 	.card-body {
-		padding: 10px;
+		padding-bottom: 0;
 	}
 
 	.list-group {
-		margin-bottom: 1em;
+		margin-bottom: 1em;  						// space for collapse icon
 	}
 
 	// list of proposals in poll
 	.proposal-list-group-item {
-		height: 8.2rem;
+		height: 	130px;           			// exactly 4 lines of description
 		overflow: hidden;
-		padding: 10px;
+		margin: 0 0 0 10px;            	// no margin at the top and bottom, the separator handles that		                           
+		padding: 0;
 		transition: height 0.5s;
 		border: none;
-		&.collapsed-law-panel {
-			height: 62px;    // just right enough to not see the description.
+
+		&.collapsed-proposal-panel {
+			height: 60px;    // just right enough to NOT see the description.
+			.proposal-separator {
+				margin: 10px 0;
+			}
 		}			
 		.proposal-header-text {
-			margin-bottom: 5px;
+			margin: 0;
 		}
-		.law-title {
-			//margin-bottom: 0;
-			//padding: 0;
+
+		.proposal-title {
+			margin-bottom: 3px;
+			padding: 0;
 			//font-size: 1rem !important;
-			//line-height: 18px;
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
 		}
-		.law-subtitle {
-			font-size: 12px;
+		.proposal-subtitle {
+			font-size: 0.6rem;
 			color: #bbb;
-			font-family: Helvetica, sans-serif;
+			margin-bottom: 3px;
+			//font-family: Helvetica, sans-serif;
+			cursor: pointer;
+
 			.like-button {
+				//font-size: 1rem;
+				border: 1px solid #bbb;
+				border-radius: 5px;
 				display: inline;
+				padding: 0 2px;
 			}
 			.like-button-active {
 				cursor: pointer;
 			}
 			&.liked .like-button {
-				color: $primary;
+				background-color: $header-bg;
+				color: white;
 			}
 			.created-date {
 				display: inline;
@@ -320,7 +309,7 @@ $proposal_img_size: 32px;
 			*/
 		}
 
-		.law-image {
+		.proposal-image {
 			color: white;
 			background-color: $header-bg;
 			border-radius: 50%;
@@ -334,17 +323,28 @@ $proposal_img_size: 32px;
 			min-height: $proposal_img_size;
 			max-height: $proposal_img_size;
 			height: $proposal_img_size;
+			margin-right: 6px;
 		}
 
-		.law-description {
-			font-size: 12px;
+		.proposal-description {
+			font-size: 0.8rem;
 			overflow: hidden;
+			line-height: 18px;  // exactly enough for 4 lines of text
 		}
 		//TODO: only in browser (not on mobile) -  only for polls in ELABORATION - and only if can like
 		.like-button:hover {
 			color: green !important;
 		}
+
 	}
+
+	// sepearator between proposals when poll-panel is expanded
+	//.proposal-list-group-item:not(:last-child):not(.collapsed-proposal-panel)
+	.proposal-separator {
+			transition: all 0.5s;		
+			border-top: 1px solid rgba(128,128,128, 0.1);
+			margin: 1rem 0;
+		}
 
 	.winner {
 		background-color: $header-bg;
@@ -352,13 +352,13 @@ $proposal_img_size: 32px;
 
 	.lost {
 		color: grey;
-		.law-title {
+		.proposal-title {
 			text-decoration: line-through;
 		}
-		.law-image {
+		.proposal-image {
 			opacity: 0.5;
 		}
-		&.collapsed-law-panel {
+		&.collapsed-proposal-panel {
 			height: 0;
 			margin: 0;
 			padding: 0;
@@ -366,14 +366,7 @@ $proposal_img_size: 32px;
 	}
 
 	
-	// sepearator between proposals when poll-panel is expanded
-	.proposal-list-group-item:not(:last-child):not(.collapsed-law-panel) .proposal-separator {
-		position: absolute;
-		left: 10px;
-		right: 10px;
-		bottom: 1px;
-		border-top: 1px solid rgba(0,0,0, 0.05)
-	}
+	
 
 	//BUGFIX for bootstrap: inherit border-radius in list-group-flush wrapper
 	/*
