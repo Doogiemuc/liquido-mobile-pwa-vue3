@@ -1,12 +1,10 @@
-<template>
+ <template>
 	<b-card 
 		:id="pollCardId"
 		:pollid="poll.id"
 		:data-poll-status="poll.status"
 		no-body
 		class="poll-panel border-0 shadow" 
-		:class="{'read-only': readOnly}"
-		@click="goToPoll(poll.id)"
 	>
 		<b-card-body>
 			<h1 class="card-title">
@@ -29,12 +27,15 @@
 						<h4 class="proposal-title">
 							{{ prop.title }}
 						</h4>
-						<div :class="propSubtitleClasses(prop)">
-							<div v-if="canLike(prop)" class="like-button like-button-active" @click.stop.prevent="clickLike(poll.id, prop.id)">
+						<div class="proposal-subtitle">
+							<div v-if="prop.isLikedByCurrentUser" class="like-button liked">
+								<i class="fas fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
+							</div>
+							<div v-else-if="canLike(prop)" class="like-button can-like" @click="clickLike(poll.id, prop)">
 								<i class="far fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
 							</div>
-							<div v-else class="like-button" @click.stop.prevent="">
-								<i class="fas fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
+							<div v-else class="like-button">
+								<i class="far fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
 							</div>
 							<div class="created-date">
 								<i class="far fa-clock" />&nbsp;{{ formatDate(prop.createdAt) }}
@@ -81,7 +82,6 @@ export default {
 	components: {},
 	props: {
 		poll: { type: Object, required: true },
-		readOnly: { type: Boolean, required: false, default: false },
 		collapse: { type: Boolean, required: false, default: false },
 	},
 	data() {
@@ -111,6 +111,10 @@ export default {
 			if (this.poll.status === "VOTING") return this.$t("pollInVoting")
 			if (this.poll.status === "FINISHED") return this.$t("finishedPoll")
 			return this.$t("Poll")
+		},
+		sortedProposals() {
+			if (!this.poll || !this.poll.proposals) return []
+			return this.poll.proposals.toSorted((p1,p2) => p1.createdAt.localeCompare(p2.createdAt))
 		}
 	},
 	mounted() {
@@ -130,14 +134,7 @@ export default {
 			}
 		},
 
-		propSubtitleClasses(prop) {
-			let currentUser = api.getCachedUser() || {}
-			return { 
-				"proposal-subtitle": true,
-				"liked": prop.isLikedByCurrentUser, 
-				"own-proposal": prop.createdBy.id === currentUser.id
-			}
-		},
+		//TODO: "own-proposal": prop.createdBy.id === currentUser.id
 
 		isCreatedByCurrentUser(prop) {
 			let currentUser = api.getCachedUser() || {}
@@ -146,31 +143,23 @@ export default {
 
 		/** 
 		 * A proposal can be liked, when 
-		 * we are not in readonly mode,
 		 * the proposal is in ELABORATION, 
 		 * it is not already liked
 		 * nor created by the currently logged in user.
 		 */
 		canLike(prop) {
-			return !this.readOnly && prop.status === "ELABORATION" &&  !prop.isLikedByCurrentUser && !this.isCreatedByCurrentUser(prop)
+			return prop.status === "ELABORATION" &&  !prop.isLikedByCurrentUser && !this.isCreatedByCurrentUser(prop)
 		},
 
-		clickLike(pollId, proposalId) {
-			api.likeProposal(pollId, proposalId)
+		clickLike(pollId, prop) {
+			if (this.canLike(prop)) api.likeProposal(pollId, prop.id)
 		},
 
 		toggleCollapse() {
 			this.collapsed = !this.collapsed
-		},
+		}
 
-		goToPoll(pollId) {
-			if (!this.readOnly) this.$router.push("/polls/" + pollId)
-		},
-
-		goToAddProposal(pollId) {
-			this.$router.push("/polls/" + pollId + "/add")
-		},
-	},
+	}
 }
 </script>
 
@@ -243,7 +232,7 @@ $proposal_img_size: 32px;
 	}
 
 	.list-group {
-		margin-bottom: 1em;  						// space for collapse icon
+		margin-bottom: 2rem;  						// space for collapse icon
 	}
 
 	// list of proposals in poll
@@ -282,15 +271,21 @@ $proposal_img_size: 32px;
 
 			.like-button {
 				//font-size: 1rem;
-				border: 1px solid #bbb;
-				border-radius: 5px;
 				display: inline;
 				padding: 0 2px;
 			}
-			.like-button-active {
+			.can-like {
 				cursor: pointer;
+				border: 1px solid #bbb;
+				border-radius: 5px;
+				&:hover	{
+					color: green !important;
+					border-color: green !important;
+				}
 			}
-			&.liked .like-button {
+			.liked {
+				border: 1px solid $header-bg;
+				border-radius: 5px;
 				background-color: $header-bg;
 				color: white;
 			}
@@ -330,10 +325,6 @@ $proposal_img_size: 32px;
 			font-size: 0.8rem;
 			overflow: hidden;
 			line-height: 18px;  // exactly enough for 4 lines of text
-		}
-		//TODO: only in browser (not on mobile) -  only for polls in ELABORATION - and only if can like
-		.like-button:hover {
-			color: green !important;
 		}
 
 	}

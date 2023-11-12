@@ -100,7 +100,9 @@ export default {
 			if (fromOrder < toOrder) { this.transitionName = "slide-left" } else
 			if (fromOrder > toOrder) { this.transitionName = "slide-right"}
 			else { this.transitionName = "fade" }  // default is fade
-			this.scrollToTop()  // always scroll to top on every new page
+			// Scroll to the top of the page at every navigation
+			//TODO: FIXME: This "jumps" when the user has scrolled down.
+			this.scrollToTop()
 		},
 	},
 	mounted() {
@@ -191,13 +193,12 @@ export default {
 		 * @param {Object} elem the dom elem
 		 * @param {Number} durationMs duration of scroll animation (default = 500 ms)
 		 */
-		scrollElemToTop(elem, durationMs = 500) {
+		scrollElemToTop(elem, marginTop = 0, durationMs = 500) {
 			//This would exist, but not in Safari for iOS :-(  elem.scrollIntoView({ behavior: 'smooth' });
 			if (!elem) return
-			let headerHeight = document.getElementById("liquidoHeader").offsetHeight + 10
 			let appElem = document.getElementById("app")
-			let scrollTopFinalValue = elem.offsetTop - headerHeight
-			console.log("scrollElemToTop", elem, scrollTopFinalValue)
+			let scrollTopFinalValue = elem.offsetTop - marginTop
+			console.log("scrollElemToTop", elem.offsetTop, "-", marginTop, "=", scrollTopFinalValue)
 			this.animate(appElem, "scrollTop", scrollTopFinalValue, durationMs)
 		},
 

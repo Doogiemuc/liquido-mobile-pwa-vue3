@@ -28,7 +28,7 @@
 			>
 				<template #item="{element}">
 					<law-panel
-						ref="proposalInBallot"
+						ref="proposalsInBallot"
 						:law="element"
 						:read-only="true"
 						:collapse="true"
@@ -198,14 +198,14 @@ export default {
 		}).catch(err => console.warn("Cannot get ballot of user", err))
 
 		/**
-		 * TODO: when the user has already voted, then sort the proposals in this poll according to the user's vote.
+		 * When the user has already voted, then sort the proposals in this poll according to the user's vote.
 		 */
 		let setProposalsInBallot = (ballot) => {
 			if (ballot) {
 				let proposalsById = {}
 				this.poll.proposals.forEach(prop => proposalsById[prop.id] = prop)
 				this.existingBallot = ballot
-				this.proposalInBallot = ballot.voteOrderIds.map(id => proposalsById[id])
+				this.proposalsInBallot = ballot.voteOrder.map(elem => proposalsById[elem.id])
 			} else {
 				this.proposalsInBallot = _.cloneDeep(this.poll.proposals)
 			}
@@ -234,6 +234,10 @@ export default {
 		 */
 		let showDraggingHint = async function() {
 			let element = document.querySelector("#myDraggable > div")
+			if (element == null) {
+				log.warn("No proposals in poll!")  // This should never happen.
+				return
+			}
 			element.classList.add("sortable-chosen")
 			const delayMs = 5
 			const dragHeight = element.clientHeight * 2
@@ -271,7 +275,7 @@ export default {
 				this.loading = false
 				setTimeout(function() {
 					showDraggingHint()
-				}, 1000)
+				}, 500)
 				
 			})
 			.catch(err => {
@@ -286,21 +290,21 @@ export default {
 	methods: {
 		/** Collapse the descriptions of all proposals in the ballot (not used) */
 		toggleBallotCollapse() {
-			this.$refs["proposalInBallot"].forEach(pollPanel => {
+			this.$refs["proposalsInBallot"].forEach(pollPanel => {
 				//console.log("toogle collapse on", pollPanel)
 				pollPanel.toggleCollapse()
 			})
 			this.collapsed = !this.collapsed
 		},
 
-		async clickCastVote() {
+		clickCastVote() {
 			this.castVoteLoading = true
 			let voteOrderIds = this.proposalsInBallot.map(proposal => proposal.id)
 
 			//TODO: start a timer for timeout
 
 			log.debug("CAST VOTE: poll.id="+this.poll.id, "voteOrderIds", voteOrderIds)
-			api.getVoterToken(config.voterTokenSecret).then((voterToken) => {
+			return api.getVoterToken(config.voterTokenSecret).then((voterToken) => {
 				console.debug("Received voter token. Now casting vote ...")
 				api.castVote(this.poll.id, voteOrderIds, voterToken).then(castVoteResponse => {
 					console.info("Vote casted successfully.", castVoteResponse)
@@ -316,9 +320,9 @@ export default {
 			})
 		},
 
-		async verifyBallot() {
+		verifyBallot() {
 			if (!this.existingBallot || this.ballotIsVerified) return
-			api.verifyBallot(this.poll.id, this.existingBallot.checksum).then(ballot => {
+			return api.verifyBallot(this.poll.id, this.existingBallot.checksum).then(ballot => {
 				if (!ballot) {
 					console.warn("Could not find a ballot for that checksum.")
 				} else {

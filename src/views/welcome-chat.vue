@@ -667,10 +667,11 @@ export default {
 .login-link {
 	z-index: 999;
 	position: absolute;
-	bottom: 80px;
-	right: 10px;
-	color: grey;
-	text-decoration: none;
+	bottom: 3rem;
+	right: 10px;	
+	a {
+		padding: 1rem 0 1rem 1rem;
+	}
 }
 
 .createOrJoinTable {

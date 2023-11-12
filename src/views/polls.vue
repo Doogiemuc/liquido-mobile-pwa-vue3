@@ -1,9 +1,17 @@
 <template>
 	<div>
-		<h1 id="polls" class="page-title">{{ pageTitleLoc }}</h1>
+		
+		<h1 id="polls-title" class="page-title">{{ pageTitleLoc }}</h1>
 
 		<div v-if="loading" class="my-3">
 			<b-spinner small />&nbsp;{{ $t('Loading') }}
+		</div>
+
+		<!-- Search -->
+		<div v-if="allPolls.length > 3" class="search-wrapper">
+			<input id="searchInput" class="form-control" v-model="searchQuery" type="text" :placeholder="$t('Search')">
+			<i v-if="searchQuery == ''" class="fas fa-search search-icon"></i>
+			<i v-else class="fas fa-times search-icon" @click="clearSearchAndFilter"></i>
 		</div>
 
 		<!-- list of polls -->
@@ -54,14 +62,10 @@
 
 			<p v-if="allPolls.length === 0 && !loading" class="text-center" v-html="$t('noPollYet')" />
 
-			<div v-if="searchResultIsEmpty" id="emptySearchResultInfo" class="text-center" @click="clearSearchAndFilter">
+			<div v-if="filteredPolls.length == 0" id="emptySearchResultInfo" class="text-center" @click="clearSearchAndFilter">
 				<p>{{ $t('noPollsMatchSearch') }}</p>
 			</div>
 
-			<div v-if="filteredPolls.length > 3" class="search-wrapper">
-				<input id="searchInput" class="form-control" v-model="searchQuery" type="text" :placeholder="$t('Search')">
-				<i class="fas fa-search search-icon"></i>
-			</div>
 		</div>
 		
 		<div v-if="pollStatusFilter === 'ELABORATION'" class="alert text-muted">
@@ -91,6 +95,7 @@
 				<i class="fas fa-shield-alt" /> {{ $t("createPoll") }} <i class="fas fa-angle-double-right" />
 			</b-button>
 		</div>
+
 	</div>
 </template>
 
@@ -137,7 +142,7 @@ export default {
 				butProposalsInDiscussion: "Es gibt jedoch Abstimmungen in Diskussion. Dort könnt ihr die Wahlvorschlägen diskutieren.",
 				butPollInVoting: "Es gibt jedoch eine <b>laufende Abstimmung</b> in der du deine Stimme abgeben kannst.",
 				onlyAdminCanCreateNewPolls: "Nur du als Admin dieses Teams kannst neue Abstimmungen erstellen. " +
-					"Jeder im Team kann dann seinen Wahlvorschlag zur Abstimmung hinzufügen.",
+					"Jedes Teammitglied kann dann seinen Wahlvorschlag zur Abstimmung hinzufügen.",
 				createPoll: "Neue Abstimmung anlegen",
 				votes: "0 Stimmen | 1 Stimme | {n} Stimmen",
 				daysLeft: "Wahl Abgeschlossen | ein Tag noch | noch {n} Tage",
@@ -388,7 +393,7 @@ export default {
 	.poll-title {
 		color: $primary;
 		//font-family: Helvetica, sans-serif;
-		//font-size: 1.1rem;
+		//font-size: 1.1rem !important;
 		//font-weight: bold;
 		//margin: 0;
 	}
@@ -412,7 +417,7 @@ export default {
 
 
 .search-wrapper {
-	margin: 4rem 30px 4rem 40px;
+	margin: 30px 40px 0 40px;
 	color: $secondary;
 	position: relative;
 	.search-icon {
@@ -446,6 +451,5 @@ export default {
 #createPollInfo {
 	margin-top: 8rem;
 }
-
 
 </style>

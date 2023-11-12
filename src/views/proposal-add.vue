@@ -137,7 +137,7 @@ export default {
 		messages: {
 			en: {},
 			de: {
-				addProposal: "Vorschlag zur Abstimmung hinzufügen",
+				addProposal: "Vorschlag hinzufügen",
 				yourProposal: "Dein neuer Vorschlag",
 				title: "Titel",
 				titleInvalid: "Titel zu kurz: Bitte mindestens {minChars} Zeichen!",

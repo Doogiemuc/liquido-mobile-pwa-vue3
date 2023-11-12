@@ -13,7 +13,7 @@
 			<b-spinner small />&nbsp;{{ $t('Loading') }}
 		</div>
 		
-		<poll-panel v-if="poll.id" :poll="poll" :read-only="true" class="mb-5" />
+		<poll-panel v-if="poll.id" :poll="poll" :read-only="true" class="mb-4" />
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
 			<div v-html="$t('cannotFindPoll', {pollId: pollId})" />
@@ -22,49 +22,42 @@
 			</b-button>
 		</div>
 
-		<div v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" class="text-muted mb-3">
-			<i class="fas fa-info-circle float-end" />
-			<p v-html="$t('pollInElaborationInfo')" />
+		<!-- Text info -->
+		<div class="text-muted text-center">
+			<p v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" v-html="$t('pollInElaborationInfo')" />
+			<p v-if="poll.status === 'VOTING' && !poll.usersBallot" v-html="$t('votingPhaseInfo')" />
+			<p v-if="poll.status === 'VOTING' &&  poll.usersBallot" v-html="$t('alreadyVotedInfo')" />
+			<p v-if="poll.status === 'FINISHED'">
+					{{ $t('finishedPollInfo', {
+						winnerTitle: poll.winner ? poll.winner.title : "",
+						numBallots: poll.numBallots,
+					}) }}
+				</p>
 		</div>
 
-		<div v-if="poll.status === 'VOTING' && !poll.usersBallot" class="text-muted mb-3">
-			<p v-html="$t('votingPhaseInfo')" />
-			<b-button id="goToCastVoteButton" variant="primary" class="float-end" @click="clickCastVote()">
-				<i class="fas fa-person-booth" />
-				{{ $t("goToCastVote") }}
-				<i class="fas fa-angle-double-right" />
-			</b-button>
-		</div>
-		<div class="clearfix mb-3" />
+		
 
-		<div v-if="poll.status === 'VOTING' && poll.usersBallot" class="text-muted mb-3">
-			<p v-html="$t('alreadyVotedInfo')" />
-			<b-button variant="primary" class="float-end" @click="clickCastVote()">
-				<i class="fas fa-person-booth" />
-				{{ $t("editOwnVote") }}
-				<i class="fas fa-angle-double-right" />
-			</b-button>
-		</div>
-
-		<div v-if="poll.status === 'FINISHED'" id="finishedPollInfo" class="text-muted mb-3">
-			<p>
-				{{ $t('finishedPollInfo', {
-					winnerTitle: poll.winner ? poll.winner.title : "",
-					numBallots: poll.numBallots,
-				}) }}
-			</p>
-		</div>
-
-		<div class="clearfix mb-3" />
-
+		<!-- Action buttons -->
 		<div class="d-flex justify-content-between align-items-center my-5">
 		
 			<div class="text-muted" @click="goToPolls()">
 				<i class="fas fa-angle-left" />
 				{{ $t("backToPolls") }}
 			</div>
-		
-			<b-button v-if="showAddProposal" id="addProposalButton" variant="primary" class="float-end" @click="clickAddProposal()">
+
+			<b-button v-if="poll.status === 'VOTING' && !poll.usersBallot" id="goToCastVoteButton" variant="primary" class="float-end" @click="clickCastVote()">
+				<i class="fas fa-person-booth" />
+				{{ $t("goToCastVote") }}
+				<i class="fas fa-angle-double-right" />
+			</b-button>
+
+			<b-button v-else-if="poll.status === 'VOTING' && poll.usersBallot" variant="primary" class="float-end" @click="clickCastVote()">
+				<i class="fas fa-person-booth" />
+				{{ $t("editOwnVote") }}
+				<i class="fas fa-angle-double-right" />
+			</b-button>
+	
+			<b-button v-else-if="showAddProposal" id="addProposalButton" variant="primary" class="float-end" @click="clickAddProposal()">
 				{{ $t("addProposal") }}
 				<i class="fas fa-angle-double-right" />
 			</b-button>
@@ -117,9 +110,9 @@ export default {
 			de: {
 				cannotFindPoll: "<h4>Fehler</h4><hr/><p>Diese Abstimmung konnte nicht gefunden werden.</p>",
 				pollInElaborationInfo:
-					"<p>Dieser Abstimmung ist in der <b>Diskussionphase</b>.</p>" +
-					"<p>Diskutiert die Wahlvorschläge miteinander und fügt neue hinzu. Jeder kann jeder seinen eigenen Vorschlag auch noch anpassen und verbessern. " +
-					"So lange bis euer Admin die <b>Wahlphase</b> für diese Abstimmung startet.</p>",
+					"Dieser Abstimmung wird gerade debatiert. " +
+					"Jedes Teammitglied kann einen eigenen Wahlvorschlag hinzufügen. " +
+					"Euer Admin startet dann die Wahlphase für diese Abstimmung.",
 				addProposal: "Vorschlag hinzufügen",
 				startVotingPhaseInfo: 
 					"Hallo Admin! Möchstest du die Wahlphase für diese Abstimmung starten? Dann sind die Wahlvorschläge fixiert und dein Team kann abstimmen.",
@@ -127,7 +120,7 @@ export default {
 				finishVotingPhaseInfo: "Hallo Admin! Bisher wurden in dieser Abstimmung {numBallots} Stimmen abgegeben.",
 				finishVotingPhase: "Wahlphase schließen",
 				votingPhaseStartedSuccessfully: "Die Wahlphase dieser Abstimmung ist jetzt gestartet.",
-				votingPhaseInfo: "Die Wahlphase dieser Abstimmung läuft gerade und du kannst jetzt hier deine Stimme abgeben.",
+				votingPhaseInfo: "Die Wahlphase dieser Abstimmung läuft gerade.",
 				goToCastVote: "Stimme abgeben",
 				editOwnVote: "Stimmzettel ändern",
 				alreadyVotedInfo:
@@ -168,7 +161,12 @@ export default {
 		userIsAdmin() {
 			return api.isAdmin()
 		},
-		/** User can add his own proposal if the poll is in status ELABORATION and he did not add a proposal to this poll yet. */
+
+		/** 
+		 * A user can add his own proposal
+		 * if the poll is in status ELABORATION and he did not add a proposal to this poll yet 
+		 * or he is an admin. (Admin can also add multiple proposals.) 
+		 */
 		showAddProposal() {
 			if (this.poll.status !== "ELABORATION") return false
 			if (!this.poll.proposals || this.poll.proposals.length === 0) {
@@ -178,7 +176,7 @@ export default {
 			if (currentUser && currentUser.isAdmin) return true
 			return this.poll.proposals.filter((prop) => prop.createdBy.id === currentUser.id).length === 0
 		},
-		/** The voting phase can be started when there are at least two proposals */
+		/** The voting phase can be started by the admin when there are at least two proposals */
 		showStartVotingPhase() {
 			return this.userIsAdmin && this.poll.status === "ELABORATION" && this.poll.proposals && this.poll.proposals.length > 1
 		},
@@ -195,12 +193,14 @@ export default {
 		this.loadPoll()
 		EventBus.on(EventBus.Event.POLL_LOADED, (loadedPoll) => {
 			if (loadedPoll.id === this.poll.id) {
-				console.log("poll-show.vue: Poll.id" + this.poll.id + " was reloaded")
+				console.log("poll-show.vue: Poll.id=" + this.poll.id + " was reloaded", loadedPoll)
 				this.poll = loadedPoll
 			}
 		})
 	},
-	mounted() {},
+	mounted() {
+		this.$root.scrollToTop()
+	},
 	methods: {
 		loadPoll() {
 			if (!this.pollId || this.pollId < 0) {
