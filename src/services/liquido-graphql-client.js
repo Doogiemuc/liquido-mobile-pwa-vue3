@@ -10,7 +10,7 @@ import axios from "axios"
 import config from "config"
 import PopulatingCache from "populating-cache"
 import EventBus from "@/services/event-bus"
-//TODO: log network calls into my mobile debug log: 
+//TODO: log network calls into my mobile debug log. Does that work this way or do I have to load the componant "instance" somehow?
 //import log from "@/components/mobile-debug-log.js"
 
 /*
@@ -33,7 +33,7 @@ import EventBus from "@/services/event-bus"
 if (!config || !config.LIQUIDO_API_URL) {
 	console.error("liquido-graphql-client: ERROR I have no config!")
 } else {
-	console.debug("liquido-graphql-client => " + config.LIQUIDO_API_URL)
+	//console.debug("liquido-graphql-client => " + config.LIQUIDO_API_URL)
 }
 
 // Configure axios HTTP REST client to point to our graphQL backend
@@ -83,14 +83,13 @@ const graphQlQuery = function(query, variables) {
 	return axios.post(GRAPHQL, { query: query, variables: variables })
 		.then(res => {
 			if (res.data && res.data.errors && res.data.errors.length > 0) {
-				console.error("graphQlQuery() error: ", JSON.stringify(res.errors))   // graphQL's way of returning errors
+				console.info("graphQlQuery() errors: ", res.data.errors)   // graphQL's way of returning errors
 				return Promise.reject(res.data.errors)  //TODO: should I return Promise.reject(res.errors) here?
 			}
-			return res.data // This is the axios HTTP "data". The graphQL response contains another "data" (and an "error") attribute. I know, it's confusing.
+			return res.data // This is the axios HTTP "data". The graphQL response contains another "res.data.data" (and the "res.data.error") attribute. I know, it's confusing.
 		})  
 		.catch(err => {
-			console.log("ERROR: graphQlQuery throws: ")
-			console.log(err)
+			console.error("ERROR: graphQlQuery throws: ", err)
 			return Promise.reject("error")
 		})
 }
@@ -100,14 +99,14 @@ const graphQlQuery = function(query, variables) {
 /** Shorthands for JQL return values */
 const JQL_USER = `{ id name email mobilephone picture website } `
 const JQL_TEAM_MEMBER = `{ role joinedAt user ${JQL_USER} } `
-const JQL_PROPOSAL =  `{ id title description icon status createdAt numSupporters likedByCurrentUser createdBy ${JQL_USER} } `   // no "is"likedByCurrentUser !
+const JQL_PROPOSAL =  `{ id title description icon status createdAt numSupporters likedByCurrentUser createdBy ${JQL_USER} } `   // no "is" before likedByCurrentUser!
 const JQL_POLL = `{ id title status votingStartAt votingEndAt proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `  //TODO: numBallots duelMatrix { data }
 const JQL_TEAM = `{ id teamName inviteCode ` +
 		`members ${JQL_TEAM_MEMBER} ` +
 		`polls ${JQL_POLL} } `
 const JQL = {
 	TEAM: JQL_TEAM,
-	PROPOSAL: JQL_PROPOSAL,  // Javascript cannot reference own object property. So JQL_PROPOSAL must be its own const above. :-(
+	PROPOSAL: JQL_PROPOSAL,
 	CREATE_OR_JOIN_TEAM_RESULT: `{ ` +
 		`team ${JQL_TEAM} ` +
 		`user ${JQL_USER} ` + 
@@ -194,7 +193,7 @@ let graphQlApi = {
 	// and process the error.
 
 	async pingApi() {
-		return axios.get('/')
+		return this.getGraphQLSchema()
 	},
 
 	/**

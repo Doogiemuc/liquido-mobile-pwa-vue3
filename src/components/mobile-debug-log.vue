@@ -4,12 +4,12 @@
 		<div class="mobile-debug-icon" @click="collapsed = !collapsed">&Laplacetrf;</div>
 		<div class="log-header">
 			<div class="line-break-button" :class="{'active-button': lineBreak}" @click="lineBreak = !lineBreak">brk</div>
-			<div class="show-all-cols" @click="showAllCols">all</div>
+			<div class="show-all-cols" @click="showAllCols">cols</div>
 			<div class="filter">
 				<input v-model="filterStr" type="text" class="filter-input" placeholder="Filter" />
 			</div>
 			<div class="clear-log" @click="clearLog">cls</div>
-			<div class="show-last-row" :class="{'active-button': showLastRow}" @click="toggleShowLastRow">&#8582;</div>
+			<div class="show-last-row" :class="{'active-button': showLastRow}" @click="toggleShowLastRow">&darr;</div>
 		</div>
 		<div id="log-entries-table-wrapper">
 			<table class="log-entries-table">
@@ -80,10 +80,10 @@ export default {
 			// automatically always scroll to the last bottom row into view
 			showLastRow: true,
 
-			// break long messages
-			lineBreak: false,
+			// break long messages into multiple lines?
+			lineBreak: true,
 
-			// maximum length of a log method before it will be truncated
+			// maximum length of a log message before it will be truncated
 			maxMessageLen: 200,
 
 			// show every second line with an alternate color. (see getRowClass)
@@ -195,18 +195,17 @@ export default {
 		 * The alternative is to call the above this.log, this.info, ... methods direcdtly
 		 */
 		redefineConsoleMethods() {
-			console.info("VUE mobile-debug-log mounted has overwritten console.log() functions.")
 			let that = this;
 			["trace", "debug", "info", "warn", "error", "log"].forEach(function(methodName) {
 				let origMethod = console[methodName]
 				console[methodName] = function(...args) {
 					// log to our own mobile debugLog
-					that.logAtLevel(LEVEL[methodName], args)
+					that.logAtLevel(LEVEL[methodName.toUpperCase()], args)
 					// if console in this environment (browser/node/...) has this method, then also log to the original method
 					if (origMethod !== undefined) origMethod(...args) 
 				}
 			})
-			
+			console.debug("console.log() functions have been redefined by mobile-debug-log")
 		},
 
 		/**
@@ -282,7 +281,7 @@ export default {
 		},
 
 		getRowClass(entry, idx) {
-			let res = this.getLevelName(entry.level)
+			let res = this.getLevelName(entry.level).toLowerCase()
 			if (this.alternatingRows && (idx % 2 === 0)) res += " alternate-row"
 			return res
 		},

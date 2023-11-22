@@ -1,13 +1,13 @@
 <template>
 	<div>
 		
+		<a href="#" class="back-link" @click="goToPolls">
+			<i class="fas fa-angle-left" />
+		</a>
 
-		<h3 class="poll-status-title">
-			<a href="#" @click="goToPolls" style="text-decoration: none;">
-				<i class="fas fa-angle-left" />
-				{{ this.pageTitleLoc }}
-			</a>
-		</h3>
+		<h2 class="page-title">
+			{{ this.pageTitleLoc }}
+		</h2>
 
 		<div v-if="loadingPoll" class="my-3">
 			<b-spinner small />&nbsp;{{ $t('Loading') }}
@@ -23,7 +23,7 @@
 		</div>
 
 		<!-- Text info -->
-		<div class="text-muted text-center">
+		<div class="text-muted alert">
 			<p v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" v-html="$t('pollInElaborationInfo')" />
 			<p v-if="poll.status === 'VOTING' && !poll.usersBallot" v-html="$t('votingPhaseInfo')" />
 			<p v-if="poll.status === 'VOTING' &&  poll.usersBallot" v-html="$t('alreadyVotedInfo')" />
@@ -40,10 +40,9 @@
 		<!-- Action buttons -->
 		<div class="d-flex justify-content-between align-items-center my-5">
 		
-			<div class="text-muted" @click="goToPolls()">
+			<b-button @click="goToPolls()">
 				<i class="fas fa-angle-left" />
-				{{ $t("backToPolls") }}
-			</div>
+			</b-button>
 
 			<b-button v-if="poll.status === 'VOTING' && !poll.usersBallot" id="goToCastVoteButton" variant="primary" class="float-end" @click="clickCastVote()">
 				<i class="fas fa-person-booth" />
@@ -270,16 +269,13 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
+.back-link {
+	font-size: 1.3rem;
+	padding: 0 10px 0 0;
+	font-weight: bold;
+	text-decoration: none;
+	position: absolute;
+}
 
-.poll-status-title {
-	margin: 2rem 0;
-	a {
-		color: red;
-		text-decoration: none !important;
-	}
-}
-.poll-panel {
-	margin-bottom: 3rem;
-}
 </style>

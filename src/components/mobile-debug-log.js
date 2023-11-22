@@ -1,5 +1,5 @@
 /**
- * Replacement for console.log
+ * Replacement for console.log on mobile phones
  */
 
 // log levels
@@ -96,7 +96,7 @@ export default {
 	// https://stackoverflow.com/questions/9559725/extending-console-log-without-affecting-log-line?rq=1
 	
 	redefineConsoleMethods() {
-		console.info("VUE mobile-debug-log mounted has overwritten console.log() functions.")
+		console.info("VUE mobile-debug-log has overwritten console.log() functions.")
 		let that = this;
 		LEVEL_NAMES.forEach(function(methodName) {
 			let origMethod = console[methodName]

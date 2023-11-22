@@ -11,6 +11,17 @@
 			</button>
 		</div>
 
+		<h3>WebAuthn</h3>
+		<div v-if="showDevLogin" class="d-flex justify-content-between mb-3">
+			<button type="button" class="btn btn-primary" @click="registerWebauthn">
+				Register
+			</button>
+			<button type="button" class="btn btn-primary" @click="loginWebauthn">
+				Login
+			</button>
+		</div>
+
+
 		<!-- Login via SMS -->
 
 		<b-card class="chat-bubble input-bubble" :header="$t('LoginViaSms')">
@@ -113,6 +124,7 @@
 import config from "config"
 import liquidoInput from "@/components/liquido-input"
 import api from "@/services/liquido-graphql-client"
+import WebAuthn from "@/services/quarkus-webauthn"
 
 const REQUEST_THROTTLE_SECS = 10
 
@@ -196,6 +208,14 @@ export default {
 			}
 		}
 	},
+	created() {
+		console.debug("Initializing WebAuthn: " + config.LIQUIDO_API_URL + "/q/webauthn")
+		this.webauthn = new WebAuthn({
+			callbackPath: config.LIQUIDO_API_URL + '/q/webauthn/callback',
+      registerPath: config.LIQUIDO_API_URL + '/q/webauthn/register',
+      loginPath:    config.LIQUIDO_API_URL + '/q/webauthn/login'
+		})
+	},
 	mounted() {
 		this.$root.scrollToTop()
 
@@ -222,6 +242,23 @@ export default {
 				this.$router.push({name: "polls"})
 			}).catch(err => console.error("DevLogin Member failed!", err))
 		},
+
+		// =============== WebAuthn FaceID ==================
+
+		registerWebauthn() {
+			console.log("webauthn.register: " + config.devLogin.member.email)
+			this.webauthn.register({
+				name: config.devLogin.member.email,
+				displayName: config.devLogin.member.name
+			})
+			.then(body => {
+				console.log("WEBAUTHN: registered ", body)
+			})
+			.catch(err => {
+				console.error("Registration failed", err)
+			})
+		},
+
 
 		// =============== login via Twillio (SMS) authToken ==================
 

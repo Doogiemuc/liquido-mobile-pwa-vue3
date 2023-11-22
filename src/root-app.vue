@@ -86,7 +86,7 @@ export default {
 			return this.$route.path.match(/(polls|polls\/\d+)$/)
 		},
 		showDebugLog() {
-			return false  // process.env.NODE_ENV !== 'production'
+			return process.env.NODE_ENV !== 'production'
 		}
 	},
 	// watch the `$route` to determine the transition to use
@@ -128,7 +128,9 @@ export default {
 				}
 			})
 
-			//this.$refs["mobileLogViewRef"].redefineConsoleMethods()
+			// This has some consequences ... be carefull
+			this.$refs["mobileLogViewRef"].redefineConsoleMethods()
+			//Check: does this also work?  mobileLogViewer.redefineConsoleMethods();
 	},
 	methods: {
 		//

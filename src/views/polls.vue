@@ -1,7 +1,7 @@
 <template>
 	<div>
 		
-		<h1 id="polls-title" class="page-title">{{ pageTitleLoc }}</h1>
+		<h2 id="polls-title" class="page-title">{{ pageTitleLoc }}</h2>
 
 		<div v-if="loading" class="my-3">
 			<b-spinner small />&nbsp;{{ $t('Loading') }}
@@ -391,7 +391,7 @@ export default {
 		height: 32px;
 	}
 	.poll-title {
-		color: $primary;
+		//color: $primary;
 		//font-family: Helvetica, sans-serif;
 		//font-size: 1.1rem !important;
 		//font-weight: bold;

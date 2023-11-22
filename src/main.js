@@ -2,7 +2,9 @@
  * Main entry point for LIQUIDO mobile app.
  */
 
+console.log("===================")
 console.log("WELCOME to LIQUIDO!")
+console.log("===================")
 
 import config from "config"  // automatically mapped to environment specific config file config/config.<env>.jsin vue.config.js as a webpack alias
 const log = require("loglevel")
@@ -70,8 +72,8 @@ const globalTranslations = {
 		pollsInElaboration: "Abstimmungen zur Debatte",
 		pollInVoting: "Laufende Abstimmung",
 		pollsInVoting: "Laufende Abstimmungen",
-		finishedPoll: "Abgeschlossene Abstimmung",
-		finishedPolls: "Abgeschlossene Abstimmungen",
+		finishedPoll: "Abgeschl. Abstimmung",   // Muss abkürzen, weil Titel der poll-show page sonst zu lang auf schmalen Phones
+		finishedPolls: "Abgeschl. Abstimmungen",
 
 		Elaboration: "Diskussion",	
 		InVoting: "Wahl läuft", 		// Abstimmung im Status "die Wahl läuft gerade"

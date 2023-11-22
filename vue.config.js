@@ -18,7 +18,8 @@ module.exports = {
 		proxy: {      // Problems with CORS? Vue Dev serve can proxy API requests for your: https://cli.vuejs.org/config/#devserver-proxy
 			"^/liquido-api/v3": {  // Only proxy API requests. There are others, eg. Webservice "/ws" that sould stay
 				pathRewrite: {'^/liquido-api/v3' : '/'},
-				target: "http://localhost:8080",    // the matched path will be appended to this!
+				//target: "http://localhost:8080",
+				target: "https://localhost:8443",    // the matched path will be appended to this!
 				//ws: true,
 				//changeOrigin: true
 			}

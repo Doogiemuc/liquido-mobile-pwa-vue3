@@ -3,14 +3,9 @@
 		:id="pollCardId"
 		:pollid="poll.id"
 		:data-poll-status="poll.status"
-		no-body
-		class="poll-panel border-0 shadow" 
+		:title="poll.title"
+		class="poll-panel border-0 shadow-sm" 
 	>
-		<b-card-body>
-			<h1 class="card-title">
-				{{ poll.title }}
-			</h1>
-		</b-card-body>
 		<div v-if="!poll.proposals || poll.proposals.length === 0" class="card-body">
 			<p class="text-secondary">
 				<small>{{ $t("noProposalsInPollYet") }}</small>
@@ -18,7 +13,6 @@
 		</div>
 		<b-list-group v-else flush>
 			<b-list-group-item v-for="prop in poll.proposals" :key="prop.id" class="proposal-list-group-item" :class="proposalListGroupItemClasses(prop.id)">
-				<div class="proposal-separator"></div>
 				<div class="proposal-header d-flex align-items-center">
 					<div class="proposal-image">
 						<i class="fas fa-fw" :class="'fa-' + prop.icon" />
@@ -27,27 +21,27 @@
 						<h4 class="proposal-title">
 							{{ prop.title }}
 						</h4>
-						<div class="proposal-subtitle">
-							<div v-if="prop.isLikedByCurrentUser" class="like-button liked">
-								<i class="fas fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
-							</div>
-							<div v-else-if="canLike(prop)" class="like-button can-like" @click="clickLike(poll.id, prop)">
-								<i class="far fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
-							</div>
-							<div v-else class="like-button">
-								<i class="far fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
-							</div>
-							<div class="created-date">
-								<i class="far fa-clock" />&nbsp;{{ formatDate(prop.createdAt) }}
-							</div>
-							<div class="createdby-user">
-								<i class="far fa-user" />&nbsp;{{ prop.createdBy.name }}
-							</div>
-						</div>
 					</div>
-					
 				</div>
 				<div class="proposal-description" v-html="prop.description"></div>
+				<div class="proposal-subtitle">
+					<div v-if="prop.likedByCurrentUser" class="like-button liked">
+						<i class="fas fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
+					</div>
+					<div v-else-if="canLike(prop)" class="like-button can-like" @click="clickLike(poll.id, prop)">
+						<i class="far fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
+					</div>
+					<div v-else class="like-button">
+						<i class="far fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
+					</div>
+					<div class="created-date">
+						<i class="far fa-clock" />&nbsp;{{ formatDate(prop.createdAt) }}
+					</div>
+					<div class="createdby-user">
+						<i class="far fa-user" />&nbsp;{{ prop.createdBy.name }}
+					</div>
+				</div>
+				
 			</b-list-group-item>
 		</b-list-group>
 		<a
@@ -148,7 +142,7 @@ export default {
 		 * nor created by the currently logged in user.
 		 */
 		canLike(prop) {
-			return prop.status === "ELABORATION" &&  !prop.isLikedByCurrentUser && !this.isCreatedByCurrentUser(prop)
+			return prop.status === "ELABORATION" &&  !prop.likedByCurrentUser && !this.isCreatedByCurrentUser(prop)
 		},
 
 		clickLike(pollId, prop) {
@@ -172,18 +166,6 @@ $proposal_img_size: 32px;
 
 .poll-panel {
 
-	&:not(.read-only) {
-		cursor: pointer;
-	}
-
-	.card-subtitle {
-		color: $primary;
-		font-size: 0.8rem !important;
-		text-transform: uppercase;
-		font-weight: bold;
-		margin-top: 5px;
-	}
-
 	.card-header {   
 		position: relative;
 		//border-bottom: none;
@@ -192,12 +174,14 @@ $proposal_img_size: 32px;
 	}
 	
 	.card-title {
-		font-size: 1.2rem !important;      // Need more space for longer poll titles
+		font-size: 1rem !important;      // Need more space for longer poll titles
 		font-weight: bold;
-		margin-bottom: 0;
 		//white-space: nowrap;
 		//overflow: hidden;
 		//text-overflow: ellipsis;
+		margin-bottom: 0;
+		padding-bottom: 15px;
+		border-bottom: 1px solid lightgray;
 	}
 
 	.poll-title-icon {
@@ -216,7 +200,6 @@ $proposal_img_size: 32px;
 		font-size: 1.2rem;
 		bottom: 0;
 		right: 10px;
-		//opacity: 0.5;
 	}
 
 	.collapse-icon .fa:before {
@@ -227,52 +210,55 @@ $proposal_img_size: 32px;
 		content: "\f107";
 	}
 
-	.card-body {
-		padding-bottom: 0;
-	}
-
+	/*
 	.list-group {
-		margin-bottom: 2rem;  						// space for collapse icon
+		margin-bottom: 1rem;  						// There already is enough space for collapse icon
 	}
+	*/
 
 	// list of proposals in poll
 	.proposal-list-group-item {
-		height: 	130px;           			// exactly 4 lines of description
+		height: 	160px;           			 // exactly 3 lines of description. MUST set height for transtion!
 		overflow: hidden;
-		margin: 0 0 0 10px;            	// no margin at the top and bottom, the separator handles that		                           
-		padding: 0;
+		padding: 15px 0 15px 0;
 		transition: height 0.5s;
-		border: none;
+		//border: none;
 
 		&.collapsed-proposal-panel {
-			height: 60px;    // just right enough to NOT see the description.
+			height: 55px;    							// just right enough to NOT see the description.
 			.proposal-separator {
 				margin: 10px 0;
 			}
-		}			
-		.proposal-header-text {
-			margin: 0;
 		}
+		.proposal-header {
+			margin-bottom: 6px;
+		}			
 
 		.proposal-title {
-			margin-bottom: 3px;
+			font-size: 1rem !important;   // a bit smaller for longer titles
+			margin: 0;
 			padding: 0;
-			//font-size: 1rem !important;
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
 		}
+
+		.proposal-description {
+			font-size: 0.8rem;
+			overflow: hidden;
+			line-height: 20px;
+			height: 60px;     		// exactly enough for 4 lines of text
+		}
+
 		.proposal-subtitle {
-			font-size: 0.6rem;
+			font-size: 0.8rem;
 			color: #bbb;
-			margin-bottom: 3px;
-			//font-family: Helvetica, sans-serif;
-			cursor: pointer;
+			margin-top: 10px;
 
 			.like-button {
 				//font-size: 1rem;
 				display: inline;
-				padding: 0 2px;
+				padding: 1px 2px;
 			}
 			.can-like {
 				cursor: pointer;
@@ -321,11 +307,7 @@ $proposal_img_size: 32px;
 			margin-right: 6px;
 		}
 
-		.proposal-description {
-			font-size: 0.8rem;
-			overflow: hidden;
-			line-height: 18px;  // exactly enough for 4 lines of text
-		}
+		
 
 	}
 
@@ -333,7 +315,7 @@ $proposal_img_size: 32px;
 	//.proposal-list-group-item:not(:last-child):not(.collapsed-proposal-panel)
 	.proposal-separator {
 			transition: all 0.5s;		
-			border-top: 1px solid rgba(128,128,128, 0.1);
+			border-top: 1px solid lightgrey;//  rgba(128,128,128, 0.5);
 			margin: 1rem 0;
 		}
 
