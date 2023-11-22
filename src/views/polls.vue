@@ -1,7 +1,8 @@
 <template>
 	<div>
-		
-		<h2 id="polls-title" class="page-title">{{ pageTitleLoc }}</h2>
+		<h2 class="page-title">
+			{{ pageTitleLoc }}
+		</h2>
 
 		<div v-if="loading" class="my-3">
 			<b-spinner small />&nbsp;{{ $t('Loading') }}
@@ -9,7 +10,7 @@
 
 		<!-- Search -->
 		<div v-if="allPolls.length > 3" class="search-wrapper">
-			<input id="searchInput" class="form-control" v-model="searchQuery" type="text" :placeholder="$t('Search')">
+			<input id="searchInput" class="form-control border-0" v-model="searchQuery" type="text" :placeholder="$t('Search')">
 			<i v-if="searchQuery == ''" class="fas fa-search search-icon"></i>
 			<i v-else class="fas fa-times search-icon" @click="clearSearchAndFilter"></i>
 		</div>
@@ -17,47 +18,35 @@
 		<!-- list of polls -->
 		<div v-if="!loading" class="poll-list mb-5">
 			<transition-group name="poll-list" class="poll-list-transition" tag="div">
-				<div v-for="poll in filteredPolls" :key="poll.id" class="poll-panel-wrapper" @click="goToPoll(poll.id)">
-					<b-row class="poll-panel-inner">
-						<b-col class="poll-icon-col">
-							<div class="poll-icon"><i :class="iconForPoll(poll)"></i></div>
-						</b-col>
-						<b-col class="poll-col-2">
-							<h3 class="poll-title">
-								{{ poll.title }}
-							</h3>
-							<div class="poll-footer">
-								<div v-if="poll.status === 'VOTING'">
-									<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
-									<i class="far fa-calendar-alt"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}
+					<b-card v-for="poll in filteredPolls" :key="poll.id" class="border-0 poll-card" @click="goToPoll(poll.id)">
+						<b-row class="poll-panel-inner align-items-center">
+							<b-col class="poll-icon-col">
+								<div class="poll-icon"><i :class="iconForPoll(poll)"></i></div>
+							</b-col>
+							<b-col class="poll-col-2">
+								<h3 class="poll-title">
+									{{ poll.title }}
+								</h3>
+								<div class="poll-footer">
+									<div v-if="poll.status === 'VOTING'">
+										<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
+										<i class="far fa-calendar-alt"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}
+									</div>
+									<div v-else-if="poll.status === 'FINISHED'">
+										<i class="far fa-check-circle"></i>&nbsp;{{ $t('finished') }}
+									</div>
+									<div v-else>
+										<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
+									</div>
 								</div>
-								<div v-else-if="poll.status === 'FINISHED'">
-									<i class="far fa-check-circle"></i>&nbsp;{{ $t('finished') }}
-								</div>
-								<div v-else>
-									<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
-								</div>
-							</div>
-						</b-col>
-						<b-col class="poll-col-3">
-							<div class="show-poll-details">
+							</b-col>
+							<b-col class="poll-col-3">
 								<i class="fas fa-angle-right"></i>
-							</div>
-						</b-col>
-					</b-row>
-				</div>
+							</b-col>
+						</b-row>
+					</b-card>
 			</transition-group>
 		
-			<!-- list of polls (previous version with poll panels)
-			<transition-group name="poll-list" tag="div">
-				<poll-panel 
-					v-for="poll in filteredPolls"
-					:key="poll.id"
-					:poll="poll"
-					:collapse="true"
-					class="shadow-sm"
-				/>
-			</transition-group -->
 			
 
 			<p v-if="allPolls.length === 0 && !loading" class="text-center" v-html="$t('noPollYet')" />
@@ -106,7 +95,6 @@
  * But it's getting better and better everytiem! :-)
  */
 
-// import pollPanel from "../components/poll-panel"
 import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
 import dayjs from "dayjs"
@@ -151,7 +139,7 @@ export default {
 		},
 	},
 	name: "PollsList",
-	//components: { pollPanel },
+	//components: {  },
 	props: {
 		//status: { type: String, required: false, default: undefined },
 	},
@@ -159,14 +147,14 @@ export default {
 		return {
 			loading: true,
 			searchQuery: "",
-			/**current filter for poll status, undefined|ELABORATION|VOTING|FINISHED */
-			//pollStatusFilter: undefined,
+			//pollStatusFilter: undefined,   // <== has been moved to this.$root.pollStatusFilter
 			forceRefreshComputed: 0   
 		}
 	},
 	computed: {
 		pollStatusFilter() {
-			console.log("poll get computed pollStatusFilter", this.$root.pollStatusFilter)
+			//TODO: check how often this is called.   
+			//console.log("poll get computed pollStatusFilter", this.$root.pollStatusFilter)
 			return this.$root.pollStatusFilter
 		},
 		pageTitleLoc() {
@@ -234,8 +222,9 @@ export default {
 			return api.getCachedPolls("FINISHED").length > 0
 		}
 	},
+	
 	created() {
-		console.log("==== Polls component created", this.$root.pollStatusFilter)
+		//console.log("==== Polls component created", this.$root.pollStatusFilter)
 
 		// When poll filter changes in navbar, then force a recompute of computed values (mainly "filteredPolls")
 		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (/*newFilterValue*/) => this.forceRefreshComputed++)
@@ -245,29 +234,26 @@ export default {
 		EventBus.on(EventBus.Event.POLLS_LOADED, () => this.pollsChanged())  // event param "polls" is not used here
 
 		this.loading = false
+		//We don't need to load polls here. They were already loaded at login.		
+		//MAYBE: refresh on pull-down
 
-		/*
-		// We don't need to load polls here. They were already loaded at login.
-		
-		//TODO: refresh on pull-down
-		
-		this.loading = true
-		api.getPolls()
-			.then(() => {
-				console.log("Loading polls")
-				this.forceRefreshComputed++
-				this.loading = false
-			})
-			.catch(err => {
-				this.loading = false
-				console.error("Canont load polls", err)
-			})
-		*/
 	},
+	
 	mounted() {
-		
+		this.$root.setHeaderTitle(this.pageTitleLoc)
 	},
+
+	
+	watch: {
+		// when page title changes, then also update it in liquido-header
+		pageTitleLoc(newTitle) {
+			this.$root.setHeaderTitle(newTitle)
+		}
+	},
+	
+
 	methods: {
+
 		iconForPoll(poll) {
 			if (!poll) return undefined
 			switch (poll.status) {
@@ -340,40 +326,31 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.poll-list {
-	
+
+.poll-card {
+	margin-bottom: 10px;
+	transition: all 1s;
 }
 
-.poll-panel-wrapper {
-	display: grid;
-	grid-template-rows: 1fr;
-	transition: all 0.5s ease-out;
-}
 .poll-panel-inner {
+	display: flex;
 	position: relative;
 	cursor: pointer;
 	overflow: hidden;
 
-	&:first-child {
-		.poll-col-2{
-			border-top: 1px solid rgba(0,0,0, 0.1);
-		}
-	}
 	.poll-icon-col {
 		flex: 0 0 50px;  // do not grow or shrink, fixed width
-		display: flex;
-		align-items: center;
+		//flex-grow: 0;
 	}
-	.poll-col-2 {
-		//margin-right: 10px;
-		padding: 1.5em 0;
-		border-bottom: 1px solid rgba(0,0,0, 0.1);
+	.poll-col-2 {  // Poll title and sub-title
+		flex-grow: 1;
+		margin: 0;
+		padding: 0;
 	}
 	.poll-col-3 {
-		flex: 0 0 50px;
+		flex: 0 0 1em;
 		text-align: right;
 	}
-
 	
 	.poll-icon {
 		color: white;
@@ -404,6 +381,7 @@ export default {
 			margin-left: 10px;
 		}
 	}
+	/*
 	.show-poll-details {
 		position: absolute;
 		font-size: 1.2rem;
@@ -413,11 +391,12 @@ export default {
 		//opacity: 0.5;
 		cursor: pointer
 	}
+	*/
 }
 
 
 .search-wrapper {
-	margin: 30px 40px 0 40px;
+	margin: 30px 40px 30px 40px;
 	color: $secondary;
 	position: relative;
 	.search-icon {
@@ -439,7 +418,8 @@ export default {
 
 .poll-list-leave-to, .poll-list-enter-from {
 	opacity: 0;
-	grid-template-rows: 0fr;
+	//grid-template-rows: 0fr;
+	border: 1px solid red;
 	//height: 0 !important;
 	//max-height: 0 !important;
 	//margin-bottom: 0rem !important;

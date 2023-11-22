@@ -77,10 +77,10 @@ button, [type="button"], [type="reset"], [type="submit"], input {
 	/* Top headline for all pages */
 	.page-title {
 		//font-family: 'Libre Baskerville', serif;
-		margin: 2rem 0;
+		margin: 2rem -10px;   // this will scroll, need -10px to have full width!
+		padding: 10px 0;  // this will stay sticky-top
 		text-align: center;
-		line-height: 1.5;
-		font-weight: bolder;
+		//font-weight: bolder;
 	}
 
 	/* All links, including header and footer. */

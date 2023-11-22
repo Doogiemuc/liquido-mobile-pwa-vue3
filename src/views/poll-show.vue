@@ -1,10 +1,6 @@
 <template>
 	<div>
 		
-		<a href="#" class="back-link" @click="goToPolls">
-			<i class="fas fa-angle-left" />
-		</a>
-
 		<h2 class="page-title">
 			{{ this.pageTitleLoc }}
 		</h2>
@@ -190,6 +186,10 @@ export default {
 	},
 	created() {
 		this.loadPoll()
+		.then(() => {
+			// when poll is loaded, set page title in liquido-header according to poll's status
+			this.$root.setHeaderTitle(this.pageTitleLoc)	
+		})
 		EventBus.on(EventBus.Event.POLL_LOADED, (loadedPoll) => {
 			if (loadedPoll.id === this.poll.id) {
 				console.log("poll-show.vue: Poll.id=" + this.poll.id + " was reloaded", loadedPoll)
@@ -198,6 +198,7 @@ export default {
 		})
 	},
 	mounted() {
+		this.$root.setHeaderBackLink("BACK")
 		this.$root.scrollToTop()
 	},
 	methods: {
@@ -270,12 +271,6 @@ export default {
 </script>
 
 <style>
-.back-link {
-	font-size: 1.3rem;
-	padding: 0 10px 0 0;
-	font-weight: bold;
-	text-decoration: none;
-	position: absolute;
-}
+
 
 </style>

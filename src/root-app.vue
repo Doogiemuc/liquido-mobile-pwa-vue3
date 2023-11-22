@@ -1,6 +1,6 @@
 <template>
 	<div id="rootApp">
-		<!-- liquido-header v-if="false" ref="liquido-header" :back-link="backLink" / -->
+		<liquido-header ref="liquido-header"></liquido-header>
 		<popup-modal
 			id="rootPopupModal"
 			ref="rootPopupModal"
@@ -102,7 +102,7 @@ export default {
 			else { this.transitionName = "fade" }  // default is fade
 			// Scroll to the top of the page at every navigation
 			//TODO: FIXME: This "jumps" when the user has scrolled down.
-			this.scrollToTop()
+			//this.scrollToTop()
 		},
 	},
 	mounted() {
@@ -129,13 +129,21 @@ export default {
 			})
 
 			// This has some consequences ... be carefull
-			this.$refs["mobileLogViewRef"].redefineConsoleMethods()
+			//this.$refs["mobileLogViewRef"].redefineConsoleMethods()
 			//Check: does this also work?  mobileLogViewer.redefineConsoleMethods();
 	},
 	methods: {
 		//
 		// These methods are available as this.$root.<method> in all vue sub components of root-app
 		//
+
+		setHeaderTitle(title) {
+			this.$refs["liquido-header"].title = title
+		},
+
+		setHeaderBackLink(backLink) {
+			this.$refs["liquido-header"].backLink = backLink
+		},
 
 		/**
 		 * INTERNAL: One step in an animation
@@ -219,6 +227,11 @@ export default {
 <style lang="scss">
 // Import liquido global styles
 @import "styles/liquido.scss";
+
+
+#rootApp {
+	padding-top: $header-height;
+}
 
 // Slide animation between pages
 .router-view {

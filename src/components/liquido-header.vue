@@ -1,138 +1,140 @@
 <template>
-	<header id="liquidoHeader" class="liquido-header">
-		<div class="header-left">
-			<a v-if="backLink" href="#" @click="goBack">
+	<header id="liquidoHeader">
+		<div class="header-left" @click="clickBack">
+			<a v-if="backLink" href="#">
 				<i class="fas fa-angle-left" />
 			</a>
 		</div>
-		<div class="liquido-title">
-			<i class="fas fa-university" />&nbsp;
-			<span class="liquido" @click="clickLiquidoTitle()" />
+		<div class="header-center" @click="clickHeaderCenter">
+			<div class="liquido-claim">
+				<i class="fas fa-university" />&nbsp;
+				<span class="liquido" />
+			</div>
+			<div v-if="title" class="center-title">
+				<h2>{{ title }}</h2>
+			</div>
 		</div>
-		<div class="header-right">
-			<!-- a v-if="showTeamIcon" href="#" aria-label="Team Home" @click="clickTeamIcon()">
-				<i class="fas fa-users" />
-			</a -->
+		<div class="header-right" @click="clickSearch">
+			<i class="fas fa-search" />
 		</div>
 	</header>
 </template>
 
 <script>
-import EventBus from "@/services/event-bus"
 
 export default {
 	name: "LiquidoHeader",
-	i18n: {
-		messages: {
-			en: {},
-			de: {},
-		},
-	},
-	props: {
-		// show a "backlink". You can pass an URL or the keyworkd "BACK" to use browsers back
-		backLink: { type: String, required: false, default: undefined },
-	},
 	
 	data() {
 		return {
-			filterByStatus: "ELABORATION",
-			isAuthenticated: false
+			title: undefined,
+			backLink: undefined,
+			showSearch: true,
+			isSticky: false
 		}
 	},
-	computed: {
-		height() {
-			return document.getElementById("liquidoHeader").offsetHeight
-		},
-		showTeamIcon() {
-			return this.$route.name !== "welcome" && this.isAuthenticated
-		}
-	},
+	
 	mounted() {
-		//MAYBE: make header smaller when user scrolls down
-		//$("#app").scroll(this.transitionHeader)
-
-		// Cannot simply do this with a computed property, because this.$api.isAuthenticated is not reactive.
-		//TODO: Can we make it reactive? maybe with Vue.$set ?
-		EventBus.on(EventBus.Event.LOGIN,  () => {
-			this.isAuthenticated = true
-		})
-		EventBus.on(EventBus.Event.LOGOUT, () => {
-			this.isAuthenticated = false
-		})
+		document.getElementById("app").addEventListener("scroll", this.stickyHeader)
 	},
-	methods: {
-    /* DEPRECATED
-		transitionHeader() {
-			if (document.getElementById("app").scrollTop > 50) {
-        document.getElementsByClassName(".liquido-header").classList.add("scrolled")
-        document.getElementById("navArrows").classList.add("scrolled")
-			} else {
-        document.getElementsByClassName(".liquido-header").classList.remove("scrolled")
-        document.getElementById("navArrows").classList.remove("scrolled")
-			}
-		},
-    */
 
-		goBack() {
-			//console.log("Back", this.backLink)
+	methods: {
+
+		stickyHeader() {
+			let header = document.getElementById("liquidoHeader")
+			if (header != null && this.title != undefined) {
+				let app = document.getElementById("app")
+				if (this.isSticky === false && app.scrollTop > 20) {
+					console.log("ADD transtion")
+					this.isSticky = true
+					header.classList.add("transition-header")
+				} else if (this.isSticky === true && app.scrollTop < 20) {
+					console.log("REMOVE transition")
+					this.isSticky = false
+					header.classList.remove("transition-header")
+				}	
+			}		
+		},
+
+		clickBack() {
 			if (this.backLink === "BACK") this.$router.go(-1)
 			else if (this.backLink) this.$router.push(this.backLink)
 		},
-
-		clickLiquidoTitle() {
-			/*
-			//TOOD: what todo when clicking header? Where to go? => Maybe List of polls?
-			if (this.$route.path !== "/welcome" && this.$route.path !== "/polls" && this.$route.path !== "/login") {
-				this.$router.push({name: "polls"})
-			}
-			*/
+		
+		clickHeaderCenter() {
+			//?????? what then?
 		},
 
-		clickTeamIcon() {
-			if (this.$route.name !== "teamHome") {
-				this.$router.push({name: "teamHome"})
-			}
-		},
+		clickSearch() {
+			//TODO: show search bar
+		}
 
-	},
+	}
 }
 </script>
 
 <style lang="scss" scoped>
-.liquido-header {
+
+
+#liquidoHeader {
+	display: flex;
 	position: fixed;
+	left: 0;
 	top: 0;
 	width: 100%;
-	max-width: 1140px;  // same as .container
-	z-index: 100;
-	transition: 0.3s; /* Add a transition effect when scrolling */
-	color: $primary;
-	background-color: $header-bg;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-	box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.6);
-	font-size: 1.5rem;
-	display: flex;
+	height: $header-height;
 	flex-direction: row;
+	justify-content: space-between;
+	z-index: 999;
+	transition: all 0.5s;
+	background-color: $header_bg;
+	
+	&.transition-header {
+		//height: 2.5rem;
+		.liquido-claim {
+			top: -1.5rem !important;
+		}
+		.center-title {
+			top: 50% !important;
+			transform: translate(-50%, -50%) !important;
+		}
+	}
 	
 	.header-left {
-		width: 2em;
-		text-align: left;
-		padding-left: 10px;
+		display: flex;
+		align-items: center;
+		font-size: 1.5rem;
+		margin-left: 10px;
 	}
-	.liquido-title {
+	.header-center {
 		flex-grow: 1;	
 		text-align: center;
+		
+		position: relative;
+		overflow: hidden;
+		.liquido-claim {
+			position: relative;
+			top: 50%;
+			transform: translateY(-50%);
+			transition: top 0.5s;
+			color: $primary;
+			font-size: 1.5rem;
+		}
+		.center-title {
+			position: absolute;
+			top: 150%;
+			left: 50%;
+			width: 100%;
+			transform: translateX(-50%);
+			transition: top 0.5s;
+		}
 	}
 	.header-right {
-		width: 2em;
-		text-align: right;
-		padding-right: 10px;
+		display: flex;
+		align-items: center;
+		margin-right: 10px;
 	}
 	
-}
-
-.liquido-header.scrolled {
-	font-size: 1rem;
 }
 
 </style>
