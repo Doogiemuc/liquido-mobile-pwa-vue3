@@ -1,13 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import welcomeChat from "@/views/welcome-chat"
-import loginPage from "@/views/login-page"
-import teamHome from "@/views/team-home"
-import pollsPage from "@/views/polls"
-import showPoll from "@/views/poll-show"
-import api from "@/services/liquido-graphql-client"
+import welcomeChat from "@/views/welcome-chat.vue"
+import loginPage from "@/views/login-page.vue"
+
+//TODO: load these as dynamic dependencies (only on demand later)
+//      https://router.vuejs.org/guide/advanced/lazy-loading.html
+import teamHome from "@/views/team-home.vue"
+import pollsPage from "@/views/polls.vue"
+import showPoll from "@/views/poll-show.vue"
+import api from "@/services/liquido-graphql-client.js"
 import config from "config"
-const log = require("loglevel")
-/*if (process.env.NODE_ENV === "development") */  log.enableAll()
+import log from 'loglevel'
+if (process.env.NODE_ENV === "development") log.enableAll()
 
 const routes = [
 	{
@@ -33,7 +36,7 @@ const routes = [
 		// Development login that can be used in testing
 		path: "/devLogin",
 		name: "devLogin",
-		component: () => import("@/views/dev-login"),
+		component: () => import("@/views/dev-login.vue"),
 		props: route => ({ 
 			email: route.query.email,
 			teamName: route.query.teamName,
@@ -68,7 +71,7 @@ const routes = [
 	{
 		path: "/polls/create",
 		name: "createPoll",
-		component: () => import("@/views/poll-create"),
+		component: () => import("@/views/poll-create.vue"),
 	},
 	{
 		path: "/polls/:pollId",
@@ -79,19 +82,19 @@ const routes = [
 	{
 		path: "/polls/:pollId/add",
 		name: "addProposal",
-		component: () => import("@/views/proposal-add"),
+		component: () => import("@/views/proposal-add.vue"),
 		props: true,
 	},
 	{
 		path: "/polls/:pollId/castVote",
 		name: "castVote",
-		component: () => import("@/views/cast-vote"),
+		component: () => import("@/views/cast-vote.vue"),
 		props: true,
 	},
 	{
 		path: "/404",
 		name: "pageNotFound",
-		component: () => import("@/views/not-found-page"),
+		component: () => import("@/views/not-found-page.vue"),
 		//props: true,  //MAYBE: where to go "back" ?
 		meta: {
 			public: true
@@ -110,6 +113,8 @@ const router = createRouter({
   history: createWebHistory(config.BASE_URL),  // createWebHashHistory(config.BASE_URL),
 	//base: config.BASE_URL || "/",
 	/*
+
+	//TODO: https://router.vuejs.org/guide/advanced/scroll-behavior.html
 	scrollBehavior(to, from, savedPosition) {
 		if (savedPosition) {
 			log.debug("Returning to saved scroll position", savedPosition)

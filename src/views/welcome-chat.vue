@@ -270,9 +270,9 @@
 <script>
 import config from "config"
 import QRCode from "qrcode"
-import liquidoInput from "@/components/liquido-input"
-import api from "@/services/liquido-graphql-client"
-const log = require("loglevel")
+import liquidoInput from "@/components/liquido-input.vue"
+import api from "@/services/liquido-graphql-client.js"
+import log from 'loglevel'
 
 const eMailRegEx = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,64}$/
 

@@ -122,9 +122,9 @@
 
 <script>
 import config from "config"
-import liquidoInput from "@/components/liquido-input"
-import api from "@/services/liquido-graphql-client"
-import WebAuthn from "@/services/quarkus-webauthn"
+import liquidoInput from "@/components/liquido-input.vue"
+import api from "@/services/liquido-graphql-client.js"
+import WebAuthn from "@/services/quarkus-webauthn.js"
 
 const REQUEST_THROTTLE_SECS = 10
 

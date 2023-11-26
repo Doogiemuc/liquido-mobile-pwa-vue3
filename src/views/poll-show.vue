@@ -92,11 +92,11 @@
 </template>
 
 <script>
-import pollPanel from "@/components/poll-panel"
-import popupModal from "@/components/popup-modal"
-import EventBus from "@/services/event-bus"
-import api from "@/services/liquido-graphql-client"
-const log = require("loglevel")
+import pollPanel from "@/components/poll-panel.vue"
+import popupModal from "@/components/popup-modal.vue"
+import EventBus from "@/services/event-bus.js"
+import api from "@/services/liquido-graphql-client.js"
+import log from 'loglevel'
 
 export default {
 	i18n: {
@@ -199,7 +199,7 @@ export default {
 	},
 	mounted() {
 		this.$root.setHeaderBackLink("BACK")
-		this.$root.scrollToTop()
+		//this.$root.scrollToTop()
 	},
 	methods: {
 		loadPoll() {

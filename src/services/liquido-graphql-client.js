@@ -9,7 +9,7 @@
 import axios from "axios"
 import config from "config"
 import PopulatingCache from "populating-cache"
-import EventBus from "@/services/event-bus"
+import EventBus from "@/services/event-bus.js"
 //TODO: log network calls into my mobile debug log. Does that work this way or do I have to load the componant "instance" somehow?
 //import log from "@/components/mobile-debug-log.js"
 
@@ -33,7 +33,9 @@ import EventBus from "@/services/event-bus"
 if (!config || !config.LIQUIDO_API_URL) {
 	console.error("liquido-graphql-client: ERROR I have no config!")
 } else {
-	//console.debug("liquido-graphql-client => " + config.LIQUIDO_API_URL)
+	if (process.env.NODE_ENV === "development") {
+		console.debug("liquido-graphql-client => " + config.LIQUIDO_API_URL)
+	}
 }
 
 // Configure axios HTTP REST client to point to our graphQL backend
@@ -219,7 +221,7 @@ let graphQlApi = {
 		this.teamCache.put(this.CURRENT_USER_KEY, user)
 		this.teamCache.put(this.JWT_KEY, jwt)
 		this.putPollsIntoCache(team.polls)
-		//if (localStorage != null) localStorage.setItem(this.LIQUIDO_JWT_KEY, jwt)
+		if (localStorage != null) localStorage.setItem(this.LIQUIDO_JWT_KEY, jwt)
 		axios.defaults.headers.common["Authorization"] = "Bearer " + jwt
 		console.debug("Login <"+user.email+"> into team '" + team.teamName  + "'")
 		EventBus.emit(EventBus.Event.LOGIN, {team, user, jwt})
@@ -229,7 +231,7 @@ let graphQlApi = {
 		axios.defaults.headers.common["Authorization"] = undefined
 		let userEmail = this.getCachedUser() ? this.getCachedUser().email : ""
 		console.debug("Logout <"+userEmail+">")
-		//if (localStorage != null) localStorage.removeItem(this.LIQUIDO_JWT_KEY)
+		if (localStorage != null) localStorage.removeItem(this.LIQUIDO_JWT_KEY)
 		delete axios.defaults.headers.common["Authorization"]
 		this.teamCache.emptyCache()
 		this.pollsCache.emptyCache()

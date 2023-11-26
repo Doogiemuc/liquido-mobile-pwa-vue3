@@ -36,6 +36,33 @@ Poll Detail page:
 
 
 
+
+# How to setup vue repo from scratch
+
+Create an empty directory and run
+
+    npm create vue@latest
+
+Install (answer yes) Vue Router, Vitest, End-2-End Test with Cypress and optionally ESLint and Prettier. Then do
+
+    npm install axios bootstrap dayjs fontawesome gsap loglevel populating-cache vue-i18n vuedraggable
+
+TODO: do i need vue-bootstrap
+
+
+# Develop offline
+
+TODOs
+
+ * Load Bootstrap locally
+ * Load Fontawesome locally
+ * Mock backend or start it locally
+ * ...
+
+
+
+
+
  # Further References
 
  # Very nice starter Template One Page Landing Page
@@ -47,3 +74,4 @@ Poll Detail page:
 
 Very nice howto
  https://www.mongodb.com/developer/products/realm/graphql-easy/
+

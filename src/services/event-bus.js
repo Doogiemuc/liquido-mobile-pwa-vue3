@@ -11,11 +11,13 @@
 
 // "enum" for event names (the keys are case insensitive.)
 eventBus.Event = {
-	LOGIN: "login",													// Fires after a successfull login. Event param is { team, polls, jwt }
-	LOGOUT: "logout",												// Fires after logout is completed.
-	POLLS_LOADED: "polls-loaded",  					// Fires when an array of polls was loaded from backend. Event param is the list of newly loaded polls
-	POLL_LOADED: "poll-loaded",    					// One poll was loaded from the backend. Event param is that one poll
-	POLL_FILTER_CHANGED: "polls-filter-changed"	// Fired by navbar-bottom, when user clicked on filter
+	LOGIN: "login",																	// Fires after a successfull login. Event param is { team, polls, jwt }
+	LOGOUT: "logout",																// Fires after logout is completed.
+	POLLS_LOADED: "polls-loaded",  									// Fires when an array of polls was loaded from backend. Event param is the list of newly loaded polls
+	POLL_LOADED: "poll-loaded",    									// One poll was loaded from the backend. Event param is that one poll
+	POLL_FILTER_CHANGED: "polls-filter-changed",		// Fired by navbar-bottom, when user clicked on filter
+	CLICK_HEADER_CENTER: "click-header-center", 		// click on center area of liquido-header
+	CLICK_SEARCH: "click-search"                		// click on search icon at the right of liquido-header
 }
 
 export default eventBus

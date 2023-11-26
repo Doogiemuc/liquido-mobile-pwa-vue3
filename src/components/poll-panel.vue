@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import api from "@/services/liquido-graphql-client"
+import api from "@/services/liquido-graphql-client.js"
 import dayjs from "dayjs"
 import localizedFormat from 'dayjs/plugin/localizedFormat'
 dayjs.extend(localizedFormat)

@@ -21,6 +21,7 @@
 </template>
 
 <script>
+import EventBus from "@/services/event-bus.js"
 
 export default {
 	name: "LiquidoHeader",
@@ -62,11 +63,11 @@ export default {
 		},
 		
 		clickHeaderCenter() {
-			//?????? what then?
+			EventBus.emit(EventBus.Event.CLICK_HEADER_CENTER)
 		},
 
 		clickSearch() {
-			//TODO: show search bar
+			EventBus.emit(EventBus.Event.CLICK_SEARCH)
 		}
 
 	}
@@ -74,7 +75,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 
 #liquidoHeader {
 	display: flex;
@@ -89,8 +89,9 @@ export default {
 	transition: all 0.5s;
 	background-color: $header_bg;
 	
+	// when user scrolls, then scroll LIQUIDO claim out towards the top
+	// and  let the center-title appear from the bottom
 	&.transition-header {
-		//height: 2.5rem;
 		.liquido-claim {
 			top: -1.5rem !important;
 		}
@@ -102,14 +103,15 @@ export default {
 	
 	.header-left {
 		display: flex;
+		flex: 0 0 30px;
 		align-items: center;
-		font-size: 1.5rem;
-		margin-left: 10px;
+		padding-left: 10px;
+		font-size: 25px;
 	}
 	.header-center {
 		flex-grow: 1;	
 		text-align: center;
-		
+		color: $primary;
 		position: relative;
 		overflow: hidden;
 		.liquido-claim {
@@ -117,7 +119,6 @@ export default {
 			top: 50%;
 			transform: translateY(-50%);
 			transition: top 0.5s;
-			color: $primary;
 			font-size: 1.5rem;
 		}
 		.center-title {
@@ -127,12 +128,18 @@ export default {
 			width: 100%;
 			transform: translateX(-50%);
 			transition: top 0.5s;
+			h2 { 
+				margin: 0;
+				font-size: 1rem; 
+			}
 		}
 	}
 	.header-right {
 		display: flex;
+		flex: 0 0 30px;
 		align-items: center;
-		margin-right: 10px;
+		text-align: right;
+		padding-right: 10px;
 	}
 	
 }

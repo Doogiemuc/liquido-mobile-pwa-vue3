@@ -47,8 +47,8 @@
 </template>
 
 <script>
-import EventBus from "@/services/event-bus"
-import api from "@/services/liquido-graphql-client"
+import EventBus from "@/services/event-bus.js"
+import api from "@/services/liquido-graphql-client.js"
 
 
 

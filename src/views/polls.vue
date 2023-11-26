@@ -9,15 +9,15 @@
 		</div>
 
 		<!-- Search -->
-		<div v-if="allPolls.length > 3" class="search-wrapper">
+		<div v-if="showSearch" id="searchWrapper" class="search-wrapper">
 			<input id="searchInput" class="form-control border-0" v-model="searchQuery" type="text" :placeholder="$t('Search')">
 			<i v-if="searchQuery == ''" class="fas fa-search search-icon"></i>
 			<i v-else class="fas fa-times search-icon" @click="clearSearchAndFilter"></i>
 		</div>
 
 		<!-- list of polls -->
-		<div v-if="!loading" class="poll-list mb-5">
-			<transition-group name="poll-list" class="poll-list-transition" tag="div">
+		<div v-if="!loading" id="poll-list-wrapper" class="mb-5">
+			<transition-group name="poll-list" id="poll-list" tag="div">
 					<b-card v-for="poll in filteredPolls" :key="poll.id" class="border-0 poll-card" @click="goToPoll(poll.id)">
 						<b-row class="poll-panel-inner align-items-center">
 							<b-col class="poll-icon-col">
@@ -46,8 +46,6 @@
 						</b-row>
 					</b-card>
 			</transition-group>
-		
-			
 
 			<p v-if="allPolls.length === 0 && !loading" class="text-center" v-html="$t('noPollYet')" />
 
@@ -85,6 +83,12 @@
 			</b-button>
 		</div>
 
+		<div v-if="filteredPolls.length > 3" class="text-center">
+			<b-button id="scrollToTopButton" variant="secondary" @click="$root.scrollToTop">
+				<i class="fas fa-angle-up" />
+			</b-button>
+		</div>
+
 	</div>
 </template>
 
@@ -98,6 +102,7 @@
 import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
 import dayjs from "dayjs"
+import { gsap } from "gsap";
 
 const pollStatusOrder = {
 	ELABORATION: 0,
@@ -141,16 +146,17 @@ export default {
 	name: "PollsList",
 	//components: {  },
 	props: {
-		//status: { type: String, required: false, default: undefined },
 	},
+
 	data() {
 		return {
 			loading: true,
+			showSearch: false,
 			searchQuery: "",
-			//pollStatusFilter: undefined,   // <== has been moved to this.$root.pollStatusFilter
 			forceRefreshComputed: 0   
 		}
 	},
+
 	computed: {
 		pollStatusFilter() {
 			//TODO: check how often this is called.   
@@ -232,14 +238,18 @@ export default {
 		// When one or all polls change, the reflect the changes in the UI.
 		EventBus.on(EventBus.Event.POLL_LOADED, () => this.pollsChanged())
 		EventBus.on(EventBus.Event.POLLS_LOADED, () => this.pollsChanged())  // event param "polls" is not used here
+		EventBus.on(EventBus.Event.CLICK_SEARCH, () => {
+			this.showSearch = !this.showSearch
+			this.$root.scrollToTop()
+		})
 
 		this.loading = false
 		//We don't need to load polls here. They were already loaded at login.		
 		//MAYBE: refresh on pull-down
-
 	},
 	
 	mounted() {
+		this.$root.setHeaderBackLink(null)
 		this.$root.setHeaderTitle(this.pageTitleLoc)
 	},
 
@@ -251,7 +261,6 @@ export default {
 		}
 	},
 	
-
 	methods: {
 
 		iconForPoll(poll) {
@@ -320,7 +329,34 @@ export default {
 			console.log("Clear Search and PollFilter")
 			this.searchQuery = undefined
 			EventBus.emit(EventBus.Event.POLL_FILTER_CHANGED, undefined)
-		}
+		},
+
+		// VUE Stagering List transition
+		// https://vuejs.org/guide/built-ins/transition-group.html#staggering-list-transitions
+
+		onBeforeEnter(el) {
+      el.style.opacity = 0
+      el.style.height = 0
+    },
+    onEnter(el, done) {
+      gsap.to(el, {
+        opacity: 1,
+        height: '1.6em',
+        delay: el.dataset.index * 0.15,
+        onComplete: done
+      })
+    },
+    onLeave(el, done) {
+      gsap.to(el, {
+        opacity: 0,
+        height: 0,
+        delay: el.dataset.index * 0.15,
+        onComplete: done
+      })
+    }
+
+
+
 	},
 }
 </script>
@@ -329,7 +365,6 @@ export default {
 
 .poll-card {
 	margin-bottom: 10px;
-	transition: all 1s;
 }
 
 .poll-panel-inner {
@@ -368,11 +403,9 @@ export default {
 		height: 32px;
 	}
 	.poll-title {
-		//color: $primary;
-		//font-family: Helvetica, sans-serif;
-		//font-size: 1.1rem !important;
-		//font-weight: bold;
-		//margin: 0;
+		color: $primary;
+		font-size: 1.0rem !important;
+		margin: 0 0 5px 0;
 	}
 	.poll-footer {
 		font-size: 80%;
@@ -396,14 +429,15 @@ export default {
 
 
 .search-wrapper {
-	margin: 30px 40px 30px 40px;
-	color: $secondary;
+	margin: 0px 40px 30px 40px;
 	position: relative;
+	overflow: hidden;
 	.search-icon {
+		color: $primary;
 		position: absolute;
-		top: 0.6em;
+		top: 50%;
 		right: 0.5em;
-		//transform: translateX(-150%);
+		transform: translateY(-50%);
 	}
 }
 
@@ -411,22 +445,29 @@ export default {
 	cursor: pointer;
 }
 
-/* Vue list transitions */
-
-.poll-list-transition {
+#poll-list-wrapper {
+	//transition: all 3s;
 }
 
+#poll-list {
+	display: grid;
+	grid-template-rows: 1fr 1fr 1fr 1fr;
+}
+
+.poll-card {
+	transition: all 2s;
+}
+
+/* Vue list transitions */
 .poll-list-leave-to, .poll-list-enter-from {
-	opacity: 0;
-	//grid-template-rows: 0fr;
-	border: 1px solid red;
-	//height: 0 !important;
-	//max-height: 0 !important;
-	//margin-bottom: 0rem !important;
+	//transform: scaleY(0);
+	grid-template-rows: 0fr 0fr 0fr 0fr;
 }
 .poll-list-enter-active, .poll-list-leave-active {
 	//border: 1px solid red;
 }
+
+
 
 #createPollInfo {
 	margin-top: 8rem;

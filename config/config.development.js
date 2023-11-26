@@ -5,11 +5,8 @@ import commonConfig from "./config.common.js"
 
 let devConfig = {
 	configSource: "development",
-	//default from config.common.js: LIQUIDO_API_URL: "/liquido-api/v3",  // will be proxied by Vue devServer. See vue.config.js
+	LIQUIDO_API_URL: "https://localhost:8443",
 	voterTokenSecret: "devVoterTokenSecret",
-
-	//can point local dev environment to some other backend, eg.
-	//LIQUIDO_API_URL: "http://52.59.209.46:7180/liquido-api/v3",
 
 	devLogin: {
 		teamName: "LocalTeam",

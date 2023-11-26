@@ -23,12 +23,19 @@
 </template>
 
 <script>
-import liquidoHeader from "@/components/liquido-header"
-import navbarBottom from "@/components/navbar-bottom"
-import popupModal from "@/components/popup-modal"
+/**
+ * This rootApp is the root in the DOM tree.
+ * It is responsible for routing between pages,
+ * the slide left-right transition,
+ * the global popup for infos and errors
+ * and it offers some utility functions that are available to all components.
+ */
+import liquidoHeader from "@/components/liquido-header.vue"
+import navbarBottom from "@/components/navbar-bottom.vue"
+import popupModal from "@/components/popup-modal.vue"
 import mobileLogViewer from "@/components/mobile-debug-log.vue"
-import api from "@/services/liquido-graphql-client"
-import EventBus from "@/services/event-bus"
+import api from "@/services/liquido-graphql-client.js"
+import EventBus from "@/services/event-bus.js"
 
 /** Pages will slide from right to left in this order */
 const page_order = {
@@ -42,6 +49,9 @@ const page_order = {
 	"addProposal": 7,
 	"castVote": 8,
 }
+
+/** save and restore the up/down scroll position of polls page (that shows the possibly long list of polls)  */
+let pollsScrollPos = undefined
 
 /** Liquido Root App */
 export default {
@@ -63,14 +73,15 @@ export default {
 		}
 	},
 	computed: {
-		/**
+		/* DEPRECATED: each component now sets its own backlink
+
 		 * Show appropriate backlink in liquido-header
 		 *
 		 * show one poll -> back to list of polls
 		 * add proposal  -> back to poll
 		 * cast vote     -> back to poll
 		 * otherwise don't show a back link
-		 */
+		 
 		backLink() {
 			if (/^\/polls\/\d+$/.test(this.$route.path)) {
 				return "/polls"
@@ -81,10 +92,13 @@ export default {
 			}
 			return undefined
 		},
-		/** which footer to show */
+		*/
+
+		/** Shall the navbar be shown in the footer */
 		showNavbarBottom() {
 			return this.$route.path.match(/(polls|polls\/\d+)$/)
 		},
+
 		showDebugLog() {
 			return process.env.NODE_ENV !== 'production'
 		}
@@ -93,6 +107,7 @@ export default {
 	// https://router.vuejs.org/guide/advanced/transitions.html#per-route-transition
 	watch: {
 		$route(to, from) {
+			console.log("$route change from " + from.name + " to " + to.name)
 			this.transitionName = ""
 			const fromOrder = page_order[from.name]
 			const toOrder = page_order[to.name]
@@ -100,11 +115,21 @@ export default {
 			if (fromOrder < toOrder) { this.transitionName = "slide-left" } else
 			if (fromOrder > toOrder) { this.transitionName = "slide-right"}
 			else { this.transitionName = "fade" }  // default is fade
-			// Scroll to the top of the page at every navigation
-			//TODO: FIXME: This "jumps" when the user has scrolled down.
-			//this.scrollToTop()
+
+			let app = document.getElementById("app")
+			if (from.name === "polls") {
+				//console.log("Saving scroll pos of " + from.name + " = " + app.scrollTop)
+				pollsScrollPos = app.scrollTop
+			} else 
+			if (to.name === "polls" && pollsScrollPos !== undefined) {
+				//console.log("Restoring scroll pos of " + to.name + " = " + pollsScrollPos)
+				app.scrollTop = pollsScrollPos
+			} else {
+				this.scrollToTop()
+			}
 		},
 	},
+
 	mounted() {
 		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (newFilter) => {
 			console.log("Root app POLL_FILTER_CHANGED to", newFilter)
@@ -228,9 +253,9 @@ export default {
 // Import liquido global styles
 @import "styles/liquido.scss";
 
-
-#rootApp {
-	padding-top: $header-height;
+// FIXME: MUST set this to #appContent and not #rootApp, otherwise page jumps when slide left-right
+#appContent {
+	padding-top: $header-height;  // padding so that page content can bee seen under liquido-header
 }
 
 // Slide animation between pages
@@ -238,7 +263,7 @@ export default {
 	transition: all 0.5s ease-in-out;
 }
 
-// Fade transtition
+// Fade transtition (used in lists)
 .fade-enter,
 .fade-leave-to {
 	opacity: 0;
@@ -249,19 +274,25 @@ export default {
 	width: 100%;
 }
 
-// slide-left and slide-right transitions
+// Slide left-right animations on navigation
+
+// This is added to the page that enters from the leeft
 .slide-left-enter-from,
+// or leaves to the right
 .slide-right-leave-to {
 	-webkit-transform: translate(100%, 0);
 	transform: translate(100%, 0);
 }
+// This class is added to the page that leaves
 .slide-left-leave-active,
 .slide-right-leave-active {
-	position: absolute;
+	position: absolute;  // MUST position this page absolute, so that incomign page is shown correctly
 	top: 0;
 	width: 100%;
 }
+// This class is added to the page that leaves to the left
 .slide-left-leave-to,
+// or enters from the right
 .slide-right-enter-from {
 	-webkit-transform: translate(-100%, 0);
 	transform: translate(-100%, 0);

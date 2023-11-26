@@ -7,15 +7,15 @@ console.log("WELCOME to LIQUIDO!")
 console.log("===================")
 
 import config from "config"  // automatically mapped to environment specific config file config/config.<env>.jsin vue.config.js as a webpack alias
-const log = require("loglevel")
+import log from 'loglevel'
 if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
 	log.enableAll()
 	console.log("NODE_ENV="+process.env.NODE_ENV+"   LIQUIDO configuration:\n", config)
 }
 
 import { createApp } from 'vue'
-import RootApp from "@/root-app.vue"
-import router from "@/services/router"
+import RootApp from '@/root-app.vue'
+import router from '@/services/router.js'
 import BootstrapVue3 from 'bootstrap-vue-3'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
