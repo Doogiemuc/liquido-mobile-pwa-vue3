@@ -6,7 +6,7 @@ console.log("===================")
 console.log("WELCOME to LIQUIDO!")
 console.log("===================")
 
-import config from "config"  // automatically mapped to environment specific config file config/config.<env>.jsin vue.config.js as a webpack alias
+import config from "config"  // This path is automatically mapped to an environment specific config file config/config.<env>.json  See vite.config.js
 import log from 'loglevel'
 if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
 	log.enableAll()

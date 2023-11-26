@@ -14,8 +14,8 @@
 				<h2>{{ title }}</h2>
 			</div>
 		</div>
-		<div class="header-right" @click="clickSearch">
-			<i class="fas fa-search" />
+		<div class="header-right">
+			&nbsp;
 		</div>
 	</header>
 </template>
@@ -30,7 +30,7 @@ export default {
 		return {
 			title: undefined,
 			backLink: undefined,
-			showSearch: true,
+			
 			isSticky: false
 		}
 	},
@@ -46,11 +46,9 @@ export default {
 			if (header != null && this.title != undefined) {
 				let app = document.getElementById("app")
 				if (this.isSticky === false && app.scrollTop > 20) {
-					console.log("ADD transtion")
 					this.isSticky = true
 					header.classList.add("transition-header")
 				} else if (this.isSticky === true && app.scrollTop < 20) {
-					console.log("REMOVE transition")
 					this.isSticky = false
 					header.classList.remove("transition-header")
 				}	
@@ -139,6 +137,7 @@ export default {
 		flex: 0 0 30px;
 		align-items: center;
 		text-align: right;
+		color: grey;
 		padding-right: 10px;
 	}
 	

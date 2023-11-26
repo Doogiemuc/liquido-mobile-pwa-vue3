@@ -1,8 +1,12 @@
 <template>
 	<div>
-		<h2 class="page-title">
-			{{ pageTitleLoc }}
-		</h2>
+		<div class="d-flex justify-content-between align-items-center">
+			<div>&nbsp;</div>
+			<h2 class="page-title flex-grow-1">
+				{{ pageTitleLoc }}
+			</h2>
+			<i class="fas fa-search text-secondary" @click="toggleSearch" />
+		</div>
 
 		<div v-if="loading" class="my-3">
 			<b-spinner small />&nbsp;{{ $t('Loading') }}
@@ -11,8 +15,7 @@
 		<!-- Search -->
 		<div v-if="showSearch" id="searchWrapper" class="search-wrapper">
 			<input id="searchInput" class="form-control border-0" v-model="searchQuery" type="text" :placeholder="$t('Search')">
-			<i v-if="searchQuery == ''" class="fas fa-search search-icon"></i>
-			<i v-else class="fas fa-times search-icon" @click="clearSearchAndFilter"></i>
+			<i v-if="searchQuery !== ''" class="fas fa-times search-icon" @click="clearSearchAndFilter"></i>
 		</div>
 
 		<!-- list of polls -->
@@ -238,10 +241,6 @@ export default {
 		// When one or all polls change, the reflect the changes in the UI.
 		EventBus.on(EventBus.Event.POLL_LOADED, () => this.pollsChanged())
 		EventBus.on(EventBus.Event.POLLS_LOADED, () => this.pollsChanged())  // event param "polls" is not used here
-		EventBus.on(EventBus.Event.CLICK_SEARCH, () => {
-			this.showSearch = !this.showSearch
-			this.$root.scrollToTop()
-		})
 
 		this.loading = false
 		//We don't need to load polls here. They were already loaded at login.		
@@ -262,6 +261,10 @@ export default {
 	},
 	
 	methods: {
+
+		toggleSearch() {
+			this.showSearch = !this.showSearch
+		},
 
 		iconForPoll(poll) {
 			if (!poll) return undefined

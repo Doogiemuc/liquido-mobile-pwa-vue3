@@ -1,6 +1,6 @@
 <template>
 	<b-card :id="law.id" no-body class="law-panel" :class="{'collapse-law-panel' : collapsed}">
-		<div class="d-flex">
+		<div class="d-flex align-items-center">
 			<div class="law-image">
 				<i class="fas fa-fw" :class="'fa-' + law.icon" />
 			</div>
@@ -32,7 +32,7 @@
 
 <script>
 
-// Law-panel is only used when single laws need to be shown in in cast-vote view! 
+// Law-panel is only used in cast-vote.vue when single proposals are shown.
 // All other views use poll-panel!
 
 import dayjs from "dayjs"
@@ -95,7 +95,7 @@ $proposal_img_size: 32px;
 	padding: 10px;
 	transition: height 0.5s;
 	&.collapse-law-panel {
-		height: 18px + $proposal_img_size;
+		height: 25px + $proposal_img_size;
 	}
 	.law-title {
 		margin-bottom: 0px;

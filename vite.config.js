@@ -11,8 +11,7 @@ export default defineConfig({
 		host: "0.0.0.0",  				// listen on localhost(127.0.0.1) and any local IP (192.168.*.*)
 		port: 3001,
 		
-
-		/*
+		/* 
 		// Problems with CORS? Vue Dev serve can proxy API requests for your: https://cli.vuejs.org/config/#devserver-proxy
 		//https://github.com/http-party/node-http-proxy#options=
 		proxy: {      							

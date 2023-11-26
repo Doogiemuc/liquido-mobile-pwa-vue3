@@ -3,9 +3,14 @@
 		:id="pollCardId"
 		:pollid="poll.id"
 		:data-poll-status="poll.status"
-		:title="poll.title"
 		class="poll-panel border-0 shadow-sm" 
 	>
+		<template #header>
+			<h4 class="poll-title">
+				<i class="fas fa-poll" />
+				&nbsp;{{ poll ? poll.title : "" }}
+			</h4>
+		</template>
 		<div v-if="!poll.proposals || poll.proposals.length === 0" class="card-body">
 			<p class="text-secondary">
 				<small>{{ $t("noProposalsInPollYet") }}</small>
@@ -167,23 +172,16 @@ $proposal_img_size: 32px;
 .poll-panel {
 
 	.card-header {   
-		position: relative;
-		//border-bottom: none;
-		//margin: 0;
-		//padding: 1em 10px;
-	}
-	
-	.card-title {
-		font-size: 1rem !important;      // Need more space for longer poll titles
-		font-weight: bold;
-		//white-space: nowrap;
-		//overflow: hidden;
-		//text-overflow: ellipsis;
-		margin-bottom: 0;
-		padding-bottom: 15px;
-		border-bottom: 1px solid lightgray;
+		background-color: white;
+		border-bottom-color: lightgray;
+		margin: 0;
 	}
 
+	.poll-title {
+		margin: 0;
+		font-weight: bold;
+	}
+	
 	.poll-title-icon {
 		width: $proposal_img_size -3;
 		text-align: center;
@@ -218,11 +216,10 @@ $proposal_img_size: 32px;
 
 	// list of proposals in poll
 	.proposal-list-group-item {
-		height: 	160px;           			 // exactly 3 lines of description. MUST set height for transtion!
+		height: 	160px;           			// exactly 3 lines of description. MUST set height for collapse transition!
 		overflow: hidden;
 		padding: 15px 0 15px 0;
 		transition: height 0.5s;
-		//border: none;
 
 		&.collapsed-proposal-panel {
 			height: 55px;    							// just right enough to NOT see the description.

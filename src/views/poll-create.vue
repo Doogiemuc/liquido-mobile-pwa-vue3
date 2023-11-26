@@ -41,7 +41,7 @@
 import config from "config"
 import liquidoInput from "../components/liquido-input"
 import api from "@/services/liquido-graphql-client"
-const log = require("loglevel")
+import log from "loglevel"
 
 export default {
 	i18n: {

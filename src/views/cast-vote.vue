@@ -5,7 +5,7 @@
 			&nbsp;{{ $t("castVoteTitle") }}
 		</h2>
 
-		<b-card no-body class="ballot-card mb-5">
+		<b-card class="ballot-card mb-5">
 			<template #header>
 				<h4 class="poll-title">
 					<i class="fas fa-poll" />
@@ -26,14 +26,15 @@
 				:animation="500"
 				:can-scroll-x="false"
 			>
-				<template #item="{element}">
-					<law-panel
-						ref="proposalsInBallot"
-						:law="element"
-						:read-only="true"
-						:collapse="true"
-					/>
-				</template>
+				
+				<law-panel
+					v-for="proposal in proposalsInBallot"
+					:law="proposal"
+					:key="proposal.id"
+					:read-only="true"
+					:collapse="true"
+				/>
+			
 			</draggable>
 		</b-card>
 
@@ -92,20 +93,21 @@
 			<p v-html="$t('castVoteInfo')"></p>
 		</div>
 
-		<div class="text-muted cursor-pointer mt-5" @click="gotoPolls">
-			<i class="fas fa-angle-left"></i> {{ $t('backToPolls') }}
-		</div>
+		<b-button @click="goBack()">
+			<i class="fas fa-angle-left" />
+		</b-button>
+
 	</div>
 </template>
 
 <script>
 import config from "config"
-import lawPanel from "@/components/law-panel"
-import popupModal from "@/components/popup-modal"
-import api from "@/services/liquido-graphql-client"
-import draggable from "vuedraggable"  // next
+import lawPanel from "@/components/law-panel.vue"
+import popupModal from "@/components/popup-modal.vue"
+import api from "@/services/liquido-graphql-client.js"
+import { VueDraggableNext } from 'vue-draggable-next'
 import _ from "lodash"  // for cloneDeep
-const log = require("loglevel")
+import log from "loglevel"
 
 export default {
 	i18n: {
@@ -138,7 +140,7 @@ export default {
 			},
 		},
 	},
-	components: { lawPanel, draggable, popupModal },
+	components: { lawPanel, draggable: VueDraggableNext, popupModal },
 	props: {
 		// the cast-vote page only receives the pollId and reloads the poll from the backend
 		pollId: { type: String, required: true },
@@ -336,8 +338,8 @@ export default {
 			})
 		},
 
-		gotoPolls() {
-			this.$router.push({name: "polls"})
+		goBack() {
+			this.$router.go(-1)
 		}
 
 	},
@@ -345,15 +347,24 @@ export default {
 </script>
 
 <style lang="scss">
-#app .page-title {
-	margin-top: 1rem;
-	margin-bottom: 1rem;
+.card-header {   
+	background-color: white;
+	border-bottom-color: lightgray;
+	margin: 0;
 }
 
+.poll-title {
+	margin: 0;
+	font-weight: bold;
+}
+
+
+/*
 .ballot-card {
 	.card-header {
 		padding: 0.5rem;
 		background-color: $header-bg;
+
 		.poll-title {
 			margin: 0;
 			font-size: 14px;
@@ -364,29 +375,16 @@ export default {
 		}
 	}
 }
+*/
 
 .draggable {
-	background-color: $input-bg;
-	padding: 1rem;
+	//background-color: $input-bg;
+	//padding: 1rem;
 
 	.law-panel:not(:last-child) {
-		margin-bottom: 0.5rem;  // need some space between proposals to make it easier to drag & sort them
+		margin-bottom: 1rem;
 		cursor: grab;
 	}
-
-/*
-	.law-panel.simulate-drag {
-		z-index: 999;  // above second proposal
-		transition: all 1s;
-		animation: slide-down 0.5s ease 1s 2 alternate;
-	}
-
-	@keyframes slide-down {
-		to {
-			transform: translate(0px, 4em);
-		}
-	}
-*/
 
 	.sortable-ghost {
 		opacity: 0.1;
@@ -400,28 +398,9 @@ export default {
 	
 }
 
-.collapse-icon {
-	position: absolute;
-	bottom: 0;
-	right: 3px;
-	opacity: 0.5;
-	}
-
-.collapse-icon .fa:before {
-	content: "\f139";
-}
-
-.collapse-icon.collapsed .fa:before {
-	content: "\f13a";
-}
-
 #verifyBallotButton {
 	font-family: monospace;
 	margin: 0 auto;
-}
-
-.cursor-pointer {
-	cursor: pointer;
 }
 
 

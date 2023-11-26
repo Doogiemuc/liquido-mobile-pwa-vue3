@@ -125,7 +125,7 @@
 import config from "config"
 import liquidoInput from "@/components/liquido-input"
 import api from "@/services/liquido-graphql-client"
-const log = require("loglevel")
+import log from "loglevel"
 
 const eMailRegEx = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,64}$/
 
