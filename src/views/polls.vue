@@ -336,7 +336,7 @@ export default {
 
 		// VUE Stagering List transition
 		// https://vuejs.org/guide/built-ins/transition-group.html#staggering-list-transitions
-
+/*
 		onBeforeEnter(el) {
       el.style.opacity = 0
       el.style.height = 0
@@ -357,7 +357,7 @@ export default {
         onComplete: done
       })
     }
-
+*/
 
 
 	},
@@ -368,6 +368,7 @@ export default {
 
 .poll-card {
 	margin-bottom: 10px;
+	//TODO: transition: all 1s;
 }
 
 .poll-panel-inner {
@@ -378,7 +379,6 @@ export default {
 
 	.poll-icon-col {
 		flex: 0 0 50px;  // do not grow or shrink, fixed width
-		//flex-grow: 0;
 	}
 	.poll-col-2 {  // Poll title and sub-title
 		flex-grow: 1;
@@ -455,10 +455,6 @@ export default {
 #poll-list {
 	display: grid;
 	grid-template-rows: 1fr 1fr 1fr 1fr;
-}
-
-.poll-card {
-	transition: all 2s;
 }
 
 /* Vue list transitions */

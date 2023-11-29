@@ -8,13 +8,19 @@ This is a HTML5 based mobile application. A PWA - progressive web application.
 
 ## Layout / Design / UI / UX
 
-No more fixed title at the top. Only the title of the page. Black on white.
+### Header
+
+Older version: No more fixed title at the top. Only the title of the page. Black on white.
+
+Current idea: LIQUIDO header. Now with animated switch to show page title when user scrolls up
 
 Mobile menu bar at the bottom:
- * Home / Team 
+ * Home / Team (or simply back?)
  * Polls
- * Search (?)
+ * Search (where to put it?)
  * Settings / About / UserProfile
+
+Is there enough horizontal space on small displays? Or have a burger menu at the top right?
 
 Poll Detail page:
  * No menu bar at the bottom
@@ -54,10 +60,9 @@ TODO: do i need vue-bootstrap
 
 TODOs
 
- * Load Bootstrap locally
- * Load Fontawesome locally
- * Mock backend or start it locally
- * ...
+  * Mock backend or start it locally
+  * Vue List transition for list if polls
+  * 
 
 
 

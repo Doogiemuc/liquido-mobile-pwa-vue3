@@ -15,7 +15,7 @@
 			</div>
 		</div>
 		<div class="header-right">
-			&nbsp;
+			<i class="fas fa-bars menu-icon" />
 		</div>
 	</header>
 </template>
@@ -30,7 +30,7 @@ export default {
 		return {
 			title: undefined,
 			backLink: undefined,
-			
+			showMenu: false,
 			isSticky: false
 		}
 	},
@@ -64,8 +64,8 @@ export default {
 			EventBus.emit(EventBus.Event.CLICK_HEADER_CENTER)
 		},
 
-		clickSearch() {
-			EventBus.emit(EventBus.Event.CLICK_SEARCH)
+		toggleMenu() {
+			this.showMenu = !this.showMenu
 		}
 
 	}
@@ -128,7 +128,7 @@ export default {
 			transition: top 0.5s;
 			h2 { 
 				margin: 0;
-				font-size: 1rem; 
+				//font-size: 1rem; 
 			}
 		}
 	}
@@ -137,7 +137,7 @@ export default {
 		flex: 0 0 30px;
 		align-items: center;
 		text-align: right;
-		color: grey;
+		color: $primary;
 		padding-right: 10px;
 	}
 	
