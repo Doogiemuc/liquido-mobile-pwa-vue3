@@ -11,16 +11,15 @@
 			</button>
 		</div>
 
-		<h3>WebAuthn</h3>
+		<!-- h3>WebAuthn</h3>
 		<div v-if="showDevLogin" class="d-flex justify-content-between mb-3">
 			<button type="button" class="btn btn-primary" @click="registerWebauthn">
-				Register
+				Register {{ adminEmail }}
 			</button>
 			<button type="button" class="btn btn-primary" @click="loginWebauthn">
 				Login
 			</button>
-		</div>
-
+		</div -->
 
 		<!-- Login via SMS -->
 
@@ -124,7 +123,7 @@
 import config from "config"
 import liquidoInput from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
-import WebAuthn from "@/services/quarkus-webauthn.js"
+// import WebAuthn from "@/services/quarkus-webauthn.js"
 
 const REQUEST_THROTTLE_SECS = 10
 
@@ -199,6 +198,9 @@ export default {
 		requestTokenButtonDisabled() {
 			return this.mobilephoneInputState !== true || this.waitUntilNextRequestSecs > 0
 		},
+		adminEmail() {
+			return config.devLogin.admin.email
+		}
 	},
 	watch: {
 		/** UX: When auth token format is valid, then immideately try to login with it. No extra "login" button step. */
@@ -209,12 +211,14 @@ export default {
 		}
 	},
 	created() {
+		/*
 		console.debug("Initializing WebAuthn: " + config.LIQUIDO_API_URL + "/q/webauthn")
 		this.webauthn = new WebAuthn({
 			callbackPath: config.LIQUIDO_API_URL + '/q/webauthn/callback',
       registerPath: config.LIQUIDO_API_URL + '/q/webauthn/register',
       loginPath:    config.LIQUIDO_API_URL + '/q/webauthn/login'
 		})
+		*/
 	},
 	mounted() {
 		this.$root.scrollToTop()
@@ -224,7 +228,7 @@ export default {
 			this.loginWithEMailToken()
 		}
 
-		//TODO: When user is already logged in (JWT from local storage), THEN show a message. (User can jump to his team.)
+	//TODO: When user is already logged in (JWT from local storage), THEN show a "welcome back" message. User can jump to his team.
 	},
 	methods: {
 		/** Quickly login as an admin user. This is available as a button in the mobile UI when in DEV env.  */
@@ -238,26 +242,29 @@ export default {
 		/** Quickly login as a team member. This is available as a button in the mobile UI when in DEV env.  */
 		devLoginMember() {
 			api.logout()
-			api.devLogin(config.devLogin.member.email, config.devLogin.teamName, config.devLogin.token).then(() => {
-				this.$router.push({name: "polls"})
-			}).catch(err => console.error("DevLogin Member failed!", err))
+			api.devLogin(config.devLogin.member.email, config.devLogin.teamName, config.devLogin.token)
+				.then(() => {
+					this.$router.push({name: "polls"})
+				})
+				.catch(err => console.error("DevLogin Member failed!", err))
 		},
 
 		// =============== WebAuthn FaceID ==================
-
+		/*
 		registerWebauthn() {
-			console.log("webauthn.register: " + config.devLogin.member.email)
+			console.log("webauthn.register: " + config.devLogin.admin.email)
 			this.webauthn.register({
-				name: config.devLogin.member.email,
-				displayName: config.devLogin.member.name
+				name: config.devLogin.admin.email,
+				displayName: config.devLogin.admin.name
 			})
 			.then(body => {
-				console.log("WEBAUTHN: registered ", body)
+				console.log("WebAuthn: registered successfully", body)
 			})
 			.catch(err => {
-				console.error("Registration failed", err)
+				console.error("WebAuthn Rregistration failed"+JSON.stringify(err))
 			})
 		},
+		*/
 
 
 		// =============== login via Twillio (SMS) authToken ==================
