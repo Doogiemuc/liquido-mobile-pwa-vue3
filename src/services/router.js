@@ -144,7 +144,7 @@ const IS_ANONYMOUS = -99
 async function tryToAuthenticate() {
 	if (api.isAuthenticated()) return Promise.resolve(IS_ALREADY_AUTHENTICATED);  // although JWT could be expired, but this way we save one backend call
 	let jwt = localStorage.getItem(api.LIQUIDO_JWT_KEY);
-	log.debug("tryToAuthenticate jwt: ", jwt)
+	//log.debug("tryToAuthenticate jwt: ", jwt)
 	if (jwt) {
 		log.debug("Attempting to login with JWT from localStorage ...")
 		return api.loginWithJwt(jwt)

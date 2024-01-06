@@ -34,7 +34,7 @@ if (!config || !config.LIQUIDO_API_URL) {
 	console.error("liquido-graphql-client: ERROR I have no config!")
 } else {
 	if (process.env.NODE_ENV === "development") {
-		console.debug("liquido-graphql-client => " + config.LIQUIDO_API_URL)
+		console.log("liquido-graphql-client => " + config.LIQUIDO_API_URL)
 	}
 }
 

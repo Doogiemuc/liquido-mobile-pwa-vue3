@@ -84,7 +84,7 @@ export default {
 			lineBreak: true,
 
 			// maximum length of a log message before it will be truncated
-			maxMessageLen: 200,
+			maxMessageLen: 1000,
 
 			// show every second line with an alternate color. (see getRowClass)
 			alternatingRows: true,

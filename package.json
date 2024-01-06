@@ -43,6 +43,7 @@
     "sass": "^1.69.5",
     "start-server-and-test": "^2.0.1",
     "vite": "^4.4.11",
+    "vite-plugin-mkcert": "^1.17.1",
     "vitest": "^0.34.6"
   }
 }

@@ -5,7 +5,7 @@ import commonConfig from "./config.common.js"
 
 let devConfig = {
 	configSource: "development",
-	LIQUIDO_API_URL: "https://localhost:8443",
+	LIQUIDO_API_URL: "https://localhost:8443",   //TODO: FIXME: Do I need to change this to a hostname for WebAuthn?  192.168.7.67  does NOT work!
 	voterTokenSecret: "devVoterTokenSecret",
 
 	devLogin: {

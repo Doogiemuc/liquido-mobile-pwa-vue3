@@ -4,9 +4,15 @@ LIQUIDO - A modern aproach to liquid democracy.
 
 This is a HTML5 based mobile application. A PWA - progressive web application.
 
+## TODOs
+
+ - Test on real devices, eg. with https://www.browserstack.com/
+ - 
 
 
-## Layout / Design / UI / UX
+
+
+## Layout, Design, UX/UI
 
 ### Header
 
@@ -78,5 +84,5 @@ TODOs
  ## MongoDB Atlas & GraphQL
 
 Very nice howto
- https://www.mongodb.com/developer/products/realm/graphql-easy/
+https://www.mongodb.com/developer/products/realm/graphql-easy/
 
