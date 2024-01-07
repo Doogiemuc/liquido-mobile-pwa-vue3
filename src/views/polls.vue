@@ -20,34 +20,37 @@
 
 		<!-- list of polls -->
 		<div v-if="!loading" id="poll-list-wrapper" class="mb-5">
+
 			<transition-group name="poll-list" id="poll-list" tag="div">
-					<b-card v-for="poll in filteredPolls" :key="poll.id" class="border-0 poll-card" @click="goToPoll(poll.id)">
-						<b-row class="poll-panel-inner align-items-center">
-							<b-col class="poll-icon-col">
-								<div class="poll-icon"><i :class="iconForPoll(poll)"></i></div>
-							</b-col>
-							<b-col class="poll-col-2">
-								<h3 class="poll-title">
-									{{ poll.title }}
-								</h3>
-								<div class="poll-footer">
-									<div v-if="poll.status === 'VOTING'">
-										<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
-										<i class="far fa-calendar-alt"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}
-									</div>
-									<div v-else-if="poll.status === 'FINISHED'">
-										<i class="far fa-check-circle"></i>&nbsp;{{ $t('finished') }}
-									</div>
-									<div v-else>
-										<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
-									</div>
+
+				<b-card v-for="poll in filteredPolls" :key="poll.id" class="border-0 poll-card" @click="goToPoll(poll.id)">
+					<div class="d-flex flex-nowrap align-items-center">
+						<div class="flex-grow-0">
+							<div class="poll-icon">
+								<i :class="iconForPoll(poll)" />
+							</div>
+						</div>
+						<div class="flex-grow-1">
+							<h3 class="poll-title">{{ poll.title }}</h3>
+							<div class="poll-footer">
+								<div v-if="poll.status === 'VOTING'">
+									<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
+									<i class="far fa-calendar-alt"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}
 								</div>
-							</b-col>
-							<b-col class="poll-col-3">
-								<i class="fas fa-angle-right"></i>
-							</b-col>
-						</b-row>
-					</b-card>
+								<div v-else-if="poll.status === 'FINISHED'">
+									<i class="far fa-check-circle"></i>&nbsp;{{ $t('finished') }}
+								</div>
+								<div v-else>
+									<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
+								</div>
+							</div>
+						</div>
+						<div class="flex-grow-0">
+							<i class="fas fa-angle-right"></i>
+						</div>
+					</div>
+				</b-card>
+
 			</transition-group>
 
 			<p v-if="allPolls.length === 0 && !loading" class="text-center" v-html="$t('noPollYet')" />
@@ -76,6 +79,12 @@
 			<p v-if="!hasFinishedPoll && hasPollInVoting" v-html="$t('butPollInVoting')" />
 		</div>
 	
+		<div v-if="filteredPolls.length > 3" class="text-end mt-5">
+			<b-button id="scrollToTopButton" variant="secondary" @click="$root.scrollToTop">
+				<i class="fas fa-angle-up" />
+			</b-button>
+		</div>
+
 		<div v-if="userIsAdmin" id="createPollInfo" class="alert alert-admin">
 			<p>
 				<i class="fas fa-shield-alt float-end"></i>
@@ -86,11 +95,7 @@
 			</b-button>
 		</div>
 
-		<div v-if="filteredPolls.length > 3" class="text-center">
-			<b-button id="scrollToTopButton" variant="secondary" @click="$root.scrollToTop">
-				<i class="fas fa-angle-up" />
-			</b-button>
-		</div>
+		
 
 	</div>
 </template>
@@ -364,37 +369,22 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 
 .poll-card {
 	margin-bottom: 10px;
-	//TODO: transition: all 1s;
-}
-
-.poll-panel-inner {
-	display: flex;
-	position: relative;
 	cursor: pointer;
-	overflow: hidden;
-
-	.poll-icon-col {
-		flex: 0 0 50px;  // do not grow or shrink, fixed width
-	}
-	.poll-col-2 {  // Poll title and sub-title
-		flex-grow: 1;
-		margin: 0;
-		padding: 0;
-	}
-	.poll-col-3 {
-		flex: 0 0 1em;
-		text-align: right;
-	}
+	//TODO: sorting transitions:    transition: all 1s;
 	
+	.card-body {
+		padding-left: 0;
+		padding-right: 10px;
+	}
+
 	.poll-icon {
 		color: white;
 		background-color: $icon-bg;
 		border-radius: 50%;
-		//border: 1px solid $icon-bg;
 		text-align: center;
 		font-size: 20px;
 		line-height: 31px;
@@ -404,12 +394,15 @@ export default {
 		min-height: 32px;
 		max-height: 32px;
 		height: 32px;
+
+		margin: 0 10px;
 	}
+
 	.poll-title {
 		color: $primary;
-		font-size: 1.0rem !important;
-		margin: 0 0 5px 0;
+		font-size: 1.0rem !important;   // smaller than normal H3
 	}
+
 	.poll-footer {
 		font-size: 80%;
 		color: #bbb;
@@ -417,19 +410,14 @@ export default {
 			margin-left: 10px;
 		}
 	}
-	/*
-	.show-poll-details {
-		position: absolute;
-		font-size: 1.2rem;
-		top: 50%;
-		transform: translateY(-50%);
-		color: $primary;
-		//opacity: 0.5;
-		cursor: pointer
-	}
-	*/
 }
 
+.poll-panel-inner {
+	display: flex;
+	position: relative;
+	
+	overflow: hidden;
+}
 
 .search-wrapper {
 	margin: 0px 40px 30px 40px;
@@ -454,13 +442,12 @@ export default {
 
 #poll-list {
 	display: grid;
-	grid-template-rows: 1fr 1fr 1fr 1fr;
+	//FIXME: Idea: Make all polls the same height? NO actually I don't want that. Save space, screen real estate.  grid-template-rows: 1fr 1fr 1fr 1fr;
 }
 
 /* Vue list transitions */
 .poll-list-leave-to, .poll-list-enter-from {
 	//transform: scaleY(0);
-	grid-template-rows: 0fr 0fr 0fr 0fr;
 }
 .poll-list-enter-active, .poll-list-leave-active {
 	//border: 1px solid red;
@@ -469,7 +456,7 @@ export default {
 
 
 #createPollInfo {
-	margin-top: 8rem;
+	margin-top: 5rem;
 }
 
 </style>

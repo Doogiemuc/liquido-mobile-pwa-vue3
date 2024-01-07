@@ -23,7 +23,7 @@
 
 		<!-- Login via SMS -->
 
-		<b-card class="chat-bubble input-bubble" :header="$t('LoginViaSms')">
+		<b-card class="border-0 shadow-sm mb-4" :header="$t('LoginViaSms')">
 			<p>{{ $t('LoginViaSmsInfo') }}</p>
 			<liquido-input
 				id="mobilephoneInput"
@@ -78,7 +78,7 @@
 		
 		<!-- Login via Email -->
 
-		<b-card class="chat-bubble shadow-sm input-bubble" :header="$t('LoginViaEmail')">
+		<b-card class="border-0 shadow-sm mb-4" :header="$t('LoginViaEmail')">
 			<p>{{ $t('LoginViaEmailInfo') }}</p>
 			<liquido-input
 				id="loginEmailInput"
@@ -132,7 +132,7 @@ export default {
 		messages: {
 			de: {
 				LoginViaSms: "Login per SMS",
-				LoginViaSmsInfo: "Ich kann dir ein Login-Token per SMS schicken. Mit diesem Zahlencode kannst du dich dann einloggen.",
+				LoginViaSmsInfo: "Ich schicke dir einen Zahlencode auf dein Handy. Mit diesem kannst du dich dann hier einloggen.",
 				yourMobilephone: "Deine Handynummer",
 				mobilephonePlaceholder: "+49 151 1111111",
 				mobilephoneInvalid: "Handynummer ungültig",
@@ -221,6 +221,8 @@ export default {
 		*/
 	},
 	mounted() {
+		this.$root.setHeaderBackLink(null)
+		this.$root.setHeaderTitle(this.$t('Login'))
 		this.$root.scrollToTop()
 
 		// if email and token is passed, then log in user
@@ -228,7 +230,7 @@ export default {
 			this.loginWithEMailToken()
 		}
 
-	//TODO: When user is already logged in (JWT from local storage), THEN show a "welcome back" message. User can jump to his team.
+		//TODO: When user is already logged in (JWT from local storage), THEN show a "welcome back" message. User can jump to his team.
 	},
 	methods: {
 		/** Quickly login as an admin user. This is available as a button in the mobile UI when in DEV env.  */
@@ -397,4 +399,10 @@ export default {
 }
 </script>
 
-<style></style>
+<style>
+	.card-header {   
+		background-color: white !important;
+		margin: 0;
+		font-weight: bold;
+	}
+</style>

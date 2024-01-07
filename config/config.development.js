@@ -5,7 +5,10 @@ import commonConfig from "./config.common.js"
 
 let devConfig = {
 	configSource: "development",
-	LIQUIDO_API_URL: "https://localhost:8443",   //TODO: FIXME: Do I need to change this to a hostname for WebAuthn?  192.168.7.67  does NOT work!
+	// URL of liquido backend.
+	// - localhost does not work on real mobile phone !
+	// - HTTPS only does not work for WebAuthN !
+	LIQUIDO_API_URL: "https://192.168.7.67:8443",   //TODO: Do I need to change this to a hostname for WebAuthn?  192.168.7.67  does NOT work!
 	voterTokenSecret: "devVoterTokenSecret",
 
 	devLogin: {

@@ -154,7 +154,7 @@ export default {
 			})
 
 			// This has some consequences ... be carefull
-			//this.$refs["mobileLogViewRef"].redefineConsoleMethods()
+			this.$refs["mobileLogViewRef"].redefineConsoleMethods()
 			//Check: does this also work?  mobileLogViewer.redefineConsoleMethods();
 	},
 	methods: {

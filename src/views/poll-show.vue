@@ -33,26 +33,22 @@
 
 		
 
-		<!-- Action buttons -->
-		<div class="d-flex justify-content-between align-items-center my-5">
+		<!-- Action button -->
+		<div class="d-flex justify-content-end my-5">
 		
-			<b-button @click="goToPolls()">
-				<i class="fas fa-angle-left" />
-			</b-button>
-
-			<b-button v-if="poll.status === 'VOTING' && !poll.usersBallot" id="goToCastVoteButton" variant="primary" class="float-end" @click="clickCastVote()">
+			<b-button v-if="poll.status === 'VOTING' && !poll.usersBallot" id="goToCastVoteButton" variant="primary" @click="clickCastVote()">
 				<i class="fas fa-person-booth" />
 				{{ $t("goToCastVote") }}
 				<i class="fas fa-angle-double-right" />
 			</b-button>
 
-			<b-button v-else-if="poll.status === 'VOTING' && poll.usersBallot" variant="primary" class="float-end" @click="clickCastVote()">
+			<b-button v-else-if="poll.status === 'VOTING' && poll.usersBallot" variant="primary" @click="clickCastVote()">
 				<i class="fas fa-person-booth" />
 				{{ $t("editOwnVote") }}
 				<i class="fas fa-angle-double-right" />
 			</b-button>
 	
-			<b-button v-else-if="showAddProposal" id="addProposalButton" variant="primary" class="float-end" @click="clickAddProposal()">
+			<b-button v-else-if="showAddProposal" id="addProposalButton" variant="primary" @click="clickAddProposal()">
 				{{ $t("addProposal") }}
 				<i class="fas fa-angle-double-right" />
 			</b-button>

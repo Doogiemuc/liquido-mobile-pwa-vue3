@@ -15,7 +15,7 @@
 			</div>
 		</div>
 		<div class="header-right">
-			<i class="fas fa-bars menu-icon" />
+			<!-- i class="fas fa-bars menu-icon" / -->
 		</div>
 	</header>
 </template>

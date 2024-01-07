@@ -666,8 +666,8 @@ export default {
 
 .login-link {
 	z-index: 999;
-	position: absolute;
-	bottom: 3rem;
+	position: fixed;
+	bottom: 2rem;
 	right: 10px;	
 	a {
 		padding: 1rem 0 1rem 1rem;

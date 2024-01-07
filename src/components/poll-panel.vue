@@ -173,7 +173,6 @@ $proposal_img_size: 32px;
 
 	.card-header {   
 		background-color: white;
-		border-bottom-color: lightgray;
 		margin: 0;
 	}
 
