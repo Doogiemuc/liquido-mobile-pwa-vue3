@@ -23,6 +23,12 @@
 <script>
 import EventBus from "@/services/event-bus.js"
 
+/** 
+ * After this many pixels the header title will scroll.
+ * This should roughly equal to the empty padding+margin above the title font.
+ */
+const scrollAfterPx = 50
+
 export default {
 	name: "LiquidoHeader",
 	
@@ -41,14 +47,20 @@ export default {
 
 	methods: {
 
+		/**
+		 * When the main "app" is scrolled upwards for more then a given amount of pixels
+		 * Then the "LIQUIDO" title will be replaced with the {{title}} of the page.
+		 * The {{title}} will scroll into view from the bottom.
+		 * (But all that only if the title is actually set.)
+		 */
 		stickyHeader() {
 			let header = document.getElementById("liquidoHeader")
 			if (header != null && this.title != undefined) {
 				let app = document.getElementById("app")
-				if (this.isSticky === false && app.scrollTop > 20) {
+				if (this.isSticky === false && app.scrollTop > scrollAfterPx) {
 					this.isSticky = true
 					header.classList.add("transition-header")
-				} else if (this.isSticky === true && app.scrollTop < 20) {
+				} else if (this.isSticky === true && app.scrollTop < scrollAfterPx) {
 					this.isSticky = false
 					header.classList.remove("transition-header")
 				}	

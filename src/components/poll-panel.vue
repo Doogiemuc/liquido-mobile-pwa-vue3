@@ -7,8 +7,8 @@
 	>
 		<template #header>
 			<h4 class="poll-title">
-				<i class="fas fa-poll" />
-				&nbsp;{{ poll ? poll.title : "" }}
+				<!-- i class="fas fa-poll" /-->
+				{{ poll ? poll.title : "" }}
 			</h4>
 		</template>
 		<div v-if="!poll.proposals || poll.proposals.length === 0" class="card-body">
@@ -17,16 +17,14 @@
 			</p>
 		</div>
 		<b-list-group v-else flush>
-			<b-list-group-item v-for="prop in poll.proposals" :key="prop.id" class="proposal-list-group-item" :class="proposalListGroupItemClasses(prop.id)">
+			<b-list-group-item v-for="prop in sortedProposals" :key="prop.id" class="proposal-list-group-item" :class="proposalListGroupItemClasses(prop.id)">
 				<div class="proposal-header d-flex align-items-center">
 					<div class="proposal-image">
 						<i class="fas fa-fw" :class="'fa-' + prop.icon" />
 					</div>
-					<div class="proposal-header-text d-flex flex-column text-truncate">
-						<h4 class="proposal-title">
-							{{ prop.title }}
-						</h4>
-					</div>
+					<h4 class="proposal-title">
+						{{ prop.title }}
+					</h4>
 				</div>
 				<div class="proposal-description" v-html="prop.description"></div>
 				<div class="proposal-subtitle">
@@ -111,6 +109,11 @@ export default {
 			if (this.poll.status === "FINISHED") return this.$t("finishedPoll")
 			return this.$t("Poll")
 		},
+		/** 
+		 * Proposals are sorted by their creation date.
+		 * This is important: For example the order should not change when a user likes a proposal
+		 * and the poll is then reloaded from the backend.
+		 */
 		sortedProposals() {
 			if (!this.poll || !this.poll.proposals) return []
 			return this.poll.proposals.toSorted((p1,p2) => p1.createdAt.localeCompare(p2.createdAt))
@@ -173,7 +176,12 @@ $proposal_img_size: 32px;
 
 	.card-header {   
 		background-color: white;
-		margin: 0;
+		padding: 10px 0;
+		text-align: center;
+	}
+
+	.card-body {
+		padding-top: 0;  // proposal-list-group-item  handles vertical padding
 	}
 
 	.poll-title {
@@ -182,8 +190,7 @@ $proposal_img_size: 32px;
 	}
 	
 	.poll-title-icon {
-		width: $proposal_img_size -3;
-		text-align: center;
+		font-size: $proposal_img_size;
 	} 
 
 	.goto-poll-icon {
@@ -207,11 +214,6 @@ $proposal_img_size: 32px;
 		content: "\f107";
 	}
 
-	/*
-	.list-group {
-		margin-bottom: 1rem;  						// There already is enough space for collapse icon
-	}
-	*/
 
 	// list of proposals in poll
 	.proposal-list-group-item {
@@ -219,6 +221,7 @@ $proposal_img_size: 32px;
 		overflow: hidden;
 		padding: 15px 0 15px 0;
 		transition: height 0.5s;
+		border: none;
 
 		&.collapsed-proposal-panel {
 			height: 55px;    							// just right enough to NOT see the description.
@@ -232,7 +235,7 @@ $proposal_img_size: 32px;
 
 		.proposal-title {
 			font-size: 1rem !important;   // a bit smaller for longer titles
-			margin: 0;
+			margin: 0 0 0 10px;
 			padding: 0;
 			white-space: nowrap;
 			overflow: hidden;
@@ -249,27 +252,30 @@ $proposal_img_size: 32px;
 		.proposal-subtitle {
 			font-size: 0.8rem;
 			color: #bbb;
-			margin-top: 10px;
+			margin-top: 8px;
 
 			.like-button {
-				//font-size: 1rem;
+				cursor: pointer;
 				display: inline;
 				padding: 1px 2px;
+				border-radius: 5px;
+			}
+			.own-proposal {
+				color: green;
 			}
 			.can-like {
 				cursor: pointer;
 				border: 1px solid #bbb;
-				border-radius: 5px;
 				&:hover	{
-					color: green !important;
-					border-color: green !important;
+					color: $primary !important;
+					border-color: $primary !important;
 				}
 			}
 			.liked {
-				border: 1px solid $header-bg;
-				border-radius: 5px;
-				background-color: $header-bg;
+				border: 1px solid #bbb;
+				background-color: #bbb;
 				color: white;
+				cursor: default;
 			}
 			.created-date {
 				display: inline;
@@ -279,18 +285,14 @@ $proposal_img_size: 32px;
 				display: inline;
 				margin-left: 1em;
 			}
-			/*
-			&.own-proposal {
-				color: green;
-			}
-			*/
+			
 		}
 
 		.proposal-image {
 			color: white;
 			background-color: $header-bg;
 			border-radius: 50%;
-			border: 1px solid lightgray;
+			border: none;
 			text-align: center;
 			//font-size: 1.2em;
 			line-height: $proposal_img_size;
@@ -300,7 +302,6 @@ $proposal_img_size: 32px;
 			min-height: $proposal_img_size;
 			max-height: $proposal_img_size;
 			height: $proposal_img_size;
-			margin-right: 6px;
 		}
 
 		
@@ -310,10 +311,11 @@ $proposal_img_size: 32px;
 	// sepearator between proposals when poll-panel is expanded
 	//.proposal-list-group-item:not(:last-child):not(.collapsed-proposal-panel)
 	.proposal-separator {
-			transition: all 0.5s;		
-			border-top: 1px solid lightgrey;//  rgba(128,128,128, 0.5);
-			margin: 1rem 0;
-		}
+		//transition: all 0.5s;		
+		border-top: 1px solid red; //lightgrey;//  rgba(128,128,128, 0.5);
+		width: 50%;
+		margin: 1rem 0;
+	}
 
 	.winner {
 		background-color: $header-bg;
