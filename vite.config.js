@@ -8,7 +8,7 @@ import path from "path"
 // https://vitejs.dev/config/
 export default defineConfig({
 	server: {
-		https: true,					    // serve frontend over HTTPS (only!)
+		https: false,					    // serve frontend over HTTPS (only!)
 		host: "0.0.0.0",  				// listen on localhost(127.0.0.1) and any local IP (192.168.*.*)
 		port: 3001,
 		

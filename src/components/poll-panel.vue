@@ -181,7 +181,7 @@ $proposal_img_size: 32px;
 	}
 
 	.card-body {
-		padding-top: 0;  // proposal-list-group-item  handles vertical padding
+		padding-top: 0;  // proposal-list-group-item  handles vertical padding  => keep this. Don't touch! ..........
 	}
 
 	.poll-title {

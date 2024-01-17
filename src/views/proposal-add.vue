@@ -126,10 +126,10 @@
 //TODO: use root popup modal
 
 
-import pollPanel from "../components/poll-panel"
-import liquidoInput from "../components/liquido-input"
-import popupModal from "@/components/popup-modal"
-import api from "@/services/liquido-graphql-client"
+import pollPanel from "@/components/poll-panel.vue"
+import liquidoInput from "@/components/liquido-input.vue"
+import popupModal from "@/components/popup-modal.vue"
+import api from "@/services/liquido-graphql-client.js"
 import faSolidIconsFree from "@/styles/fontawesome-solid-icons-free.json"  // List of free fontawesome icon names
 
 export default {

@@ -1,7 +1,7 @@
 <template>
 	<div>
 		
-		<h2 class="page-title">
+		<h2 id="poll-show" class="page-title">
 			{{ this.pageTitleLoc }}
 		</h2>
 
@@ -23,7 +23,7 @@
 			<p v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" v-html="$t('pollInElaborationInfo')" />
 			<p v-if="poll.status === 'VOTING' && !poll.usersBallot" v-html="$t('votingPhaseInfo')" />
 			<p v-if="poll.status === 'VOTING' &&  poll.usersBallot" v-html="$t('alreadyVotedInfo')" />
-			<p v-if="poll.status === 'FINISHED'">
+			<p v-if="poll.status === 'FINISHED'" id="finishedPollInfo">
 					{{ $t('finishedPollInfo', {
 						winnerTitle: poll.winner ? poll.winner.title : "",
 						numBallots: poll.numBallots,

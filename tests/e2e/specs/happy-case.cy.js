@@ -89,7 +89,7 @@ context('Happy Case', () => {
 		
 		// AND there is an invite link with inviteCode
 		cy.get('#inviteLink').invoke("attr", "data-invitecode").then(inviteCode => {   // "data-invitecode" attribute in lowercase!
-			expect(inviteCode).to.have.length(config.inviteCodeLength)
+			expect(inviteCode).to.have.length(config.inviteCodeLength, "InviteCode should have length " + config.inviteCodeLength)
 			fix.inviteCode = inviteCode
 			console.log("New team inviteCode=", fix.inviteCode)
 			cy.log("InviteCode="+fix.inviteCode)
@@ -132,7 +132,7 @@ context('Happy Case', () => {
 		cy.get('#createPollButton').click()
 		//THEN newly created poll should be shown
 		cy.get('#poll-show')
-		cy.get('.poll-panel-title').should('contain.text', fix.pollTitle)
+		cy.get('.poll-title').should('contain.text', fix.pollTitle)
 		cy.get('#addProposalButton').should('be.visible')
 
 		// ============ add first proposal
@@ -145,7 +145,7 @@ context('Happy Case', () => {
 		cy.get('#proposalSuccessfullyAddedModal #modalPrimaryButton').click()
 		//THEN the poll is shown with that proposal
 		cy.get('#poll-show')
-		cy.get('.law-title').should('contain.text', fix.proposalTitle)
+		cy.get('.proposal-title').should('contain.text', fix.proposalTitle)
 
 	})
 	
@@ -207,7 +207,7 @@ context('Happy Case', () => {
 		cy.get('#gotoPollsButton').click()
 		//THEN then a poll with the created proposal from above should be found
 		cy.get('.poll-title').should('contain.text', fix.pollTitle).click()
-		cy.get('.law-title').should('contain.text', fix.proposalTitle)
+		cy.get('.proposal-title').should('contain.text', fix.proposalTitle)
 		
 		//cy.get('.poll-panel div.list-group').children('.proposal-list-group-item').should('have.length', 1)
 	})
@@ -235,7 +235,7 @@ context('Happy Case', () => {
 		
 		//THEN the poll is shown with that proposal
 		cy.get('#poll-show')
-		cy.get('.law-title').should('contain.text', fix.proposalTitle2)
+		cy.get('.proposal-title').should('contain.text', fix.proposalTitle2)
 	})
 
 	it("[User] User likes proposal", function() {
@@ -255,7 +255,7 @@ context('Happy Case', () => {
 		// https://docs.cypress.io/api/commands/contains#Selector
 
 		// THEN there are no likes yet
-		cy.contains('div.proposal-header-text', fix.proposalTitle).find('.numLikes')
+		cy.contains('.proposal-list-group-item', fix.proposalTitle).find('.numLikes')
 			.should('have.text', 0)
 
 			// WHEN clicking the like button
@@ -263,7 +263,7 @@ context('Happy Case', () => {
 
 		// THEN there should be exatly one like
 		// Bugfix. Need to fetch the element again, because VUE exchanged the DOM elememnt.
-		cy.contains('div.proposal-header-text', fix.proposalTitle).find('.numLikes')
+		cy.contains('.proposal-list-group-item', fix.proposalTitle).find('.numLikes')
 			.should('have.text', 1)
 	})
 

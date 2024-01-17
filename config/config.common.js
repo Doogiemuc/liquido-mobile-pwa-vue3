@@ -14,7 +14,7 @@ export default {
 	LIQUIDO_API_URL: "/liquido-api/v3",  		// Path to Backend API. This will be proxied by Vue devServer in dev. See vue.config.js
 	
 	usernameMinLength: 5,
-	inviteCodeLength: 6,			       				// used for validating inviteCodes in welcome-chat.vue
+	inviteCodeLength: 8,			       				// used for validating inviteCodes in welcome-chat.vue
 	pollTitleMinLength: 10,
 	avatarPath: "./img/avatars",
 	voterTokenSecret: "dummyVoterTokenSecret",  // change this for production builds !!!

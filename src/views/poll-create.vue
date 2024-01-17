@@ -39,8 +39,8 @@
 
 <script>
 import config from "config"
-import liquidoInput from "../components/liquido-input"
-import api from "@/services/liquido-graphql-client"
+import liquidoInput from "@/components/liquido-input.vue"
+import api from "@/services/liquido-graphql-client.js"
 import log from "loglevel"
 
 export default {
@@ -77,6 +77,7 @@ export default {
 		}
 	},
 	mounted() {
+		this.$root.scrollToTop()
 	},
 	methods: {
 		isPollTitleValid(val) {
