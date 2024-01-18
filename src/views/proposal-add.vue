@@ -9,10 +9,7 @@
 			<p v-html="$t('noProposalYet', {pollTitle: poll.title})" />
 		</div>
 
-		<div class="card input-bubble shadow-sm mb-3">
-			<div class="card-header">
-				{{ $t("yourProposal") }}
-			</div>
+		<div class="card input-bubble border-0 shadow-sm mb-5">
 			<div class="card-body">
 				<liquido-input
 					id="propTitle"
@@ -67,7 +64,7 @@
 					</div>
 				</div>				
 			</div>
-			<ul class="list-group list-group-flush icon-list">
+			<ul class="list-group list-group-flush icon-list mb-3">
 				<li class="list-group-item">
 					<span v-for="faIconName in filteredIconList" :key="faIconName" class="icon-in-list">
 						<i class="fas fa-fw" :class="getListIconClass(faIconName)" @click="chooseIcon(faIconName)" />
@@ -262,6 +259,8 @@ export default {
 </script>
 
 <style lang="scss">
+
+
 .invalid-feedback {
 	margin-top: 0;
 }
@@ -288,8 +287,8 @@ export default {
 	max-height: 200px;
 	overflow-y: scroll;
 	.list-group-item {
-		padding: 10px;
-		background-color: $input-bg;
+		margin: 10px;
+		//background-color: $input-bg;
 	}
 }
 .icon-in-list {
