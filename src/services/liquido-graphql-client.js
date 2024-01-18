@@ -41,14 +41,16 @@ if (!config || !config.LIQUIDO_API_URL) {
 // Configure axios HTTP REST client to point to our graphQL backend
 axios.defaults.baseURL = config.LIQUIDO_API_URL
 
-/**
- * Sophisticated logging of HTTP error messages is crucial!
+/** This will be called for HTTP resopnse status 2xx */
+let onSuccess = (response) => response
+
+/** 
+ * This will be called for any other response status
+ * First we check if there is a network error
+ * Then we check for severe errors 5xx, and log them.
+ * For all others we let the normal flow continue.
  */
- axios.interceptors.response.use(function (response) {
-	// Any status code that lies within the range of 2xx cause this function to trigger
-	return response;
-}, function (error) {
-	// Any status codes that falls outside the range of 2xx cause this function to trigger
+let onError   = (error) => {
 	if (!error.response) {
 		console.warn("Network error: no response at all")
 	} else 
@@ -59,7 +61,7 @@ axios.defaults.baseURL = config.LIQUIDO_API_URL
 	if (error.response && error.response.status >= 500) { 
 		console.error("liquido-graphql-client: Internal Server Error(500):", error) 
 	} else {
-		console.error("Unknown HTTP error", error)
+		//console.error("Unknown HTTP error", error)
 	}
 
 	// try to log some additional debug info
@@ -70,7 +72,13 @@ axios.defaults.baseURL = config.LIQUIDO_API_URL
 		console.debug(msg)
 	}
 	return Promise.reject(error);
-})
+}
+
+/**
+ * Sophisticated logging of HTTP error messages is crucial!
+ * You have no idea how often this elaborated logging here saved me!
+ */
+axios.interceptors.response.use(onSuccess, onError)
 
 /**
  * This is the central API client that calls the backend.
@@ -86,13 +94,17 @@ const graphQlQuery = function(query, variables) {
 		.then(res => {
 			if (res.data && res.data.errors && res.data.errors.length > 0) {
 				console.info("graphQlQuery() errors: ", res.data.errors)   // graphQL's way of returning errors
-				return Promise.reject(res.data.errors)  //TODO: should I return Promise.reject(res.errors) here?
+				return Promise.reject(res.data.errors)
 			}
 			return res.data // This is the axios HTTP "data". The graphQL response contains another "res.data.data" (and the "res.data.error") attribute. I know, it's confusing.
 		})  
 		.catch(err => {
-			console.error("ERROR: graphQlQuery throws: ", err)
-			return Promise.reject("error")
+			if (err && err.response && err.response.status >= 500) {
+				console.error("graphQlQuery ERROR ", err)
+			} else {
+				console.log("graphQL query returned:", err.message || err.response.message)
+			}
+			return Promise.reject(err)
 		})
 }
 
