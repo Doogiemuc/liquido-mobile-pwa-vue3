@@ -22,9 +22,9 @@
 		<div v-if="!loading" id="poll-list-wrapper" class="mb-5">
 
 			<transition-group name="poll-list" id="poll-list" tag="div">
-
-				<b-card v-for="poll in filteredPolls" :key="poll.id" class="border-0 poll-card" @click="goToPoll(poll.id)">
-					<div class="d-flex flex-nowrap align-items-center">
+				<div v-for="poll in filteredPolls" :key="poll.id" class="poll-card-wrapper">
+				<div class="poll-card card border-0" @click="goToPoll(poll.id)">
+					<div class="card-body d-flex flex-nowrap align-items-center">
 						<div class="flex-grow-0">
 							<div class="poll-icon">
 								<i :class="iconForPoll(poll)" />
@@ -49,7 +49,8 @@
 							<i class="fas fa-angle-right"></i>
 						</div>
 					</div>
-				</b-card>
+				</div>
+			</div>
 
 			</transition-group>
 
@@ -85,7 +86,7 @@
 			</b-button>
 		</div>
 
-		<div v-if="userIsAdmin" id="createPollInfo" class="alert alert-admin">
+		<div v-if="userIsAdmin" id="createPollInfo" class="alert alert-admin mt-5">
 			<p>
 				<i class="fas fa-shield-alt float-end"></i>
 				{{ $t('onlyAdminCanCreateNewPolls') }}
@@ -339,8 +340,13 @@ export default {
 			EventBus.emit(EventBus.Event.POLL_FILTER_CHANGED, undefined)
 		},
 
+		// Transition Height - is ... again ... complex
+		// https://stackoverflow.com/questions/3508605/how-can-i-transition-height-0-to-height-auto-using-css/30531678#30531678
+
+
 		// VUE Stagering List transition
 		// https://vuejs.org/guide/built-ins/transition-group.html#staggering-list-transitions
+
 /*
 		onBeforeEnter(el) {
       el.style.opacity = 0
@@ -371,10 +377,17 @@ export default {
 
 <style lang="scss">
 
-.poll-card {
+/** Need(!!!) a wrapper with a specifically set height for animating the height. */
+.poll-card-wrapper {
+	height: 6rem;
 	margin-bottom: 10px;
+	overflow: hidden;
+	transition: all 1s;
+}
+
+.poll-card {
 	cursor: pointer;
-	//TODO: sorting transitions:    transition: all 1s;
+	height: 100% !important;  // bootstrap .card sets a height that we need to overwrite
 	
 	.card-body {
 		padding-left: 0;
@@ -412,13 +425,6 @@ export default {
 	}
 }
 
-.poll-panel-inner {
-	display: flex;
-	position: relative;
-	
-	overflow: hidden;
-}
-
 .search-wrapper {
 	margin: 0px 40px 30px 40px;
 	position: relative;
@@ -436,27 +442,19 @@ export default {
 	cursor: pointer;
 }
 
-#poll-list-wrapper {
-	//transition: all 3s;
-}
-
-#poll-list {
-	display: grid;
-	//FIXME: Idea: Make all polls the same height? NO actually I don't want that. Save space, screen real estate.  grid-template-rows: 1fr 1fr 1fr 1fr;
-}
 
 /* Vue list transitions */
-.poll-list-leave-to, .poll-list-enter-from {
-	//transform: scaleY(0);
+.poll-list-leave-to,
+.poll-list-enter-from {
+	opacity: 0;
+	transform: scaleY(0);
+	height: 0;
+	margin: 0;
+	padding: 0;
 }
-.poll-list-enter-active, .poll-list-leave-active {
-	//border: 1px solid red;
-}
-
-
-
-#createPollInfo {
-	margin-top: 5rem;
+.poll-list-enter-active,
+.poll-list-leave-active {
+	//background-color: red !important;
 }
 
 </style>
