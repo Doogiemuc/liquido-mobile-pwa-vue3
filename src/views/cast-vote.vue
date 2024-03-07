@@ -104,6 +104,7 @@
 import config from "config"
 import lawPanel from "@/components/law-panel.vue"
 import popupModal from "@/components/popup-modal.vue"
+import { store } from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
 import { VueDraggableNext } from 'vue-draggable-next'
 import _ from "lodash"  // for cloneDeep
@@ -147,6 +148,7 @@ export default {
 	},
 	data() {
 		return {
+			store,
 			loading: true,
 			poll: undefined,
 			proposalsInBallot: [],
@@ -171,6 +173,8 @@ export default {
 	},
 	created() {
 		this.loading = true
+
+		this.store.setHeaderTitle($t("castVoteTitle"))
 		
 		/** 
 		 * Force refresh of the poll we want to cast a vote on. Load the from the backend.

@@ -80,7 +80,7 @@
 			<p v-if="!hasFinishedPoll && hasPollInVoting" v-html="$t('butPollInVoting')" />
 		</div>
 	
-		<div v-if="filteredPolls.length > 3" class="text-end mt-5">
+		<div v-if="false" class="text-end mt-5">
 			<b-button id="scrollToTopButton" variant="secondary" @click="$root.scrollToTop">
 				<i class="fas fa-angle-up" />
 			</b-button>
@@ -111,7 +111,8 @@
 import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
 import dayjs from "dayjs"
-import { gsap } from "gsap";
+import { store }  from "@/services/store.js"
+//import { gsap } from "gsap";
 
 const pollStatusOrder = {
 	ELABORATION: 0,
@@ -159,6 +160,7 @@ export default {
 
 	data() {
 		return {
+			store: store,
 			loading: true,
 			showSearch: false,
 			searchQuery: "",
@@ -241,8 +243,14 @@ export default {
 	created() {
 		//console.log("==== Polls component created", this.$root.pollStatusFilter)
 
+		this.store.setHeaderTitle(this.pageTitleLoc)
+		this.store.setHeaderBackLink("/team")
+
 		// When poll filter changes in navbar, then force a recompute of computed values (mainly "filteredPolls")
-		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (/*newFilterValue*/) => this.forceRefreshComputed++)
+		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (/*newFilterValue*/) => {
+			this.forceRefreshComputed++
+			this.store.setHeaderTitle(this.pageTitleLoc)
+		})
 
 		// When one or all polls change, the reflect the changes in the UI.
 		EventBus.on(EventBus.Event.POLL_LOADED, () => this.pollsChanged())
@@ -254,16 +262,7 @@ export default {
 	},
 	
 	mounted() {
-		this.$root.setHeaderBackLink(null)
-		this.$root.setHeaderTitle(this.pageTitleLoc)
-	},
-
 	
-	watch: {
-		// when page title changes, then also update it in liquido-header
-		pageTitleLoc(newTitle) {
-			this.$root.setHeaderTitle(newTitle)
-		}
 	},
 	
 	methods: {
@@ -377,7 +376,7 @@ export default {
 
 <style lang="scss">
 
-/** Need(!!!) a wrapper with a specifically set height for animating the height. */
+/** MUST SET THE height TO A FIXED VALUE, for animating it. */
 .poll-card-wrapper {
 	height: 6rem;
 	margin-bottom: 10px;

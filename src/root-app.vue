@@ -122,7 +122,7 @@ export default {
 				pollsScrollPos = app.scrollTop
 			} else 
 			if (to.name === "polls" && pollsScrollPos !== undefined) {
-				//console.log("Restoring scroll pos of " + to.name + " = " + pollsScrollPos)
+				console.log("Restoring scroll pos of " + to.name + " = " + pollsScrollPos)
 				app.scrollTop = pollsScrollPos
 			} else {
 				this.scrollToTop()
@@ -161,14 +161,6 @@ export default {
 		//
 		// These methods are available as this.$root.<method> in all vue sub components of root-app
 		//
-
-		setHeaderTitle(title) {
-			this.$refs["liquido-header"].title = title
-		},
-
-		setHeaderBackLink(backLink) {
-			this.$refs["liquido-header"].backLink = backLink
-		},
 
 		/**
 		 * INTERNAL: One step in an animation
@@ -253,7 +245,7 @@ export default {
 // Import liquido global styles
 @import "styles/liquido.scss";
 
-// FIXME: MUST set this to #appContent and not #rootApp, otherwise page jumps when slide left-right
+// MUST set this to #appContent and not #rootApp, otherwise page jumps when slide left-right
 #appContent {
 	padding-top: $header-height;  // padding so that page content can bee seen under liquido-header
 }

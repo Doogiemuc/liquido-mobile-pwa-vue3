@@ -7,6 +7,7 @@ import loginPage from "@/views/login-page.vue"
 import teamHome from "@/views/team-home.vue"
 import pollsPage from "@/views/polls.vue"
 import showPoll from "@/views/poll-show.vue"
+import { store }  from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
 import config from "config"
 import log from 'loglevel'
@@ -190,8 +191,16 @@ async function tryToAuthenticate() {
  * VUE Router next (for VUE 3)
  * https://next.router.vuejs.org/guide/advanced/navigation-guards.html#navigation-guards
  */
-router.beforeEach(async (routeTo/*, routeFrom*/) => {
+router.beforeEach(async (routeTo, routeFrom) => {
 	//log.debug("beforeEach ENTER", routeFrom.path, "=>", routeTo.path)
+	
+	// Clear header title. Page may set it later when it is mounted.
+	if (routeFrom.path !== routeTo.path) {
+		console.log("===== Router: Clear header")
+		store.setHeaderTitle(undefined)
+		store.setHeaderBackLink(undefined)
+	}
+	
 	return tryToAuthenticate().then(() => {
 		//log.debug("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
 		if (routeTo.path === "/" || routeTo.path === "/index.html") {

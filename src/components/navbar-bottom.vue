@@ -58,9 +58,9 @@ export default {
 		messages: {
 			de: {
 				team: "Team",
-				discuss: "Debatte",
+				discuss: "Debatte",      // Verben oder Nomen?   "debattieren" oder "Debatte". 
 				vote: "Abstimmung",
-				finished: "Abgeschl.",   // abgeschlossen?  final? fertig? entschieden?
+				finished: "Abgeschl.",   // abgeschlossen?  final? fertig? entschieden? Beendet?
 				info: "Info"
 			},
 			en: {
@@ -74,7 +74,7 @@ export default {
 	},
 	data() { 
 		return {
-			selectedItem: -1,         // selectedItem in navbar.  -1 - show all polls,  1 - discuss, 2 - vote, 3 - finished
+			selectedItem: -1,         // selectedItem in navbar.  -1: show all polls,  1: discuss, 2: vote, 3: finished
 			forceRefreshComputed: 0   
 		} 
 	},

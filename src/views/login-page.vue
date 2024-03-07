@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<h1 id="login-page" class="page-title">{{ $t('Login') }}</h1>
+		<h1 id="login-page" class="page-title">{{ pageTitle }}</h1>
 
 		<div v-if="showDevLogin" class="d-flex justify-content-between mb-3">
 			<button type="button" class="btn btn-primary" @click="devLoginAdmin">
@@ -123,6 +123,7 @@
 import config from "config"
 import liquidoInput from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
+import { store }  from "@/services/store.js"
 // import WebAuthn from "@/services/quarkus-webauthn.js"
 
 const REQUEST_THROTTLE_SECS = 10
@@ -170,6 +171,8 @@ export default {
 	},
 	data() {
 		return {
+			pageTitle: this.$t("Login"),
+			store,
 			// Login via email
 			emailInput: "",
 			emailInputState: null,					// synced states from liquido-inputs
@@ -211,6 +214,8 @@ export default {
 		}
 	},
 	created() {
+		this.store.setHeaderTitle(this.pageTitle)
+
 		/*
 		console.debug("Initializing WebAuthn: " + config.LIQUIDO_API_URL + "/q/webauthn")
 		this.webauthn = new WebAuthn({
@@ -221,8 +226,7 @@ export default {
 		*/
 	},
 	mounted() {
-		this.$root.setHeaderBackLink(null)
-		this.$root.setHeaderTitle(this.$t('Login'))
+
 		this.$root.scrollToTop()
 
 		// if email and token is passed, then log in user

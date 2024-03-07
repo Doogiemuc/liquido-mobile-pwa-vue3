@@ -1,7 +1,7 @@
 <template>
 	<header id="liquidoHeader">
 		<div class="header-left" @click="clickBack">
-			<a v-if="backLink" href="#">
+			<a v-if="store.headerBackLink" href="#">
 				<i class="fas fa-angle-left" />
 			</a>
 		</div>
@@ -10,8 +10,8 @@
 				<i class="fas fa-university" />&nbsp;
 				<span class="liquido" />
 			</div>
-			<div v-if="title" class="center-title">
-				<h2>{{ title }}</h2>
+			<div v-if="store.headerTitle" class="center-title">
+				<h2>{{ store.headerTitle }}</h2>
 			</div>
 		</div>
 		<div class="header-right">
@@ -22,6 +22,7 @@
 
 <script>
 import EventBus from "@/services/event-bus.js"
+import { store }  from "@/services/store.js"
 
 /** 
  * After this many pixels the header title will scroll.
@@ -34,19 +35,22 @@ export default {
 	
 	data() {
 		return {
-			title: undefined,
-			backLink: undefined,
+			store,          // the title "store" that stores the current title. 
 			showMenu: false,
 			isSticky: false
 		}
 	},
 	
 	mounted() {
+		// Add a scroll listener to dynamically fade the header text up and down when user scrolls
 		document.getElementById("app").addEventListener("scroll", this.stickyHeader)
 	},
 
-	methods: {
+	beforeUnmount() {
+		document.getElementById("app").removeEventListener("scroll")
+	},
 
+	methods: {
 		/**
 		 * When the main "app" is scrolled upwards for more then a given amount of pixels
 		 * Then the "LIQUIDO" title will be replaced with the {{title}} of the page.
@@ -54,22 +58,22 @@ export default {
 		 * (But all that only if the title is actually set.)
 		 */
 		stickyHeader() {
-			let header = document.getElementById("liquidoHeader")
-			if (header != null && this.title != undefined) {
+			let headerElem = document.getElementById("liquidoHeader")
+			if (headerElem != null && this.store.headerTitle != undefined) {
 				let app = document.getElementById("app")
 				if (this.isSticky === false && app.scrollTop > scrollAfterPx) {
 					this.isSticky = true
-					header.classList.add("transition-header")
+					headerElem.classList.add("transition-header")
 				} else if (this.isSticky === true && app.scrollTop < scrollAfterPx) {
 					this.isSticky = false
-					header.classList.remove("transition-header")
+					headerElem.classList.remove("transition-header")
 				}	
 			}		
 		},
 
 		clickBack() {
-			if (this.backLink === "BACK") this.$router.go(-1)
-			else if (this.backLink) this.$router.push(this.backLink)
+			if (this.store.headerBackLink === "BACK") this.$router.go(-1)
+			else if (this.store.headerBackLink) this.$router.push(this.store.headerBackLink)
 		},
 		
 		clickHeaderCenter() {
@@ -100,7 +104,7 @@ export default {
 	background-color: $header_bg;
 	
 	// when user scrolls, then scroll LIQUIDO claim out towards the top
-	// and  let the center-title appear from the bottom
+	// and let the center-title appear from the bottom
 	&.transition-header {
 		.liquido-claim {
 			top: -1.5rem !important;
