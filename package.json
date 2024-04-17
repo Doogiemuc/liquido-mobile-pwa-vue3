@@ -1,7 +1,6 @@
 {
   "name": "liquido",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.99.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

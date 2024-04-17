@@ -12,10 +12,9 @@ This is a mobile client for [LIQUIDO](http://www.liquido.vote). Based on the awe
 
 Now updated to VUE3 + Vite
 
-
 ## Recommended IDE Setup
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+[VSCode](https://code.visualstudio.com/) and the official [VSCode VUE Plugin ](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
 
 ## Customize configuration
 
