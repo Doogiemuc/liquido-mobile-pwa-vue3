@@ -4,7 +4,9 @@
 			{{ $t("newPoll") }}
 		</h2>
 
-		<b-card class="chat-bubble input-bubble">
+		<polly class="mb-4"></polly>
+
+		<!-- b-card class="chat-bubble input-bubble mb-4">
 			<liquido-input
 				id="pollTitleInput"
 				v-model="pollTitle"
@@ -29,10 +31,15 @@
 					<i class="fas fa-angle-double-right" />
 				</b-button>
 			</div>
-		</b-card>
+		</b-card -->
 
-		<div class="alert alert-admin my-3">
-			<div v-html="$t('createPollInfo')" />
+		<div class="alert alert-admin create-poll-info">
+			<p>{{ $t('createPollInfo1') }}</p>
+				<ol class='fa-ul'>
+					<li><span class='fa-li'><i class='fas fa-comments'></i></span> {{ $t('createPollInfo2') }} {{ $t('createPollInfo3') }}</li>
+					<li><span class='fa-li'><i class='fas fa-person-booth'></i></span> {{ $t('createPollInfo4') }}</li>
+					<li><span class='fa-li'><i class='fas fa-check-circle'></i></span> {{ $t('createPollInfo5') }}</li>
+				</ol>
 		</div>
 	</div>
 </template>
@@ -40,6 +47,7 @@
 <script>
 import config from "config"
 import liquidoInput from "@/components/liquido-input.vue"
+import polly from '@/components/polly.vue'
 import { store } from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
 import log from "loglevel"
@@ -50,12 +58,11 @@ export default {
 			en: {},
 			de: {
 				newPoll: "Neue Abstimmung anlegen",
-				createPollInfo:
-					"<p>Nur du als Admin kannst neue Abstimmungen erstellen. Abstimmung laufen durch drei Phasen:</p>"+
-					"<p>(1) Eine Abstimmung wird erst einmal diskutiert (<i class='fas fa-comments'></i>). Jeder aus deinem Team "+
-					"kann in dieser Phase seinen eigenen Wahlvorschlag (<i class='fas fa-vote-yea'></i>) hinzufügen.</p>" +
-					"<p>(2) Wenn du die Wahlphase der Abstimmung startest, kann jeder im Team seine Stimme anonym abgeben. (<i class='fas fa-person-booth'></i>)</p>" +
-					"<p>(3) Nachdem du die Wahlphase beendet hast, ist das Wahlergebnis für alle sichtbar.",
+				createPollInfo1: "Abstimmungen laufen durch drei Phasen:",
+				createPollInfo2: "Eine neue Abstimmung wird erst einmal diskutiert.",
+				createPollInfo3: "Du kannst festlegen ob Teammitglieder ihre eigenen Wahlvorschläge hinzufügen können.",
+				createPollInfo4: "Wenn du die Wahlphase der Abstimmung startest, kann jeder im Team seine Stimme anonym abgeben.",
+				createPollInfo5: "Nachdem du die Wahlphase beendet hast, ist das Wahlergebnis für alle sichtbar.",
 				pollTitle: "Titel der Abstimmung",
 				pollTitleInvalid: "Titel ist zu kurz. Bitte mind. {minLen} Zeichen.",
 				create: "Anlegen",
@@ -63,10 +70,11 @@ export default {
 		},
 	},
 	name: "CreatePollPage",
-	components: { liquidoInput },
+	components: { liquidoInput, polly },
 	data() {
 		return {
 			store,
+			poll: undefined,
 			pollTitle: "",
 		}
 	},
@@ -80,6 +88,7 @@ export default {
 	},
 	mounted() {
 		this.store.setHeaderTitle(this.$t("newPoll"))
+		this.store.setHeaderBackLink("/polls")
 		this.$root.scrollToTop()
 	},
 	methods: {
@@ -107,5 +116,8 @@ export default {
 	//margin-left: 10px;
 	color: $secondary;
 	cursor: pointer;
+}
+.create-poll-info li {
+	margin-bottom: 1rem;
 }
 </style>

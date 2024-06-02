@@ -1,14 +1,13 @@
 <script setup>
-import { createApp, ref, unref, reactive, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, unref, reactive, computed, watch, onMounted, nextTick } from 'vue'
 
 const props = defineProps({
 	poll: {
 		type: Object,
-		required: true,
+		required: false,
 		default(rawProps) {
-			console.log("got rawProops", JSON.stringify(rawProps))
 			return {  // default data for an empty new poll
-				title: "New Poll",
+				title: "",
 				status: "NEW",
 				pollType: "CHOOSE_ONE",
 				usersCanAddProposals: true,
@@ -17,13 +16,11 @@ const props = defineProps({
 				proposals: [
 					{
 						id: 1,
-						title: "",
-						supporters: []
+						title: ""
 					},
 					{
 						id: 2,
-						title: "",
-						supporters: []
+						title: ""
 					}
 				]
 			}
@@ -38,9 +35,11 @@ const props = defineProps({
 //Bug: Now poll is disconnected from the initially passed props.poll
 const poll = reactive(props.poll)
 
-//console.log("prop", JSON.stringify(props))
-//console.log("poll", JSON.stringify(poll))
 
+
+
+// ========== Types of polls
+//TODO: PollTypes
 
 const POLL_TYPE = {
 	CHOOSE_ONE: 1,  // Each voter has one vote that he can give to exactly one proposal.
@@ -52,9 +51,9 @@ const POLL_TYPE = {
 
 
 
-
-// Computed properties
-const isNew    = computed(() => poll.status == "ELABORATION")
+// ========== Computed properties
+const isNew    = computed(() => poll.status == "NEW")         // newly created poll. Not yet persisted. (This status only exists in the frontend.)
+const isInElaboration = computed(() => poll.status == "ELABORATION")    // first status after stored in DB
 const inVoting = computed(() => poll.status == "VOTING")
 const isFinished = computed(() => poll.status == "FINISHED")
 const hasVoted = computed(() => poll.proposals.some(prop =>
@@ -65,8 +64,19 @@ const sumVotes = computed(() => {
 	poll.proposals.forEach(prop => sumVotes += prop.supporters.length)
 	return sumVotes
 })
+const hasDuplicateTitles = computed(() => {
+  for (let i = 0; i < poll.proposals.length-1; i++) {
+		const prop1 = poll.proposals[i]
+		for (let j = i+1; j < poll.proposals.length; j++) {
+			const prop2 = poll.proposals[j];
+			if (prop1.title === prop2.title) return true
+		}
+	}
+	return false
+})
 const saveIsActive = computed(() => {
-	return propHasTitle(0) && propHasTitle(1) // TODO: and no duplicates
+	return propHasTitle(0) && propHasTitle(1) && 
+		poll.title !== undefined && poll.title.trim() !== "" && !hasDuplicateTitles.value
 })
 
 function propHasTitle(index) {
@@ -75,6 +85,9 @@ function propHasTitle(index) {
 	if (poll.proposals[index].title.trim() === "") return false
 	return true
 }
+
+
+// ========== METHODS
 
 /** 
  * Check if a proposal's title is a duplicate of anothe title.
@@ -193,7 +206,6 @@ function castVote(prop) {
 		prop.supporters.push(user)
 }
 
-
 </script>
 
 <template>
@@ -202,7 +214,7 @@ function castVote(prop) {
 	
 		<div class="card polly-card user-select-none">
 			<div class="card-header">
-				<input v-if="isNew" type="text" class="form-control poll-title" id="pollTitle" v-model="poll.title" placeholder="<Poll Title>">
+				<input v-if="isNew" type="text" class="form-control poll-title" id="pollTitle" v-model="poll.title" :placeholder="$t('pollTitle')">
 				<h1 v-if="inVoting" class="poll-title" id="pollTitle">{{ poll.title }}</h1>	
 			</div>
 
@@ -211,7 +223,7 @@ function castVote(prop) {
 					<li v-for="(prop, index) in poll.proposals" :key="prop.id" class="polly-proposal-wrapper d-flex">
 						<input 
 							v-model="prop.title"
-							placeholder="<Proposal>"
+							:placeholder="$t('Proposal')"
 							type="text" 
 							class="form-control flex-fill polly-proposal-input"
 							:class="{'is-invalid': isDuplicatePropTitle(index) }"
@@ -240,11 +252,10 @@ function castVote(prop) {
 			<div class="card-footer">
 				<div class="row justify-content-between">
 					<div v-if="isNew" class="col text-end">
-						<button @click="savePoll" :disabled="!saveIsActive" type="button" class="btn btn-sm btn-primary save-button">
-							<i class="far fa-floppy-disk"></i>&nbsp;&nbsp;Save
+						<button @click="savePoll" :disabled="!saveIsActive" type="button" class="btn btn-primary save-button">
+							<i class="far fa-floppy-disk"></i>&nbsp;&nbsp;{{ $t('Save') }}
 						</button>
 					</div>
-
 					<div v-if="inVoting && !hasVoted" class="col text-start text-muted">
 						Cast your vote
 					</div>
@@ -260,10 +271,6 @@ function castVote(prop) {
 				</div>
 			</div>
 		</div>
-
-		<pre>
-			{{ poll }}
-		</pre>
 
 	</div>
 
@@ -285,6 +292,7 @@ function castVote(prop) {
 	.card-footer {
 		border-top: none;
 		background-color: white;
+		padding-right: 0.5rem;  // small visual adjustment. Make save button same distance to panel border at its bottom and right
 	}
 	.proposal-list-container {
 		position: relative;
@@ -302,7 +310,8 @@ function castVote(prop) {
 		}
 	}
 
-	.polly-proposal-input::placeholder {
+	.polly-proposal-input::placeholder,
+	.poll-title::placeholder {
 		color: lightgrey;
 	}
 
@@ -368,6 +377,5 @@ function castVote(prop) {
 	background-color: #a1afff;
 	width: 0px;
 }
-
 
 </style>

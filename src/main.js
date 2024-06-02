@@ -55,7 +55,7 @@ const globalTranslations = {
 		// Singular and plural form
 		Idea: "Idee",
 		Ideas: "Ideen",
-		Proposal: "Vorschlag",
+		Proposal: "Vorschlag",  // 'Wahlvorschlag' ist zu lang. 'Option' zu allgemein. 'Kandidat' wäre für Personenwahlen. 
 		Proposals: "Vorschläge",
 		// Entscheidung zur deutschen Übersetzung von Poll == "Abstimmung" !!!
 		// Nein nicht "Wahl". Wir stimmen ab in LIQUIDO. Der Begriff "Wahl" passt eher zu einer Wahl von Kandidaten, also Personen.
@@ -68,6 +68,7 @@ const globalTranslations = {
 		newPoll: "Neue Abstimmung",
 		allPolls: "Alle Abstimmungen",
 		YourPolls: "Eure Abstimmungen",
+		pollTitle: "Titel der Abstimmung",
 		pollInElaboration: "Abstimmung zur Debatte",
 		pollsInElaboration: "Abstimmungen zur Debatte",
 		pollInVoting: "Laufende Abstimmung",

@@ -150,23 +150,26 @@ export default {
 
 		setPollFilter(newFilterValue) {
 			console.log("Navbar.setPollFilter", newFilterValue)
-			switch (newFilterValue) {
-				case "ELABORATION":
-					this.selectedItem = 1
-					break
-				case "VOTING":
-					this.selectedItem = 2
-					break
-				case "FINISHED":
-					this.selectedItem = 3
-					break
-				default:
-					newFilterValue = undefined
-					this.selectedItem = -1
-			}
-			// If we are not on the polls page already, then navigate there.
+			// If we are not on the polls page already, then reset teh filter navigate to the polls page.
 			if (this.$route && this.$route.name !== "polls") {
+				this.selectedItem = -1
+				newFilterValue = undefined
 				this.$router.push({name: "polls", params: { status: newFilterValue }})
+			} else {
+				switch (newFilterValue) {
+					case "ELABORATION":
+						this.selectedItem = 1
+						break
+					case "VOTING":
+						this.selectedItem = 2
+						break
+					case "FINISHED":
+						this.selectedItem = 3
+						break
+					default:
+						newFilterValue = undefined
+						this.selectedItem = -1
+				}
 			}
 			EventBus.emit(EventBus.Event.POLL_FILTER_CHANGED, newFilterValue)
 		},
@@ -179,9 +182,7 @@ export default {
 		},
 
 		goToInfo() {
-			if (this.selectedItem !== 0) {
-				this.selectedItem = 0
-			}
+			
 			//this.$router.push({name: "aboutPage"})
 		},
 

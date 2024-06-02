@@ -9,8 +9,6 @@
 			<b-spinner small />&nbsp;{{ $t('Loading') }}
 		</div>
 	
-		<polly v-if="poll.id" :poll="poll" class="mb-4"></polly>
-
 		<poll-panel v-if="poll.id" :poll="poll" :read-only="true" class="mb-4" />
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
