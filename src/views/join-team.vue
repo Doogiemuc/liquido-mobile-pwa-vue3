@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<div id="welcome-chat" class="mt-3">
-			<b-card id="welcomeBubble" :class="{ 'hide-left': flowState < 1 }" class="chat-bubble shadow-sm">
+		<div id="join-team-chat" class="mt-3">
+			<b-card id="joinTeamBubble" :class="{ 'hide-left': flowState < 1 }" class="chat-bubble shadow-sm">
 				<b-card-text v-html="$t('welcome')" />
 			</b-card>
 

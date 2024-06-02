@@ -34,7 +34,7 @@
 			</b-card>
 			
 			<!-- when invite code is passed as URL parameter -->
-			<b-card	:class="{ 'hide-left': flowState != FLOW.InviteCodePassed }"	class="chat-bubble shadow-sm">
+			<b-card	:class="{ 'hide-left': flowState != FLOW.InviteCodePassed }" class="chat-bubble shadow-sm">
 				<b-card-text v-html="$t('inviteCodePassed')" />
 			</b-card>
 

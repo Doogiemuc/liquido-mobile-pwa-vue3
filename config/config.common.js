@@ -10,8 +10,9 @@
 
 export default {
 	configSource: "common",
-	BASE_URL: "/",                   				// Used for loading JS libs in browser. MUST end with '/'
-	LIQUIDO_API_URL: "/liquido-api/v3",  		// Path to Backend API. This will be proxied by Vue devServer in dev. See vue.config.js
+	BASE_URL: "/",                   				   // Used for loading JS libs in browser. MUST end with '/'
+	LIQUIDO_API_URL: "http://localhost:8080",  // URI to Backend API. 
+	//CORS: You can simply but a path here, that then will be proxied by Vue devServer. See vue.config.js / vite.config.js
 	
 	usernameMinLength: 5,
 	inviteCodeLength: 8,			       				// used for validating inviteCodes in welcome-chat.vue
@@ -22,6 +23,7 @@ export default {
 
 	//TODO: implement these settings per Team! in the backend!
 	allowMembersToInvite: true,
+	//TODO: adminMustConfirmNewMembers: ...
 
 	// This is used in tests. 
 	// For testing against prod, this has to match spring's application.local configuratin in PROD!

@@ -174,7 +174,7 @@ export default {
 	created() {
 		this.loading = true
 
-		this.store.setHeaderTitle($t("castVoteTitle"))
+		this.store.setHeaderTitle(this.$t("castVoteTitle"))
 		
 		/** 
 		 * Force refresh of the poll we want to cast a vote on. Load the from the backend.

@@ -8,7 +8,9 @@
 		<div v-if="loadingPoll" class="my-3">
 			<b-spinner small />&nbsp;{{ $t('Loading') }}
 		</div>
-		
+	
+		<polly v-if="poll.id" :poll="poll" class="mb-4"></polly>
+
 		<poll-panel v-if="poll.id" :poll="poll" :read-only="true" class="mb-4" />
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
@@ -90,6 +92,7 @@
 <script>
 import pollPanel from "@/components/poll-panel.vue"
 import popupModal from "@/components/popup-modal.vue"
+import polly from '@/components/polly.vue'
 import EventBus from "@/services/event-bus.js"
 import { store }  from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
@@ -124,7 +127,7 @@ export default {
 			},
 		},
 	},
-	components: { pollPanel, popupModal },
+	components: { pollPanel, popupModal, polly },
 	props: {
 		// Allow number or string that contains an integer. Url parameter is passed as String, 
 		// but $router.push({name: "pollShow", params: {pollId: 4711 }}) can be passed as number. We'll accept both

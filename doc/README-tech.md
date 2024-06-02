@@ -7,7 +7,7 @@ This is a HTML5 based mobile application. A PWA - progressive web application.
 ## TODOs
 
  - Test on real devices, eg. with https://www.browserstack.com/
- - 
+ - Try out PINIA a store. Especially for status of search filter
 
 
 

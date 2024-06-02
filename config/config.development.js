@@ -6,9 +6,14 @@ import commonConfig from "./config.common.js"
 let devConfig = {
 	configSource: "development",
 	// URL of liquido backend.
-	// - localhost does not work on real mobile phone !
-	// - HTTPS only does not work for WebAuthN !
-	LIQUIDO_API_URL: "http://localhost:8080",
+	
+	// Default URL 
+	//LIQUIDO_API_URL: "http://localhost:8080",
+
+	// Secure HTTPS with IP, because localhost does not work when testing on a real mobile device.
+	LIQUIDO_API_URL: "https://192.168.178.24:8443",   
+
+	// Used for testing
 	voterTokenSecret: "devVoterTokenSecret",
 
 	devLogin: {

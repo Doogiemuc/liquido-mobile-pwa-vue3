@@ -1,11 +1,12 @@
 /**
  * Unit tests for liquido-graphql-client.js
+ * Now implemented with VUE testing "vitest"
  * 
- * Must run jasmine through babel for ES6 import: https://github.com/piecioshka/boilerplate-jasmine-babel
  */
-// import "jasmine";
 
-// Tried several other ways that did't work:
+// Must run jasmine through babel for ES6 import: https://github.com/piecioshka/boilerplate-jasmine-babel
+// import "jasmine";
+// Tried several ways to get Yasmine, but that did't work:
 // https://x-team.com/blog/setting-up-javascript-testing-tools-for-es6/
 // https://itenium.be/blog/javascript/javascript-testing-jasmine-getting-started/
 
@@ -48,7 +49,7 @@ beforeAll(async () => {
 	}
 })
 
-test('GET GraphQL schmea', async function() {
+test.only('GET GraphQL schmea', async function() {
 	return client.getGraphQLSchema().then(res => {
 		expect(res.data).to.contain("castVote")
 	})
