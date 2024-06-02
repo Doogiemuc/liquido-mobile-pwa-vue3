@@ -1,6 +1,12 @@
 <script setup>
-import { ref, unref, reactive, computed, watch, onMounted, nextTick } from 'vue'
+import { reactive, computed, onMounted, defineModel, watch, watchEffect,ref /*, unref, watch, nextTick*/ } from 'vue'
 
+// ========== VUE Model (for isValid state)
+const isValid = defineModel('isValid')
+
+const emit = defineEmits(['update:isValid'])
+
+// ========== VUE PROPERTIES
 const props = defineProps({
 	poll: {
 		type: Object,
@@ -25,7 +31,8 @@ const props = defineProps({
 				]
 			}
 		}
-	}
+	},
+	isValid: false
 })
 
 // The prop is the initial value. Here we copy that to a local proxy that can change.
@@ -44,8 +51,9 @@ const poll = reactive(props.poll)
 const POLL_TYPE = {
 	CHOOSE_ONE: 1,  // Each voter has one vote that he can give to exactly one proposal.
 	CHOOSE_ANY: 2,  // Each voter can select one or many proposals
-	DOT_VOTING: 3,  // Each voter has a number of "dots" that he can distribute over the proposals. One proposal can receive more than one "dot".
+	DOT_VOTING: 3,  // Each voter has a number of "dots" or "likes" that he can distribute over the proposals. One proposal can receive more than one "dot".
 	// Plus-Minus  
+	// Reactions - with many smileys
 	LIQUIDO: 4      // Each voter sorts the proposals/nominations into their preferred order, from top to bottom
 }
 
@@ -74,10 +82,20 @@ const hasDuplicateTitles = computed(() => {
 	}
 	return false
 })
-const saveIsActive = computed(() => {
-	return propHasTitle(0) && propHasTitle(1) && 
+const isValidComputed = computed(() => {
+	let res = propHasTitle(0) && propHasTitle(1) && 
 		poll.title !== undefined && poll.title.trim() !== "" && !hasDuplicateTitles.value
+	console.log("isVAlid computed", res)
+	return res
 })
+
+// ========== WATHCERS
+watch(isValidComputed, (newVal) => {
+	console.log("watcher isValidComputed = ", newVal, "emmitting event")
+	emit('update:isValid', newVal)
+})
+
+// ========== METHODS
 
 function propHasTitle(index) {
 	if (index >= poll.proposals.length) return false
@@ -86,8 +104,6 @@ function propHasTitle(index) {
 	return true
 }
 
-
-// ========== METHODS
 
 /** 
  * Check if a proposal's title is a duplicate of anothe title.
@@ -114,8 +130,8 @@ function votometerStyle(index) {
 	return { width: "calc(" + percent + "% - 10px)" }
 }
 
-onMounted(() => {
-	const pollTitle = document.querySelector(".poll-title")
+onMounted(async() => {
+	const pollTitle = document.querySelector("input#poll-title")  //TODO: Does not work yet??? DOM update timing???
 	if (pollTitle) pollTitle.focus()
 });
 
@@ -188,19 +204,12 @@ function onProposalTitleChange(evt, index) {
  */
 function savePoll() {
 	if (!propHasTitle(poll.proposals.length-1)) poll.proposals.pop()
-	poll.status = "VOTING"
-}
-
-function editPoll() {
-	poll.status = "NEW"
-}
-
-function finishPoll() {
-	poll.status = "FINISHED"
+	emit('savePoll', this.poll)
 }
 
 
-function castVote(prop) {
+
+function likeProposal(prop) {
 	if (poll.status != "VOTING" || prop == null) return
 	if (!prop.supporters.some(u => u.id == user.id))
 		prop.supporters.push(user)
@@ -237,7 +246,7 @@ function castVote(prop) {
 			</div>
 
 			<ul v-if="inVoting" class="list-group" tag="div">
-				<li v-for="(prop, index) in poll.proposals" :key="prop.id" @click="castVote(prop)" class="list-group-item prop-list-item d-flex position-relative" :class="{'canVote': canVoteFor(prop), 'hasVoted': prop.isLikedByCurrentUser}">
+				<li v-for="(prop, index) in poll.proposals" :key="prop.id" @click="likeProposal(prop)" class="list-group-item prop-list-item d-flex position-relative" :class="{'canVote': canVoteFor(prop), 'hasVoted': prop.isLikedByCurrentUser}">
 					<div v-if="isFinished" class="votometer" :style="votometerStyle(index)"></div>
 					<div class="thumbs-up p-1 z-index-500">
 						<i class="fa-regular fa-thumbs-up"></i>
@@ -249,15 +258,10 @@ function castVote(prop) {
 				</li>
 			</ul>
 
-			<div class="card-footer">
+			<div v-if="!isNew" class="card-footer">
 				<div class="row justify-content-between">
-					<div v-if="isNew" class="col text-end">
-						<button @click="savePoll" :disabled="!saveIsActive" type="button" class="btn btn-primary save-button">
-							<i class="far fa-floppy-disk"></i>&nbsp;&nbsp;{{ $t('Save') }}
-						</button>
-					</div>
 					<div v-if="inVoting && !hasVoted" class="col text-start text-muted">
-						Cast your vote
+						Cast your vote!
 					</div>
 					<div v-if="inVoting && hasVoted" class="col text-start text-muted">
 						THX for voting
@@ -341,9 +345,9 @@ function castVote(prop) {
 }
 
 /* 3. ensure leaving items are taken out of layout flow so that moving
-      animations can be calculated correctly. */
+      animations can be calculated correctly. .... Necessary???*/
 .fade-leave-active {
-  position: absolute;
+  //position: absolute;
 }
 
 

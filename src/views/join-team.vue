@@ -362,7 +362,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 
 .createOrJoinTable {
 	td {
@@ -402,12 +402,14 @@ export default {
 	transform: translateX(50%);
 }
 
+/*
 label {
 	font-size: 14px;
 	font-weight: bold;
 	margin: 0;
 	//color: rgb(86, 9, 109);
 }
+*/
 
 .qr-code {
 	width: 80%;

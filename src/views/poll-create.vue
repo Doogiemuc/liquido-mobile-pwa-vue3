@@ -4,7 +4,28 @@
 			{{ $t("newPoll") }}
 		</h2>
 
-		<polly class="mb-4"></polly>
+		<polly 
+			class="mb-4"
+			v-model:isValid="pollIsValid"
+			@savePoll="createNewPoll">
+		</polly>
+
+		<h3>Einstellungen für diese Abstimmung</h3>
+		<form class="mb-4 p-2 user-select-none">
+			<div class="form-check">
+				<input type="checkbox" class="form-check-input" id="allowAddProposal" checked>
+				<label class="form-check-label" for="allowAddProposal">Teammitglieder können weitere Vorschläge hinzufügen.</label>
+			</div>
+			<div class="form-check">
+				<input type="checkbox" class="form-check-input" id="allowChangeVote" checked>
+				<label class="form-check-label" for="allowChangeVote">Eine einmal abgegebene Stimme kann noch geändert werden, solange die Abstimmung noch nicht geschlossen ist.</label>
+			</div>
+			<div class="text-end mt-3">
+				<button @click="savePoll" :disabled="!pollIsValid" type="button" class="btn btn-primary btn-lg">
+					<i class="far fa-floppy-disk"></i>&nbsp;&nbsp;{{ $t('Save') }}
+				</button>
+			</div>
+		</form>
 
 		<!-- b-card class="chat-bubble input-bubble mb-4">
 			<liquido-input
@@ -33,7 +54,8 @@
 			</div>
 		</b-card -->
 
-		<div class="alert alert-admin create-poll-info">
+		<div class="alert alert-admin create-poll-info mt-5">
+			<i class="fas fa-circle-info float-end"></i>
 			<p>{{ $t('createPollInfo1') }}</p>
 				<ol class='fa-ul'>
 					<li><span class='fa-li'><i class='fas fa-comments'></i></span> {{ $t('createPollInfo2') }} {{ $t('createPollInfo3') }}</li>
@@ -76,6 +98,7 @@ export default {
 			store,
 			poll: undefined,
 			pollTitle: "",
+			pollIsValid: false,
 		}
 	},
 	computed: {
@@ -84,7 +107,7 @@ export default {
 		},
 		pollTitleInvalidFeedback() {
 			return this.$t("pollTitleInvalid", {minLen: config.pollTitleMinLength})
-		}
+		},
 	},
 	mounted() {
 		this.store.setHeaderTitle(this.$t("newPoll"))
@@ -92,13 +115,21 @@ export default {
 		this.$root.scrollToTop()
 	},
 	methods: {
+		proposalHasTitle(index) {
+			return this.poll.proposals[index] &&
+				this.poll.proposals[index].title &&
+				this.poll.proposals[index].title.trim().length > 0
+		},
+		pollIsValidUpdate(params) {
+			console.log("pollIsValidUpdate", params)
+		},
 		isPollTitleValid(val) {
 			return val !== undefined && val !== null && val.trim().length >= config.pollTitleMinLength
 		},
 		goBack() {
 			this.$router.go(-1)
-		},
-		clickCreateNewPoll() {
+		}, 
+		createNewPoll() {
 			return api.createPoll(this.pollTitle)
 				.then(createdPoll => {
 					log.info("New poll created", createdPoll)

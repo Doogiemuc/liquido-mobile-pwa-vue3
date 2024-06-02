@@ -494,7 +494,6 @@ let graphQlApi = {
 	 **********************************************************************/
 
 	async createPoll(pollTitle) {
-		//TODO: BUGFIX: Do I need the brackets after mutation ?
 		let graphQL = `mutation {	createPoll(title: "${pollTitle}") ${JQL.POLL}	}`
 		return graphQlQuery(graphQL)
 			.then(res => {

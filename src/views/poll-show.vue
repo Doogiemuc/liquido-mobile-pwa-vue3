@@ -167,7 +167,7 @@ export default {
 				return true
 			}
 			let currentUser = api.getCachedUser()
-			if (currentUser && currentUser.isAdmin) return true
+			if (this.userIsAdmin) return true
 			return this.poll.proposals.filter((prop) => prop.createdBy.id === currentUser.id).length === 0
 		},
 		/** The voting phase can be started by the admin when there are at least two proposals */
