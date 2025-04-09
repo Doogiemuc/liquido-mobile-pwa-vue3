@@ -14,10 +14,13 @@ dist-ssr
 coverage
 *.local
 
-/cypress/videos/
-/cypress/screenshots/
+# Config files that might contain secrets
+config/config.*.js
+
 
 # Cypress screenshots & videos from tests
+/cypress/videos/
+/cypress/screenshots/
 tests/e2e/screenshots
 *.mp4
 
