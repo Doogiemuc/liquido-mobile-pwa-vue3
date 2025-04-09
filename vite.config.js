@@ -1,15 +1,20 @@
 import { fileURLToPath, URL } from 'node:url'
-
+import fs from 'node:fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import mkcert from 'vite-plugin-mkcert'
 import path from "path"
+
+const key = fs.readFileSync(path.resolve(__dirname, 'tls-certs/liquido-TLS-key.pem'), 'utf8');
+const cert = fs.readFileSync(path.resolve(__dirname, 'tls-certs/liquido-TLS-cert.pem'), 'utf8');
 
 // https://vitejs.dev/config/
 export default defineConfig({
 	server: {
-		https: false,					    // serve frontend over HTTPS (only!)
-		host: "0.0.0.0",  				// listen on localhost(127.0.0.1) and any local IP (192.168.*.*)
+		https: {									// serve frontend over HTTPS
+			key: key,
+      cert: cert
+		},			    
+		host: "0.0.0.0",  				// "0.0.0.0" = listen on all adresses, incl. LAN and public adresses
 		port: 3001,
 		
 		// Problems with Cross-origin resource sharing (CORS)? 
@@ -41,7 +46,7 @@ export default defineConfig({
 	},
   plugins: [
     vue(),
-		mkcert()
+		//mkcert()  -> we use real TLS certs
   ],
   resolve: {
     alias: {

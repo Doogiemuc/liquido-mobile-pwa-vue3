@@ -6,9 +6,9 @@ This is a HTML5 based mobile application. A PWA - progressive web application.
 
 ## TODOs
 
- - Test on real devices, eg. with https://www.browserstack.com/
- - Try out PINIA a store. Especially for status of search filter
-
+ - Remove bootstrap-vue-3  use plain bootstrap (mainly only b-card and b-button)
+ - Test on real devices, eg. with https://www.browserstack.com/    => This does already work on real hardware locally.
+ - Try out PINIA - a store. Especially for status of search filter.
 
 
 

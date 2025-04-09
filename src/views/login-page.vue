@@ -2,15 +2,6 @@
 	<div>
 		<h1 id="login-page" class="page-title">{{ pageTitle }}</h1>
 
-		<div v-if="showDevLogin" class="d-flex justify-content-between mb-3">
-			<button type="button" class="btn btn-primary" @click="devLoginAdmin">
-				<i class="fas fa-shield-alt"></i> {{ $t("DevLoginAdmin") }}
-			</button>
-			<button type="button" class="btn btn-primary ms-3" @click="devLoginMember">
-				{{ $t("DevLoginMember") }}
-			</button>
-		</div>
-
 		<!-- h3>WebAuthn</h3>
 		<div v-if="showDevLogin" class="d-flex justify-content-between mb-3">
 			<button type="button" class="btn btn-primary" @click="registerWebauthn">
@@ -21,9 +12,8 @@
 			</button>
 		</div -->
 
-		<!-- Login via SMS -->
-
-		<b-card class="border-0 shadow-sm mb-4" :header="$t('LoginViaSms')">
+		<!-- Login via SMS (disabled because expensive) -->
+		<b-card v-if="false" class="border-0 shadow-sm mb-4" :header="$t('LoginViaSms')">
 			<p>{{ $t('LoginViaSmsInfo') }}</p>
 			<liquido-input
 				id="mobilephoneInput"
@@ -77,25 +67,23 @@
 		</b-card>
 		
 		<!-- Login via Email -->
-
-		<b-card class="border-0 shadow-sm mb-4" :header="$t('LoginViaEmail')">
-			<p>{{ $t('LoginViaEmailInfo') }}</p>
+		<div class="d-grid mb-3 col-8 mx-auto">
 			<liquido-input
 				id="loginEmailInput"
 				v-model="emailInput"
 				v-model:state="emailInputState"
-        type="email"
-				class="mb-3"
-				:label="$t('yourEMail')"
+				type="email"
+				class="mb-1"
+				:label="$t('EMail')"
 				:placeholder="$t('emailPlaceholder')"
-				:invalid-feedback="$t('emailInvalid')"
+				:invalid-feedback=undefined
 				@keypress.enter="requestEmailToken"
 			/>
-			<div class="text-end">
+			
 				<button id="requestEmailButton" type="button" :disabled="sendLinkButtonDisabled" class="btn btn-primary" @click="requestEmailToken">
-					{{ $t("SendLink") }}
+					<i class="fas fa-envelope me-2"></i> {{ $t("EMailLogin") }}
 				</button>
-			</div>
+			
 			<div 
 				v-if="emailSentSuccessfully"
 				id="emailSuccessMessage"
@@ -109,13 +97,32 @@
 				class="alert alert-danger mt-3"
 				v-html="emailErrorMessage"
 			></div>
-		</b-card>
 
-		<div class="text-center mt-5">
-			<button id="registerButton" type="button" class="btn btn-primary" @click="clickRegister()">
-				{{ $t("Register") }}
+		</div>
+		
+
+		<!-- Signin with Google -->
+		<div class="d-grid mb-3 col-8 mx-auto mt-5">
+			<button type="button" class="btn btn-primary" @click="loginWithGoogle()">
+				<i class="fa-brands fa-google me-2"></i> {{ $t("LoginWithGoogle") }}
+			</button>
+
+			<button id="registerButton" type="button" class="btn btn-primary mt-5" @click="clickRegister()">
+				<i class="fa-solid fa-user-plus me-2"></i> {{ $t("Register") }}
 			</button>
 		</div>
+
+
+		<div v-if="showDevLogin" class="d-grid col-8 mx-auto mt-5">
+			<hr/>
+			<button type="button" class="btn btn-secondary mt-2" @click="devLoginAdmin">
+				<i class="fas fa-shield-alt"></i> {{ $t("DevLoginAdmin") }}
+			</button>
+			<button type="button" class="btn btn-secondary mt-3" @click="devLoginMember">
+				{{ $t("DevLoginMember") }}
+			</button>
+		</div>
+
 	</div>
 </template>
 
@@ -132,7 +139,9 @@ export default {
 	i18n: {
 		messages: {
 			de: {
-				LoginViaSms: "Login per SMS",
+				LoginWithGoogle: "Google Login",
+				LoginViaEmail: "E-Mail Login",
+				LoginViaSms: "SMS Login",
 				LoginViaSmsInfo: "Ich schicke dir einen Zahlencode auf dein Handy. Mit diesem kannst du dich dann hier einloggen.",
 				yourMobilephone: "Deine Handynummer",
 				mobilephonePlaceholder: "+49 151 1111111",
@@ -146,9 +155,8 @@ export default {
 				AuthtokenSentSuccessfully: "Ok, die SMS wurde verschickt. Bitte gib den Login-Token aus der SMS ein.",
 				RequestAuthTokenError: "Login-Token konnte nicht angefordert werden. Bitte versuche es noch einmal.",
 
-				LoginViaEmail: "Login per Email",
-				yourEMail: "Deine Email",
-				LoginViaEmailInfo: "Ich kann dir einen magischen Link per E-Mail schicken. Klicke in der E-Mail auf den Link um dich einzuloggen.",
+				EMailLogin: "Email Login",
+				LoginViaEmailInfo: "Ich kann dir einen login Link per E-Mail schicken.",
 				SendLink: "Link zuschicken",
 				emailPlaceholder: "info{'@'}domain.de",
 				emailInvalid: "E-Mail ungültig",

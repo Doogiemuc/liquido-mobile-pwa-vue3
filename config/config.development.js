@@ -5,17 +5,15 @@ import commonConfig from "./config.common.js"
 
 let devConfig = {
 	configSource: "development",
-	// URL of liquido backend.
 	
-	// Default URL 
-	//LIQUIDO_API_URL: "http://localhost:8080",
+	// Connection to LIQUIDO backend 
+	//LIQUIDO_API_URL: "https://localhost:8443",
 
 	// Secure HTTPS with IP, because localhost does not work when testing on a real mobile device.
-	LIQUIDO_API_URL: "https://192.168.178.24:8443",   
+	LIQUIDO_API_URL: "https://192.168.178.103:8443",   
 
 	// Used for testing
 	voterTokenSecret: "devVoterTokenSecret",
-
 	devLogin: {
 		teamName: "LocalTeam",
 		admin: {
@@ -31,6 +29,7 @@ let devConfig = {
 		token: "devLoginTokenDev",
 	}
 }
+
 let mergedConfig = { ...commonConfig, ...devConfig }  // Mind the parameter order _merge(target, sources...)
 
 export default mergedConfig
