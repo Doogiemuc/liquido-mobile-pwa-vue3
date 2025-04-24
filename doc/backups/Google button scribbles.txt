@@ -1,0 +1,32 @@
+<script src="https://accounts.google.com/gsi/client" async></script>
+		
+
+		
+			function signinResponse(response) {
+				console.log("Google Signin response", response)
+				if (response.credential) {
+					api.loginWithGoogle(response.credential).then(() => {
+						this.$router.push({name: "teamHome"})
+					}).catch(err => console.error("Google Signin failed!", err))
+				} else {
+					console.error("Google Signin failed! No credential received.")
+				}
+			}
+
+
+		<div id="g_id_onload"
+			data-client_id="673421517010-lkmgt75rsmgua6aojhpp6crjg1opuhvo.apps.googleusercontent.com"
+			data-context="signin"
+			data-ux_mode="popup"
+			data-callback="signinResponse"
+			data-auto_prompt="false">
+		</div>
+
+		<div class="g_id_signin"
+				data-type="standard"
+				data-shape="pill"
+				data-theme="outline"
+				data-text="signin_with"
+				data-size="large"
+				data-logo_alignment="left">
+		</div>

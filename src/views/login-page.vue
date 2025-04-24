@@ -103,7 +103,7 @@
 
 		<!-- Signin with Google -->
 		<div class="d-grid mb-3 col-8 mx-auto mt-5">
-			<button type="button" class="btn btn-primary" @click="loginWithGoogle()">
+			<button type="button" class="btn btn-primary" @click="startGoogleLogin()">
 				<i class="fa-brands fa-google me-2"></i> {{ $t("LoginWithGoogle") }}
 			</button>
 
@@ -245,6 +245,62 @@ export default {
 		//TODO: When user is already logged in (JWT from local storage), THEN show a "welcome back" message. User can jump to his team.
 	},
 	methods: {
+
+		/** 
+		 * Start the google login process only after the user clicked the Google button.
+		 * Dynamically load the google-script and call the google login function.
+		 */
+		startGoogleLogin() {
+			if (!document.getElementById("google-script")) {
+				console.log("loading google script")
+        const script = document.createElement("script");
+        script.id = "google-script";
+        script.src = "https://accounts.google.com/gsi/client";
+        script.onload = this.loginWithGoogle; // Call login after script loads
+        document.head.appendChild(script);
+      } else {
+        this.loginWithGoogle(); // If script is already loaded, start login
+      }
+		},
+
+		/**
+		 * Login with Google. This is called after the google script has been loaded.
+		 */
+		loginWithGoogle() {
+			if (window.google && window.google.accounts) {
+				window.google.accounts.id.initialize({
+					client_id: config.googleClientId,
+					login_uri: config.LIQUIDO_API_URL + "/auth/google",
+					//callback: this.handleGoogleResponse,
+					auto_select: false,
+					ux_mode: "redirect",
+					scope: "openid email profile"
+				});
+				window.google.accounts.id.prompt(); // Show the Google login prompt
+			} else {
+				console.error("Google accounts not available")
+			}
+		},
+
+		handleGoogleResponse(response) {
+			console.log("Google login response", response)
+			if (response.credential) {
+				this.tokenErrorMessage = undefined
+				api.logout()
+				api.loginWithGoogle(response.credential)
+					.then(() => {
+						this.$router.push({name: "teamHome"})
+					})
+					.catch(err => {
+						console.error("Google login failed", err)
+						this.tokenErrorMessage = this.$t("GoogleLoginFailed")
+					})
+			} else {
+				console.error("No credential in Google login response")
+				this.tokenErrorMessage = this.$t("GoogleLoginFailed")
+			}
+		},
+
 		/** Quickly login as an admin user. This is available as a button in the mobile UI when in DEV env.  */
 		devLoginAdmin() {
 			api.logout()

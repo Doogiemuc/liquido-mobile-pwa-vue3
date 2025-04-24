@@ -61,7 +61,7 @@ let onError   = (error) => {
 	if (error.response && error.response.status >= 500) { 
 		console.error("liquido-graphql-client: Internal Server Error(500):", error) 
 	} else {
-		//console.error("Unknown HTTP error", error)
+		console.error("Very strange unknown HTTP error", error)
 	}
 
 	// try to log some additional debug info
@@ -76,7 +76,7 @@ let onError   = (error) => {
 
 /**
  * Sophisticated logging of HTTP error messages is crucial!
- * You have no idea how often this elaborated logging here saved me!
+ * You have no idea how many times this has saved me!
  */
 axios.interceptors.response.use(onSuccess, onError)
 
@@ -93,19 +93,26 @@ const graphQlQuery = function(query, variables) {
 	return axios.post(GRAPHQL, { query: query, variables: variables })
 		.then(res => {
 			if (res.data && res.data.errors && res.data.errors.length > 0) {
-				console.info("graphQlQuery() errors: ", res.data.errors)   // graphQL's way of returning errors
-				return Promise.reject(res.data.errors)
+				// graphQL's way of returning errors, as defined in the GraphQL spec
+				// https://graphql.org/learn/serving-over-http/#http-status-codes
+				console.info("graphQlQuery() received data errors:", res.data.errors)   
+				if (res.data.errors[0].extensions && res.data.errors[0].extensions) {
+					console.info("graphQlQuery() first liquidoException: "+JSON.stringify(res.data.errors[0].extensions))
+				}
+				return Promise.reject(res.data)
 			}
 			return res.data // This is the axios HTTP "data". The graphQL response contains another "res.data.data" (and the "res.data.error") attribute. I know, it's confusing.
-		})  
+		})
+		/*   // No error handling here! Upstream caller is responsible to handle errors
 		.catch(err => {
 			if (err && err.response && err.response.status >= 500) {
-				console.error("graphQlQuery ERROR ", err)
+				console.error("graphQlQuery SERVEr ERROR(500)", err)
 			} else {
-				console.log("graphQL query returned:", err.message || err.response.message)
+				console.warn("graphQlQuery ERROR", err)
 			}
 			return Promise.reject(err)
 		})
+			*/
 }
 
 
