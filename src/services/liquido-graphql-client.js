@@ -361,14 +361,17 @@ let graphQlApi = {
 	/**
 	 * login with link from email (contains email and authToken)
 	 */
-	loginWithEmailToken(email, authToken) {
+	loginWithEmailPassword(email, password) {
 		if (!email) throw new Error("Need email to log in!")
-		if (!authToken) throw new Error("Need authToken to log in!")
-		let graphQL = `query { loginWithEmailToken(email: "${email}", authToken: "${authToken}") ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
+		if (!password) throw new Error("Need password to log in!")
+		let graphQL = `query { loginWithEmailPassword(email: "${email}", password: "${password}") ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		return graphQlQuery(graphQL).then(response => {
-			let res = response.data.loginWithEmailToken
+			let res = response.data.loginWithEmailPassword
 			this.login(res.team, res.user, res.jwt)
 			return res
+		}).catch(err => {
+			console.log("API: loginWithEmailPassword failed: ", err)
+			return Promise.reject("loginWithEmailPassword failed"+JSON.stringify(err))
 		})
 	},
 

@@ -11,7 +11,7 @@
 				<span class="liquido" />
 			</div>
 			<div v-if="store.headerTitle" class="center-title">
-				<h2>{{ store.headerTitle }}</h2>
+				<h1>{{ store.headerTitle }}</h1>
 			</div>
 		</div>
 		<div class="header-right">
@@ -44,7 +44,8 @@ export default {
 	mounted() {
 		// Add a scroll listener to dynamically fade the header text up and down when user scrolls
 		document.getElementById("app").addEventListener("scroll", this.stickyHeader)
-	},
+		this.stickyHeader()
+	}	,
 
 	beforeUnmount() {
 		document.getElementById("app").removeEventListener("scroll")
@@ -58,15 +59,31 @@ export default {
 		 * (But all that only if the title is actually set.)
 		 */
 		stickyHeader() {
+			let app = document.getElementById("app")
 			let headerElem = document.getElementById("liquidoHeader")
-			if (headerElem != null && this.store.headerTitle != undefined) {
-				let app = document.getElementById("app")
+			let pageTitleElem = document.getElementById("page-title")
+			if (!app || !headerElem) {
+				return  // something is wrong, so just return
+			}
+			if (this.store.headerTitle == undefined) {
+				headerElem.classList.remove("transition-header")
+				if (pageTitleElem != null) {
+					pageTitleElem.classList.remove("transition-page-title")
+				}
+			} else {				
+				// we doo have a headerTitle
 				if (this.isSticky === false && app.scrollTop > scrollAfterPx) {
 					this.isSticky = true
 					headerElem.classList.add("transition-header")
+					if (pageTitleElem != null) {
+						pageTitleElem.classList.add("transition-page-title")
+					}
 				} else if (this.isSticky === true && app.scrollTop < scrollAfterPx) {
 					this.isSticky = false
 					headerElem.classList.remove("transition-header")
+					if (pageTitleElem != null) {
+						pageTitleElem.classList.remove("transition-page-title")
+					}
 				}	
 			}		
 		},
@@ -102,6 +119,11 @@ export default {
 	z-index: 999;
 	transition: all 0.5s;
 	background-color: $header_bg;
+	opacity: 0.9;
+	box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3); /* horizontal, vertical, blur, color */
+  z-index: 9999; /* make sure the header is on top of everything */
+  
+	
 	
 	// when user scrolls, then scroll LIQUIDO claim out towards the top
 	// and let the center-title appear from the bottom
@@ -112,10 +134,21 @@ export default {
 		.center-title {
 			top: 50% !important;
 			transform: translate(-50%, -50%) !important;
+			padding: 0;
+			margin: 0;
+			h1 {
+				font-family: 'Libre Baskerville', serif;
+				margin: 0;
+				padding: 0;
+			}
 		}
 	}
 	
 	.header-left {
+		a {
+			color: white !important
+		}
+		color: white;
 		display: flex;
 		flex: 0 0 30px;
 		align-items: center;
@@ -125,7 +158,7 @@ export default {
 	.header-center {
 		flex-grow: 1;	
 		text-align: center;
-		color: $primary;
+		color: white;
 		position: relative;
 		overflow: hidden;
 		.liquido-claim {

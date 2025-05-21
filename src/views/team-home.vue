@@ -36,26 +36,24 @@
 			<p v-html="$t('introForOneAdmin')"></p>
 		</div>
 
+		<!-- TODO: make it configurable who can invite more team members. Only the admin? -->
 		<b-card id="teamInfo">
 			<template #header>
-				<h2>{{ $t("inviteNewMembers") }}</h2>
+				{{ $t("inviteNewMembers") }}
 			</template>
 
-			<p class="text-center">
-				<a id="inviteLink" :href="inviteLinkURL" :data-invitecode="team.inviteCode" @click.prevent="shareLink()">
-					{{ $t("inviteLink", {teamName: team.teamName, inviteCode: team.inviteCode}) }}
-					<i class="fas fa-external-link-alt" />
-				</a>
-			</p>
 
 			<div class="text-center">
 				<img id="qrCodeImg" src="" class="qr-code">
 			</div>
 
 			<p class="text-center">
-				{{ $t("inviteCode") }}
-				<b id="newTeamInviteCode">{{ team.inviteCode }}</b>
+				<a id="inviteLink" :href="inviteLinkURL" :data-invitecode="team.inviteCode" @click.prevent="shareLink()">
+					<span v-html="$t('inviteLink', { inviteCode: team.inviteCode })"></span>
+					<i class="fas fa-external-link-alt" />
+				</a>
 			</p>
+			<p>&nbsp;</p>
 		</b-card>
 
 		<div class="text-center">
@@ -89,15 +87,14 @@ export default {
 				teamMembers: "Team members",
 			},
 			de: {
-				introYourTeam: "Hallo <b>{name}</b>! Willkommen in deinem Team!",
+				introYourTeam: "Hallo {name}<br/>Willkommen in deinem Team!",
 				introForOneAdmin: 
 					"Du bist der Admin dieses Teams. Nur du kannst neue Abstimmungen erstellen.",
 				teamMembers: "Teammitglieder",
 				teamAdmins: "Team Admin | Team Admin | Team Admins",
 				gotoPolls: "Zu euren Abstimmungen",
 				inviteNewMembers: "Teammitglieder einladen",
-				inviteLink: "LIQUIDO Einladung: {teamName} ({inviteCode})",
-				inviteCode: "Einladungscode:",
+				inviteLink: "Einladungscode:&nbsp;<b>{ inviteCode }</b>",
 				qrCode: "QR Code scannen:",
 				logout: "Logout"
 			},

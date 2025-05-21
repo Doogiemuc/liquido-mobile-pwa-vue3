@@ -12,8 +12,8 @@
 			:placeholder="placeholder"
 			:disabled="disabled"
 			:required="required"
-			:minlength="minlength"
-			:maxlength="maxlength"
+			:minLength="minLength"
+			:maxLength="maxLength"
 			:pattern="pattern"
 			@input="onInput"
 			@keyup="keyup"
@@ -26,42 +26,55 @@
 		<div v-if="showCounterIfValid" class="counter">
 			{{ counterVal }}
 		</div>
-		<div v-if="invalidFeedback" class="invalid-feedback">
+		<div v-if="showInvalidFeedback" class="invalid-feedback">
 			{{ invalidFeedback }}
+		</div>
+		<div v-if="showEmptyFeedback" class="invalid-feedback">
+			{{ emptyFeedback }}
 		</div>
 	</div>
 </template>
 
 <script>
+
 /**
- * <h1>HTML form Input field with input validation feedback</h1>
+ * <h1>HTML5 compliant input field with input validation</h1>
  * 
- * This input field can have one of three states:
- *  - null:  Value has not been validated yet. Will not show any validation error message yet.
- *  - false: Value is currently invalid. Marked in red and show invalid-feedback message
- *  - true:  Value has been validated and is valid. Marked in green and may show valid-feedback message
- *
- * The one and only delicate logic for validating an input field
- * =============================================================
- *
- * Goal: Only ever show an error message, when the field was successfully valid before at least once or the user tried to submit the field.
+ * Designing an input field is a much more delicate task than it seems at first sight. The best user experience is when the user 
+ * doesn't even notice any distraction. The input field shall only show validation error messsages when really necessary.
  * 
- * When the field is new or untouched, then do not show any error message.
- * When the field is focused for the first time and the content may still be invalid, then do not show an error message yet.
- * While the user types for the first time, then do not show any validation error yet.
- *
- * When the field becomes valid for the first time, then show green success feedback.
- * When the user submits the field, eg. by pressing enter (or "done" on the iOS keyboard), then validate the field and show validation feedback message red or green.
- * When the <b>field was validated before</b>, then update the validation feedback message according to the current value.
- *
+ * <h3>Our liquido-input field can have one of the following states</h3
+ * <li>INIT - the field has not been validated yet. No error message shown. It's model value is <pre>undefined</pre></li>
+ * <li>VALIDATING - the field is currently being validated. A spinning wheel can be shown as long as the validation function is running.  TODO:</li>  
+ * <li>VALID - the field has been validated and is valid. Show green checkmark icon and valid-feedback message.</li>
+ * <li>INVALID - the field has been validated and is invalid. Show red cross icon and invalid-feedback message.</li>
+ * 
+ * <h3>You can choose when the fields value shall be validated</h3>
+ * <li>on blur - when the field loses focus (default)</li>
+ * <li>on keyup - when the user presses a key and releases it.</li>
+ * 
+ * <h3>When to validate the field?</h3>
+ * An input field can validated when the user leaves the field (on blur) or when the user presses a key and releases it (on keyup).
+ * There is one catch. When the user starts typing for the first time, then the partial value of only the first few characters is most likely not complettely valid yet.
+ * But we do not want to show an error message yet. So we have the following rules:
+ * <li>When the user starts typing, then the field is still in INIT state. No error message is shown.</li>
+ * <li>When the value becomes valid for the first time, then the field is marked as valid and shown in green.
+ * <li>When the user leaves the field, then it is <b>always</b> validated and the state is set to VALID or INVALID.</li>
+ * <li>
+ * If the user leaves the field for the first time, then the field is validated and the state is set to VALID or INVALID.
+ * 
+ * 
+ * 
+ * An error message will only be shown after a field has been validated.
  *
  * <h3>Example Usage</h3> 
  *
- * <liquido-input v-model="postTitle" id="postTitleInput" label="Post title" :validFunc="isTitleValid" validateOn="blur"></liquido-input>
+ * <liquido-input v-model="postTitle" id="postTitleInput" label="Post title" :validFunc="isTitleValid"></liquido-input>
  */
 
+
 // simple email validation
-const eMailRegEx = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,64}$/
+const eMailRegEx = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,256}$/
 
 // simplified regular expresion for validating a URL (not necessarily http, could also be ftp://)
 const urlRegEx = /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)/
@@ -69,9 +82,16 @@ const urlRegEx = /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9
 // Very tolerant validation of mobilephonen number. With our without country prefix.
 // https://stackoverflow.com/questions/123559/how-to-validate-phone-numbers-using-regex
 // https://github.com/google/libphonenumber/blob/master/FALSEHOODS.md    :-)  https://github.com/jameslk/awesome-falsehoods
+// If you need even more sophisticated validations, consider using validator-js
 const mobilephoneRegEx = /\+?[0-9/\- ]{6,50}$/
 
-//if you need more, consider using validator-js  but for now we'd like to stay withaout ANY dependencies here.
+
+export const STATE = Object.freeze({
+	INIT: 0,
+	VALIDATING: 1,
+	VALID: 2,
+	INVALID: 3,
+})
 
 export default {
 	name: "LiquidoInput",
@@ -104,62 +124,85 @@ export default {
 		/** Is input currently disabled */
 		disabled: { type: Boolean, default: false },
 
+		/** show a counter for number of characters until max-length, eg. "3/7" */
+		showCounter: { type: Boolean, default: false },
+
+		/** Is form value required? (default: false) If true then value must not be empty */
+		required: { type: Boolean, default: false },
+
+		/** Maximum character length of input */
+		minLength: { type: Number, default: 0 },
+
+		/** Maximum character length of input (default: 1024)*/
+		maxLength: { type: Number, default: 1024 },
+
 		/** 
 		 * Regular expression pattern for format of input for type=text|password|tel
-		 * This is  also directly interpreted by modern browsers.
+		 * This is also directly interpreted by modern browsers.
 		 * https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/pattern
 		 */
 		pattern: { type: String, default: undefined },
 
-		/** Is form value required? (default: false) */
-		required: { type: Boolean, default: false },
-
-		/** Maximum character length of input */
-		minlength: { type: Number, default: 0 },
-
-		/** Maximum character length of input (default: 1024)*/
-		maxlength: { type: Number, default: 1024 },
-
-		/** show a counter for number of characters until max-length, eg. "3/7" */
-		showCounter: { type: Boolean, default: false },
-
 		/** Text to show below the input when value has been validated before and is invalid. (optional) */
 		invalidFeedback: { type: String, default: undefined },
 
+		/** You can set an extra message when the field is invalid and empty. */
+		emptyFeedback: { type: String, default: undefined },
+
 		/** 
-		 * For complete freedom you can provide your own validation function. 
+		 * In addition to the default "pattern" field supported by HTML5,
+		 * you can provide a custom validation function that will be used to validate the input value.
 		 * This will replace type, pattern, min- and max-length.
 		 * Your function will receive the current value of the input element.
-		 * It must return true|false
+		 * It must return 
+		 * - undefined when the input is "not validated yet" (state = null)
 		 */
 		validFunc: { type: Function, required: false, default: undefined },
 
-		/**
-		 * When to validate the current value. Default: after each keypress ("keyup")
-		 */
-		validateOn: { type: String, required: false, default: "keyup" }, //TODO: these could be arrays, e.g. validateOn: ["keyup", "blur"]
-
-		/**
-		 * When to force a validation that will show valid- or invalid-feedback message. (default: "blur")
-		 * You can set this to "keyup", then the first keypress will immideately show a validation feedback message below the input.
-		 */
-		forceValidateOn: { type: String, required: false, default: "blur" },
+	
 	},
 	emits: ["update:modelValue", "update:state", "keyup", "blur"],  // this event is emitted, when the value of the inner <input> changes.
 	data() {
 		return {
-			/**
-			 * 'state' can be one of
-			 * null  - field has not been validated yet. -> Do not show an error message yet
-			 * false - fields value is currently invlaid -> show error message
-			 * true  - fields value is valid -> show field in green with checkmark
-			 */
-			state: null,
-			internalValidFunc: this.validFunc
+			/** Current state of the input field. See state "enum" */
+			state: STATE.INIT,
+			
+			/** Function that will be used to validate the input value. */
+			internalValidFunc: this.validFunc,
 		}
 	},
 	computed: {
-    //FIXME: Needs to be fixed for VUE3
+
+
+		/**
+		 * Compute wether to add the is-valid or is-invalid pseudo class depending on the input's "state"
+		 * If state == null, e.g. when the field was not validated at all yet, then no pseudo class is added.
+		 */
+		validClass() {
+			return {
+				"is-valid": this.state === STATE.VALID,
+				"is-invalid": this.state === STATE.INVALID,  // bootstrap will then show red frame and icon at the right
+				// all other states do not show any pseudo class
+			}
+		},
+
+		showEmptyFeedback() {
+			return this.state === STATE.INVALID && this.emptyFeedback && !this.modelValue
+		},
+
+		showInvalidFeedback() {
+			return this.state === STATE.INVALID && this.invalidFeedback && this.modelValue && this.modelValue.length > 0
+		},
+
+		counterVal() {
+			let len = this.modelValue ? this.modelValue.length : 0
+			return len + "/" + this.maxlength
+		},
+		showCounterIfValid() {
+			return this.showCounter && this.state === null
+		}
+
+		    //FIXME: Needs to be fixed for VUE3
 		/**
 		 * Connect all listeners from the parent directly to our INNER input element.
 		 * https://vuejs.org/v2/guide/components-custom-events.html#Binding-Native-Events-to-Components
@@ -183,25 +226,6 @@ export default {
 			)
 		},
 		*/
-
-		/**
-		 * Compute wether to add the is-valid or is-invalid pseudo class depending on the input's "state"
-		 * If state == null, e.g. when the field was not validated at all yet, then no pseudo class is added.
-		 */
-		validClass() {
-			return {
-				"is-valid": this.state === true,
-				"is-invalid": this.state === false,  // bootstrap will then show red frame and icon at the right
-				// state === null will set no class at all
-			}
-		},
-		counterVal() {
-			let len = this.modelValue ? this.modelValue.length : 0
-			return len + "/" + this.maxlength
-		},
-		showCounterIfValid() {
-			return this.showCounter && this.state === null
-		}
 	},
 	watch: {
 		/** Watch internal state and publish it's value for parent components */
@@ -213,17 +237,27 @@ export default {
 		if (!this.internalValidFunc) this.internalValidFunc = this.defaultValidFunc
 	},
 	methods: {
+		/**
+		 * Check if the current value of the field is valid or not.
+		 * This does not set any STATE, but only returns true or false.
+		 * This is used by the defaultValidFunc and the custom validFunc.
+		 * @param val the current value of the field
+		 * @return true if the value is valid, false otherwise.
+		 */
 		defaultValidFunc(val) {
-			if (this.modelValue && this.modelValue.length < this.minlength) return false
-			if (this.modelValue && this.modelValue.length > this.maxlength) return false
-			if (this.required && !val) return false
+			if (this.modelValue && this.modelValue.length < this.minLength) return false
+			if (this.modelValue && this.modelValue.length > this.maxLength) return false
+			if (this.required && (!val || val.trim() === "" )) return false
+			if (this.pattern) return new RegExp(this.pattern).test(val)
 			switch (this.type.toLowerCase()) {
 				case "email": return this.isValidEmail(val);
 				case "mobilephone": return this.isValidMobilephone(val);
 				case "number": return !isNaN(val);
 				case "integer": return Number.isInteger(val);
-				case "url": return this.isValidUrl(val)
-				default: return true;
+				case "url": return this.isValidUrl(val);
+				// type="password" must be validated through the pattern attribute, or a custom validFunc
+				//TODO: DateInput, but that's another story! :-)
+				default: return true
 			}
 		},
 		isValidEmail(val) {
@@ -258,51 +292,55 @@ export default {
 			}
 		},
 
-		/** by default validate field's value immideately on every keyup, ie. after a keypress */
 		keyup(evt) {
-			if (this.validateOn === "keyup") {
-				this.validateField()
-			}
-			this.$emit("keyup", evt) // let event bubble up (make it possible for parent component to also reacht to a @keyup event.)
+			this.validateField()
+			this.$emit("keyup", evt) // let event bubble up (make it possible for parent component to also react to a @keyup event.)
 		},
 
 		blur(evt) {
-			if (this.forceValidateOn === "blur") {
-				this.validateField(true)
-			}
+			this.validateField(true) 
 			this.$emit("blur", evt)
 		},
 
 		/**
-		 * Validate the current value of the field with provided <pre>validFunc</pre> or according to <pre>type</pre> of input field
-		 * If valid, then this.state will be set to true and field will be marked in green.
-		 * If invalid and then mark the field as invalid but only if it was validated successfully before or parameter force is given as true.
-		 * @param force enable error message when fields value is invalid
+		 * Validate the current value of the field by calling the internalValidFunc and then set state to VALID or INVALID.
+		 * If the field is still in INIT state we only set it to VALID if it becomes valid. We do not set it to INVALID yet,
+		 * becasue we don't want to show any error message while the user is still typing.
 		 */
 		validateField(force = false) {
-			let valid = this.internalValidFunc(this.modelValue)	
-			if (valid) {
-				this.state = true
+			if (this.state === STATE.VALIDATING) return 		// don't validate again if already validating
+			let previouState = this.state
+			this.state = STATE.VALIDATING
+			let result = this.internalValidFunc(this.modelValue)
+			if (result === true) {
+				this.state = STATE.VALID;
+			} else if (result === false && (previouState !== STATE.INIT || force)) {
+				this.state = STATE.INVALID;
 			} else {
-				if (this.state !== null || force) this.state = false
+				this.state = STATE.INIT;
 			}
-		},
-	},
+		}
+
+	}
 }
 </script>
 
 <style lang="scss">
 .liquido-input {
 	position: relative;
-	padding-top: 12px;
-	//margin-bottom: 1rem;
+	padding-top: 12px;  // need some space for the label
+	
+	input::placeholder {
+		color: lightgrey
+	}
+
 	label {
 		position: absolute;
-		color: #666;
-		font-size: 0.8rem;
+		color: lightgrey;
+		font-size: 12px;
 		font-weight: normal;
-		top: 0;
-		left: 5px;
+		top: 3px;
+		left: 10px;
 		padding: 0 3px;
 		background: white;
 		border-radius: 5px;

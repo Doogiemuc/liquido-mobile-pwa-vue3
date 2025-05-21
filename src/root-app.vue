@@ -36,12 +36,16 @@ import popupModal from "@/components/popup-modal.vue"
 import mobileLogViewer from "@/components/mobile-debug-log.vue"
 import api from "@/services/liquido-graphql-client.js"
 import EventBus from "@/services/event-bus.js"
+import config from "config"
 
-/** Pages will slide from right to left in this order */
+/** 
+ * Pages will slide from right to left in this order 
+ * Login and welcome page only do not slide, but fade in/out.
+ */
 const page_order = {
 	"index": 0,
 	"welcome": 1,
-	"login": 2,
+	"login": 1,
 	"teamHome": 3,
 	"polls": 4,
 	"createPoll": 5,
@@ -111,7 +115,8 @@ export default {
 			this.transitionName = ""
 			const fromOrder = page_order[from.name]
 			const toOrder = page_order[to.name]
-			if (to.name === "login") { this.transitionName = "" } else 
+			//if (to.name === "login") { this.transitionName = "" } else 
+			//if (to.name === "welcome") { this.transitionName = "" } else 
 			if (fromOrder < toOrder) { this.transitionName = "slide-left" } else
 			if (fromOrder > toOrder) { this.transitionName = "slide-right"}
 			else { this.transitionName = "fade" }  // default is fade
@@ -131,6 +136,12 @@ export default {
 	},
 
 	mounted() {
+		// This has some consequences ... be carefull
+		this.$refs["mobileLogViewRef"].redefineConsoleMethods()
+		//Check: does this also work?  mobileLogViewer.redefineConsoleMethods();
+
+		console.log("NODE_ENV="+process.env.NODE_ENV+"   LIQUIDO configuration:\n", config)
+
 		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (newFilter) => {
 			console.log("Root app POLL_FILTER_CHANGED to", newFilter)
 			this.pollStatusFilter = newFilter
@@ -153,9 +164,7 @@ export default {
 				}
 			})
 
-			// This has some consequences ... be carefull
-			//this.$refs["mobileLogViewRef"].redefineConsoleMethods()
-			//Check: does this also work?  mobileLogViewer.redefineConsoleMethods();
+			
 	},
 	methods: {
 		//

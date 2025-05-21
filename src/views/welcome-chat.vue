@@ -1,45 +1,47 @@
  <template>
 	<div>
 		<div id="welcome-chat" class="mt-3">
-			<b-card id="welcomeBubble" :class="{ 'hide-left': flowState < FLOW.Welcome }" class="chat-bubble shadow-sm">
+			<b-card id="welcomeBubble" :class="{ 'hide-left': flowState < FLOW.Welcome }" class="chat-bubble chat-left shadow-sm">
 				<b-card-text v-html="$t('welcome')" />
 			</b-card>
 
-			<b-card :class="{ 'hide-left': flowState < FLOW.WhatsYourName }" class="chat-bubble shadow-sm">
+			<b-card :class="{ 'hide-left': flowState < FLOW.WhatsYourName }" class="chat-bubble chat-left shadow-sm">
 				<b-card-text v-html="$t('whatsYourName')" />
 			</b-card>
 
-			<b-card :class="{ 'hide-right': flowState < FLOW.NicknameInput }" class="chat-bubble shadow-sm chat-right">
-				<liquido-input
-					id="userNameInput"
-					ref="userNameInput"
-					v-model="user.name"
-					class="mb-3"
-					:label="$t('yourNickname')"
-					:valid-func="isUsernameValid"
-					:maxlength="100"
-					:invalid-feedback="$t('userNameInvalid')"
-					:disabled="flowState != 3"
-					@keyup.enter="userNameSubmit"
-					@blur="userNameSubmit"
-				/>
-			</b-card>
-
-			<div v-if="flowState <= FLOW.NicknameInput" class="login-link">
-				<a href="/login">{{$t('login')}}</a>
+			<div :class="{ 'hide-right': flowState < FLOW.NicknameInput }" class="card chat-bubble shadow-sm chat-right">
+				<div class="card-body">
+					<liquido-input
+						id="userNameInput"
+						ref="userNameInput"
+						v-model="user.name"
+						class="mb-2"
+						:label="$t('yourNickname')"
+						:valid-func="isUsernameValid"
+						:maxlength="100"
+						:invalid-feedback="$t('userNameInvalid')"
+						:disabled="flowState != 3"
+						@keyup.enter="userNameSubmit"
+						@blur="userNameSubmit"
+					/>
+				</div>
 			</div>
 
-			<b-card :class="{ 'hide-left': flowState < FLOW.NiceToMeetYou }" class="chat-bubble shadow-sm">
+			<div v-if="flowState <= FLOW.NicknameInput" class="login-link">
+				<RouterLink to="/login">{{$t('login')}}</RouterLink>
+			</div>
+
+			<b-card :class="{ 'hide-left': flowState < FLOW.NiceToMeetYou }" class="chat-bubble chat-left shadow-sm">
 				<b-card-text v-html="$t('niceToMeetYou', { nickname: user.name })" />
 			</b-card>
 			
 			<!-- when invite code is passed as URL parameter -->
-			<b-card	:class="{ 'hide-left': flowState != FLOW.InviteCodePassed }" class="chat-bubble shadow-sm">
+			<b-card	:class="{ 'hide-left': flowState != FLOW.InviteCodePassed }" class="chat-bubble chat-left shadow-sm">
 				<b-card-text v-html="$t('inviteCodePassed')" />
 			</b-card>
 
 			<!-- create or join a team bubble -->
-			<b-card	id="createOrJoinBubble"	:class="{ 'hide-left': flowState < FLOW.CreateOrJoinTeam }"	class="chat-bubble shadow-sm">
+			<b-card	id="createOrJoinBubble"	:class="{ 'hide-left': flowState < FLOW.CreateOrJoinTeam }"	class="chat-bubble chat-left shadow-sm">
 				<b-card-text v-html="$t('createOrJoin')" />
 			</b-card>
 
@@ -91,7 +93,7 @@
 						tabindex="1"
 					/>
 
-					<liquido-input
+					<!--liquido-input
 						id="userMobilephoneInput"
 						ref="userMobilephoneInput"
 						v-model="user.mobilephone"
@@ -103,7 +105,7 @@
 						:invalid-feedback="$t('mobilephoneInvalid')"
 						:disabled="flowState !== FLOW.JoinTeamForm"
 						tabindex="2"
-					/>
+					/ -->
 
 					<liquido-input
 						id="userEmailInput"
@@ -119,6 +121,20 @@
 						tabindex="3"
 					/>
 
+					<liquido-input
+						id="userPasswordInput"
+						ref="userPasswordInput"
+						v-model="plainPassword"
+						class="mb-3"
+						:label="$t('Password')"
+						:placeholder="$t('passwordPlaceholder')"
+						:valid-func="isPasswordValid"
+						:maxlength="200"
+						:invalid-feedback="$t('passwordInvalid')"
+						:disabled="flowState !== FLOW.JoinTeamForm"
+						tabindex="4"
+					/>
+
 					<div class="d-flex justify-content-between align-items-end">
 						<small :class="{ invisible: flowState !== FLOW.JoinTeamForm }" class="ms-1">
 							<a href="#" tabindex="4" @click="cancelJoinTeam()">{{ $t("Cancel") }}</a>
@@ -127,7 +143,7 @@
 							id="joinTeamOkButton"
 							:disabled="joinTeamOkButtonDisabled"
 							variant="primary"
-							tabindex="3"
+							tabindex="4"
 							@click="joinTeam()"
 						>
 							{{ $t("Ok") }}
@@ -172,7 +188,7 @@
 						tabindex="1"
 					/>
 
-					<liquido-input
+					<!-- liquido-input
 						id="adminMobilephoneInput"
 						ref="adminMobilephoneInput"
 						v-model="user.mobilephone"
@@ -184,7 +200,7 @@
 						:invalid-feedback="$t('mobilephoneInvalid')"
 						:disabled="flowState !== FLOW.CreateTeamForm"
 						tabindex="2"
-					/>
+					/ -->
 
 					<liquido-input
 						id="adminEmailInput"
@@ -199,6 +215,21 @@
 						tabindex="3"
 						@keyup.enter="createNewTeam()"
 					/>
+
+					<liquido-input
+						id="userPasswordInput"
+						ref="userPasswordInput"
+						v-model="plainPassword"
+						class="mb-3"
+						:label="$t('Password')"
+						:placeholder=undefined
+						:valid-func="isPasswordValid"
+						:maxlength="200"
+						:invalid-feedback="$t('passwordInvalid')"
+						:disabled="flowState !== FLOW.CreateTeamForm"
+						tabindex="4"
+					/>
+
 
 					<small class="ml-1">{{ $t("youWillBecomeAdmin") }}</small>
 
@@ -320,6 +351,7 @@ export default {
 				yourEMail: "Deine E-Mail",
 				emailPlaceholder: "info{'@'}domain.de",
 				emailInvalid: "E-Mail ungültig",
+				passwordInvalid: "Bitte mindestens " + config.passwordMinLength + " Zeichen!",
 
 				joinedTeamSuccessfully: "Herzlich willkommen im Team <b>{teamName}</b>. Viel Spaß beim Abstimmen und Wählen!",
 				gotoTeam: "Zum Team",
@@ -361,6 +393,7 @@ export default {
 				email: undefined,
 				mobilephone: undefined
 			},
+			plainPassword: undefined,
 
 			// initialize the value of the input field with the passed inviteCode (if any)
 			inviteCodeInputField: this.inviteCodeQueryParam,
@@ -375,6 +408,7 @@ export default {
 			// Our polite and nice chat bot logic :-)
 			// Chat bubbles are consecutively blended in along these states.
 			//TODO: create a plantUML flow chart for this.  /welcome -> IF logged in THEN Greet -> create new Team or join team, switch team?
+			//TODO: I may need some more complex logic for this.
 			FLOW: {
 				Start: 0,
 				Welcome: 1,											// animate / fade-in the next chat-bubble
@@ -397,7 +431,7 @@ export default {
 			},
 			flowState: 0,
 
-			//Semaphore so that the chat animation is only started once. This is for example relevant when the window is reloaded in the browser
+			// Semaphore so that the chat animation is only started once. This is for example relevant when the window is reloaded in the browser
 			chatAnimationStarted: false,
 		}
 	},
@@ -423,8 +457,9 @@ export default {
 		},
 		createNewTeamOkButtonDisabled() {
 			return !this.isTeamNameValid(this.team.teamName) || 
-						!this.isMobilephoneValid(this.user.mobilephone) || 
+						//!this.isMobilephoneValid(this.user.mobilephone) || 
 						!this.isAdminEmailValid(this.user.email)  || 
+						!this.isPasswordValid(this.plainPassword) ||
 						this.flowState >= this.FLOW.CreateTeamClicked
 		},
 		inviteLinkURL() {
@@ -446,6 +481,7 @@ export default {
 				this.inviteCodeInputField = team.inviteCode
 			})
 		}
+
 	},
 	/**
 	 * Start the welcome chat bot
@@ -518,6 +554,10 @@ export default {
 		/* user's email must match regex */
 		isEmailValid(val) {
 			return val !== undefined && val !== null && eMailRegEx.test(val)
+		},
+
+		isPasswordValid(val) {
+			return val !== undefined && val !== null && val.trim().length >= config.passwordMinLength
 		},
 
 		/* team name must be at least 6 chars */
@@ -667,8 +707,8 @@ export default {
 .login-link {
 	z-index: 999;
 	position: fixed;
-	bottom: 2rem;
-	right: 10px;	
+	bottom: 3rem;
+	right: 25px;  // because of scrollbar	
 	a {
 		padding: 1rem 0 1rem 1rem;
 	}

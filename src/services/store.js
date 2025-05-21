@@ -13,7 +13,7 @@ export const store = reactive({
 	pollStatusFilter: undefined,
 
   setHeaderTitle(newTitle) {
-		//console.log("===== Setting title to " + newTitle)
+		console.log("===== Setting title to " + newTitle)
     this.headerTitle = newTitle
   },
 

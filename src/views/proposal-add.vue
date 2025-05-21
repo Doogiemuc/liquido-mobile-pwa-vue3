@@ -312,7 +312,7 @@ export default {
 
 .cancel-link {
 	font-size: 1rem;
-	color: $secondary;
+	color: lightgrey;  //TODO: check contrast to background
 	cursor: pointer;
 }
 </style>

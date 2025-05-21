@@ -196,7 +196,7 @@ router.beforeEach(async (routeTo, routeFrom) => {
 	
 	// Clear header title. Page may set it later when it is mounted.
 	if (routeFrom.path !== routeTo.path) {
-		console.log("===== Router: Clear header")
+		//console.log("===== Router: Clear header")
 		store.setHeaderTitle(undefined)
 		store.setHeaderBackLink(undefined)
 	}

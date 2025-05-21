@@ -1,21 +1,27 @@
 /* 
   Globally avialable SCSS and color palette.
 
-  !!! When you change this file you must restart your dev server. !!!
+	Nice color palette generator:
+  https://mycolor.space/?hex=%232E8DFF&sub=1
  */
 
-$app-background: #DDD;  							// global background of app
-$app-max-width: 1000px;								 // maximum width of the whole app , eg. when shown in a browser
+$primary: #2e8dff;											// primary color button backgrounds. bootstrap primary color would be #0d6efd
+$app-background: #e3e9f5;  						// main background of app. Needs to have high contrast to text color.
+$liquido-text-color: #000000;					// text color for all text in the app. Needs to have high contrast to background color.
+$app-max-width: 1000px;									 // maximum width of the whole app , eg. when shown in a browser
 
-$primary: #0a54a3;    	 							// primary color, titles and button backgrounds
-$secondary: #6c757d;									// secondary color for titles and button backgrounds
-$icon-bg: #a9c6ff;										// icons background
-$header-bg: #a9c6ff;  //   #9fb6d4;   rgb(220, 236, 255);				// background of fixed header
-$navbar-bg: #a9c6ff;  //   #9fb6d4;    rgba(220, 236, 255, 0.9);	// background for bottom navbar
+$chat-left-bg: #aacfff;
+$chat-right-bg: white;								// background color for chat bubbles from the user
+$liquido-input-bg: #afc2fa;						// background color for input bubbles (where user has to enter something)
+
+$secondary: #6c757d;										// secondary color for titles and button backgrounds
+$icon-bg: #a9c6ff;											// icons background
+$header-bg: #429cf3;  //   #9fb6d4;   	rgb(220, 236, 255);				// background of fixed header
+$navbar-bg: #429cf3;  //   #9fb6d4;    rgba(220, 236, 255, 0.9);	// background for bottom navbar
 $input-bg: #768dcb; //      #c3cce6;   //rgb(180, 171, 255); // background for chat bubbles where user has to enter something
 
-$liquido-info-background: #162042;		 // background for liquido info alert boxes
-$admin-info-background: rgb(10, 84, 163); // #2E294E;      // info boxes for admin
+$liquido-info-background: #97b9e3;		 	// background for liquido-info alert boxes
+$admin-info-background: #97b9e3;   		//rgb(10, 84, 163);  #2E294E;      // info boxes for admin
 
 $header-height: 3rem;										// height of liquido header
 

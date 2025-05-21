@@ -1,32 +1,85 @@
 <template>
 	<div>
-		<h1 id="login-page" class="page-title">{{ pageTitle }}</h1>
+		<h1 id="page-title" class="page-title">{{ pageTitle }}</h1>
 
-		<!-- h3>WebAuthn</h3>
-		<div v-if="showDevLogin" class="d-flex justify-content-between mb-3">
-			<button type="button" class="btn btn-primary" @click="registerWebauthn">
-				Register {{ adminEmail }}
-			</button>
-			<button type="button" class="btn btn-primary" @click="loginWebauthn">
-				Login
-			</button>
-		</div -->
+		<!-- Default Login with email & password  -->
+		<div class="card">
+			<div class="card-body">
+
+				<liquido-input id="loginEmailInput" v-model="emailInputVal" v-model:state="emailInputState" type="email"
+					:placeholder="$t('emailPlaceholder')"
+					:required=true
+					:empty-feedback="$t('emailEmpty')"
+					:invalid-feedback="$t('emailInvalid')"/>
+
+				<liquido-input id="loginPasswordInput" v-model="passwordInputVal" v-model:state="passwordInputState" type="password"
+					:minLength=10 :required=true
+					:placeholder="$t('passwordPlaceholder')"
+					:invalid-feedback="$t('passwordInputIsInvalid')"
+					@keypress.enter="loginWithEmailPassword" />
+
+				<button id="loginWithEmailPasswordButton" type="button" class="btn btn-primary w-100" @click="loginWithEmailPassword">
+					{{ $t("Login") }}
+				</button>
+
+				<div v-if="loginErrorMessage" id="loginErrorMessage" class="alert alert-danger mt-3" v-html="loginErrorMessage">
+				</div>
+
+				<div class="horizontal-line my-5">
+					<span>
+						{{ $t("orSignInWith") }}
+					</span>
+				</div>
+
+				
+				<div class="row g-2">
+					<div class="col">
+						<!-- Signin with Google -->
+						<button type="button" class="btn btn-outline-secondary w-100" @click="startGoogleLogin()">
+							<i class="fa-brands fa-google position-absolute start-0 ms-3 top-50 translate-middle-y"></i> 
+							{{ $t("Google") }}
+						</button>
+					</div>
+					<div class="col">
+						<!-- Signin with Authy App -->
+						<button type="button" class="btn btn-outline-secondary w-100" @click="startFacebookLogin()">
+							<i class="fa fa-shield-halved position-absolute start-0 ms-3 top-50 translate-middle-y"></i> {{ $t("Authy") }}
+						</button>
+					</div>
+				</div>
+				<div class="row g-2">
+					<div class="col">
+						<!-- Signin with Apple -->
+						<button type="button" class="btn btn-outline-secondary w-100 mt-3" @click="startAppleLogin()">
+							<i class="fa-brands fa-apple position-absolute start-0 ms-3 top-50 translate-middle-y"></i> {{ $t("Apple") }}
+						</button>
+
+					</div>
+					<div class="col mb-2">
+						<!-- signin with Telegram -->
+						<button type="button" class="btn btn-outline-secondary w-100 mt-3" @click="startTelegramLogin()">
+							<i class="fa-brands fa-telegram position-absolute start-0 ms-3 top-50 translate-middle-y"></i> {{ $t("Telegram") }}
+						</button>
+					</div>
+				</div>
+			
+
+			</div>
+		</div>
+
+		<div class="forgot-password-link my-3">
+			<a href="#">{{ $t('forgotPassword') }}</a>
+		</div>
 
 		<!-- Login via SMS (disabled because expensive) -->
 		<b-card v-if="false" class="border-0 shadow-sm mb-4" :header="$t('LoginViaSms')">
 			<p>{{ $t('LoginViaSmsInfo') }}</p>
-			<liquido-input
-				id="mobilephoneInput"
-				v-model="mobilephone"
-        v-model:state="mobilephoneInputState"
-				type="mobilephone"
-				class="mb-3"
-				:label="$t('yourMobilephone')"
-				:placeholder="$t('mobilephonePlaceholder')"
-				:invalid-feedback="$t('mobilephoneInvalid')"
-			/>
+			<liquido-input id="mobilephoneInput" v-model="mobilephone" v-model:state="mobilephoneInputState"
+				type="mobilephone" class="mb-3" :label="$t('yourMobilephone')" :placeholder="$t('mobilephonePlaceholder')"
+				:invalid-feedback="$t('mobilephoneInvalid')" />
 			<div class="text-end">
-				<button id="requestTokenButton" :disabled="requestTokenButtonDisabled" class="btn btn-primary" @click="requestAuthToken">
+				<button id="requestTokenButton" :disabled="requestTokenButtonDisabled" class="btn btn-primary"
+					@click="requestAuthToken">
 					<div v-if="waitUntilNextRequestSecs > 0">
 						{{ $t('TokenSent') }}&nbsp;<b-spinner small />
 					</div>
@@ -36,89 +89,32 @@
 				</button>
 			</div>
 			<b-collapse v-model="tokenSentSuccessfully" class="mt-3">
-				<liquido-input
-					id="authTokenInput"
-					v-model="twillioAuthToken"
-          v-model:state="authTokenInputState"
-					type="text"
-					placeholder="<123456>"
-					class="mb-3"
-					:label="$t('AuthTokenLabel')"
-					:invalid-feedback="$t('authTokenInputInvalid')"
-					:minlength="6"
-					:maxlength="6"
-					:required="true"
-					:show-counter="true"
-				></liquido-input>
+				<liquido-input id="authTokenInput" v-model="twillioAuthToken" v-model:state="authTokenInputState" type="text"
+					placeholder="<123456>" class="mb-3" :label="$t('AuthTokenLabel')"
+					:invalid-feedback="$t('authTokenInputInvalid')" :minLength=6 :maxLength=6 :required="true"
+					:show-counter="true"></liquido-input>
 			</b-collapse>
-			<div 
-				v-if="tokenSentSuccessfully && !tokenErrorMessage" 
-				id="tokenSuccessMessage"
-				class="alert alert-success mt-3"
-			>
+			<div v-if="tokenSentSuccessfully && !tokenErrorMessage" id="tokenSuccessMessage" class="alert alert-success mt-3">
 				{{ $t("AuthtokenSentSuccessfully") }}
 			</div>
-			<div 
-				v-if="tokenErrorMessage" 
-				id="tokenErrorMessage"
-				class="alert alert-danger mt-3"
-				v-html="tokenErrorMessage"
-			></div>
-		</b-card>
-		
-		<!-- Login via Email -->
-		<div class="d-grid mb-3 col-8 mx-auto">
-			<liquido-input
-				id="loginEmailInput"
-				v-model="emailInput"
-				v-model:state="emailInputState"
-				type="email"
-				class="mb-1"
-				:label="$t('EMail')"
-				:placeholder="$t('emailPlaceholder')"
-				:invalid-feedback=undefined
-				@keypress.enter="requestEmailToken"
-			/>
-			
-				<button id="requestEmailButton" type="button" :disabled="sendLinkButtonDisabled" class="btn btn-primary" @click="requestEmailToken">
-					<i class="fas fa-envelope me-2"></i> {{ $t("EMailLogin") }}
-				</button>
-			
-			<div 
-				v-if="emailSentSuccessfully"
-				id="emailSuccessMessage"
-				class="alert alert-success mt-3"
-			>
-				{{ $t("EmailSentSuccessfully") }}
+			<div v-if="tokenErrorMessage" id="tokenErrorMessage" class="alert alert-danger mt-3" v-html="tokenErrorMessage">
 			</div>
-			<div 
-				v-if="emailErrorMessage"
-				id="emailErrorMessage"
-				class="alert alert-danger mt-3"
-				v-html="emailErrorMessage"
-			></div>
+		</b-card>
 
-		</div>
-		
 
-		<!-- Signin with Google -->
-		<div class="d-grid mb-3 col-8 mx-auto mt-5">
-			<button type="button" class="btn btn-primary" @click="startGoogleLogin()">
-				<i class="fa-brands fa-google me-2"></i> {{ $t("LoginWithGoogle") }}
-			</button>
+		<!-- Register as a new user -->
 
-			<button id="registerButton" type="button" class="btn btn-primary mt-5" @click="clickRegister()">
+		<div class="d-flex justify-content-center mt-5 px-3" style="max-width: 540px; margin: 0 auto;">
+			<button id="registerButton" type="button" class="btn btn-outline-secondary w-100" @click="clickRegister()">
 				<i class="fa-solid fa-user-plus me-2"></i> {{ $t("Register") }}
 			</button>
 		</div>
 
-
-		<div v-if="showDevLogin" class="d-grid col-8 mx-auto mt-5">
-			<hr/>
-			<button type="button" class="btn btn-secondary mt-2" @click="devLoginAdmin">
+		<div v-if="showDevLogin" class="d-flex flex-column px-3" style="margin-top: 8rem;">
+			<button type="button" class="btn btn-outline-secondary " @click="devLoginAdmin">
 				<i class="fas fa-shield-alt"></i> {{ $t("DevLoginAdmin") }}
 			</button>
-			<button type="button" class="btn btn-secondary mt-3" @click="devLoginMember">
+			<button type="button" class="btn btn-outline-secondary mt-1" @click="devLoginMember">
 				{{ $t("DevLoginMember") }}
 			</button>
 		</div>
@@ -128,49 +124,53 @@
 
 <script>
 import config from "config"
-import liquidoInput from "@/components/liquido-input.vue"
+import liquidoInput, { STATE } from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
 import { store }  from "@/services/store.js"
-// import WebAuthn from "@/services/quarkus-webauthn.js"
+//TODO: import WebAuthn from "@/services/quarkus-webauthn.js"
 
 const REQUEST_THROTTLE_SECS = 10
 
 export default {
-	i18n: {
-		messages: {
-			de: {
-				LoginWithGoogle: "Google Login",
-				LoginViaEmail: "E-Mail Login",
-				LoginViaSms: "SMS Login",
-				LoginViaSmsInfo: "Ich schicke dir einen Zahlencode auf dein Handy. Mit diesem kannst du dich dann hier einloggen.",
-				yourMobilephone: "Deine Handynummer",
-				mobilephonePlaceholder: "+49 151 1111111",
-				mobilephoneInvalid: "Handynummer ungültig",
-				RequestTokenButton: "Login-Token anfordern",
-				TokenSent: "SMS verschickt ...",
-				AuthTokenLabel: "Login-Token aus SMS",
-				authTokenInputInvalid: "Der Login-Token hat genau sechs Ziffern.",
-				MobilephoneNotFound: "Tut mir leid, ich kenne diese Telefonnummer in LIQUIDO nicht. Bitte <a href='/'>registriere dich zuerst.</a>",
-				TokenInvalid: "Der eingegebene Login-Token wurde nicht akzeptiert. Hast du dich vielleicht einfach nur vertippt? Bitte versuche es noch einmal.",
-				AuthtokenSentSuccessfully: "Ok, die SMS wurde verschickt. Bitte gib den Login-Token aus der SMS ein.",
-				RequestAuthTokenError: "Login-Token konnte nicht angefordert werden. Bitte versuche es noch einmal.",
-
-				EMailLogin: "Email Login",
-				LoginViaEmailInfo: "Ich kann dir einen login Link per E-Mail schicken.",
-				SendLink: "Link zuschicken",
-				emailPlaceholder: "info{'@'}domain.de",
-				emailInvalid: "E-Mail ungültig",
-				EmailSentSuccessfully: "Ok, Email wurde verschickt. Klicke in der E-Mail auf den Login Link.",
-				CouldNotSendEmail: "Es gab ein Problem beim Verschicken der E-Mail. Bitte versuche es später noch einmal.",
-				UserWithThatEmailNotFound: "Tut mir leid, ich kenne niemanden mit dieser E-Mail Adresse. Möchtest du dich <a href='/welcome'>zuerst registrieren</a>?",
-
-				Register: "Registrieren",
+  i18n: {
+    messages: {
+      de: {      
+				emailPlaceholder: "Deine E-Mail",
+        passwordPlaceholder: "Passwort",
+        emailInvalid: "Ungültige Email. Vielleicht nur vertippt?",
+				emailEmpty: "Bitte gib deine E-Mail Adresse ein.",
+				passwordInputIsInvalid: "Passwort falsch. (Mindestens 10 Zeichen.)",
+				loginFailed: "Login fehlgeschlagen. Bitte überprüfe deine E-Mail und dein Passwort.",
 				
-				DevLoginAdmin: "devLogin: Admin",
-				DevLoginMember: "devLogin: Member",
-			}
-		}
-	},
+        RequestTokenButton: "Login-Token anfordern",
+        TokenSent: "SMS verschickt ...",
+        AuthTokenLabel: "Login-Token aus SMS",
+        authTokenInputInvalid: "Der Login-Token hat genau sechs Ziffern.",
+        MobilephoneNotFound: "Tut mir leid, ich kenne diese Telefonnummer in LIQUIDO nicht. Bitte <a href='/'>registriere dich zuerst.</a>",
+        TokenInvalid: "Der eingegebene Login-Token wurde nicht akzeptiert. Hast du dich vielleicht einfach nur vertippt? Bitte versuche es noch einmal.",
+        AuthtokenSentSuccessfully: "Ok, die SMS wurde verschickt. Bitte gib den Login-Token aus der SMS ein.",
+        RequestAuthTokenError: "Login-Token konnte nicht angefordert werden. Bitte versuche es noch einmal.",
+        
+        EmailSentSuccessfully: "Ok, ich habe dir eine Email mit einem Code geschickt.",
+        CouldNotSendEmail: "Es gab ein Problem beim Verschicken der E-Mail. Bitte versuche es später noch einmal.",
+        UserWithThatEmailNotFound: "Tut mir leid, ich kenne niemanden mit dieser E-Mail Adresse. Möchtest du dich <a href='/welcome'>zuerst registrieren</a>?",
+        orSignInWith: "oder melde dich an mit",
+				Google: "Google",
+        Facebook: "Facebook",
+        Apple: "Apple",
+        Telegram: "Telegram",
+        LoginViaSms: "SMS Login",
+        LoginViaSmsInfo: "Ich schicke dir einen Zahlencode auf dein Handy. Mit diesem kannst du dich dann hier einloggen.",
+
+        forgotPassword: "Passwort vergessen?",
+				Register: "Registrieren",
+        DevLoginAdmin: "devLogin: Admin",
+        DevLoginMember: "devLogin: Member",
+        EmailTokenInvalid: "Der eingegebene E-Mail-Token ist ungültig.",
+        GoogleLoginFailed: "Google-Login fehlgeschlagen."
+      }
+    }
+  },
 	components: { liquidoInput },
 	props: {
 		// These props are set from URL parameters, e.g. when user logs in via the email link
@@ -181,11 +181,17 @@ export default {
 		return {
 			pageTitle: this.$t("Login"),
 			store,
-			// Login via email
-			emailInput: "",
-			emailInputState: null,					// synced states from liquido-inputs
+			// Login via email & password
+			emailInputVal: "",
+			emailInputState: undefined, 	// synced states from liquido-inputs
+			passwordInputVal: "",
+			passwordInputState: null,
+			loginErrorMessage: undefined,
+
+			// Forgot password -> send email with token
 			emailSentSuccessfully: false,
 			emailErrorMessage: undefined,
+			emailCode: undefined,
 
 			// auth token (via SMS)
 			mobilephone: "",
@@ -202,9 +208,6 @@ export default {
 	computed: {
 		showDevLogin() {
 			return process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
-		},
-		sendLinkButtonDisabled() {
-			return this.emailInputState !== true
 		},
 		requestTokenButtonDisabled() {
 			return this.mobilephoneInputState !== true || this.waitUntilNextRequestSecs > 0
@@ -246,6 +249,21 @@ export default {
 	},
 	methods: {
 
+		loginWithEmailPassword() {
+			this.loginErrorMessage = null
+			//BUFIX: When password is auto filled, then state is not valid.   if (this.emailInputState !== STATE.VALID || this.passwordInputState !== STATE.VALID) return	
+			api.loginWithEmailPassword(this.emailInputVal, this.passwordInputVal)
+				.then(() => {
+					this.$router.push({name: "teamHome"})
+				})
+				.catch(err => {
+					console.warn("Clould not login with email & password", err)
+					this.loginErrorMessage = this.$t("loginFailed") 
+				})
+		},
+
+
+
 		/** 
 		 * Start the google login process only after the user clicked the Google button.
 		 * Dynamically load the google-script and call the google login function.
@@ -271,7 +289,7 @@ export default {
 				window.google.accounts.id.initialize({
 					client_id: config.googleClientId,
 					login_uri: config.LIQUIDO_API_URL + "/auth/google",
-					//callback: this.handleGoogleResponse,
+					callback: this.handleGoogleResponse,
 					auto_select: false,
 					ux_mode: "redirect",
 					scope: "openid email profile"
@@ -405,13 +423,16 @@ export default {
 
 
 
-		// ============== Login via Email link =================
+		// ============== Login via Email =================
 
 
 		/** Send a magic link that the user can login with for the next n hours. */
-		requestEmailToken() {
+		sendForgotPasswordMail() {
+			// Email login button might be disabled, when the email is not valid yet.
+			// But the button is never shown as disabled for non logicall beautiful UX/UI reasons. :-)
+			// So we check here if the current value of the liquido-input is actually valid.
+			if (this.emailInputState !== true) return  
 			console.log("requestEmailToken")
-			if (this.emailInputState !== true) return  // When user presses return and input state is not yet valid
 			this.tokenErrorMessage = undefined
 			this.emailErrorMessage = undefined
 			api.logout()  					// delete any previously stored JWT
@@ -422,11 +443,12 @@ export default {
 					this.emailSentSuccessfully = true
 				})
 				.catch(err => {
-					this.$root.scrollToBottom()
+					//this.$root.scrollToBottom()
 					if (err.response &&	
 							err.response.data &&
 							err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_EMAIL_NOT_FOUND) 
 					{
+						//TODO: ask user if he wants to register
 						console.log("There is no user with email: "+this.emailInput)
 						this.emailSentSuccessfully = false
 						this.emailErrorMessage = this.$t("UserWithThatEmailNotFound")
@@ -468,9 +490,33 @@ export default {
 </script>
 
 <style>
-	.card-header {   
-		background-color: white !important;
-		margin: 0;
-		font-weight: bold;
+
+	.button-outline-liquido {
+		border-color: var(--bs-border-color) !important;
 	}
+
+	.horizontal-line {
+		text-align: center; border-bottom: 1px solid lightgrey; 
+		line-height: 0;
+	}
+	.horizontal-line span {
+		background: white; 
+		color: lightgrey; 
+		font-size: 0.8rem; 
+		padding: 0 1rem;
+	}
+
+	.forgot-password-link {
+		text-align: center; 
+		font-size: 0.8rem;
+		a {
+			color: gray !important;
+		}
+	}
+
+	/* exctly the same margin-top as our liquido-input */
+	#loginWithEmailPasswordButton {
+		margin-top: 12px;  
+	}
+	
 </style>
