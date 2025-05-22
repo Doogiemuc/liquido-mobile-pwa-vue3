@@ -5,15 +5,14 @@
  */
 //import { inspect } from 'util'  // better than JSON.stringify
 
-
-import config from "../../../config/config.test.js"
+import config from "../../../config/config.development.js"
 const { expect } = require("chai");
 
 let now = Date.now() % 100000
 console.log("Running Cypress HAPPY CASE test (test_uuid="+now+")", "NODE_ENV="+process.env.NODE_ENV)
 
-let fix = {}  // Test fixtures within this test RUN
-
+let fix = {}  // Individual test fixtures for this test run. Every run can have its own test data.
+	
 /* When one of test steps of happy case fails, then abort the whole test run. */
 afterEach(function() {
   if (this.currentTest.state === 'failed') {
@@ -32,10 +31,12 @@ context('Happy Case', () => {
 	before(() => {
 		fix.userName   = 'Cypress User-'+now
 		fix.userEmail  = 'cypressUser-'+now+'@liquido.me'
+		fix.userPassword = fix.userEmail + "pwd"
 		fix.userMobilePhone = '+49 555 '+now
 		fix.adminName  = 'Cypress Admin-'+now
 		fix.adminMobilephone = '+49 666 '+now
 		fix.adminEmail = 'cypressAdmin-'+now+'@liquido.me'
+		fix.adminPassword = fix.adminEmail + "pwd"
 		fix.teamName   = 'Cypress Team '+now
 		fix.devLoginToken = Cypress.env("devLoginToken")
 		fix.pollTitle  = 'Cypress Poll '+now
@@ -74,8 +75,8 @@ context('Happy Case', () => {
 		
 		cy.get('#createNewTeamButton').should('be.visible').click()  // Need to wait for button to become visible, because of andimation.
 		cy.get('#teamNameInput').type(fix.teamName)
-		cy.get('#adminMobilephoneInput').type(fix.adminMobilephone)
 		cy.get('#adminEmailInput').type(fix.adminEmail)
+		cy.get('#adminPasswordInput').type(fix.adminPassword)
 		cy.get('#createNewTeamOkButton').click()
 
 		//THEN new team is created successfully 

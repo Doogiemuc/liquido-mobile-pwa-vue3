@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<h1 id="page-title" class="page-title">{{ pageTitle }}</h1>
+		<h1 id="login-page" class="page-title">{{ pageTitle }}</h1>
 
 		<!-- Default Login with email & password  -->
 		<div class="card">

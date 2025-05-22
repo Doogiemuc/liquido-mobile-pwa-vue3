@@ -20,7 +20,8 @@ $header-bg: #429cf3;  //   #9fb6d4;   	rgb(220, 236, 255);				// background of f
 $navbar-bg: #429cf3;  //   #9fb6d4;    rgba(220, 236, 255, 0.9);	// background for bottom navbar
 $input-bg: #768dcb; //      #c3cce6;   //rgb(180, 171, 255); // background for chat bubbles where user has to enter something
 
-$liquido-info-background: #97b9e3;		 	// background for liquido-info alert boxes
+$liquido-info-color: black;			// text color for liquido-info alert boxes
+$liquido-info-background: white;		 	// background for liquido-info alert boxes
 $admin-info-background: #97b9e3;   		//rgb(10, 84, 163);  #2E294E;      // info boxes for admin
 
 $header-height: 3rem;										// height of liquido header

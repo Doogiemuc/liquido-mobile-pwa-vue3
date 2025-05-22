@@ -227,9 +227,10 @@ export default {
 		 * scroll an HTML elemant right under the header
 		 * (as far up as possible, depending on content below the elem)
 		 * @param {Object} elem the dom elem
+		 * @param {Number} marginTop margin to the top of the page (default = 50 px)
 		 * @param {Number} durationMs duration of scroll animation (default = 500 ms)
 		 */
-		scrollElemToTop(elem, marginTop = 0, durationMs = 500) {
+		scrollElemToTop(elem, marginTop = 55, durationMs = 500) {
 			//This would exist, but not in Safari for iOS :-(  elem.scrollIntoView({ behavior: 'smooth' });
 			if (!elem) return
 			let appElem = document.getElementById("app")

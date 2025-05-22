@@ -1,15 +1,25 @@
-const { defineConfig } = require('cypress')
+//const { defineConfig } = require('cypress')
 
-module.exports = defineConfig({
+import { defineConfig } from 'cypress'
+
+let now = 4711  // "id" of test data
+
+//module.exports = defineConfig({
+export default defineConfig({
+	e2e: {
+		baseUrl: 'http://localhost:3001/',
+		//specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',  // which tests to run
+	},
   env: {
     LIQUIDO_API: 'http://localhost:8080/liquido-api',
     devLoginToken: '998877',
 		// this is our default test user. Can be overwritten per env
 		admin: {
-			teamName: "LocalTeam",
-			name: "Local Admin",
-			email: "adminLocalTeam@liquido.vote",
-			mobilephone: "+4955511111",
+			teamName: "testTeam"+now,
+			name: "TestAdmin "+now,
+			email: "testadmin"+now+"@liquido.vote",
+			password: "testadmin"+now+"@liquido.votepwd",
+			mobilephone: "+49555"+now,
 			website: "www.liquido.vote"
 		},
 		mailtrap: {

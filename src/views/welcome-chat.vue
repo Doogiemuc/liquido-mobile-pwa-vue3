@@ -9,7 +9,7 @@
 				<b-card-text v-html="$t('whatsYourName')" />
 			</b-card>
 
-			<div :class="{ 'hide-right': flowState < FLOW.NicknameInput }" class="card chat-bubble shadow-sm chat-right">
+			<div :class="{ 'hide-right': flowState < FLOW.NicknameInput }" class="card chat-bubble chat-right shadow-sm">
 				<div class="card-body">
 					<liquido-input
 						id="userNameInput"
@@ -35,8 +35,8 @@
 				<b-card-text v-html="$t('niceToMeetYou', { nickname: user.name })" />
 			</b-card>
 			
-			<!-- when invite code is passed as URL parameter -->
-			<b-card	:class="{ 'hide-left': flowState != FLOW.InviteCodePassed }" class="chat-bubble chat-left shadow-sm">
+			<!-- TODO: when invite code is passed as URL parameter, then forward to join team chat -->
+			<b-card	v-if="false" :class="{ 'hide-left': flowState != FLOW.InviteCodePassed }" class="chat-bubble chat-left shadow-sm">
 				<b-card-text v-html="$t('inviteCodePassed')" />
 			</b-card>
 
@@ -48,22 +48,10 @@
 			<!-- create or join a team buttons -->
 			<div id="createOrJoinButtons" :class="{ 'hide-left': flowState < FLOW.CreateOrJoinTeam }" class="mb-3 transition-all">
 				<button
-					id="joinTeamButton"
-					:class="{
-						'btn-primary': true,
-						'moveToCenterFromLeft active': inJoinTeamFlow,
-						opacity0: inCreateTeamFlow,
-					}"
-					class="btn"
-					@click="chooseJoinTeam()"
-				>
-					{{ $t("joinTeamButton") }}
-				</button>
-				<button
 					id="createNewTeamButton"
 					:class="{
 						'btn-primary': true,
-						'moveToCenterFromRight active': inCreateTeamFlow,
+						'moveToCenterFromLeft active': inCreateTeamFlow,
 						opacity0: inJoinTeamFlow,
 					}"
 					class="btn"
@@ -71,6 +59,20 @@
 				>
 					{{ $t("createNewTeamButton") }}
 				</button>
+
+				<button
+					id="joinTeamButton"
+					:class="{
+						'btn-primary': true,
+						'moveToCenterFromRight active': inJoinTeamFlow,
+						opacity0: inCreateTeamFlow,
+					}"
+					class="btn"
+					@click="chooseJoinTeam()"
+				>
+					{{ $t("joinTeamButton") }}
+				</button>
+				
 			</div>
 			
 
@@ -113,7 +115,6 @@
 						v-model="user.email"
 						class="mb-3"
 						:label="$t('yourEMail')"
-						:placeholder="$t('emailPlaceholder')"
 						:valid-func="isEmailValid"
 						:maxlength="200"
 						:invalid-feedback="$t('emailInvalid')"
@@ -127,7 +128,6 @@
 						v-model="plainPassword"
 						class="mb-3"
 						:label="$t('Password')"
-						:placeholder="$t('passwordPlaceholder')"
 						:valid-func="isPasswordValid"
 						:maxlength="200"
 						:invalid-feedback="$t('passwordInvalid')"
@@ -136,7 +136,7 @@
 					/>
 
 					<div class="d-flex justify-content-between align-items-end">
-						<small :class="{ invisible: flowState !== FLOW.JoinTeamForm }" class="ms-1">
+						<small :class="{ invisible: flowState !== FLOW.JoinTeamForm }">
 							<a href="#" tabindex="4" @click="cancelJoinTeam()">{{ $t("Cancel") }}</a>
 						</small>
 						<b-button
@@ -166,9 +166,6 @@
 					<i class="fas fa-angle-double-right" />
 				</b-button>
 			</b-card>
-
-
-
 
 
 
@@ -217,8 +214,8 @@
 					/>
 
 					<liquido-input
-						id="userPasswordInput"
-						ref="userPasswordInput"
+						id="adminPasswordInput"
+						ref="adminPasswordInput"
 						v-model="plainPassword"
 						class="mb-3"
 						:label="$t('Password')"
@@ -231,10 +228,10 @@
 					/>
 
 
-					<small class="ml-1">{{ $t("youWillBecomeAdmin") }}</small>
+					<small class="text-secondary">{{ $t("youWillBecomeAdmin") }}</small>
 
 					<div class="d-flex justify-content-between align-items-center mt-3">
-						<small :class="{ invisible: flowState !== FLOW.CreateTeamForm }" class="ms-1">
+						<small :class="{ invisible: flowState !== FLOW.CreateTeamForm }">
 							<a href="#" tabindex="4" @click="cancelCreateNewTeam()">{{ $t("Cancel") }}</a>
 						</small>
 						<b-button
@@ -253,7 +250,7 @@
 
 			<!-- New team created successfully -->
 
-			<b-card	id="newTeamCreatedBubble"	:class="{ 'collapse-max-height': flowState !== FLOW.CreateTeamSuccessfull }" class="chat-bubble shadow-sm">
+			<b-card	id="newTeamCreatedBubble"	:class="{ 'collapse-max-height': flowState !== FLOW.CreateTeamSuccessfull }" class="chat-bubble chat-left shadow-sm">
 				<p>{{ $t("teamCreated") }}</p>
 				<p class="text-center mb-2">
 					<a id="inviteLink" :href="inviteLinkURL" :data-invitecode="team.inviteCode" @click.prevent="shareLink()">
@@ -263,9 +260,9 @@
 				</p>
 			</b-card>
 
-			<b-card	:class="{ 'collapse-max-height': flowState !== FLOW.CreateTeamSuccessfull }" class="chat-bubble shadow-sm">
+			<b-card	:class="{ 'collapse-max-height': flowState !== FLOW.CreateTeamSuccessfull }" class="chat-bubble chat-left shadow-sm">
 				<p>{{ $t("scanQrCode") }}</p>
-				<div class="text-center">
+				<div class="text-center mb-3">
 					<img id="qrCodeImg" src="" class="qr-code">
 				</div>
 				<p v-html="$t('teamInfo')" />
@@ -281,7 +278,7 @@
 				</b-button>
 			</b-card>
 
-			<b-card :class="{ 'collapse-max-height': flowState !== FLOW.CreateTeamSuccessfull }" class="chat-bubble shadow-sm">
+			<b-card :class="{ 'collapse-max-height': flowState !== FLOW.CreateTeamSuccessfull }" class="chat-bubble chat-left shadow-sm">
 				<p v-html="$t('pollInfo')" />
 				<b-button
 					id="gotoCreatePollButton"
@@ -340,7 +337,7 @@ export default {
 				login: "Login",
 				userNameInvalid: "Bitte mindestens " + config.usernameMinLength + " Zeichen!",
 				niceToMeetYou: "Hallo <b>{nickname}</b> ! Schön dich kennen zu lernen.",
-				createOrJoin: "Möchtest du <ul><li>mit einem Einladungscode einem bestehenden <b>Team beitreten</b></li><li>oder möchtest du ein <b>neues Team gründen?</b></li></ul>",
+				createOrJoin: "Möchtest du ein neues Team gründen? Oder hast du einen Einladungscode bekommen und möchtest einem bestehenden Team beitreten?",
 
 				joinTeamButton: "Team beitreten",
 				inviteCode: "Einladungscode",
@@ -366,7 +363,7 @@ export default {
 				shareThisLink: "LIQUIDO Einladung: {teamName} ({inviteCode})",
 				tellInvitationCode: "Oder nutze einfach diesen Einadungscode:",
 				scanQrCode: "Oder lass sie diesen QR code scannen:",
-				teamInfo: "Du findest diese Infos später jederzeit wieder auf eurer Team Seite.",
+				teamInfo: "Du findest diesen QR Code auch auf eurer Team Seite.",
 				pollInfo: 
 					"Möchtest du jetzt gleich eine erste Abstimung (<i class='fas fa-poll'></i>) für dein Team erstellen? Jedes Teammitglied kann dann " +
 					"seinen eigenen Wahlvorschlag (<i class='fas fa-vote-yea'></i>) hinzufügen.",
@@ -407,7 +404,6 @@ export default {
 
 			// Our polite and nice chat bot logic :-)
 			// Chat bubbles are consecutively blended in along these states.
-			//TODO: create a plantUML flow chart for this.  /welcome -> IF logged in THEN Greet -> create new Team or join team, switch team?
 			//TODO: I may need some more complex logic for this.
 			FLOW: {
 				Start: 0,
@@ -606,7 +602,7 @@ export default {
 				picture: "Avatar1.png",      //TODO: let user change his Avatar later
 				//website: ...
 			}
-			api.createNewTeam(this.team.teamName, admin)
+			api.createNewTeam(this.team.teamName, admin, this.plainPassword)
 				.then((team) => {
 					this.team = team
 					this.createTeamQRCode()
@@ -616,9 +612,10 @@ export default {
 					})
 				})
 				.catch((err) => {			// on error show modal
-					let errCode = err && err.response && err.response && err.response.data ? err.response.data.liquidoErrorCode : undefined
+					let errCode = err?.response?.data?.liquidoErrorCode 
+					// err && err.response && err.response && err.response.data ? err.response.data.liquidoErrorCode : undefined
 					// https://babeljs.io/docs/en/babel-plugin-proposal-optional-chaining  Here Babel is cool. Ey, you need this cool top notch language feature. Just "install" it :-)
-					//MAYBE:  let errCode = err?.response?.data?.liquidoErrorCode  
+					// Update 2025: Optional chaining is now part of the JS standard. So no need to use Babel for this. :-)
 					if (errCode === api.err.TEAM_WITH_SAME_NAME_EXISTS) {
 						this.$root.$refs.rootPopupModal.showError(this.$t("teamWithSameNameExists"), this.$t("Error"))
 					} else 
@@ -731,13 +728,13 @@ export default {
 #joinTeamButton {
 	position: absolute;
 	transition: all 0.5s ease;
-	left: 0;
+	right: 0;
 	top: 0;
 }
 #createNewTeamButton {
 	position: absolute;
 	transition: all 0.5s ease;
-	right: 0;
+	left: 0;
 	top: 0;
 }
 #createNewTeamOkButton {

@@ -439,12 +439,13 @@ let graphQlApi = {
 	 * @param {String} teamName name of new team
 	 * @param {Object} admin first admin of new team 
 	 */
-	async createNewTeam(teamName, admin) {
-		let graphQL = `mutation createNewTeam($teamName: String!, $admin: UserEntityInput!) { ` + 
-			` createNewTeam(teamName: $teamName, admin: $admin) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
+	async createNewTeam(teamName, admin, password) {
+		let graphQL = `mutation createNewTeam($teamName: String!, $admin: UserEntityInput!, $password: String!) { ` + 
+			` createNewTeam(teamName: $teamName, admin: $admin, password: $password) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		let variables = {
 			teamName: teamName,
-			admin: admin
+			admin: admin,
+			password: password
 		}
 		console.log("createNewTeam Query:\n", graphQL, "variables:\n", JSON.stringify(variables))
 

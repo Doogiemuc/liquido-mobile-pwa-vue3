@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<div id="polls" class="d-flex justify-content-between align-items-center">
+		<div id="polls-page" class="d-flex justify-content-between align-items-center">
 			<div>&nbsp;</div>
 			<h2 class="page-title flex-grow-1">
 				{{ pageTitleLoc }}

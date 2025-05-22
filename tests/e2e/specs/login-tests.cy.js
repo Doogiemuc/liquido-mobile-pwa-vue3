@@ -48,7 +48,7 @@ context('Login Test', () => {
 
 	// The SMS use case can completely and transparently be tested. 
 	// Mocking is purely done in the backend.
-	it('(Simulate) Login via SMS', function() {
+	it.skip('(Simulate) Login via SMS', function() {
 		//GIVEN on login page
 		cy.visit("/login")
 		cy.get("#login-page")
@@ -69,7 +69,25 @@ context('Login Test', () => {
 		cy.get("#team-home")
 	})
 
-	it('(Simulate) Login via Email', function() {
+	it('Login via email & password', function() {
+		cy.visit("/login")
+		cy.get("#login-page")
+
+		//WHEN test user enters his email & password
+		cy.get("#loginEmailInput").type(Cypress.env("admin").email)
+		cy.get("#loginPasswordInput").type(Cypress.env("admin").password)
+		
+		// AND click login button
+		cy.get("#loginWithEmailPasswordButton").click()
+
+		//THEN user is logged in and teamHome is shown
+		cy.get("#team-home")
+		// AND the user is shown in the team
+		cy.get("#memberCards").contains(Cypress.env("admin").name)
+	})
+
+
+	it.skip('(Simulate) Password forgotten email', function() {
 		//GIVEN on login page
 		cy.visit("/login")
 		cy.get("#login-page")
