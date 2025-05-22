@@ -155,6 +155,7 @@ context('Happy Case', () => {
 		assert.isString(fix.inviteCode, "Need inviteCode to test joinTeam")
 		assert.isString(fix.userName)
 		assert.isString(fix.userMobilePhone)
+		assert.isString(fix.userPassword)	
 		assert.isString(fix.userEmail)
 		assert.isString(fix.pollTitle, "Need existing poll to test joinTeam")
 		assert.isString(fix.proposalTitle, "Need existing proposal to test joinTeam")
@@ -167,8 +168,8 @@ context('Happy Case', () => {
 		cy.get('#userNameInput', {timeout: 8000}).type(fix.userName).type("{enter}")  // implicitly checks that #userNameInput is not disabled
 		cy.get('#joinTeamButton').should('be.visible').click()
 		cy.get('#inviteCodeInput').type(fix.inviteCode)
-		cy.get('#userMobilephoneInput').type(fix.userMobilePhone)
 		cy.get('#userEmailInput').type(fix.userEmail)
+		cy.get('#userPasswordInput').type(fix.userPassword)
 
 		cy.get('#joinTeamOkButton').click()
 
@@ -185,7 +186,7 @@ context('Happy Case', () => {
 
 		//WHEN navigating to team's polls
 		cy.get("#gotoPollsButton").click()
-		cy.get("#polls")
+		cy.get("#polls-page")
 
 		//THEN our poll should be shown
 		cy.get('.poll-title').should('contain.text', fix.pollTitle)

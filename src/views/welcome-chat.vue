@@ -660,7 +660,7 @@ export default {
 				picture: "Avatar1.png",      //TODO: let user change his Avatar later
 				//website: ...
 			}
-			api.joinTeam(this.inviteCodeInputField, newMember)
+			api.joinTeam(this.inviteCodeInputField, newMember, this.plainPassword)
 				.then(team => {
 					this.flowState = this.FLOW.JoinTeamSuccessfull
 					this.team = team
@@ -669,7 +669,7 @@ export default {
 					})
 				})
 				.catch(err => {
-					let errCode = err && err.response && err.response && err.response.data ? err.response.data.liquidoErrorCode : undefined
+					let errCode = err?.response?.data?.liquidoErrorCode
 					if (errCode === api.err.CANNOT_JOIN_TEAM_INVITE_CODE_INVALID) {
 						this.$root.$refs.rootPopupModal.showError(this.$t("cannotJoinTeamInviteCodeInvalid"), this.$t("Error"))	
 					} else {

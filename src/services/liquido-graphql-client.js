@@ -480,12 +480,13 @@ let graphQlApi = {
 			.then(res => res.data.getTeamForInviteCode)
 	},
 
-	async joinTeam(inviteCode, member) {
-		let graphQL = `mutation joinTeam($inviteCode: String!, $member: UserEntityInput!) { ` + 
-			` joinTeam(inviteCode: $inviteCode, member: $member) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
+	async joinTeam(inviteCode, member, password) {
+		let graphQL = `mutation joinTeam($inviteCode: String!, $member: UserEntityInput!, $password: String!) { ` + 
+			` joinTeam(inviteCode: $inviteCode, member: $member, password: $password) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		let variables = {
 			inviteCode: inviteCode,
-			member: member
+			member: member,
+			password: password
 		}
 		return graphQlQuery(graphQL, variables)
 			.then(res => {

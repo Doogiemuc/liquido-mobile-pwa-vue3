@@ -221,7 +221,7 @@ function likeProposal(prop) {
 
 	<div>
 	
-		<div class="card polly-card user-select-none">
+		<div class="card polly-card user-select-none border-0 shadow">
 			<div class="card-header">
 				<input v-if="isNew" type="text" class="form-control poll-title" id="pollTitle" v-model="poll.title" :placeholder="$t('pollTitle')">
 				<h1 v-if="inVoting" class="poll-title" id="pollTitle">{{ poll.title }}</h1>	
@@ -287,16 +287,18 @@ function likeProposal(prop) {
 	.poll-title {
 		border: none;
 		//background-color: rgba(0, 0, 0, 0);   // MAYBE? Currently we show the input field also for the title?
-		margin: 0;
-		padding: 0;
+		//margin: 0;
+		//padding: 0;
 		font-size: 1.1rem;
 		font-weight: bold;
 		text-align: center;
 	}
+	.card-header {
+		border: none
+	}
 	.card-footer {
 		border-top: none;
 		background-color: white;
-		padding-right: 0.5rem;  // small visual adjustment. Make save button same distance to panel border at its bottom and right
 	}
 	.proposal-list-container {
 		position: relative;

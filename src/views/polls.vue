@@ -2,9 +2,9 @@
 	<div>
 		<div id="polls-page" class="d-flex justify-content-between align-items-center">
 			<div>&nbsp;</div>
-			<h2 class="page-title flex-grow-1">
+			<h1 class="page-title flex-grow-1">
 				{{ pageTitleLoc }}
-			</h2>
+			</h1>
 			<i class="fas fa-search text-secondary" @click="toggleSearch" />
 		</div>
 
