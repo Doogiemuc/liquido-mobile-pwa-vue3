@@ -18,8 +18,10 @@
 		</div>
 
 		<!-- Text info -->
-		<div class="text-muted alert">
+		<div class="text-muted">
 			<p v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" v-html="$t('pollInElaborationInfo')" />
+			<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && userAlreadyHasProposal" v-html="$t('alreadyAddedProposal')" />
+			<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && !userAlreadyHasProposal" v-html="$t('canAddProposal')" />
 			<p v-if="poll.status === 'VOTING' && !poll.usersBallot" v-html="$t('votingPhaseInfo')" />
 			<p v-if="poll.status === 'VOTING' &&  poll.usersBallot" v-html="$t('alreadyVotedInfo')" />
 			<p v-if="poll.status === 'FINISHED'" id="finishedPollInfo">
@@ -101,10 +103,13 @@ export default {
 			en: {},
 			de: {
 				cannotFindPoll: "<h4>Fehler</h4><hr/><p>Diese Abstimmung konnte nicht gefunden werden.</p>",
-				pollInElaborationInfo:
-					"Dieser Abstimmung wird gerade debatiert. " +
-					"Jedes Teammitglied kann einen eigenen Wahlvorschlag hinzufügen. " +
-					"Euer Admin startet dann die Wahlphase für diese Abstimmung.",
+				pollInElaborationInfo: 
+					"<p>Diese Abstimmung wird gerade noch debatiert.</p>" +
+					"<p>Wenn euer Admin die Wahl startet, kannst du anonym deine Stimme abgeben.</p>",
+				canAddProposal: 
+					"Du kannst in dieser Abstimmung noch deinen eigenen Wahlvorschlag hinzufügen.",
+				alreadyAddedProposal: 
+					"Du hast bereits einen Wahlvorschlag in dieser Abstimmung hinzugefügt.",
 				addProposal: "Vorschlag hinzufügen",
 				startVotingPhaseInfo: 
 					"Hallo Admin! Möchstest du die Wahlphase für diese Abstimmung starten? Dann sind die Wahlvorschläge fixiert und dein Team kann abstimmen.",
@@ -153,6 +158,11 @@ export default {
 		},
 		userIsAdmin() {
 			return api.isAdmin()
+		},		
+		userAlreadyHasProposal() {
+			let currentUser = api.getCachedUser()
+			if (!this.poll || !this.poll.proposals || !currentUser) return false
+			return this.poll.proposals.filter((prop) => prop.createdBy.id === currentUser.id).length > 0
 		},
 
 		/** 
@@ -162,12 +172,11 @@ export default {
 		 */
 		showAddProposal() {
 			if (this.poll.status !== "ELABORATION") return false
+			if (this.userIsAdmin) return true
 			if (!this.poll.proposals || this.poll.proposals.length === 0) {
 				return true
 			}
-			let currentUser = api.getCachedUser()
-			if (this.userIsAdmin) return true
-			return this.poll.proposals.filter((prop) => prop.createdBy.id === currentUser.id).length === 0
+			return !this.userAlreadyHasProposal
 		},
 		/** The voting phase can be started by the admin when there are at least two proposals */
 		showStartVotingPhase() {
@@ -225,6 +234,7 @@ export default {
 			this.$router.push({name: "polls"})
 		},
 
+		
 		clickAddProposal() {
 			this.$router.push("/polls/" + this.poll.id + "/add")
 		},

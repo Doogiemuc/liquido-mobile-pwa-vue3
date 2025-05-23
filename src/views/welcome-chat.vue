@@ -296,6 +296,12 @@
 </template>
 
 <script>
+
+/* 
+   Add a dot to this line, when you updated welcome-chat and are still not happy! :-)
+   .................................................
+*/
+
 import config from "config"
 import QRCode from "qrcode"
 import liquidoInput from "@/components/liquido-input.vue"

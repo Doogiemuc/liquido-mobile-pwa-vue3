@@ -192,7 +192,7 @@ export default {
 		 * - You will loose the information which module logged the original message. All messages will come from mobile-debug-log.vue
 		 * - Be carefull, that no one else is also redefining these methods, e.g. the logLevel lib does this: https://github.com/pimterry/loglevel/issues/129
 		 * 
-		 * The alternative is to call the above this.log, this.info, ... methods direcdtly
+		 * The alternative is to call the above mobile-debug-log methods directly.
 		 */
 		redefineConsoleMethods() {
 			let that = this;

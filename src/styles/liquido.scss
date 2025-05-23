@@ -115,6 +115,19 @@ button.btn-primary {
 	.alert {
 		padding: 0.5rem;
 	}
+	
+	/* Info bubble for user */
+	.liquido-info {
+		color: $liquido-info-color;
+		background-color: $liquido-info-background;	
+	}
+
+	/* Message to admin. Always used with <i class="fas fa-shield-alt"></i>	*/
+	.alert-admin {
+		color: white;
+		background-color: $admin-info-background !important;	
+		
+	}
 
   .cancel-link {
 		color: $secondary;
@@ -122,6 +135,8 @@ button.btn-primary {
 		text-decoration: none;
 		cursor: pointer
 	}
+
+	/** Welcome chat */
 
 	.chat-bubble {
 		border: none;
@@ -209,18 +224,6 @@ button.btn-primary {
 		*/
 	}
 
-	/* Info bubble for user */
-	.liquido-info {
-		color: $liquido-info-color;
-		background-color: $liquido-info-background;	
-		//border: 1px solid #aaaabb;
-	}
 
-	/* Message to admin. Always used with <i class="fas fa-shield-alt"></i>	*/
-	.alert-admin {
-		color: white;
-		background-color: $admin-info-background !important;	
-		//border: 1px solid #aaaabb !important;
-	}
 	
 }

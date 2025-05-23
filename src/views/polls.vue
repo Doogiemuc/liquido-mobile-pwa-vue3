@@ -19,38 +19,38 @@
 		</div>
 
 		<!-- list of polls -->
-		<div v-if="!loading" id="poll-list-wrapper" class="mb-5">
+		<div v-if="!loading" id="poll-list-wrapper" class="mb-3">
 
 			<transition-group name="poll-list" id="poll-list" tag="div">
 				<div v-for="poll in filteredPolls" :key="poll.id" class="poll-card-wrapper">
-				<div class="poll-card card border-0" @click="goToPoll(poll.id)">
-					<div class="card-body d-flex flex-nowrap align-items-center">
-						<div class="flex-grow-0">
-							<div class="poll-icon">
-								<i :class="iconForPoll(poll)" />
-							</div>
-						</div>
-						<div class="flex-grow-1">
-							<h3 class="poll-title">{{ poll.title }}</h3>
-							<div class="poll-footer">
-								<div v-if="poll.status === 'VOTING'">
-									<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
-									<i class="far fa-calendar-alt"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}
-								</div>
-								<div v-else-if="poll.status === 'FINISHED'">
-									<i class="far fa-check-circle"></i>&nbsp;{{ $t('finished') }}
-								</div>
-								<div v-else>
-									<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
+					<div class="poll-card card border-0" @click="goToPoll(poll.id)">
+						<div class="card-body d-flex flex-nowrap align-items-center">
+							<div class="flex-grow-0">
+								<div class="poll-icon">
+									<i :class="iconForPoll(poll)" />
 								</div>
 							</div>
-						</div>
-						<div class="flex-grow-0">
-							<i class="fas fa-angle-right text-primary"></i>
+							<div class="flex-grow-1">
+								<h3 class="poll-title">{{ poll.title }}</h3>
+								<div class="poll-footer">
+									<div v-if="poll.status === 'VOTING'">
+										<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
+										<i class="far fa-calendar-alt"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}
+									</div>
+									<div v-else-if="poll.status === 'FINISHED'">
+										<i class="far fa-check-circle"></i>&nbsp;{{ $t('finished') }}
+									</div>
+									<div v-else>
+										<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
+									</div>
+								</div>
+							</div>
+							<div class="flex-grow-0">
+								<i class="fas fa-angle-right text-primary"></i>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
 
 			</transition-group>
 
@@ -132,8 +132,8 @@ export default {
 			},
 			de: {
 				pollsInElaborationInfo: 
-					"<p>Diese Abstimmungen werden gerade noch diksutiert. Weitere Wahlvorschläge können noch hinzugefügt werden.</p>" +
-					"<p>Wenn euer Admin eine Abstimmung startet, könnt ihr darin eure Stimme abgeben.</p>",
+					"<p>Diese Abstimmungen werden gerade noch debatiert. Weitere Wahlvorschläge können noch hinzugefügt werden.</p>" +
+					"<p>Wenn euer Admin eine Wahl startet, dann kannst du anonym deine Stimme abgeben.</p>",
 				pollsInVotingInfo: "In diesen Abstimmungen kannst du jetzt deine Stimme abgeben.",
 				finishedPollsInfo: "Diese Abstimmungen sind beendet.",
 				finished: "abgeschlossen",

@@ -18,7 +18,7 @@
 			</transition>
 		</router-view>
 		<navbar-bottom v-if="showNavbarBottom"></navbar-bottom>
-		<mobile-log-viewer  v-if="showDebugLog" ref="mobileLogViewRef"></mobile-log-viewer>
+		<mobile-debug-log  v-if="showDebugLog" ref="mobileDebugLogRef"></mobile-debug-log>
 	</div>
 </template>
 
@@ -33,7 +33,7 @@
 import liquidoHeader from "@/components/liquido-header.vue"
 import navbarBottom from "@/components/navbar-bottom.vue"
 import popupModal from "@/components/popup-modal.vue"
-import mobileLogViewer from "@/components/mobile-debug-log.vue"
+import mobileDebugLog from "@/components/mobile-debug-log.vue"
 import api from "@/services/liquido-graphql-client.js"
 import EventBus from "@/services/event-bus.js"
 import config from "config"
@@ -61,7 +61,7 @@ let pollsScrollPos = undefined
 export default {
 	name: "LiquidoApp",
 	// Remark: vue-i18n is configured in main.js! Do not overwrite it here by setting the i18n: property
-	components: { liquidoHeader, navbarBottom, popupModal, mobileLogViewer },
+	components: { liquidoHeader, navbarBottom, popupModal, mobileDebugLog },
 	data() { 
 		// These data attributes are reactive and available in EVERY sub-component as this.$root.<attributeName>
 		return {
@@ -137,11 +137,8 @@ export default {
 
 	mounted() {
 		// This has some consequences ... be carefull
-		//this.$refs["mobileLogViewRef"].redefineConsoleMethods()
-		//Check: does this also work?  mobileLogViewer.redefineConsoleMethods();
-
-		console.log("NODE_ENV="+process.env.NODE_ENV+"   LIQUIDO configuration:\n", config)
-
+		//this.$refs["mobileDebugLogRef"].redefineConsoleMethods()
+	
 		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (newFilter) => {
 			console.log("Root app POLL_FILTER_CHANGED to", newFilter)
 			this.pollStatusFilter = newFilter

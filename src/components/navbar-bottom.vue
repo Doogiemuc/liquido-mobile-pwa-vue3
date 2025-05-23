@@ -1,13 +1,13 @@
 <template>
 	<nav id="navbar">
-		<div id="teamButton" class="team-button">
+		<!-- div id="teamButton" class="team-button">
 			<a href="#" aria-label="Team" @click="goToTeam()">
 				<div class="nav-bar-icon">
 					<i class="fas fa-users"></i>
 				</div>
 				<div class="icon-title">{{ $t("team") }}</div>
 			</a>
-		</div>
+		</div -->
 		<div id="pollsInDiscussionArrow" :class="discussButtonClass" class="discuss-button">
 			<a href="#" aria-label="Polls to discuss" @click="clickPollsInDiscussion()">
 				<div class="nav-bar-icon">
@@ -35,14 +35,14 @@
 				<div class="icon-title">{{ $t("finished") }}</div>
 			</a>
 		</div>
-		<div id="infoButton" class="info-button">
+		<!-- div id="infoButton" class="info-button">
 			<a href="#" aria-label="Info" @click="goToInfo()">
 				<div class="nav-bar-icon">
 					<i class="fas fa-info"></i>
 				</div>
 				<div class="icon-title">{{ $t("info") }}</div>
 			</a>
-		</div>
+		</div -->
 	</nav>
 </template>
 
@@ -230,9 +230,10 @@ export default {
 
 <style lang="scss" scoped>
 
-$arrowColor: white; //#bbcaec;
+$arrowColor: white;
+$arrowColorSelected: $icon-bg;
 $arrowWidth: 15px;
-$arrowHeight: 30px;  // half height
+$arrowHeight: 30px;
 $arrowGap: 3px;
 
 #navbar {
@@ -245,7 +246,7 @@ $arrowGap: 3px;
 	font-size: 1.2rem;
 	padding: 10px 5px 20px 5px;  // a bit more padding at the bottom for iOS swipe-up bar
 	margin: 0 0;
-	box-shadow: 0 0 0.25rem rgba(0,0,0,0.6);
+	box-shadow: 0 -2px 3px rgba(0, 0, 0, 0.5); /* horizontal, vertical, blur, color */
 	background-color: $navbar-bg;
 	display: flex;
 	flex-wrap: nowrap;
@@ -282,7 +283,7 @@ $arrowGap: 3px;
 			transition: background-color 0.5s ease, border-color 0.5s ease;
 		}
 		&.selected::after {
-			border-color: transparent transparent transparent $primary;
+			border-color: transparent transparent transparent $arrowColorSelected;
 		}
 		&::before {
 			-webkit-transition: background-color 0.5s ease, border-color 0.5s ease;
@@ -291,7 +292,7 @@ $arrowGap: 3px;
 			transition: background-color 0.5s ease, border-color 0.5s ease;
 		}
 		&.selected::before {
-			border-color: $primary $primary $primary transparent;
+			border-color: $arrowColorSelected $arrowColorSelected $arrowColorSelected transparent;
 		}
 	}
 
@@ -372,17 +373,15 @@ $arrowGap: 3px;
 
 	.selected {
 		a {	color: white !important; }
-		background-color: $primary;
+		background-color: $arrowColorSelected;
 		.counter-badge {
 			color: $primary !important;
-			border: 1px solid $primary !important;
 		}
 	}
 	.disabled {
 		a { color: lightgray !important; }
 		.counter-badge {
 			color: lightgray !important;
-			border: 1px solid lightgray !important;
 		}
 	}
 	.disabled.selected {
@@ -394,7 +393,6 @@ $arrowGap: 3px;
 			opacity: 0.8;
 			color: $primary !important;
 			background: gray !important;
-			border: 1px solid $primary !important;
 		}
 	}
 
@@ -410,13 +408,13 @@ $arrowGap: 3px;
 		right: 0;
 		color: $primary;
 		background-color: white;
-		border: 1px solid $primary;
+		border: 1px solid rgba(47, 141, 255, 0.5);
 		border-radius: 1em;
 		font-size: 0.8rem;
 		height: 1.2em;
 		min-width: 1.2em;
 		overflow: hidden;
-		line-height: 1;
+		line-height: 1.1;
 		transform: translate(10px, -3px)
 	}
 	.icon-title {
