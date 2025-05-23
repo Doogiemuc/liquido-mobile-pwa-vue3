@@ -112,7 +112,6 @@ import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
 import dayjs from "dayjs"
 import { store }  from "@/services/store.js"
-//import { gsap } from "gsap";
 
 const pollStatusOrder = {
 	ELABORATION: 0,

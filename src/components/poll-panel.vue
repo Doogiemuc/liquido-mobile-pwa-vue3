@@ -165,13 +165,12 @@ $proposal_icon_size: 32px;
 .poll-panel {
 
 	.card-header {
-		background-color: white;
-		padding: 10px 0;
-		text-align: center;
+		//background-color: white
+		border-bottom: none;
 	}
 
 	.card-body {
-		padding-top: 0; // proposal-list-group-item  handles vertical padding  => keep this. Don't touch! ..........
+		//padding-top: 0; // proposal-list-group-item  handles vertical padding  => keep this. Don't touch! ..........
 	}
 
 	.poll-title {

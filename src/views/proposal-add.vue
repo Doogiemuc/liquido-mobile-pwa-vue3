@@ -1,18 +1,17 @@
 <template>
 	<div>
-		<h2 id="addProposalTitle" class="page-title">
+		<h1 id="addProposalTitle" class="page-title">
 			{{ $t("addProposal") }}
-		</h2>
-
-		<div v-if="!poll.proposals || poll.proposals.length == 0" class="alert liquido-info mb-3">
-			<i class="fas fa-info-circle float-end" />
-			<p v-html="$t('noProposalYet', {pollTitle: poll.title})" />
-		</div>
+		</h1>
 
 		<div class="card border-0 shadow-sm mb-5">
 			<div class="card-body">
+				<div class="card-title">
+					{{ $t("yourProposal") }}
+				</div>
 				<liquido-input
 					id="propTitle"
+					ref="propTitle"
 					v-model="proposal.title"
 					name="propTitle"
 					class="mb-3"
@@ -45,7 +44,7 @@
 					</div>
 				</div>
 				
-				<div class="d-flex">
+				<div class="d-flex mb-3">
 					<div class="flex-fill">
 						<liquido-input
 							id="iconSearch"
@@ -63,18 +62,18 @@
 						<i class="fas fa-fw" :class="'fa-' + chosenIcon" />
 					</div>
 				</div>				
-			</div>
-			<ul class="list-group list-group-flush icon-list mb-3">
-				<li class="list-group-item">
-					<span v-for="faIconName in filteredIconList" :key="faIconName" class="icon-in-list">
-						<i class="fas fa-fw" :class="getListIconClass(faIconName)" @click="chooseIcon(faIconName)" />
-					</span>
-					<p v-if="filteredIconList.length === 0" class="text-muted text-center">
-						{{ $t('noIconsMatchSearch') }}
-					</p>
-				</li>
-			</ul>
-			<div class="card-body">
+			
+				<div class="icon-chooser-wrapper mb-3">
+					<div class="d-flex flex-wrap">
+						<span v-for="faIconName in filteredIconList" :key="faIconName" class="icon-in-list">
+							<i class="fas fa-fw" :class="getListIconClass(faIconName)" @click="chooseIcon(faIconName)" />
+						</span>
+						<p v-if="filteredIconList.length === 0" class="text-muted text-center">
+							{{ $t('noIconsMatchSearch') }}
+						</p>
+					</div>
+				</div>
+			
 				<div class="d-flex justify-content-between align-items-center">
 					<span class="cancel-link" @click="goBack">{{ $t("Cancel") }}</span>
 					<button
@@ -91,12 +90,16 @@
 		</div>
 
 		<div v-if="poll && poll.proposals && poll.proposals.length > 0">
+			<p>{{ $t('previousProposalsInPoll') }}</p>
 			<poll-panel
 				:poll="poll"
 				:collapse="true"
 				:read-only="true"
 				class="shadow-sm mb-3"
 			/>
+		</div>
+		<div v-else class="alert mb-3">
+			{{ $t('noProposalYet') }}
 		</div>
 
 		<popup-modal
@@ -122,7 +125,7 @@
 
 //TODO: use root popup modal
 
-
+import { store }  from "@/services/store.js"
 import pollPanel from "@/components/poll-panel.vue"
 import liquidoInput from "@/components/liquido-input.vue"
 import popupModal from "@/components/popup-modal.vue"
@@ -144,7 +147,8 @@ export default {
 				descriptionTooShort: "Bitte beschreibe deinen Vorschlag etwas ausführlicher.",
 				ChooseIcon: "Icon Wählen",
 				noIconsMatchSearch: "Kein passendes Icon gefunden.",
-				noProposalYet: "Die Abstimmung '{pollTitle}' enthält bisher noch keine Wahlvorschläge. Dein Vorschlag wird der Erste sein.",
+				noProposalYet: "Dein Wahlvorschlag ist der erste in dieser Abstimmung.",
+				previousProposalsInPoll: "Bisherige Wahlvorschläge in dieser Abstimmung:",
 				createdSuccessfully: "Ok, dein Vorschlag wurde zur Abstimmung mit aufgenommen.",
 				proposalAddError: "Es gab einen Fehler beim Hinzufügen deines Vorschlages.",
 				gotoPoll: "Zur Abstimmung",
@@ -157,6 +161,7 @@ export default {
 	},
 	data() {
 		return {
+			store: store,
 			poll: {},
 			proposal: {},
 			titleMinLength: 10,
@@ -194,9 +199,13 @@ export default {
 		},
 	},
 	created() {
-		api.getPollById(this.pollId, true).then(poll => this.poll = poll)
+		//api.getPollById(this.pollId, true).then(poll => this.poll = poll)
+		this.store.setHeaderTitle(this.$t("addProposal"))
+		this.store.setHeaderBackLink("/polls/"+this.pollId)
 	},
-	mounted() {	},
+	mounted() {
+		this.$root.scrollToTop()		
+	},
 	methods: {
 		/** Proposal title must have a minimum length */
 		isProposalTitleValid(val) {
@@ -276,33 +285,29 @@ export default {
 	bottom: 3px;
 }
 
-.icon-chooser {
-	text-align: center;
-	width: 3em;
-}
-.icon-for-proposal {
-	font-size: 1.5em;
-}
-.icon-list {
-	max-height: 200px;
+.icon-chooser-wrapper {
+	overflow: hidden;
 	overflow-y: scroll;
-	.list-group-item {
-		margin: 10px;
-	}
+	max-height: 200px;
+	border: 2px inset #EEE;
+	border-radius: 5px;
 }
+
 .icon-in-list {
-	color: #666;
+	color: $secondary;
 	font-size: 1.5em;
-	padding: 0 3px;
+	padding: 1px;
 	.selected {
 		color: $primary;
+		border: 1px solid $primary;
+		border-radius: 5px;
+		padding: 2px;
 	}
 }
 .chosen-icon {
 	font-size: 2em;
 	color: $primary;
 	background-color: white;
-	background-color: #fff;
 	border: 1px solid #ced4da;
 	border-radius: 0.25rem;
 	padding: 0 0.25rem;

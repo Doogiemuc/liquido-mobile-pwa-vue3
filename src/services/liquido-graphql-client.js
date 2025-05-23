@@ -516,6 +516,14 @@ let graphQlApi = {
 			})
 	},
 
+	/**
+	 * Get a poll by its ID. Will try to fetch it from the cache first.
+	 * If the poll is not in the cache or expired, then it will be fetched from the backend.
+	 * @param {Number} pollId poll.id to load
+	 * @param {Boolean} force force a refresh from the backend
+	 * @returns the poll object
+	 * @rejects when pollId is not a number or poll not found
+	 */
 	async getPollById(pollId, force = false) {
 		//console.debug("getPollById(id="+pollId+", force="+force+")")
 		return this.pollsCache.get("polls/"+pollId, {

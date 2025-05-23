@@ -107,7 +107,7 @@ export default {
 					"<p>Diese Abstimmung wird gerade noch debatiert.</p>" +
 					"<p>Wenn euer Admin die Wahl startet, kannst du anonym deine Stimme abgeben.</p>",
 				canAddProposal: 
-					"Du kannst in dieser Abstimmung noch deinen eigenen Wahlvorschlag hinzufügen.",
+					"Du kannst in dieser Abstimmung jetzt deinen eigenen Wahlvorschlag hinzufügen.",
 				alreadyAddedProposal: 
 					"Du hast bereits einen Wahlvorschlag in dieser Abstimmung hinzugefügt.",
 				addProposal: "Vorschlag hinzufügen",
