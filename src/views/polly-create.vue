@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<h1 id="poll-create" class="page-title">
-			{{ $t("newPoll") }}
+		<h1 id="polly-create" class="page-title">
+			{{ $t("newPolly") }}
 		</h1>
 
 		<polly 
@@ -26,7 +26,6 @@
 				</button>
 			</div>
 		</form>
-
 
 		<div class="alert alert-admin create-poll-info mt-5">
 			<i class="fas fa-circle-info float-end"></i>
@@ -53,7 +52,7 @@ export default {
 		messages: {
 			en: {},
 			de: {
-				newPoll: "Neue Abstimmung erstellen",
+				newPolly: "Neues Polly",
 				createPollInfo1: "Abstimmungen laufen durch drei Phasen:",
 				createPollInfo2: "Eine neue Abstimmung wird erst einmal diskutiert.",
 				createPollInfo3: "Du kannst festlegen ob Teammitglieder ihre eigenen Wahlvorschläge hinzufügen können.",

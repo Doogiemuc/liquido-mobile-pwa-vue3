@@ -61,7 +61,7 @@ export default {
 		stickyHeader() {
 			let app = document.getElementById("app")
 			let headerElem = document.getElementById("liquidoHeader")
-			let pageTitleElem = document.getElementById("page-title")
+			let pageTitleElem = document.getElementsByClassName("page-title")[0]
 			if (!app || !headerElem) {
 				return  // something is wrong, so just return
 			}
@@ -114,16 +114,18 @@ export default {
 	top: 0;
 	width: 100%;
 	height: $header-height;
+
+	color: white;
+
 	flex-direction: row;
 	justify-content: space-between;
 	z-index: 999;
 	transition: all 0.5s;
 	background-color: $header_bg;
-	opacity: 0.9;
+	opacity: 0.95;
 	box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3); /* horizontal, vertical, blur, color */
   z-index: 9999; /* make sure the header is on top of everything */
   
-	
 	
 	// when user scrolls, then scroll LIQUIDO claim out towards the top
 	// and let the center-title appear from the bottom
@@ -158,7 +160,6 @@ export default {
 	.header-center {
 		flex-grow: 1;	
 		text-align: center;
-		color: white;
 		position: relative;
 		overflow: hidden;
 		.liquido-claim {
@@ -186,7 +187,6 @@ export default {
 		flex: 0 0 30px;
 		align-items: center;
 		text-align: right;
-		color: $primary;
 		padding-right: 10px;
 	}
 	

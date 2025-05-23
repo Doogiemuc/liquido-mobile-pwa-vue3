@@ -137,7 +137,7 @@ export default {
 
 	mounted() {
 		// This has some consequences ... be carefull
-		this.$refs["mobileLogViewRef"].redefineConsoleMethods()
+		//this.$refs["mobileLogViewRef"].redefineConsoleMethods()
 		//Check: does this also work?  mobileLogViewer.redefineConsoleMethods();
 
 		console.log("NODE_ENV="+process.env.NODE_ENV+"   LIQUIDO configuration:\n", config)

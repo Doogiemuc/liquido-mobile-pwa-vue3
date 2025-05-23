@@ -1,10 +1,10 @@
 <template>
 	<div>
-		<h2 id="poll-create" class="page-title">
+		<h1 id="poll-create" class="page-title">
 			{{ $t("newPoll") }}
-		</h2>
+		</h1>
 
-		<b-card class="chat-bubble input-bubble">
+		<b-card class="chat-bubble">
 			<liquido-input
 				id="pollTitleInput"
 				v-model="pollTitle"
@@ -17,7 +17,7 @@
 			</liquido-input>
 
 			<div class="d-flex justify-content-between align-items-center">
-				<span class="cancel-link" @click="goBack">{{ $t("Cancel") }}</span>
+				<a class="cancel-link " @click="goBack">{{ $t("Cancel") }}</a>
 				<b-button
 					id="createPollButton"
 					:disabled="createPollButtonDisabled"
@@ -31,7 +31,7 @@
 			</div>
 		</b-card>
 
-		<div class="alert alert-admin my-3">
+		<div class="alert alert-admin my-5">
 			<div v-html="$t('createPollInfo')" />
 		</div>
 	</div>
@@ -55,7 +55,7 @@ export default {
 					"<p>(1) Eine Abstimmung wird erst einmal diskutiert (<i class='fas fa-comments'></i>). Jeder aus deinem Team "+
 					"kann in dieser Phase seinen eigenen Wahlvorschlag (<i class='fas fa-vote-yea'></i>) hinzufügen.</p>" +
 					"<p>(2) Wenn du die Wahlphase der Abstimmung startest, kann jeder im Team seine Stimme anonym abgeben. (<i class='fas fa-person-booth'></i>)</p>" +
-					"<p>(3) Nachdem du die Wahlphase beendet hast, ist das Wahlergebnis für alle sichtbar.",
+					"<p>(3) Erst nachdem du die Wahlphase beendet hast, ist das Wahlergebnis für alle sichtbar.",
 				pollTitle: "Titel der Abstimmung",
 				pollTitleInvalid: "Titel ist zu kurz. Bitte mind. {minLen} Zeichen.",
 				create: "Anlegen",
@@ -102,10 +102,5 @@ export default {
 </script>
 
 <style lang="scss">
-.cancel-link {
-	font-size: 12px;
-	//margin-left: 10px;
-	color: $secondary;
-	cursor: pointer;
-}
+
 </style>

@@ -382,8 +382,6 @@ export default {
 */
 
 .draggable {
-	//background-color: $input-bg;
-	//padding: 1rem;
 
 	.law-panel:not(:last-child) {
 		margin-bottom: 1rem;

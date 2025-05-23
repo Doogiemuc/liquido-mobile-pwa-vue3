@@ -1,9 +1,8 @@
 <template>
 	<div>
-		
-		<h2 id="poll-show" class="page-title">
+		<h1 id="poll-show" class="page-title">
 			{{ this.pageTitleLoc }}
-		</h2>
+		</h1>
 
 		<div v-if="loadingPoll" class="my-3">
 			<b-spinner small />&nbsp;{{ $t('Loading') }}
@@ -34,7 +33,7 @@
 		
 
 		<!-- Action button -->
-		<div class="d-flex justify-content-end my-5">
+		<div class="d-flex justify-content-end mt-3">
 		
 			<b-button v-if="poll.status === 'VOTING' && !poll.usersBallot" id="goToCastVoteButton" variant="primary" @click="clickCastVote()">
 				<i class="fas fa-person-booth" />
@@ -57,7 +56,7 @@
 
 		<!-- Admin only functions -->
 
-		<div v-if="showStartVotingPhase" class="alert alert-admin my-3">
+		<div v-if="showStartVotingPhase" class="alert alert-admin mt-5">
 			<i class="fas fa-shield-alt float-end"></i>
 			<p v-html="$t('startVotingPhaseInfo')" />
 			<b-button id="startVoteButton" :disabled="startVoteLoading" variant="primary" class="float-end" @click="clickStartVote()">
@@ -67,7 +66,7 @@
 			</b-button>
 		</div>
 
-		<div v-if="showFinishVotingPhase" class="alert alert-admin my-3">
+		<div v-if="showFinishVotingPhase" class="alert alert-admin mt-5">
 			<i class="fas fa-shield-alt float-end"></i>
 			<p v-html="$t('finishVotingPhaseInfo', {numBallots: poll.numBallots})" />
 			<b-button id="finishVoteButton" :disabled="finishVoteLoading" variant="primary" class="float-end" @click="clickFinishVote()">

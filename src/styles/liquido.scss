@@ -116,6 +116,13 @@ button.btn-primary {
 		padding: 0.5rem;
 	}
 
+  .cancel-link {
+		color: $secondary;
+		font-size: 0.9rem;
+		text-decoration: none;
+		cursor: pointer
+	}
+
 	.chat-bubble {
 		border: none;
 		margin-bottom: 1rem;
@@ -140,16 +147,6 @@ button.btn-primary {
 	.chat-bubble-error {
 		background-color: lightcoral;
 	}
-
-	.input-bubble {
-		background-color: $liquido-input-bg;
-		.card-header {
-			padding: 10px;
-		}
-		.description-textarea {
-			width: 100%;
-		}
-	}	
 
 	.chat-left {
 		position: relative;
@@ -186,7 +183,6 @@ button.btn-primary {
 			border-color: transparent transparent transparent $chat-right-bg; /* Match the bubble's background color */
 		}
 	}
-
 
 	.transition-all {
 		-webkit-transition: all 0.5s ease;

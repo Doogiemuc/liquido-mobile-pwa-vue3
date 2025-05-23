@@ -46,7 +46,7 @@
 							</div>
 						</div>
 						<div class="flex-grow-0">
-							<i class="fas fa-angle-right"></i>
+							<i class="fas fa-angle-right text-primary"></i>
 						</div>
 					</div>
 				</div>
@@ -393,19 +393,21 @@ export default {
 		padding-right: 10px;
 	}
 
+  $iconSize: 40px;
+
 	.poll-icon {
 		color: white;
-		background-color: $icon-bg;
+		background-color: $icon_bg;
 		border-radius: 50%;
 		text-align: center;
 		font-size: 20px;
-		line-height: 31px;
-		min-width: 32px;
-		max-width: 32px;
-		width: 32px;
-		min-height: 32px;
-		max-height: 32px;
-		height: 32px;
+		line-height: $iconSize;
+		min-width: $iconSize;
+		max-width: $iconSize;
+		width: $iconSize;
+		min-height: $iconSize;
+		max-height: $iconSize;
+		height: $iconSize;
 
 		margin: 0 10px;
 	}

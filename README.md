@@ -1,67 +1,24 @@
 # LIQUIDO
 
-A modern aproach to Liquid Democracy
+A modern aproach to Liquid Democracy. In LIQUDIO you don't vote for just one proposal or candidate. 
+Instead you sort the proposals in your personally preferred order.
+A very clever algorithm then calculates the winner from all voter's preferences.
 
 http://www.liquido.vote
 
 # liquido-mobile-pwa
 
-This is a mobile client for [LIQUIDO](http://www.liquido.vote). Based on the awesome Vue 2.6 PWA boilerplate [Peridot](https://github.com/Gingernaut/Peridot).
+This is a web based mobile client (PWA) for [LIQUIDO](http://www.liquido.vote). 
 
 # Coding
 
 Now updated to VUE3 + Vite
+Originalle based on the awesome Vue PWA boilerplate [Peridot](https://github.com/Gingernaut/Peridot).
 
 ## Recommended IDE Setup
 
 [VSCode](https://code.visualstudio.com/) and the official [VSCode VUE Plugin ](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
 
-## Customize configuration
+# Testing
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
-npm run test:unit
-```
-
-### Run End-to-End Tests with [Cypress](https://www.cypress.io/)
-
-```sh
-npm run test:e2e:dev
-```
-
-This runs the end-to-end tests against the Vite development server.
-It is much faster than the production build.
-
-But it's still recommended to test the production build with `test:e2e` before deploying (e.g. in CI environments):
-
-```sh
-npm run build
-npm run test:e2e
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+We use Cypress for testing. See ./tests/e2e/specs/

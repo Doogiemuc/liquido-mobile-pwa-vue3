@@ -93,6 +93,14 @@ const routes = [
 		props: true,
 	},
 	{
+		path: "/design",
+		name: "liquidoDesign",
+		component: () => import("@/views/_design-page.vue"),
+		meta: {
+			public: true
+		}
+	},
+	{
 		path: "/404",
 		name: "pageNotFound",
 		component: () => import("@/views/not-found-page.vue"),

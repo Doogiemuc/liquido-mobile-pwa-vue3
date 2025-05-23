@@ -1,26 +1,22 @@
- <template>
-	<b-card 
-		:id="pollCardId"
-		:pollid="poll.id"
-		:data-poll-status="poll.status"
-		class="poll-panel border-0 shadow-sm" 
-	>
-		<template #header>
+<template>
+	<div :id="pollCardId" :pollid="poll.id" :data-poll-status="poll.status" class="card poll-panel border-0 shadow-sm">
+		<div class="card-header">
 			<h4 class="poll-title">
 				<!-- i class="fas fa-poll" /-->
 				{{ poll ? poll.title : "" }}
 			</h4>
-		</template>
+		</div>
 		<div v-if="!poll.proposals || poll.proposals.length === 0" class="card-body">
-			<p class="text-secondary">
-				<small>{{ $t("noProposalsInPollYet") }}</small>
+			<p class="text-secondary mt-2">
+				{{ $t("noProposalsInPollYet") }}
 			</p>
 		</div>
-		<b-list-group v-else flush>
-			<b-list-group-item v-for="prop in sortedProposals" :key="prop.id" class="proposal-list-group-item" :class="proposalListGroupItemClasses(prop.id)">
+		<ul v-else class="list-group list-group-flush mt-2">
+			<li v-for="prop in sortedProposals" :key="prop.id" class="list-group-item proposal-list-group-item"
+				:class="proposalListGroupItemClasses(prop.id)">
 				<div class="proposal-header d-flex align-items-center">
-					<div class="proposal-image">
-						<i class="fas fa-fw" :class="'fa-' + prop.icon" />
+					<div class="proposal-icon">
+						<i class="fas fa-fw" :class="'fa-' + prop.icon"></i>
 					</div>
 					<h4 class="proposal-title">
 						{{ prop.title }}
@@ -29,34 +25,28 @@
 				<div class="proposal-description" v-html="prop.description"></div>
 				<div class="proposal-subtitle">
 					<div v-if="prop.likedByCurrentUser" class="like-button liked">
-						<i class="fas fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
+						<i class="fas fa-thumbs-up"></i>&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
 					</div>
 					<div v-else-if="canLike(prop)" class="like-button can-like" @click="clickLike(poll.id, prop)">
-						<i class="far fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
+						<i class="far fa-thumbs-up"></i>&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
 					</div>
 					<div v-else class="like-button">
-						<i class="far fa-thumbs-up" />&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
+						<i class="far fa-thumbs-up"></i>&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
 					</div>
 					<div class="created-date">
-						<i class="far fa-clock" />&nbsp;{{ formatDate(prop.createdAt) }}
+						<i class="far fa-clock"></i>&nbsp;{{ formatDate(prop.createdAt) }}
 					</div>
 					<div class="createdby-user">
-						<i class="far fa-user" />&nbsp;{{ prop.createdBy.name }}
+						<i class="far fa-user"></i>&nbsp;{{ prop.createdBy.name }}
 					</div>
 				</div>
-				
-			</b-list-group-item>
-		</b-list-group>
-		<a
-				v-if="poll.proposals && poll.proposals.length > 0"
-				class="collapse-icon"
-				:class="{'collapsed' : collapsed}"
-				href="#"
-				@click.stop.prevent="toggleCollapse()"
-			>
-			<i class="fa" />
+			</li>
+		</ul>
+		<a v-if="poll.proposals && poll.proposals.length > 0" class="collapse-icon" :class="{ 'collapsed': collapsed }"
+			href="#" @click.stop.prevent="toggleCollapse()">
+			<i class="fa"></i>
 		</a>
-	</b-card>
+	</div>
 </template>
 
 <script>
@@ -87,7 +77,7 @@ export default {
 		}
 	},
 	computed: {
-		pollCardId() { return "PollCard_"+this.poll.id },
+		pollCardId() { return "PollCard_" + this.poll.id },
 		iconForPoll() {
 			if (!this.poll) return undefined
 			switch (this.poll.status) {
@@ -116,7 +106,7 @@ export default {
 		 */
 		sortedProposals() {
 			if (!this.poll || !this.poll.proposals) return []
-			return this.poll.proposals.toSorted((p1,p2) => p1.createdAt.localeCompare(p2.createdAt))
+			return this.poll.proposals.toSorted((p1, p2) => p1.createdAt.localeCompare(p2.createdAt))
 		}
 	},
 	mounted() {
@@ -130,7 +120,7 @@ export default {
 		proposalListGroupItemClasses(propId) {
 			let isWinner = this.poll.winner && propId === this.poll.winner.id
 			return {
-				"collapsed-proposal-panel" : this.collapsed,
+				"collapsed-proposal-panel": this.collapsed,
 				"winner": this.poll.status === "FINISHED" && isWinner,
 				"lost": this.poll.status === "FINISHED" && !isWinner,
 			}
@@ -150,7 +140,7 @@ export default {
 		 * nor created by the currently logged in user.
 		 */
 		canLike(prop) {
-			return prop.status === "ELABORATION" &&  !prop.likedByCurrentUser && !this.isCreatedByCurrentUser(prop)
+			return prop.status === "ELABORATION" && !prop.likedByCurrentUser && !this.isCreatedByCurrentUser(prop)
 		},
 
 		clickLike(pollId, prop) {
@@ -170,28 +160,28 @@ export default {
 /* BUG: this does not work when style is "scoped"
 
 /* size of proposal image */
-$proposal_img_size: 32px;
+$proposal_icon_size: 32px;
 
 .poll-panel {
 
-	.card-header {   
+	.card-header {
 		background-color: white;
 		padding: 10px 0;
 		text-align: center;
 	}
 
 	.card-body {
-		padding-top: 0;  // proposal-list-group-item  handles vertical padding  => keep this. Don't touch! ..........
+		padding-top: 0; // proposal-list-group-item  handles vertical padding  => keep this. Don't touch! ..........
 	}
 
 	.poll-title {
 		margin: 0;
 		font-weight: bold;
 	}
-	
+
 	.poll-title-icon {
-		font-size: $proposal_img_size;
-	} 
+		font-size: $proposal_icon_size;
+	}
 
 	.goto-poll-icon {
 		line-height: 1.2; // same as .card-header > h3
@@ -217,24 +207,24 @@ $proposal_img_size: 32px;
 
 	// list of proposals in poll
 	.proposal-list-group-item {
-		height: 	160px;           			// exactly 3 lines of description. MUST set height for collapse transition!
+		height: 160px; // exactly 3 lines of description. MUST set height for collapse transition!
 		overflow: hidden;
-		padding: 15px 0 15px 0;
 		transition: height 0.5s;
 		border: none;
 
 		&.collapsed-proposal-panel {
-			height: 55px;    							// just right enough to NOT see the description.
+			height: 50px; // just right enough to NOT see the description.
 			.proposal-separator {
 				margin: 10px 0;
 			}
 		}
 		.proposal-header {
 			margin-bottom: 6px;
-		}			
+		}
 
 		.proposal-title {
-			font-size: 1rem !important;   // a bit smaller for longer titles
+			color: $primary;
+			font-size: 1rem !important; // a bit smaller then normal h4 for longer titles
 			margin: 0 0 0 10px;
 			padding: 0;
 			white-space: nowrap;
@@ -246,7 +236,7 @@ $proposal_img_size: 32px;
 			font-size: 0.8rem;
 			overflow: hidden;
 			line-height: 20px;
-			height: 60px;     		// exactly enough for 4 lines of text
+			height: 60px; // exactly enough for 4 lines of text
 		}
 
 		.proposal-subtitle {
@@ -260,51 +250,57 @@ $proposal_img_size: 32px;
 				padding: 1px 2px;
 				border-radius: 5px;
 			}
+
 			.own-proposal {
 				color: green;
 			}
+
 			.can-like {
 				cursor: pointer;
 				border: 1px solid #bbb;
-				&:hover	{
+
+				&:hover {
 					color: $primary !important;
 					border-color: $primary !important;
 				}
 			}
+
 			.liked {
 				border: 1px solid #bbb;
 				background-color: #bbb;
 				color: white;
 				cursor: default;
 			}
+
 			.created-date {
 				display: inline;
 				margin-left: 1em;
 			}
+
 			.createdby-user {
 				display: inline;
 				margin-left: 1em;
 			}
-			
+
 		}
 
-		.proposal-image {
+		.proposal-icon {
 			color: white;
-			background-color: $header-bg;
+			background-color: $icon_bg;
 			border-radius: 50%;
 			border: none;
 			text-align: center;
 			//font-size: 1.2em;
-			line-height: $proposal_img_size;
-			min-width: $proposal_img_size;
-			max-width: $proposal_img_size;
-			width: $proposal_img_size;
-			min-height: $proposal_img_size;
-			max-height: $proposal_img_size;
-			height: $proposal_img_size;
+			line-height: $proposal_icon_size;
+			min-width: $proposal_icon_size;
+			max-width: $proposal_icon_size;
+			width: $proposal_icon_size;
+			min-height: $proposal_icon_size;
+			max-height: $proposal_icon_size;
+			height: $proposal_icon_size;
 		}
 
-		
+
 
 	}
 
@@ -323,12 +319,15 @@ $proposal_img_size: 32px;
 
 	.lost {
 		color: grey;
+
 		.proposal-title {
 			text-decoration: line-through;
 		}
+
 		.proposal-image {
 			opacity: 0.5;
 		}
+
 		&.collapsed-proposal-panel {
 			height: 0;
 			margin: 0;
@@ -336,8 +335,8 @@ $proposal_img_size: 32px;
 		}
 	}
 
-	
-	
+
+
 
 	//BUGFIX for bootstrap: inherit border-radius in list-group-flush wrapper
 	/*
@@ -346,5 +345,4 @@ $proposal_img_size: 32px;
 	}
 	*/
 }
-
 </style>

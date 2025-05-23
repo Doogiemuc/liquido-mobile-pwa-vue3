@@ -9,7 +9,7 @@
 			<p v-html="$t('noProposalYet', {pollTitle: poll.title})" />
 		</div>
 
-		<div class="card input-bubble border-0 shadow-sm mb-5">
+		<div class="card border-0 shadow-sm mb-5">
 			<div class="card-body">
 				<liquido-input
 					id="propTitle"
@@ -288,7 +288,6 @@ export default {
 	overflow-y: scroll;
 	.list-group-item {
 		margin: 10px;
-		//background-color: $input-bg;
 	}
 }
 .icon-in-list {
