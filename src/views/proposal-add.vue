@@ -199,7 +199,7 @@ export default {
 		},
 	},
 	created() {
-		//api.getPollById(this.pollId, true).then(poll => this.poll = poll)
+		api.getPollById(this.pollId, true).then(poll => this.poll = poll)
 		this.store.setHeaderTitle(this.$t("addProposal"))
 		this.store.setHeaderBackLink("/polls/"+this.pollId)
 	},

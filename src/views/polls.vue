@@ -412,7 +412,7 @@ export default {
 	}
 
 	.poll-title {
-		color: $primary;
+		//color: $primary;    // poll-titles are black, proposal titles are $primary!
 		font-size: 1.0rem !important;   // smaller than normal H3
 	}
 

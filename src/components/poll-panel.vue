@@ -1,5 +1,5 @@
 <template>
-	<div :id="pollCardId" :pollid="poll.id" :data-poll-status="poll.status" class="card poll-panel border-0 shadow-sm">
+	<div :id="pollCardId" :pollid="poll.id" :data-poll-status="poll.status" class="card poll-panel border-0 shadow">
 		<div class="card-header">
 			<h4 class="poll-title">
 				<!-- i class="fas fa-poll" /-->
@@ -156,8 +156,7 @@ export default {
 </script>
 
 
-<style lang="scss">
-/* BUG: this does not work when style is "scoped"
+<style lang="scss" scoped>
 
 /* size of proposal image */
 $proposal_icon_size: 32px;
@@ -169,9 +168,11 @@ $proposal_icon_size: 32px;
 		border-bottom: none;
 	}
 
+	/*
 	.card-body {
-		//padding-top: 0; // proposal-list-group-item  handles vertical padding  => keep this. Don't touch! ..........
+		padding-top: 0; // proposal-list-group-item  handles vertical padding  => keep this. Don't touch! ..........
 	}
+	*/
 
 	.poll-title {
 		margin: 0;

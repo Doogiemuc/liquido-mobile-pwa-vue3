@@ -1,10 +1,10 @@
 <template>
-	<b-card :id="law.id" no-body class="law-panel" :class="{'collapse-law-panel' : collapsed}">
+	<b-card :id="law.id" no-body class="law-panel noselect" :class="{'collapse-law-panel' : collapsed}">
 		<div class="d-flex align-items-center">
-			<div class="law-image">
+			<div class="law-icon">
 				<i class="fas fa-fw" :class="'fa-' + law.icon" />
 			</div>
-			<div class="d-flex flex-column text-truncate">
+			<div class="d-flex flex-column text-truncate ms-1">
 				<h4 class="law-title">
 					{{ law.title }}
 				</h4>
@@ -87,17 +87,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-$proposal_img_size: 32px;
+$proposal_icon_size: 32px;
 
 .law-panel {   // same as in poll-panel.vue
 	height: 8rem;
 	overflow: hidden;
-	padding: 10px;
+	padding: 5px;
 	transition: height 0.5s;
 	&.collapse-law-panel {
-		height: 25px + $proposal_img_size;
+		height: 20px + $proposal_icon_size;
 	}
 	.law-title {
+		color: $primary;
 		margin-bottom: 0px;
 		padding: 0;
 		font-size: 14px;
@@ -110,20 +111,21 @@ $proposal_img_size: 32px;
 		color: #bbb;
 		margin-bottom: 5px;
 	}
-	.law-image {
+	.law-icon {
 		color: white;
-		background-color: lightgray;
+		background-color: $icon_bg;
 		border-radius: 50%;
-		border: 1px solid lightgray;
+		border: none;
 		text-align: center;
-		font-size: 1.2em;
-		min-width: $proposal_img_size;
-		max-width: $proposal_img_size;
-		width: $proposal_img_size;
-		min-height: $proposal_img_size;
-		max-height: $proposal_img_size;
-		height: $proposal_img_size;
-		margin-right: 10px;
+		//font-size: 1.2em;
+		line-height: $proposal_icon_size;
+		min-width: $proposal_icon_size;
+		max-width: $proposal_icon_size;
+		width: $proposal_icon_size;
+		min-height: $proposal_icon_size;
+		max-height: $proposal_icon_size;
+		height: $proposal_icon_size;
+
 	}
 
 	.law-description {

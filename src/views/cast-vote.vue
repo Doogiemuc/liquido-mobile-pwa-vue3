@@ -5,11 +5,10 @@
 			&nbsp;{{ $t("castVoteTitle") }}
 		</h2>
 
-		<b-card class="ballot-card mb-5">
+		<b-card id="castVoteCard" class="ballot-card mb-5">
 			<template #header>
 				<h4 class="poll-title">
-					<i class="fas fa-poll" />
-					&nbsp;{{ poll ? poll.title : "" }}
+					{{ poll ? poll.title : "" }}
 				</h4>
 			</template>
 			<div v-if="loading" class="draggable">
@@ -93,10 +92,6 @@
 			<p v-html="$t('castVoteInfo')"></p>
 		</div>
 
-		<b-button @click="goBack()">
-			<i class="fas fa-angle-left" />
-		</b-button>
-
 	</div>
 </template>
 
@@ -173,8 +168,9 @@ export default {
 	},
 	created() {
 		this.loading = true
-
+	
 		this.store.setHeaderTitle(this.$t("castVoteTitle"))
+		this.store.setHeaderBackLink("/polls/"+this.pollId)
 		
 		/** 
 		 * Force refresh of the poll we want to cast a vote on. Load the from the backend.
@@ -290,6 +286,7 @@ export default {
 			})
 				
 	},
+	
 	mounted() {
 		
 	},
@@ -350,54 +347,36 @@ export default {
 }
 </script>
 
-<style lang="scss">
-.card-header {   
-	background-color: white;
-	border-bottom-color: lightgray;
-	margin: 0;
-}
+<style lang="scss" scoped>
+#castVoteCard {
+	.card-header {   
+		//background-color: white;
+		border-bottom: none;
+	}
 
-.poll-title {
-	margin: 0;
-	font-weight: bold;
-}
+	.poll-title {
+		font-weight: bold;
+		margin: 0;
+	}
 
+	.draggable {
 
-/*
-.ballot-card {
-	.card-header {
-		padding: 0.5rem;
-		background-color: $header-bg;
-
-		.poll-title {
-			margin: 0;
-			font-size: 14px;
-			font-weight: bold;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
+		.law-panel:not(:last-child) {
+			margin-bottom: 1rem;
+			cursor: grab;
 		}
-	}
-}
-*/
 
-.draggable {
-
-	.law-panel:not(:last-child) {
-		margin-bottom: 1rem;
-		cursor: grab;
+		.sortable-ghost {
+			opacity: 0.1;
+		}
+		.sortable-chosen {
+			z-index: 999;
+			-webkit-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
+			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
+			//transform: translate(3px, 3px);
+		}
+		
 	}
-
-	.sortable-ghost {
-		opacity: 0.1;
-	}
-	.sortable-chosen {
-		z-index: 999;
-		-webkit-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
-		//transform: translate(3px, 3px);
-	}
-	
 }
 
 #verifyBallotButton {

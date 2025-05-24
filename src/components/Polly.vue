@@ -280,7 +280,7 @@ function likeProposal(prop) {
 
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 
 // A bootstrap card, but with no borders.
 .polly-card {
