@@ -368,7 +368,7 @@ export default {
 	td {
 		width: 50%;
 	}
-	td:fist-child() {
+	td:first-child() {
 		border-right: 1px solid grey;
 	}
 }

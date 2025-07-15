@@ -89,7 +89,7 @@ export default {
 <style lang="scss" scoped>
 $proposal_icon_size: 32px;
 
-.law-panel {   // same as in poll-panel.vue
+.law-panel {   // keep this similar to poll-panel.vue
 	height: 8rem;
 	overflow: hidden;
 	padding: 5px;

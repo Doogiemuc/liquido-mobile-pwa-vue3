@@ -5,40 +5,56 @@
 			&nbsp;{{ $t("castVoteTitle") }}
 		</h2>
 
-		<b-card id="castVoteCard" class="ballot-card mb-5">
-			<template #header>
+		<div id="castVoteCard" class="card ballot-card mb-5">
+			<div class="card-header">
+
 				<h4 class="poll-title">
 					{{ poll ? poll.title : "" }}
 				</h4>
-			</template>
-			<div v-if="loading" class="draggable">
-				<b-spinner small />&nbsp;{{ $t('Loading') }}
 			</div>
-			<draggable v-else
-				id="myDraggable"
-				v-model="proposalsInBallot"
-				class="draggable"
-				item-key="id"
-				:disabled="loading || castVoteLoading"
-				:swap-threshold="0.5"
-				:delay="40"
-				:animation="500"
-				:can-scroll-x="false"
-			>
-				
-				<law-panel
-					v-for="proposal in proposalsInBallot"
-					:law="proposal"
-					:key="proposal.id"
-					:read-only="true"
-					:collapse="true"
-				/>
-			
-			</draggable>
-		</b-card>
+			<div class="card-body">
+				<div v-if="loading" class="draggable">
+					<b-spinner small />&nbsp;{{ $t('Loading') }}
+				</div>
+
+				<draggable v-else id="myDraggable" v-model="proposalsInBallot" class="draggable" item-key="id"
+					:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
+					:can-scroll-x="false">
+
+					<div v-for="law in proposalsInBallot" :id="law.id" class="card law-panel d-flex flex-row align-items-center noselect">
+							<div class="law-icon">
+								<i class="fas fa-fw" :class="'fa-' + law.icon" />
+							</div>
+							<div class="d-flex flex-column text-truncate ms-1">
+								<h4 class="law-title">
+									{{ law.title }}
+								</h4>
+								<div class="law-subtitle">
+									<div :class="{ supported: law.supportedByCurrentUser }" class="d-inline">
+										<i :class="{
+												far: !law.supportedByCurrentUser,
+												fas: law.supportedByCurrentUser,
+											}"
+											class="fa-thumbs-up"
+										></i>
+										&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
+									</div>
+									<i class="far fa-user ms-2"></i>&nbsp;{{ law.createdBy.name }}
+								</div>
+							</div>
+						
+						<div class="drag-handle">
+							<i class="fas fa-grip-vertical"></i>
+						</div>
+					</div>
+
+				</draggable>
+			</div>
+		</div>
 
 		<div v-if="canCastVote" class="text-center mb-5">
-			<b-button id="castVoteButton" variant="primary" size="lg" :disabled="loading || castVoteLoading" @click="clickCastVote()">
+			<b-button id="castVoteButton" variant="primary" size="lg" :disabled="loading || castVoteLoading"
+				@click="clickCastVote()">
 				<i v-if="!castVoteLoading" class="fas fa-vote-yea"></i>
 				<b-spinner v-if="castVoteLoading" small />
 				{{ isUpdatableBallot ? $t("updateBallotButton") : $t("castVoteButton") }}
@@ -65,28 +81,19 @@
 			</p>
 		</div>
 
-		<popup-modal 
-			id="castVoteSuccessModal"
-			ref="castVoteSuccessModal"
-			type="success"
-		>
+		<popup-modal id="castVoteSuccessModal" ref="castVoteSuccessModal" type="success">
 			<template #default>
 				<div class="text-center">
 					<p>{{ isFirstVote ? $t("voteCastedSuccessfully") : $t("voteUpdatedSuccessfully") }}</p>
 					<p v-if="voteCount > 1">
-						{{ $t('voteCountedNTimes', {voteCount: voteCount}) }}
+						{{ $t('voteCountedNTimes', { voteCount: voteCount }) }}
 					</p>
 				</div>
 			</template>
 		</popup-modal>
 
-		<popup-modal 
-			id="errorModal"
-			ref="errorModal"
-			type="error"
-			:message="$t('voteCastError')"
-		></popup-modal>
-		
+		<popup-modal id="errorModal" ref="errorModal" type="error" :message="$t('voteCastError')"></popup-modal>
+
 		<div class="alert liquido-info">
 			<i class="fas fa-info-circle float-end" />
 			<p v-html="$t('castVoteInfo')"></p>
@@ -97,13 +104,15 @@
 
 <script>
 import config from "config"
-import lawPanel from "@/components/law-panel.vue"
 import popupModal from "@/components/popup-modal.vue"
 import { store } from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
 import { VueDraggableNext } from 'vue-draggable-next'
 import _ from "lodash"  // for cloneDeep
 import log from "loglevel"
+import dayjs from "dayjs"
+import localizedFormat from 'dayjs/plugin/localizedFormat'
+dayjs.extend(localizedFormat)
 
 export default {
 	i18n: {
@@ -116,7 +125,7 @@ export default {
 			},
 			de: {
 				castVoteTitle: "Abstimmen",
-				castVoteInfo: 
+				castVoteInfo:
 					"<p>In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> der Vorschläg, sondern du sortierst " +
 					"<em>alle</em> Vorschläge nach deiner Präferenz.</p>" +
 					"<p>Schiebe deinen Favoriten ganz nach oben. Ordne alle anderen Vorschläge gemäß deiner persönlichen Reihenfolge darunter an.</p>",
@@ -127,7 +136,7 @@ export default {
 				voteCastedSuccessfully: "Deine Stimme wurde erfolgreich gezählt.",
 				voteUpdatedSuccessfully: "Deine Stimme wurde erfolgreich aktualisiert.",
 				voteCastError: "Es gab leider einen technischen Fehler beim Abgeben deiner Stimme. Bitte versuche es später noch einmal.",
-				updateBallotInfo: "Du hast in dieser Abstimmung bereits eine Stimme abgegeben. In <span class='liquido'></span> kannst du deinen Stimmzettel " + 
+				updateBallotInfo: "Du hast in dieser Abstimmung bereits eine Stimme abgegeben. In <span class='liquido'></span> kannst du deinen Stimmzettel " +
 					"auch jetzt noch ändern, so lange die Wahlphase dieser Abstimmung noch läuft.",
 				checksumOfYourBallot: "Mit dieser Checksumme kannst du prüfen ob dein Stimmzettel korrekt gezählt wurde:",
 				verifyBallotButton: "Prüfen",
@@ -136,7 +145,7 @@ export default {
 			},
 		},
 	},
-	components: { lawPanel, draggable: VueDraggableNext, popupModal },
+	components: { draggable: VueDraggableNext, popupModal },
 	props: {
 		// the cast-vote page only receives the pollId and reloads the poll from the backend
 		pollId: { type: String, required: true },
@@ -168,10 +177,10 @@ export default {
 	},
 	created() {
 		this.loading = true
-	
+
 		this.store.setHeaderTitle(this.$t("castVoteTitle"))
-		this.store.setHeaderBackLink("/polls/"+this.pollId)
-		
+		this.store.setHeaderBackLink("/polls/" + this.pollId)
+
 		/** 
 		 * Force refresh of the poll we want to cast a vote on. Load the from the backend.
 		 */
@@ -179,8 +188,8 @@ export default {
 			this.poll = poll
 			if (!this.poll) throw new Error("Cannot find poll(id=" + this.pollId + ")") //TODO: show user error message to user. offer back button
 			return poll
-		}).catch(err => console.warn("Cannot get poll.id="+this.pollId, err))
-		
+		}).catch(err => console.warn("Cannot get poll.id=" + this.pollId, err))
+
 		/**
 		 * Get the user's voter token.
 		 * TODO: We could make this more secury by letting the user provide his own voterTokenSecret.
@@ -190,7 +199,7 @@ export default {
 			.catch(err => console.error("Cannot get voterToken of user", err))
 
 		/**
-		 * Check if current user already coted in this poll. Then he would have a ballot.
+		 * Check if current user already voted in this poll. Then he would have a ballot.
 		 * Keep in mind, that the ballot of a user can only be fetched, if the user's secret voterToken is known.
 		 */
 		let getExistingBallot = (voterToken) => api.getBallot(this.pollId, voterToken).then(ballot => {
@@ -209,21 +218,22 @@ export default {
 				this.existingBallot = ballot
 				this.proposalsInBallot = ballot.voteOrder.map(elem => proposalsById[elem.id])
 			} else {
-				this.proposalsInBallot = _.cloneDeep(this.poll.proposals)
+				//this.proposalsInBallot = _.cloneDeep(this.poll.proposals)
+				this.proposalsInBallot = this.poll.proposals
 			}
 			this.loading = false
 		}
-		
+
 		let delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-		
+
 		/**
 		 * Some math magic :-) taken from https://spicyyoghurt.com/tools/easing-functions
-     * @param {Number} t current "time", e.g. 0 to 1
-     * @param {Number} b start value
-     * @param {Number} c value delta (b + c = end value)
-     * @param {Number} d final value of time at the end, e.g. 1
-		 */ 
-		function easeOutCubic (t, b, c, d) {
+		 * @param {Number} t current "time", e.g. 0 to 1
+		 * @param {Number} b start value
+		 * @param {Number} c value delta (b + c = end value)
+		 * @param {Number} d final value of time at the end, e.g. 1
+		 */
+		function easeOutCubic(t, b, c, d) {
 			return c * ((t = t / d - 1) * t * t + 1) + b;
 		}
 
@@ -234,7 +244,7 @@ export default {
 		 * 
 		 * Move the top proposal in a cubic circular motion to the bottom.
 		 */
-		let showDraggingHint = async function() {
+		let showDraggingHint = async function () {
 			let element = document.querySelector("#myDraggable > div")
 			if (element == null) {
 				log.warn("No proposals in poll!")  // This should never happen.
@@ -243,12 +253,12 @@ export default {
 			element.classList.add("sortable-chosen")
 			const delayMs = 5
 			const dragHeight = element.clientHeight * 2
-			const dragWidth  = dragHeight / 10
+			const dragWidth = dragHeight / 10
 			const step = 1 / dragHeight
 			const startX = element.style.left
 			const startY = element.style.top
 			for (let time = 0; time < 1; time += step) {
-				let i  = easeOutCubic(time, 0, 1, 1)
+				let i = easeOutCubic(time, 0, 1, 1)
 				let dx = Math.sin(i * Math.PI) * dragWidth
 				let dy = i * dragHeight
 				element.style.top = dy + "px"
@@ -256,7 +266,7 @@ export default {
 				await delay(delayMs)
 			}
 			for (let time = 1; time >= 0; time -= step) {
-				let i  = easeOutCubic(time, 0, 1, 1)
+				let i = easeOutCubic(time, 0, 1, 1)
 				let dx = Math.sin(i * Math.PI) * dragWidth
 				let dy = i * dragHeight
 				element.style.top = dy + "px"
@@ -267,7 +277,7 @@ export default {
 			element.style.left = startX
 			element.classList.remove("sortable-chosen")
 		}
-		
+
 
 		loadPoll()
 			.then(getVoterToken)
@@ -275,20 +285,20 @@ export default {
 			.then(setProposalsInBallot)		// set proposals (and sort them in the voteOrder of the users ballot if he already voted)
 			.then(() => {
 				this.loading = false
-				setTimeout(function() {
+				setTimeout(function () {
 					showDraggingHint()
 				}, 500)
-				
+
 			})
 			.catch(err => {
 				console.error("Cannot get data to cast vote!", err)
 				this.loading = false
 			})
-				
+
 	},
-	
+
 	mounted() {
-		
+
 	},
 	methods: {
 		/** Collapse the descriptions of all proposals in the ballot (not used) */
@@ -306,10 +316,10 @@ export default {
 
 			//TODO: start a timer for timeout
 
-			log.debug("CAST VOTE: poll.id="+this.poll.id, "voteOrderIds", voteOrderIds)
+			log.debug("CAST VOTE: poll.id=" + this.poll.id, "voteOrderIds", voteOrderIds)
 			return api.getVoterToken(config.voterTokenSecret).then((voterToken) => {
 				console.debug("Received voter token. Now casting vote ...")
-				api.castVote(this.poll.id, voteOrderIds, voterToken).then(castVoteResponse => {
+				return api.castVote(this.poll.id, voteOrderIds, voterToken).then(castVoteResponse => {
 					console.info("Vote casted successfully.", castVoteResponse)
 					this.existingBallot = castVoteResponse.ballot
 					this.voteCount = castVoteResponse.voteCount
@@ -331,12 +341,16 @@ export default {
 				} else {
 					console.debug("Ballot verified successfully.", ballot)
 					this.ballotIsVerified = true
-				}				
+				}
 			}).catch(err => {
 				console.error("Cannot verify ballot with checksum!", err)
 				//TODO: show error message
 				this.ballotIsVerified = false
 			})
+		},
+
+		formatDate(dateVal) {
+			return dayjs(dateVal).format("L")
 		},
 
 		goBack() {
@@ -348,8 +362,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+
 #castVoteCard {
-	.card-header {   
+	.card-header {
 		//background-color: white;
 		border-bottom: none;
 	}
@@ -361,28 +377,81 @@ export default {
 
 	.draggable {
 
-		.law-panel:not(:last-child) {
-			margin-bottom: 1rem;
-			cursor: grab;
-		}
-
 		.sortable-ghost {
 			opacity: 0.1;
 		}
+
 		.sortable-chosen {
 			z-index: 999;
 			-webkit-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
 			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
 			//transform: translate(3px, 3px);
 		}
-		
+
 	}
 }
+
+$proposal_icon_size: 32px;
+
+// keep this similar to poll-panel.vue
+.law-panel {   
+	height: 4rem;
+	overflow: hidden;
+	padding: 5px;
+	margin-bottom: 1rem;
+	cursor: grab;
+	
+	.law-title {
+		color: $primary;
+		margin-bottom: 3px;
+		padding: 0;
+		font-size: 14px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.law-subtitle {
+		font-size: 10px;
+		color: #bbb;
+		margin-bottom: 5px;
+	}
+	.law-icon {
+		color: white;
+		background-color: $icon_bg;
+		border-radius: 50%;
+		border: none;
+		text-align: center;
+		//font-size: 1.2em;
+		line-height: $proposal_icon_size;
+		min-width: $proposal_icon_size;
+		max-width: $proposal_icon_size;
+		width: $proposal_icon_size;
+		min-height: $proposal_icon_size;
+		max-height: $proposal_icon_size;
+		height: $proposal_icon_size;
+
+	}
+
+	.law-description {
+		font-size: 12px;
+		overflow: hidden;
+	}
+
+	.supported {
+		color: green;
+	}
+
+	.drag-handle {
+		position: absolute;
+		right: 5px;
+		bottom: 0px;
+		opacity: 0.5;
+	}
+}
+
 
 #verifyBallotButton {
 	font-family: monospace;
 	margin: 0 auto;
 }
-
-
 </style>

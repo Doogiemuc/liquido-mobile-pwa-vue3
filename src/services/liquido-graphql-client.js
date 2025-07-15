@@ -223,7 +223,8 @@ let graphQlApi = {
 	 * @returns the GraphQL schema
 	 */ 
 	async getGraphQLSchema() {
-		return axios.get('/graphql/schema.graphql')
+		return true;
+		//return axios.get('/graphql/schema.graphql')
 	},
 	
 

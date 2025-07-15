@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import welcomeChat from "@/views/welcome-chat.vue"
-import loginPage from "@/views/login-page.vue"
+//import loginPage from "@/views/login-page.vue"
 
 //TODO: load these as dynamic dependencies (only on demand later)
 //      https://router.vuejs.org/guide/advanced/lazy-loading.html
-import teamHome from "@/views/team-home.vue"
+//import teamHome from "@/views/team-home.vue"
 import pollsPage from "@/views/polls.vue"
 import showPoll from "@/views/poll-show.vue"
 import { store }  from "@/services/store.js"
@@ -24,7 +24,8 @@ const routes = [
 	{
 		path: "/login",
 		name: "login",
-		component: loginPage,
+		//component: loginPage,
+		component: () => import("@/views/login-page.vue"),
 		props: route => ({
 			email: route.query.email,
 			emailToken: route.query.emailToken
@@ -61,12 +62,16 @@ const routes = [
 	{
 		path: "/team",
 		name: "teamHome",
-		component: teamHome
+		component: () => import("@/views/team-home.vue"),
+		props: true,  // teamId, teamName, teamLogoUrl
+		meta: {
+			public: false  // this is not public, because it requires a valid JWT
+		}
 	},
 	{
 		path: "/polls",
 		name: "polls",
-		component: pollsPage,
+		component: () => import("@/views/polls.vue"),
 		props: true  // status=ELABORATION|VOTING|FINISHED  or undefined
 	},
 	{
