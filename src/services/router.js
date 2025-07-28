@@ -97,6 +97,14 @@ const routes = [
 		component: () => import("@/views/cast-vote.vue"),
 		props: true,
 	},
+	{	
+		path: "/forgotPassword",
+		name: "forgotPassword",
+		component: () => import("@/views/forgot-password.vue"),
+		meta: {
+			public: true
+		}
+	},
 	{
 		path: "/design",
 		name: "liquidoDesign",

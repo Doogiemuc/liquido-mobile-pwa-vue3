@@ -10,12 +10,14 @@
 					:placeholder="$t('emailPlaceholder')"
 					:required=true
 					:empty-feedback="$t('emailEmpty')"
+					:feedback-placehoder="true"
 					:invalid-feedback="$t('emailInvalid')"/>
 
 				<liquido-input id="loginPasswordInput" v-model="passwordInputVal" v-model:state="passwordInputState" type="password"
 					:minLength=10 :required=true
 					:placeholder="$t('passwordPlaceholder')"
 					:invalid-feedback="$t('passwordInputIsInvalid')"
+					:feedback-placehoder="true"
 					@keypress.enter="loginWithEmailPassword" />
 
 				<button id="loginWithEmailPasswordButton" type="button" class="btn btn-primary w-100" @click="loginWithEmailPassword">
@@ -67,8 +69,10 @@
 			</div>
 		</div>
 
+		<!-- Password forgotten -->
+
 		<div class="forgot-password-link my-3">
-			<a href="#">{{ $t('forgotPassword') }}</a>
+			<a href="#" @click="clickForgotPassword">{{ $t('ForgotPassword') }}</a>
 		</div>
 
 		<!-- Login via SMS (disabled because expensive) -->
@@ -139,9 +143,14 @@ export default {
         passwordPlaceholder: "Passwort",
         emailInvalid: "Ungültige Email. Vielleicht nur vertippt?",
 				emailEmpty: "Bitte gib deine E-Mail Adresse ein.",
-				passwordInputIsInvalid: "Passwort falsch. (Mindestens 10 Zeichen.)",
+				passwordInputIsInvalid: "Mindestens 10 Zeichen.",
 				loginFailed: "Login fehlgeschlagen. Bitte überprüfe deine E-Mail und dein Passwort.",
 				
+				// Password reset
+				needEmailToResetPassword: "Bitte gib oben deine E-Mail Adresse ein, damit ich dir einen Link zum Zurücksetzen deines Passworts schicken kann.",
+				PaswordResetEmailSentSuccessfully: "Ok, ich habe dir eine E-Mail geschickt, mit der du dein Passwort zurücksetzen kannst. Du kannst diese Seite jetzt schließen.",
+
+				// Login via Magic Email Link
         RequestTokenButton: "Login-Token anfordern",
         TokenSent: "SMS verschickt ...",
         AuthTokenLabel: "Login-Token aus SMS",
@@ -162,7 +171,7 @@ export default {
         LoginViaSms: "SMS Login",
         LoginViaSmsInfo: "Ich schicke dir einen Zahlencode auf dein Handy. Mit diesem kannst du dich dann hier einloggen.",
 
-        forgotPassword: "Passwort vergessen?",
+        ForgotPassword: "Passwort vergessen?",
 				Register: "Registrieren",
         DevLoginAdmin: "devLogin: Admin",
         DevLoginMember: "devLogin: Member",
@@ -186,9 +195,9 @@ export default {
 			emailInputState: undefined, 	// synced states from liquido-inputs
 			passwordInputVal: "",
 			passwordInputState: null,
-			loginErrorMessage: undefined,
+			loginErrorMessage: undefined, // error message below email password input
 
-			// Forgot password -> send email with token
+			// Login via E-Mail magic link
 			emailSentSuccessfully: false,
 			emailErrorMessage: undefined,
 			emailCode: undefined,
@@ -249,6 +258,8 @@ export default {
 	},
 	methods: {
 
+		// =============== Login via E-Mail & Password ==================
+
 		loginWithEmailPassword() {
 			this.loginErrorMessage = null
 			//BUFIX: When password is auto filled, then state is not valid.   if (this.emailInputState !== STATE.VALID || this.passwordInputState !== STATE.VALID) return	
@@ -262,7 +273,11 @@ export default {
 				})
 		},
 
+		// =============== Forgot Password Process ==================
 
+		clickForgotPassword() {
+			this.$router.push({name: "forgotPassword"})
+		},
 
 		/** 
 		 * Start the google login process only after the user clicked the Google button.
@@ -423,11 +438,11 @@ export default {
 
 
 
-		// ============== Login via Email =================
+		// =============== login via E-Mail magic link ==================
 
 
 		/** Send a magic link that the user can login with for the next n hours. */
-		sendForgotPasswordMail() {
+		sendMagicLoginLinkMail() {
 			// Email login button might be disabled, when the email is not valid yet.
 			// But the button is never shown as disabled for non logicall beautiful UX/UI reasons. :-)
 			// So we check here if the current value of the liquido-input is actually valid.

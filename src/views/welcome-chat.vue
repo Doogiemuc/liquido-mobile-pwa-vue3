@@ -28,7 +28,7 @@
 			</div>
 
 			<div v-if="flowState <= FLOW.NicknameInput" class="login-link">
-				<RouterLink to="/login">{{$t('login')}}</RouterLink>
+				<router-link :to="{ name: 'login' }">{{$t('login')}}</router-link>
 			</div>
 
 			<b-card :class="{ 'hide-left': flowState < FLOW.NiceToMeetYou }" class="chat-bubble chat-left shadow-sm">

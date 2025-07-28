@@ -83,6 +83,8 @@ axios.interceptors.response.use(onSuccess, onError)
 /**
  * This is the central API client that calls the backend.
  * Errors are logged here. But must be handled by the caller!
+ * GraphQL always returns HTTP 200.
+ * If there was an error, then the response will contain an `errors` array.
  * 
  * @param {String} graphql GraphQL Query. This is NOT JSON! This is GraphQL syntax!
  * @returns GraphQL result as specified by GraphQL-spec { data: {}, errors: [] }
@@ -96,12 +98,14 @@ const graphQlQuery = function(query, variables) {
 				// graphQL's way of returning errors, as defined in the GraphQL spec
 				// https://graphql.org/learn/serving-over-http/#http-status-codes
 				console.info("graphQlQuery() received data errors:", res.data.errors)   
-				if (res.data.errors[0].extensions && res.data.errors[0].extensions) {
+				if (res.data.errors[0].extensions) {
 					console.info("graphQlQuery() first liquidoException: "+JSON.stringify(res.data.errors[0].extensions))
+					// add the first liquidoException to the response data, so that the caller can handle it more easily
+					res.data.liquidoException = res.data.errors[0].extensions.liquidoException
 				}
 				return Promise.reject(res.data)
 			}
-			return res.data // This is the axios HTTP "data". The graphQL response contains another "res.data.data" (and the "res.data.error") attribute. I know, it's confusing.
+			return res.data // This is the axios HTTP "data". The graphQL response contains another "res.data.data" and the "res.data.errors" attribute. I know, it's confusing.
 		})
 		/*   // No error handling here! Upstream caller is responsible to handle errors
 		.catch(err => {
@@ -370,11 +374,23 @@ let graphQlApi = {
 			let res = response.data.loginWithEmailPassword
 			this.login(res.team, res.user, res.jwt)
 			return res
-		}).catch(err => {
-			console.log("API: loginWithEmailPassword failed: ", err)
-			return Promise.reject("loginWithEmailPassword failed"+JSON.stringify(err))
 		})
 	},
+
+	/**
+	 * Request a password reset for a user.
+	 * @param {String} email must be a registered user email
+	 * @returns 
+	 */
+	requestPasswordReset(email) {
+		if (!email) throw new Error("Need email to request password reset!")
+		let graphQL = `query { requestPasswordReset(email: "${email}") }`
+		return graphQlQuery(graphQL)
+			.then(res => {
+				return res.data.requestPasswordReset
+			})
+	},
+
 
 	/**
 	 * Request auth token for login. 
@@ -429,9 +445,6 @@ let graphQlApi = {
 				console.log("API: devLogin for <"+email+"> in team '"+teamName+"'", res.data.devLogin)
 				this.login(res.data.devLogin.team, res.data.devLogin.user, res.data.devLogin.jwt)
 				return res.data.devLogin
-			}).catch(err => { 
-				console.error("API: devLogin failed: ", err)
-				return Promise.reject("devLogin failed"+JSON.stringify(err))
 			})
 	},
 
@@ -669,56 +682,61 @@ let graphQlApi = {
 	/** Liquido backend error codes. Must match LiquidoException.java from backend*/
 	err: {
 		CANNOT_REGISTER_NEED_EMAIL: 1,
-		CANNOT_REGISTER_NEED_MOBILEPHONE: 1,
+		CANNOT_REGISTER_NEED_MOBILEPHONE: 2,
 
 		// Create New Team
 		TEAM_WITH_SAME_NAME_EXISTS: 10,
-		CANNOT_CREATE_TEAM_ALREADY_REGISTERED: 11,			// Edge case: When a user is already registered and want's to create a team, ...
+		CANNOT_CREATE_TEAM_ALREADY_REGISTERED: 11,      // Edge case: When a user is already registered and want's to create a team, ...
 		// Join a team
 		CANNOT_JOIN_TEAM_INVITE_CODE_INVALID: 12,
-		CANNOT_JOIN_TEAM_ALREADY_MEMBER: 13,						// there already is a member (or admin) with the same email or mobilephone
+		CANNOT_JOIN_TEAM_ALREADY_MEMBER: 13,						// with the same email or mobilephone
 		CANNOT_JOIN_TEAM_ALREADY_ADMIN: 14,
 		CANNOT_CREATE_TWILIO_USER: 15,
-		USER_EMAIL_EXISTS: 16,                         // user with that email already exists
-		USER_MOBILEPHONE_EXISTS: 17,                   // user with that mobilephone already exists
+		USER_EMAIL_EXISTS: 16,                         	// user with that email already exists
+		USER_MOBILEPHONE_EXISTS: 17,                   	// user with that mobile phone already exists
+		PASSWORD_TOO_SHORT: 18,
 
 		//Login Errors
-		CANNOT_LOGIN_MOBILE_NOT_FOUND: 20,					// when requesting an SMS login token and mobile number is not known
-		CANNOT_LOGIN_EMAIL_NOT_FOUND: 21,   				// when requesting a login email and email is not known
-		CANNOT_LOGIN_TOKEN_INVALID: 22,     				// when a email or sms login token is invalid or expired
-		CANNOT_LOGIN_TEAM_NOT_FOUND: 23,           // when changing team
-		CANNOT_LOGIN_USER_NOT_MEMBER_OF_TEAM: 24,  // when changing team and user is not member or admin of target team
-		CANNOT_LOGIN_INTERNAL_ERROR: 25,	// when sending of email is not possible
+		CANNOT_LOGIN_MOBILE_NOT_FOUND: 20,       		// when requesting an SMS login token and mobile number is not known
+		CANNOT_LOGIN_EMAIL_NOT_FOUND: 21,          	// when requesting a login email and email is not known
+		CANNOT_LOGIN_TOKEN_INVALID: 22,            	// when a email or sms login token is invalid or expired
+		CANNOT_LOGIN_TEAM_NOT_FOUND: 23,           	// when changing team
+		CANNOT_LOGIN_USER_NOT_MEMBER_OF_TEAM: 24,  	// when changing team and user is not member or admin of target team
+		CANNOT_LOGIN_INTERNAL_ERROR: 25,  	// when sending of email is not possible
+		CANNOT_REQUEST_SMS_TOKEN: 26,              	// eg. when entered mobile number is not valid
+		CANNOT_RESET_PASSWORD_EMAIL_NOT_FOUND: 28,	// Someone requested a password reset for a non registered email.
+		CANNOT_RESET_PASSWORD_TOKEN_INVALID: 29,
 
-		//JWT Erros
-		JWT_TOKEN_INVALID: 30, 
-		JWT_TOKEN_EXPIRED: 31, 
+		//JWT Errors  // these are now handled by Quarkus
+		JWT_TOKEN_INVALID: 30,
+		JWT_TOKEN_EXPIRED: 31,
 
 		// use case errors
-		INVALID_VOTER_TOKEN: 50, 
-		CANNOT_CREATE_POLL: 51, 
-		CANNOT_JOIN_POLL: 52, 
-		CANNOT_ADD_PROPOSAL: 53, 
-		CANNOT_START_VOTING_PHASE: 54, 
-		CANNOT_SAVE_PROXY: 55, 								  // assign or remove
-		CANNOT_ASSIGN_CIRCULAR_PROXY: 56, 
-		CANNOT_CAST_VOTE: 57, 
-		CANNOT_GET_TOKEN: 58, 
-		CANNOT_FINISH_POLL: 59, 
-		NO_DELEGATION: 60, 
-		NO_BALLOT: 61,   												// 204: voter has no ballot yet. This is OK and not an error.
-		INVALID_POLL_STATUS: 62, 
-		PUBLIC_CHECKSUM_NOT_FOUND: 63, 
-		CANNOT_ADD_SUPPORTER: 64, 							// e.g. when user tries to support his own proposal
-		
-		CANNOT_CALCULATE_UNIQUE_RANKED_PAIR_WINNER: 70, 		// this is only used in the exceptional situation, that no unique winner can be calculated in RankedPairVoting
-		CANNOT_VERIFY_CHECKSUM: 80, 						// ballot's checksum could not be verified
+		INVALID_VOTER_TOKEN: 50,
+		CANNOT_CREATE_POLL: 51,
+		CANNOT_JOIN_POLL: 52,
+		CANNOT_ADD_PROPOSAL: 53,
+		CANNOT_START_VOTING_PHASE: 54,
+		CANNOT_ASSIGN_PROXY: 55,                // assign or remove
+		CANNOT_ASSIGN_CIRCULAR_PROXY: 56,
+		CANNOT_REMOVE_PROXY: 57,
+		CANNOT_CAST_VOTE: 58,
+		CANNOT_GET_TOKEN: 59,
+		CANNOT_FINISH_POLL: 60,
+		NO_DELEGATION: 61,
+		NO_BALLOT: 62,                          // 204: voter has no ballot yet. This is OK and not an error.
+		INVALID_POLL_STATUS: 63,
+		PUBLIC_CHECKSUM_NOT_FOUND: 64,
+		CANNOT_ADD_SUPPORTER: 65,              // e.g. when user tries to support his own proposal
+
+		CANNOT_CALCULATE_UNIQUE_RANKED_PAIR_WINNER: 70,    // this is only used in the exceptional situation, that no unique winner can be calculated in RankedPairVoting
+		CANNOT_VERIFY_CHECKSUM: 80,              // ballot's checksum could not be verified
 
 		// general errors
 		GRAPHQL_ERROR: 400,                     // e.g. missing required fields, invalid GraphQL query, ...
-		UNAUTHORIZED: 401,                      // when client tries to call something without being authenticated!
-		CANNOT_FIND_ENTITY: 404,                // 404: cannot find entity
-		INTERNAL_ERROR: 500,
+		UNAUTHORIZED: 401,                     // when client tries to call something without being authenticated!
+		CANNOT_FIND_ENTITY: 404,                  // 404: cannot find entity
+		INTERNAL_ERROR: 500
 	},
 
 	/** client side caches */

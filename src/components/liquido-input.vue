@@ -8,7 +8,7 @@
 			:name="name"
 			:value="modelValue"
 			:class="validClass"
-			:type="type"
+			:type="inputType"
 			:placeholder="placeholder"
 			:disabled="disabled"
 			:required="required"
@@ -23,6 +23,26 @@
 		<div class="iconRight">
 			<slot name="iconRight" />
 		</div>
+		<!-- Password eye icon -->
+		<div v-if="type === 'password'" class="password-toggle"
+			@mousedown.prevent="showPassword = true"
+			@mouseup.prevent="showPassword = false"
+			@mouseleave="showPassword = false"
+			@touchstart.prevent="showPassword = true"
+			@touchend.prevent="showPassword = false"
+			@touchcancel.prevent="showPassword = false"
+			style="cursor:pointer;"
+		>
+			<!-- Simple SVG eye icon -->
+			<svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+			</svg>
+			<svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.956 9.956 0 012.293-3.95M6.62 6.62A9.956 9.956 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.956 9.956 0 01-4.293 5.95M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18" />
+			</svg>
+		</div>
 		<div v-if="showCounterIfValid" class="counter">
 			{{ counterVal }}
 		</div>
@@ -31,6 +51,9 @@
 		</div>
 		<div v-if="showEmptyFeedback" class="invalid-feedback">
 			{{ emptyFeedback }}
+		</div>
+		<div v-if="feedbackPlacehoder && !showCounterIfValid && !showInvalidFeedback && !showEmptyFeedback" class="invalid-feedback-placeholder">
+			&nbsp; <!-- This div is only used to reserve space for the invalid feedback text, so that the input field does not jump up and down -->
 		</div>
 	</div>
 </template>
@@ -149,6 +172,9 @@ export default {
 		/** You can set an extra message when the field is invalid and empty. */
 		emptyFeedback: { type: String, default: undefined },
 
+		/** Reserve space below the input field for the invalid/emptyFeedback text. */
+		feedbackPlacehoder: { type: Boolean, default: false },
+
 		/** 
 		 * In addition to the default "pattern" field supported by HTML5,
 		 * you can provide a custom validation function that will be used to validate the input value.
@@ -169,6 +195,7 @@ export default {
 			
 			/** Function that will be used to validate the input value. */
 			internalValidFunc: this.validFunc,
+			showPassword: false, // <-- add this
 		}
 	},
 	computed: {
@@ -200,7 +227,11 @@ export default {
 		},
 		showCounterIfValid() {
 			return this.showCounter && this.state === null
-		}
+		},
+		inputType() {
+			// Only override for password fields
+			return this.type === "password" && this.showPassword ? "text" : this.type
+		},
 
 		    //FIXME: Needs to be fixed for VUE3
 		/**
@@ -352,7 +383,16 @@ export default {
 	.iconRight {
 		position: absolute;
 		top: 18px;
-		right: 10px;
+		right: 0;
+		user-select: none;
+	}
+
+	.password-toggle {
+		position: absolute;
+		top: 17px;
+		right: 2em;
+		color: lightgrey;
+		user-select: none;
 	}
 
 	.counter {
@@ -360,6 +400,13 @@ export default {
 		position: absolute;
 		top: 18px;
 		right: 10px;
+	}
+
+	.invalid-feedback-placeholder {
+		// same as bootstraps invalid-feedback
+		width: 100%;
+  	margin-top: 0.25rem;
+  	font-size: 0.875em;
 	}
 }
 </style>
