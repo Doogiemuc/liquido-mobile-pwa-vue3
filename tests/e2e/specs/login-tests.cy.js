@@ -75,7 +75,8 @@ context('Login Test', () => {
 
 		//WHEN test user enters his email & password
 		cy.get("#loginEmailInput").type(Cypress.env("admin").email)
-		cy.get("#loginPasswordInput").type(Cypress.env("admin").password)
+		let password = Cypress.env("admin").email + Cypress.env("passwordSuffix")
+		cy.get("#loginPasswordInput").type(password)
 		
 		// AND click login button
 		cy.get("#loginWithEmailPasswordButton").click()
@@ -86,8 +87,66 @@ context('Login Test', () => {
 		cy.get("#memberCards").contains(Cypress.env("admin").name)
 	})
 
+		
+	
+	it('Forgot password flow', function() {
+		cy.visit("/login")
+		cy.get("#login-page")
 
-	it.skip('(Simulate) Password forgotten email', function() {
+		// ======== Step 1: Request password reset ========
+
+		// Click "Forgot password" link
+		cy.get("#forgotPasswordLink").click()
+
+		// Should be on forgot password page
+		cy.get("#forgot-password-page")
+
+		// Enter email and request password reset
+		cy.get("#emailInput").type(Cypress.env("admin").email)
+		cy.get("#requestPasswordResetButton").click()
+
+		// Should show success message
+		cy.get("#requestPasswordResetSuccessMessage").should("be.visible")
+
+		// ========= Step 2: Reset password with token ========
+
+		// Simulate receiving reset token (in real test, fetch from mailtrap or similar)
+		// For this test, we assume a test token and email are available in env
+		cy.visit(`/resetPassword?email=${encodeURIComponent(Cypress.env("admin").email)}&resetPasswordToken=${Cypress.env("testPasswordResetToken")}`)
+		cy.get("#forgot-password-page")
+
+		// Enter new password twice   (set the same password again, so that the test is repeatable)
+		let newPassword = Cypress.env("admin").email + Cypress.env("passwordSuffix")
+		cy.get("#newPasswordInput1").type(newPassword) // first input
+		cy.get("#newPasswordInput2").type(newPassword) // second input
+
+		// Click reset password button
+		cy.get("#resetPasswordButton").click()
+
+		// Should show password reset success message
+		cy.get("#resetPasswordSuccessMessage").should("not.be.empty")
+
+		//cy.pause()
+
+		// ======== Step 3: Login with new password ========
+
+		cy.visit("/login")
+
+		cy.get("#login-page")
+
+		//WHEN test user enters his email & password
+		cy.get("#loginEmailInput").type(Cypress.env("admin").email)
+		cy.get("#loginPasswordInput").type(newPassword)
+		
+		// AND click login button
+		cy.get("#loginWithEmailPasswordButton").click()
+
+		//THEN user is logged in and teamHome is shown
+		cy.get("#team-home")
+	})
+
+
+	it.skip('(Simulate) Login via E-Mail Magic Link', function() {
 		//GIVEN on login page
 		cy.visit("/login")
 		cy.get("#login-page")

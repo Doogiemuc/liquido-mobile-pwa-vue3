@@ -2,9 +2,11 @@
 	<div>
 		<h1 id="forgot-password-page" class="page-title">{{ pageTitle }}</h1>
 
-		<!-- Step1: Request password reset email  -->
+		<!-- Step1: Request password reset -->
 		<div class="card" v-if="!resetPasswordToken">
 			<div class="card-body">
+
+				<p class="text-center">{{ $t('RequestPasswordResetInfo') }}</p>
 
 				<liquido-input
 				  id="emailInput"
@@ -14,24 +16,20 @@
 					:placeholder="$t('emailPlaceholder')"
 					:required=true
 					:empty-feedback="$t('emailEmpty')"
-					:feedback-placehoder="true"
+					:feedback-placehoder=true
 					:invalid-feedback="$t('emailInvalid')"/>
 
-				<div class="alert alert-danger" v-if="resetPasswordErrorMessage">
-					{{ resetPasswordErrorMessage }}
+				<div id="requestPasswordResetErrorMessage" class="alert alert-danger" v-if="requestPasswordResetErrorMessage">
+					{{ resetPasswordErrorequestPasswordResetErrorMessagerMessage }}
 				</div>
 
-				<div class="alert alert-success" v-if="resetPasswordSuccessMessage">
-					{{ resetPasswordSuccessMessage }}
+				<div id="requestPasswordResetSuccessMessage" class="alert alert-success" v-if="requestPasswordResetSuccessMessage">
+					{{ requestPasswordResetSuccessMessage }}
 				</div>	
-
-				<div class="alert alert-info" v-if="resetPasswordInfoMessage">
-					{{ resetPasswordInfoMessage }}
-				</div>
 
 				<button id="requestPasswordResetButton" type="button" class="btn btn-primary my-3 w-100" 
 					@click="requestPasswordReset"
-					:disabled="resetPasswordResetButtonDisabled">
+					:disabled="requestPasswordResetButtonDisabled">
 					{{ $t('SendMail') }}
 				</button>
 			</div>
@@ -41,8 +39,8 @@
 		<div class="card" v-if="resetPasswordToken">
 			<div class="card-body">
 
-				<p>Reset password for:</p>
-				{{ email }}
+				<p class="text-center">Reset password for</p>
+				<p class="text-center">{{ email }}</p>
 
 				<liquido-input
 					id="newPasswordInput1" 
@@ -50,38 +48,37 @@
 					v-model:state="newPasswordInput1State" 
 					:placeholder="$t('NewPassword')"
 					:required=true
+					:min-length=minPasswordLength
 					:empty-feedback="$t('NewPasswordEmpty')"
-					feedback-placehoder="true"
+					:feedback-placehoder=true
 					:invalid-feedback="$t('NewPasswordInvalid')"
 					type="password"
 				/>
 
 				<liquido-input
-					id="newPasswordInput1" 
+					id="newPasswordInput2" 
 					v-model="newPasswordInput2Val" 
 					v-model:state="newPasswordInput2State" 
+					:validFunc="newPasswordInput2ValidFunc"
 					:placeholder="$t('RepeatNewPassword')"
 					:required=true
+					:min-length=minPasswordLength
 					:empty-feedback="$t('NewPasswordEmpty')"
-					feedback-placehoder="true"
-					:invalid-feedback="$t('NewPasswordInvalid')"
+					:feedback-placehoder=true
+					:invalid-feedback="$t('SecondPasswordInvalid')"
 					type="password"
 				/>
 
-				<div class="alert alert-danger" v-if="resetPasswordErrorMessage">
+				<div id="resetPasswordErrorMessage" class="alert alert-danger" v-if="resetPasswordErrorMessage">
 					{{ resetPasswordErrorMessage }}
 				</div>
 
-				<div class="alert alert-success" v-if="resetPasswordSuccessMessage">
+				<div id="resetPasswordSuccessMessage" class="alert alert-success" v-if="resetPasswordSuccessMessage">
 					{{ resetPasswordSuccessMessage }}
 				</div>	
 
-				<div class="alert alert-info" v-if="resetPasswordInfoMessage">
-					{{ resetPasswordInfoMessage }}
-				</div>
-
 				<button id="resetPasswordButton" type="button" class="btn btn-primary my-3 w-100" 
-					@click="requestPasswordReset"
+					@click="clickResetPasswordButton"
 					:disabled="resetPasswordButtonDisabled">
 					{{ primaryActionButtonText }}
 				</button>
@@ -89,7 +86,7 @@
 		</div>
 	
 		<div class="back-to-login-link my-5">
-			<a href="#" @click="backToLogin">{{ $t('BackToLogin') }}</a>
+			<router-link :to="{ name: 'login' }">{{ $t('BackToLogin') }}</router-link>
 		</div>
 
 	</div>
@@ -101,106 +98,128 @@ import api from "@/services/liquido-graphql-client.js"
 import { store }  from "@/services/store.js"
 import config from "config"
 
-
 export default {
   i18n: {
     messages: {
-      de: {      
+      de: {
+				// Step 1: Request password reset      
 				ForgotPassword: "Passwort vergessen",
 				ResetPassword: "Passwort zurücksetzen",
+				RequestPasswordResetInfo: "Passwort vergessen? Kein Problem. Gib deine registriere E-Mail Adresse ein. Wir schicken dir dann einen Link, mit dem du dein Passwort zurücksetzen kannst.",
 				SendMail: "Mail schicken",
 				emailPlaceholder: "Deine E-Mail",
         emailInvalid: "Ungültige Email. Vielleicht nur vertippt?",
 				emailNotFound: "Ich kenne keinen User mit dieser E-mail.",
 				emailEmpty: "Bitte gib deine E-Mail Adresse ein.",
+
+				// Step 2: Reset password with token
 				NewPassword: "Neues Passwort",
 				RepeatNewPassword: "Passwort wiederholen",
 				NewPasswordEmpty: "Bitte gib dein neues Passwort ein.",
 				NewPasswordInvalid: "Dein Passwort muss mindestens " + config.minPasswordLength +" Zeichen lang sein.",
-				RequestPasswordResetInfo: "Gib deine registriere E-Mail Adresse ein. Wir schicken dir dann einen Link, mit dem du dein Passwort zurücksetzen kannst.",
+				SecondPasswordInvalid: "Die beiden Passwörter müssen identisch sein.",
+				WontResetPassword: "Kann Passwort nicht zurücksetzen. Diese E-Mail Adresse ist nicht registriert.",
 				RequestPasswordResetFailed: "Es gab einen Fehler. Bitte versuche es später noch einmal.",
 				PasswordResetEmailSentSuccessfully: "Ok, ich habe dir eine E-Mail geschickt, mit der du dein Passwort zurücksetzen kannst. Du kannst diese Seite jetzt schließen.",
 				PasswordResetInfo: "Gib dein neues Passwort ein. Das Passwort muss mindestens " + config.minPasswordLength +" Zeichen lang sein.",
 				PasswordsDontMatch: "Du musst das Passwort zweimal identisch eingeben.",
+				PasswordResetSuccessful: "Dein Passwort wurde erfolgreich zurückgesetzt. Du kannst dich jetzt mit deinem neuen Passwort einloggen.",
 				PasswordResetFailed: "Passwort kann nicht zurückgesetzt werden.",
 				BackToLogin: "Zurück zum Login",
       }
     }
   },
 	components: { liquidoInput },
-	props: {
-		email: { type: String, required: false, default: undefined },
-		resetPasswordToken: { type: String, required: false, default: undefined }
-	},
 	data() {
 		return {
 			pageTitle: this.$t("ForgotPassword"),
 			store,
-			// Login via email & password
-			emailInputVal: this.email || "",
+			
+			// Step1: Request password reset
+			emailInputVal: this.$route.query.email || null,
 			emailInputState: undefined, 	// synced states from liquido-inputs
+			requestPasswordResetErrorMessage: null,
+			requestPasswordResetSuccessMessage: null,
+
+			// Step 2: Reset password with token
+			email: this.$route.query.email || null, // email from the reset password email, if available
+			resetPasswordToken: this.$route.query.resetPasswordToken || null, // token from the reset password email, if available
+			
+			minPasswordLength: config.minPasswordLength,
 			newPasswordInput1Val: "",
 			newPasswordInput1State: undefined,
 			newPasswordInput2Val: "",
 			newPasswordInput2State: undefined,
-			resetPasswordInfoMessage: this.$t("RequestPasswordResetInfo"),
 			resetPasswordErrorMessage: null,
 			resetPasswordSuccessMessage: null,
 			primaryActionButtonText: this.$t("RequestPasswordReset"),
 		}
 	},
 	computed: {
-		resetPasswordResetButtonDisabled() {
+		requestPasswordResetButtonDisabled() {
 			return this.emailInputState !== STATE.VALID || this.resetPasswordSuccessMessage !== null
+		},
+
+		resetPasswordButtonDisabled() {
+			return this.newPasswordInput1State !== STATE.VALID || this.newPasswordInput2State !== STATE.VALID
 		}
+
 	},
 	
 	created() {
-		this.store.setHeaderTitle(this.pageTitle)
-		if (this.emailInputVal && this.resetPasswordToken) {
+		if (this.email && this.resetPasswordToken) {
+			this.store.setHeaderTitle(this.ForgotPassword)
 			this.pageTitle = this.$t("ResetPassword")
-			this.resetPasswordInfoMessage=this.$t("PasswordResetInfo")
+			this.emailInputVal = this.email
 			this.resetPasswordErrorMessage=null
 			this.resetPasswordSuccessMessage=null
 			this.primaryActionButtonText=this.$t("ResetPassword")
-			this.resetPassword()
+			//this.resetPassword()
 		}
-		/* else {
-			this.resetPasswordInfoMessage=this.$t("PasswordResetInfo"),
-			this.resetPasswordErrorMessage=null,
-			this.resetPasswordSuccessMessage=null,
-			this.primaryActionButtonText=this.$t("RequestPasswordReset"),
+		else {
+			this.store.setHeaderTitle(this.ForgotPassword)
+			this.pageTitle = this.$t("ForgotPassword")
+			this.resetPasswordSuccessMessage=null
+			this.resetPasswordErrorMessage=null
+			this.primaryActionButtonText=this.$t("RequestPasswordReset")
 		}
-		*/	
 	},
 	mounted() {
 		this.$root.scrollToTop()
 	},
 	methods: {
-
+		
 		/**
 		 * Step1: Request a password reset email
 		 */
 		requestPasswordReset() {
-			this.resetPasswordErrorMessage = null
-			this.resetPasswordSuccessMessage = null
+			this.requestPasswordResetErrorMessage = null
+			this.requestPasswordResetSuccessMessage = null
 			if (this.emailInputState !== STATE.VALID) {
 				this.resetPasswordErrorMessage = this.$t("needEmailToResetPassword")
 				return
 			}
 			api.requestPasswordReset(this.emailInputVal)
 				.then(() => {
-					this.resetPasswordSuccessMessage = this.$t("PasswordResetEmailSentSuccessfully")
+					this.requestPasswordResetSuccessMessage = this.$t("PasswordResetEmailSentSuccessfully")
 				})
 				.catch(err => {
 					console.log("err in client", err)
-					if (err.liquidoException && err.liquidoException.liquidoErrorCode === api.err.ERROR_CODES.CANNOT_RESET_PASSWORD_EMAIL_NOT_FOUND) {
-						this.resetPasswordErrorMessage = this.$t("EmailNotFound")
+					if (err.liquidoException && err.liquidoException.liquidoErrorCode === api.err.WONT_RESET_PASSWORD) {
+						this.resetPasswordErrorMessage = this.$t("WontResetPassword")
 						return
 					}
 					console.error("Could not request password reset", err)
 					this.resetPasswordErrorMessage = this.$t("RequestPasswordResetFailed")
 				})
+		},
+
+		clickResetPasswordButton() {
+			if (this.primaryActionButtonText == this.$t("BackToLogin")) {
+				this.$router.push({ name: "login" })
+			} else {
+				this.resetPassword()
+			}
 		},
 
 		/**
@@ -211,9 +230,10 @@ export default {
 		resetPassword() {
 			this.resetPasswordErrorMessage = null
 			this.resetPasswordSuccessMessage = null
-			this.api.resetPassword(this.emailInputVal, this.resetPasswordToken)
+			api.resetPassword(this.email, this.resetPasswordToken, this.newPasswordInput1Val)
 				.then(() => {
-					this.resetPasswordSuccessMessage = this.$t("PasswordResetEmailSentSuccessfully")
+					this.resetPasswordSuccessMessage = this.$t("PasswordResetSuccessful")
+					this.primaryActionButtonText = this.$t("BackToLogin")
 				})
 				.catch(err => {
 					console.error("Could not reset password with token", err)
@@ -221,9 +241,10 @@ export default {
 				})
 		},
 
-		backToLogin() {
-			this.$router.push({ name: "login" })
+		newPasswordInput2ValidFunc() {
+			return this.newPasswordInput1Val === this.newPasswordInput2Val
 		},
+
 	}
 }
 </script>

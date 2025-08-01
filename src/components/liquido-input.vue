@@ -86,8 +86,6 @@
  * <li>
  * If the user leaves the field for the first time, then the field is validated and the state is set to VALID or INVALID.
  * 
- * 
- * 
  * An error message will only be shown after a field has been validated.
  *
  * <h3>Example Usage</h3> 
@@ -180,8 +178,7 @@ export default {
 		 * you can provide a custom validation function that will be used to validate the input value.
 		 * This will replace type, pattern, min- and max-length.
 		 * Your function will receive the current value of the input element.
-		 * It must return 
-		 * - undefined when the input is "not validated yet" (state = null)
+		 * It must return a STATE
 		 */
 		validFunc: { type: Function, required: false, default: undefined },
 
@@ -199,7 +196,6 @@ export default {
 		}
 	},
 	computed: {
-
 
 		/**
 		 * Compute wether to add the is-valid or is-invalid pseudo class depending on the input's "state"

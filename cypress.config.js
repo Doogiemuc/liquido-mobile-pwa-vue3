@@ -14,15 +14,17 @@ export default defineConfig({
   env: {
     LIQUIDO_API: 'http://localhost:8080/liquido-api',
     devLoginToken: '998877',
+		testPasswordResetToken: 'asdsadfASDF2334',
 		// this is our default test user. Can be overwritten per env
 		admin: {
 			teamName: "testTeam"+now,
 			name: "TestAdmin "+now,
 			email: "testadmin"+now+"@liquido.vote",
-			password: "testadmin"+now+"@liquido.votepwd",
+			// passwords for test users are created by TestUserCreator.java
 			mobilephone: "+49555"+now,
 			website: "www.liquido.vote"
 		},
+		passwordSuffix: "_PWD",  // passwords of test users = email + passwordSuffix
 		mailtrap: {
 			messagesUrl: "https://mailtrap.io/api/accounts/1416880/inboxes/1983138/messages",
 			apiToken: "13d57536b61611395106a3992fc32bec"

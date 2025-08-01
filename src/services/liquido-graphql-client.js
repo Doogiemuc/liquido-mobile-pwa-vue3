@@ -391,6 +391,14 @@ let graphQlApi = {
 			})
 	},
 
+	resetPassword(email, resetPasswordToken, newPassword) {
+		let graphQL = `query { resetPassword(email: "${email}", resetPasswordToken: "${resetPasswordToken}", newPassword: "${newPassword}") }`
+		return graphQlQuery(graphQL)
+			.then(res => {
+				return res.data.resetPassword
+			})
+	},
+
 
 	/**
 	 * Request auth token for login. 
@@ -704,8 +712,8 @@ let graphQlApi = {
 		CANNOT_LOGIN_USER_NOT_MEMBER_OF_TEAM: 24,  	// when changing team and user is not member or admin of target team
 		CANNOT_LOGIN_INTERNAL_ERROR: 25,  	// when sending of email is not possible
 		CANNOT_REQUEST_SMS_TOKEN: 26,              	// eg. when entered mobile number is not valid
-		CANNOT_RESET_PASSWORD_EMAIL_NOT_FOUND: 28,	// Someone requested a password reset for a non registered email.
-		CANNOT_RESET_PASSWORD_TOKEN_INVALID: 29,
+		WONT_RESET_PASSWORD: 28,	  // Someone requested a password reset for a non registered email.
+		
 
 		//JWT Errors  // these are now handled by Quarkus
 		JWT_TOKEN_INVALID: 30,
@@ -753,6 +761,12 @@ let graphQlApi = {
 	/** default JQL queries for common models */
 	JQL: JQL,
 
+
+	isErrorCode: function(rejectedPromiseErr, errCode) {
+		return rejectedPromiseErr &&
+			  rejectedPromiseErr.liquidoException &&
+				rejectedPromiseErr.liquidoException.liquidoErrorCode === errCode
+	}
 }
 
 export default graphQlApi

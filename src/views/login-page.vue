@@ -72,7 +72,7 @@
 		<!-- Password forgotten -->
 
 		<div class="forgot-password-link my-3">
-			<a href="#" @click="clickForgotPassword">{{ $t('ForgotPassword') }}</a>
+			<router-link id="forgotPasswordLink" :to="{ name: 'forgotPassword' }">{{ $t('ForgotPassword') }}</router-link>
 		</div>
 
 		<!-- Login via SMS (disabled because expensive) -->
@@ -275,10 +275,7 @@ export default {
 
 		// =============== Forgot Password Process ==================
 
-		clickForgotPassword() {
-			this.$router.push({name: "forgotPassword"})
-		},
-
+	
 		/** 
 		 * Start the google login process only after the user clicked the Google button.
 		 * Dynamically load the google-script and call the google login function.
