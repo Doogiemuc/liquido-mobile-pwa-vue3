@@ -6,6 +6,10 @@
 		<div class="card" v-if="!resetPasswordToken">
 			<div class="card-body">
 
+				 <div class="text-center my-3">
+            <i class="fas fa-key fa-3x" style="color: #007bff;"></i>
+        </div>
+
 				<p class="text-center">{{ $t('RequestPasswordResetInfo') }}</p>
 
 				<liquido-input
@@ -20,7 +24,7 @@
 					:invalid-feedback="$t('emailInvalid')"/>
 
 				<div id="requestPasswordResetErrorMessage" class="alert alert-danger" v-if="requestPasswordResetErrorMessage">
-					{{ resetPasswordErrorequestPasswordResetErrorMessagerMessage }}
+					{{ requestPasswordResetErrorMessage }}
 				</div>
 
 				<div id="requestPasswordResetSuccessMessage" class="alert alert-success" v-if="requestPasswordResetSuccessMessage">
@@ -39,7 +43,7 @@
 		<div class="card" v-if="resetPasswordToken">
 			<div class="card-body">
 
-				<p class="text-center">Reset password for</p>
+				<p class="text-center">{{ $t('ResetPasswordInfo') }}</p>
 				<p class="text-center">{{ email }}</p>
 
 				<liquido-input
@@ -80,7 +84,7 @@
 				<button id="resetPasswordButton" type="button" class="btn btn-primary my-3 w-100" 
 					@click="clickResetPasswordButton"
 					:disabled="resetPasswordButtonDisabled">
-					{{ primaryActionButtonText }}
+					{{ $t('ResetPassword') }}
 				</button>
 			</div>
 		</div>
@@ -95,7 +99,6 @@
 <script>
 import liquidoInput, { STATE } from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
-import { store }  from "@/services/store.js"
 import config from "config"
 
 export default {
@@ -105,16 +108,18 @@ export default {
 				// Step 1: Request password reset      
 				ForgotPassword: "Passwort vergessen",
 				ResetPassword: "Passwort zurücksetzen",
-				RequestPasswordResetInfo: "Passwort vergessen? Kein Problem. Gib deine registriere E-Mail Adresse ein. Wir schicken dir dann einen Link, mit dem du dein Passwort zurücksetzen kannst.",
+				RequestPasswordResetInfo: "Kein Problem. Gib hier deine registriere E-Mail Adresse ein. Ich schicke dir dann einen Link, mit dem du dein Passwort zurücksetzen kannst.",
 				SendMail: "Mail schicken",
 				emailPlaceholder: "Deine E-Mail",
         emailInvalid: "Ungültige Email. Vielleicht nur vertippt?",
 				emailNotFound: "Ich kenne keinen User mit dieser E-mail.",
 				emailEmpty: "Bitte gib deine E-Mail Adresse ein.",
+				NeedEmailToResetPassword: "Du musst deine E-Mail Adresse eingeben, um dein Passwort zurückzusetzen.",
 
 				// Step 2: Reset password with token
+				ResetPasswordInfo: "Bitte gib dein neues Passwort ein und wiederhole es.",
 				NewPassword: "Neues Passwort",
-				RepeatNewPassword: "Passwort wiederholen",
+				RepeatNewPassword: "Neues Passwort wiederholen",
 				NewPasswordEmpty: "Bitte gib dein neues Passwort ein.",
 				NewPasswordInvalid: "Dein Passwort muss mindestens " + config.minPasswordLength +" Zeichen lang sein.",
 				SecondPasswordInvalid: "Die beiden Passwörter müssen identisch sein.",
@@ -133,7 +138,6 @@ export default {
 	data() {
 		return {
 			pageTitle: this.$t("ForgotPassword"),
-			store,
 			
 			// Step1: Request password reset
 			emailInputVal: this.$route.query.email || null,
@@ -151,8 +155,7 @@ export default {
 			newPasswordInput2Val: "",
 			newPasswordInput2State: undefined,
 			resetPasswordErrorMessage: null,
-			resetPasswordSuccessMessage: null,
-			primaryActionButtonText: this.$t("RequestPasswordReset"),
+			resetPasswordSuccessMessage: null
 		}
 	},
 	computed: {
@@ -162,26 +165,23 @@ export default {
 
 		resetPasswordButtonDisabled() {
 			return this.newPasswordInput1State !== STATE.VALID || this.newPasswordInput2State !== STATE.VALID
-		}
+		},
 
 	},
 	
 	created() {
 		if (this.email && this.resetPasswordToken) {
-			this.store.setHeaderTitle(this.ForgotPassword)
+			this.$store.setHeaderTitle(this.ForgotPassword)
 			this.pageTitle = this.$t("ResetPassword")
 			this.emailInputVal = this.email
 			this.resetPasswordErrorMessage=null
 			this.resetPasswordSuccessMessage=null
-			this.primaryActionButtonText=this.$t("ResetPassword")
-			//this.resetPassword()
 		}
 		else {
-			this.store.setHeaderTitle(this.ForgotPassword)
+			this.$store.setHeaderTitle(this.ForgotPassword)
 			this.pageTitle = this.$t("ForgotPassword")
 			this.resetPasswordSuccessMessage=null
 			this.resetPasswordErrorMessage=null
-			this.primaryActionButtonText=this.$t("RequestPasswordReset")
 		}
 	},
 	mounted() {
@@ -196,7 +196,7 @@ export default {
 			this.requestPasswordResetErrorMessage = null
 			this.requestPasswordResetSuccessMessage = null
 			if (this.emailInputState !== STATE.VALID) {
-				this.resetPasswordErrorMessage = this.$t("needEmailToResetPassword")
+				this.resetPasswordErrorMessage = this.$t("NeedEmailToResetPassword")
 				return
 			}
 			api.requestPasswordReset(this.emailInputVal)

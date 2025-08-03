@@ -218,17 +218,17 @@ let graphQlApi = {
 	// and process the error.
 
 	async pingApi() {
-		return this.getGraphQLSchema()
+		return axios.post(GRAPHQL, { query: "{ ping }" })
+		//return this.getGraphQLSchema()
 	},
 
 	/**
 	 * get GraphQL schema.
-	 * This can also be used to check if the API is available
+	 * This can also be used to check if the backend GraphQL API is up and running.
 	 * @returns the GraphQL schema
 	 */ 
 	async getGraphQLSchema() {
-		return true;
-		//return axios.get('/graphql/schema.graphql')
+		return axios.get('/graphql/schema.graphql')
 	},
 	
 
@@ -644,15 +644,12 @@ let graphQlApi = {
 			})
 	},
 
-	/** Get voterToken (cached) */
-	async getVoterToken(tokenSecret, becomePublicProxy = false) {
-		return this.teamCache.get(this.VOTER_TOKEN_KEY, {
-			fetchFunc: async function() {
-				let graphQL = `query { voterToken(tokenSecret: "${tokenSecret}", becomePublicProxy: ${becomePublicProxy}) }`
-				const res = await graphQlQuery(graphQL);
-				console.debug("GetVoterToken: OK, received valid voterToken from backend."); // SECURITY: Do not log secret voterToken!
-				return res.data.voterToken;
-			}
+	/** Get one-time voterToken for a poll */
+	async getVoterToken(pollId) {
+		let graphQL = `query { voterToken(pollId: "${pollId}") }`
+		return graphQlQuery(graphQL).then(res => {
+			console.debug("Successfully received VoterToken for poll(id="+pollId+")")  // do not log the token!
+			return res.data.voterToken
 		})
 	},
 
@@ -669,8 +666,8 @@ let graphQlApi = {
 	},
 
 	/** Get voter's ballot if he voted already. MAY return null if not. */
-	async getBallot(pollId, voterToken) {
-		let graphQL = `query { ballot(pollId: "${pollId}", voterToken: "${voterToken}") ` +
+	async getMyBallot(pollId) {
+		let graphQL = `query { myBallot(pollId: "${pollId}") ` +
 			`{ level checksum voteOrder { id } } }`
 		return graphQlQuery(graphQL)
 			.then(res => {

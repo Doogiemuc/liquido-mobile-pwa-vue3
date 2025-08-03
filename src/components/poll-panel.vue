@@ -11,7 +11,7 @@
 				{{ $t("noProposalsInPollYet") }}
 			</p>
 		</div>
-		<ul v-else class="list-group list-group-flush mt-2">
+		<ul v-else class="list-group list-group-flush my-3">
 			<li v-for="prop in sortedProposals" :key="prop.id" class="list-group-item proposal-list-group-item"
 				:class="proposalListGroupItemClasses(prop.id)">
 				<div class="proposal-header d-flex align-items-center">
@@ -241,7 +241,7 @@ $proposal_icon_size: 32px;
 
 		.proposal-subtitle {
 			font-size: 0.8rem;
-			color: #bbb;
+			color: $secondary;
 			margin-top: 8px;
 
 			.like-button {
@@ -314,14 +314,18 @@ $proposal_icon_size: 32px;
 	}
 
 	.winner {
-		background-color: $header-bg;
+		background-color: var(--bs-success-bg-subtle) !important;
 	}
 
 	.lost {
-		color: grey;
+		color: lightgray;
 
 		.proposal-title {
-			text-decoration: line-through;
+			color: lightgray;
+		}
+
+		.proposal-description {
+			color: lightgray;
 		}
 
 		.proposal-image {

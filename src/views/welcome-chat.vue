@@ -335,9 +335,9 @@ export default {
 			},
 			de: {
 				welcome:
-					"<p>Willkommen bei <span class='liquido'></span>, der freien, sicheren und liquiden e-voting App für euer Team.</p>"+
-					"<p>In Liquido wählst du nicht einfach nur einen Vorschlag oder stimmst nur für einen Kandidaten. Stattdessen sortiert jeder im Team "+
-					"Wahlvorschläge nach seiner eigenen Priorität. Liquido berechnet daraus dann mit einem cleveren Algorithmus den Sieger der Wahl.</p>",
+					"<p>Willkommen bei <span class='liquido'></span>, der sicheren, freien und fairen App für digitale Abstimmungen.</p>"+
+					"<p>Bei LIQUIDO stimmst du nicht nur für einen einzelnen Wahlvorschlag, sondern jeder in eurem Team kann die Vorschläge bzw. Kandidaten nach seiner persönlichen Reihenfolge sortieren. " +
+					"Ein cleverer Algorithmus berechnet daraus dann den Sieger.</p>",
 				whatsYourName: "Darf ich fragen wie du heißt?",
 				yourNickname: "Dein Spitzname",
 				login: "Login",

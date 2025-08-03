@@ -20,6 +20,7 @@ import BootstrapVue3 from 'bootstrap-vue-3'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
 import { createI18n } from 'vue-i18n'
+import { store } from "@/services/store.js"	
 
 /** 
  * Global translations that are available to all components 
@@ -104,6 +105,7 @@ const rootApp = createApp({
 	//render: (h) => h(App),
 })
 
+rootApp.config.globalProperties.$store = store // make store available in all components via this.$store
 rootApp.use(router)
 rootApp.use(BootstrapVue3)
 rootApp.use(i18n)

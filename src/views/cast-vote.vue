@@ -191,18 +191,10 @@ export default {
 		}).catch(err => console.warn("Cannot get poll.id=" + this.pollId, err))
 
 		/**
-		 * Get the user's voter token.
-		 * TODO: We could make this more secury by letting the user provide his own voterTokenSecret.
-		 *       But then a human would need to remember a secret. And humans are not good in remembering things.
-		 */
-		let getVoterToken = () => api.getVoterToken(config.voterTokenSecret)
-			.catch(err => console.error("Cannot get voterToken of user", err))
-
-		/**
 		 * Check if current user already voted in this poll. Then he would have a ballot.
 		 * Keep in mind, that the ballot of a user can only be fetched, if the user's secret voterToken is known.
 		 */
-		let getExistingBallot = (voterToken) => api.getBallot(this.pollId, voterToken).then(ballot => {
+		let getExistingBallot = () => api.getMyBallot(this.pollId).then(ballot => {
 			this.existingBallot = ballot  // may be undefined!
 			if (this.existingBallot) this.isFirstVote = false
 			return ballot
@@ -280,8 +272,7 @@ export default {
 
 
 		loadPoll()
-			.then(getVoterToken)
-			.then(getExistingBallot)  		// with voter Token, if any
+			.then(getExistingBallot)  		// get existing ballot of user (if he alreay casted a vote)
 			.then(setProposalsInBallot)		// set proposals (and sort them in the voteOrder of the users ballot if he already voted)
 			.then(() => {
 				this.loading = false
@@ -312,12 +303,14 @@ export default {
 
 		clickCastVote() {
 			this.castVoteLoading = true
+			this.$refs["castVoteSuccessModal"].hide()
+			this.$refs["errorModal"].hide()
 			let voteOrderIds = this.proposalsInBallot.map(proposal => proposal.id)
 
 			//TODO: start a timer for timeout
 
 			log.debug("CAST VOTE: poll.id=" + this.poll.id, "voteOrderIds", voteOrderIds)
-			return api.getVoterToken(config.voterTokenSecret).then((voterToken) => {
+			return api.getVoterToken(this.pollId).then((voterToken) => {
 				console.debug("Received voter token. Now casting vote ...")
 				return api.castVote(this.poll.id, voteOrderIds, voterToken).then(castVoteResponse => {
 					console.info("Vote casted successfully.", castVoteResponse)

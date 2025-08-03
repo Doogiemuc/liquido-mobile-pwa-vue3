@@ -41,11 +41,13 @@ import config from "config"
 /** 
  * Pages will slide from right to left in this order 
  * Login and welcome page only do not slide, but fade in/out.
+ * See router.js for the page names and their routes.
  */
 const page_order = {
 	"index": 0,
 	"welcome": 1,
-	"login": 1,
+	"login": 1,     // welcome and login are on the same level, so they fade
+	"forgotPassword": 2,
 	"teamHome": 3,
 	"polls": 4,
 	"createPoll": 5,
@@ -77,27 +79,6 @@ export default {
 		}
 	},
 	computed: {
-		/* DEPRECATED: each component now sets its own backlink
-
-		 * Show appropriate backlink in liquido-header
-		 *
-		 * show one poll -> back to list of polls
-		 * add proposal  -> back to poll
-		 * cast vote     -> back to poll
-		 * otherwise don't show a back link
-		 
-		backLink() {
-			if (/^\/polls\/\d+$/.test(this.$route.path)) {
-				return "/polls"
-			} else if (/^\/polls\/\d+\/castVote$/.test(this.$route.path)) {
-				return "BACK"
-			} else if (/^\/polls\/\d+\/add$/.test(this.$route.path)) {
-				return "BACK"
-			}
-			return undefined
-		},
-		*/
-
 		/** Shall the navbar be shown in the footer */
 		showNavbarBottom() {
 			return this.$route.path.match(/(polls|polls\/\d+)$/)
@@ -111,15 +92,14 @@ export default {
 	// https://router.vuejs.org/guide/advanced/transitions.html#per-route-transition
 	watch: {
 		$route(to, from) {
-			console.log("$route change from " + from.name + " to " + to.name)
-			this.transitionName = ""
+			//console.log("$route change from " + from.name + " to " + to.name)
+			this.transitionName = "fade"
 			const fromOrder = page_order[from.name]
 			const toOrder = page_order[to.name]
-			//if (to.name === "login") { this.transitionName = "" } else 
-			//if (to.name === "welcome") { this.transitionName = "" } else 
-			if (fromOrder < toOrder) { this.transitionName = "slide-left" } else
-			if (fromOrder > toOrder) { this.transitionName = "slide-right"}
-			else { this.transitionName = "fade" }  // default is fade
+			if (fromOrder && toOrder) {	
+				if (fromOrder < toOrder) { this.transitionName = "slide-left" }
+				if (fromOrder > toOrder) { this.transitionName = "slide-right"}
+			}
 
 			let app = document.getElementById("app")
 			if (from.name === "polls") {
@@ -130,14 +110,15 @@ export default {
 				console.log("Restoring scroll pos of " + to.name + " = " + pollsScrollPos)
 				app.scrollTop = pollsScrollPos
 			} else {
-				this.scrollToTop()
+				// this.scrollToTop()   // this has a nasty UI bug, because it scrolls to the top of the page before the transition animation is finished
 			}
 		},
 	},
 
 	mounted() {
+		// Enable my awesome mobile debug log on mobile devices.
 		// This has some consequences ... be carefull
-		//this.$refs["mobileDebugLogRef"].redefineConsoleMethods()
+		this.$refs["mobileDebugLogRef"].redefineConsoleMethods()
 	
 		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (newFilter) => {
 			console.log("Root app POLL_FILTER_CHANGED to", newFilter)
@@ -146,6 +127,10 @@ export default {
 
 		//TODO: should I move this to main.js? Would be first. But there I cannot display any error.
 		api.pingApi()
+			.then(() => {
+				console.log("Backend is reachable at " + config.LIQUIDO_API_URL)
+				this.$refs.rootPopupModal.hide()
+			})
 			.catch(res => {
 				if (res.response && res.response.status === 401) {
 					console.log("Login is expired")
