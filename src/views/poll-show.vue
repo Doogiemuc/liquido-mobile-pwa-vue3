@@ -93,7 +93,6 @@ import pollPanel from "@/components/poll-panel.vue"
 import popupModal from "@/components/popup-modal.vue"
 import polly from '@/components/polly.vue'
 import EventBus from "@/services/event-bus.js"
-import { store }  from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
 import log from 'loglevel'
 
@@ -139,7 +138,6 @@ export default {
 	},
 	data() {
 		return {
-			store,
 			poll: {},
 			showError: false,
 			loadingPoll: true,
@@ -194,7 +192,7 @@ export default {
 	created() {
 		this.loadPoll().then(() => {
 			// when poll is loaded, set page title in liquido-header according to poll's status
-			this.store.setHeaderTitle(this.pageTitleLoc)
+			this.$store.setHeaderTitle(this.pageTitleLoc)
 		})
 		EventBus.on(EventBus.Event.POLL_LOADED, (loadedPoll) => {
 			if (loadedPoll.id === this.poll.id) {
@@ -204,8 +202,8 @@ export default {
 		})
 	},
 	mounted() {
-		this.store.setHeaderTitle(this.pageTitleLoc)
-		this.store.setHeaderBackLink("/polls")   // Back is go to list of polls. (Do NOT use "BACK". User could come from propsoal-add!)
+		this.$store.setHeaderTitle(this.pageTitleLoc)
+		this.$store.setHeaderBackLink("/polls")   // Back is go to list of polls. (Do NOT use "BACK". User could come from propsoal-add!)
 		this.$root.scrollToTop()  // the polls list stays. But one poll is always shown from the top
 	},
 	methods: {

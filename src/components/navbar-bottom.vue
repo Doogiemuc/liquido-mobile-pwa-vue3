@@ -9,7 +9,7 @@
 			</a>
 		</div -->
 		<div id="pollsInDiscussionArrow" :class="discussButtonClass" class="discuss-button">
-			<a href="#" aria-label="Polls to discuss" @click="clickPollsInDiscussion()">
+			<a href="" aria-label="Polls to discuss" @click.prevent="clickPollsInDiscussion()">
 				<div class="nav-bar-icon">
 					<i class="fas fa-comments"></i>
 					<span class="counter-badge">{{ pollsInElaboration.length }}</span>
@@ -18,7 +18,7 @@
 			</a>
 		</div>
 		<div id="pollsInVotingArrow" :class="voteButtonClass" class="vote-button">
-			<a href="#" aria-label="Polls in voting" @click="clickPollsInVoting()">
+			<a href="" aria-label="Polls in voting" @click.prevent="clickPollsInVoting()">
 				<div class="nav-bar-icon">
 					<i class="fas fa-person-booth"></i>
 					<span class="counter-badge">{{ pollsInVoting.length }}</span>
@@ -27,7 +27,7 @@
 			</a>
 		</div>
 		<div id="finishedPollsArrow" :class="finishedButtonClass" class="finished-button">
-			<a href="#" aria-label="Finished polls" @click="clickFinishedPolls()">
+			<a href="" aria-label="Finished polls" @click.prevent="clickFinishedPolls()">
 				<div class="nav-bar-icon">
 					<i class="fas fa-check-circle"></i>
 					<span class="counter-badge">{{ pollsFinished.length }}</span>
@@ -49,8 +49,6 @@
 <script>
 import EventBus from "@/services/event-bus.js"
 import api from "@/services/liquido-graphql-client.js"
-
-
 
 export default {
 	name: "LiquidoFooter",
@@ -148,14 +146,19 @@ export default {
 	},
 	methods: {
 
+		/** 
+		 * User click on a filter arrow in the bottom navbar 
+		 * If we are not on the polls page already, then reset the filter navigate to the polls page.
+		 */
 		setPollFilter(newFilterValue) {
-			console.log("Navbar.setPollFilter", newFilterValue)
-			// If we are not on the polls page already, then reset teh filter navigate to the polls page.
 			if (this.$route && this.$route.name !== "polls") {
 				this.selectedItem = -1
 				newFilterValue = undefined
-				this.$router.push({name: "polls", params: { status: newFilterValue }})
+				this.$store.setPollStatusFilter(newFilterValue)
+				console.log("setPollFilter: navigate back to polls page")
+				this.$router.push({name: "polls"})
 			} else {
+				this.$store.setPollStatusFilter(newFilterValue)
 				switch (newFilterValue) {
 					case "ELABORATION":
 						this.selectedItem = 1
@@ -171,7 +174,7 @@ export default {
 						this.selectedItem = -1
 				}
 			}
-			EventBus.emit(EventBus.Event.POLL_FILTER_CHANGED, newFilterValue)
+			
 		},
 
 		goToTeam() {
@@ -182,7 +185,6 @@ export default {
 		},
 
 		goToInfo() {
-			
 			//this.$router.push({name: "aboutPage"})
 		},
 
@@ -231,7 +233,7 @@ export default {
 <style lang="scss" scoped>
 
 $arrowColor: white;
-$arrowColorSelected: $icon-bg;
+$arrowColorSelected: $primary;
 $arrowWidth: 15px;
 $arrowHeight: 30px;
 $arrowGap: 3px;
@@ -246,7 +248,7 @@ $arrowGap: 3px;
 	font-size: 1.2rem;
 	padding: 10px 5px 20px 5px;  // a bit more padding at the bottom for iOS swipe-up bar
 	margin: 0 0;
-	box-shadow: 0 -2px 3px rgba(0, 0, 0, 0.5); /* horizontal, vertical, blur, color */
+	box-shadow: 0 -2px 3px rgba(0, 0, 0, 0.3); /* horizontal, vertical, blur, color */
 	background-color: $navbar-bg;
 	display: flex;
 	flex-wrap: nowrap;

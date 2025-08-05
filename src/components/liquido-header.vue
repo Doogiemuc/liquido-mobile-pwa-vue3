@@ -1,28 +1,28 @@
 <template>
 	<header id="liquidoHeader">
-		<div class="header-left" @click="clickBack">
-			<a v-if="store.headerBackLink" href="#">
+
+		<div class="header-left">
+			<div v-if="headerBackLink" class="header-back-link" @click="clickBack">
 				<i class="fas fa-angle-left" />
-			</a>
+			</div>
 		</div>
 		<div class="header-center" @click="clickHeaderCenter">
 			<div class="liquido-claim">
 				<i class="fas fa-university" />&nbsp;
 				<span class="liquido" />
 			</div>
-			<div v-if="store.headerTitle" class="center-title">
-				<h1>{{ store.headerTitle }}</h1>
+			<div class="center-title">
+				<h1>{{ headerTitle }}</h1>
 			</div>
 		</div>
 		<div class="header-right">
-			<!-- i class="fas fa-bars menu-icon" / -->
+			<!-- i class="fas fa-bars menu-icon" /-->
 		</div>
 	</header>
 </template>
 
 <script>
 import EventBus from "@/services/event-bus.js"
-import { store }  from "@/services/store.js"
 
 /** 
  * After this many pixels the header title will scroll.
@@ -35,7 +35,6 @@ export default {
 	
 	data() {
 		return {
-			store,          // the title "store" that stores the current title. 
 			showMenu: false,
 			isSticky: false
 		}
@@ -45,7 +44,16 @@ export default {
 		// Add a scroll listener to dynamically fade the header text up and down when user scrolls
 		document.getElementById("app").addEventListener("scroll", this.stickyHeader)
 		this.stickyHeader()
-	}	,
+	},
+
+	computed: {
+		headerBackLink() {
+			return this.$store.headerBackLink
+		},
+		headerTitle() {
+			return this.$store.headerTitle
+		}	
+	},
 
 	beforeUnmount() {
 		document.getElementById("app").removeEventListener("scroll")
@@ -65,7 +73,7 @@ export default {
 			if (!app || !headerElem) {
 				return  // something is wrong, so just return
 			}
-			if (this.store.headerTitle == undefined) {
+			if (this.$store.headerTitle == undefined) {
 				headerElem.classList.remove("transition-header")
 				if (pageTitleElem != null) {
 					pageTitleElem.classList.remove("transition-page-title")
@@ -89,8 +97,8 @@ export default {
 		},
 
 		clickBack() {
-			if (this.store.headerBackLink === "BACK") this.$router.go(-1)
-			else if (this.store.headerBackLink) this.$router.push(this.store.headerBackLink)
+			if (this.$store.headerBackLink === "BACK") this.$router.go(-1)
+			else if (this.$store.headerBackLink) this.$router.push(this.$store.headerBackLink)
 		},
 		
 		clickHeaderCenter() {
@@ -147,15 +155,23 @@ export default {
 	}
 	
 	.header-left {
-		a {
-			color: white !important
-		}
 		color: white;
 		display: flex;
-		flex: 0 0 30px;
 		align-items: center;
-		padding-left: 10px;
+		text-align: center;
+		justify-content: center;
 		font-size: 25px;
+		width: $header-height;
+	}
+	.header-back-link {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		color: white;
+		cursor: pointer;
+		width: $header-height;
+		height: 100%;
 	}
 	.header-center {
 		flex-grow: 1;	
@@ -186,8 +202,9 @@ export default {
 		display: flex;
 		flex: 0 0 30px;
 		align-items: center;
-		text-align: right;
-		padding-right: 10px;
+		text-align: center;
+		justify-content: center;
+		width: $header-height;
 	}
 	
 }

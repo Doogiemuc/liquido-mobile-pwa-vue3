@@ -43,7 +43,6 @@
 import config from "config"
 import liquidoInput from "@/components/liquido-input.vue"
 import polly from '@/components/polly.vue'
-import { store } from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
 import log from "loglevel"
 
@@ -68,7 +67,6 @@ export default {
 	components: { liquidoInput, polly },
 	data() {
 		return {
-			store,
 			poll: undefined,
 			pollTitle: "",
 			pollIsValid: false,
@@ -83,8 +81,8 @@ export default {
 		},
 	},
 	mounted() {
-		this.store.setHeaderTitle(this.$t("newPoll"))
-		this.store.setHeaderBackLink("/polls")
+		this.$store.setHeaderTitle(this.$t("newPoll"))
+		this.$store.setHeaderBackLink("/polls")
 		this.$root.scrollToTop()
 		document.getElementById("pollTitle")?.focus()
 		

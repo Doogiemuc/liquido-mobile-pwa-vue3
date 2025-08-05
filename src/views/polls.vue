@@ -111,7 +111,6 @@
 import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
 import dayjs from "dayjs"
-import { store }  from "@/services/store.js"
 
 const pollStatusOrder = {
 	ELABORATION: 0,
@@ -153,13 +152,8 @@ export default {
 		},
 	},
 	name: "PollsList",
-	//components: {  },
-	props: {
-	},
-
 	data() {
 		return {
-			store: store,
 			loading: true,
 			showSearch: false,
 			searchQuery: "",
@@ -169,12 +163,11 @@ export default {
 
 	computed: {
 		pollStatusFilter() {
-			//TODO: check how often this is called.   
-			//console.log("poll get computed pollStatusFilter", this.$root.pollStatusFilter)
-			return this.$root.pollStatusFilter
+			//console.log("polls.vue: get computed pollStatusFilter", this.$root.pollStatusFilter)
+			return this.$store.pollStatusFilter
 		},
 		pageTitleLoc() {
-			switch (this.$root.pollStatusFilter) {
+			switch (this.$store.pollStatusFilter) {
 				case "ELABORATION":
 					return this.$t("pollsInElaboration")
 				case "VOTING":
@@ -185,8 +178,9 @@ export default {
 					return this.$t("YourPolls")
 			}
 		},
+		/*
 		iconForFilter() {
-			switch (this.$root.pollStatusFilter) {
+			switch (this.$store.pollStatusFilter) {
 				case "ELABORATION":
 					return "fas fa-comments"
 				case "VOTING":
@@ -197,6 +191,7 @@ export default {
 					return "fas fa-vote-yea"
 			}
 		},
+		*/
 		userIsAdmin() {
 			return api.isAdmin()
 		},
@@ -214,7 +209,7 @@ export default {
 			// So VUE's reactive updates do not work when the data changes in the cache.
 			// Therefore we have to force a recompute of this "computed" value with a nice hack:
 			this.forceRefreshComputed;
-			return api.getCachedPolls(this.$root.pollStatusFilter)
+			return api.getCachedPolls(this.$store.pollStatusFilter)
 				.filter((poll) => this.matchesSearch(poll))
 				.sort((p1,p2) => {
 					//sort polls by status
@@ -240,15 +235,14 @@ export default {
 	},
 	
 	created() {
-		//console.log("==== Polls component created", this.$root.pollStatusFilter)
+		this.$store.setHeaderTitle(this.pageTitleLoc)
+		this.$store.setHeaderBackLink("/team")
 
-		this.store.setHeaderTitle(this.pageTitleLoc)
-		this.store.setHeaderBackLink("/team")
-
-		// When poll filter changes in navbar, then force a recompute of computed values (mainly "filteredPolls")
+		// Trick: When poll filter changes in navbar, then force a recompute of computed values (mainly "filteredPolls")
 		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (/*newFilterValue*/) => {
+			//console.log("Polls.vue: POLL_FILTER_CHANGED to", this.$store.pollStatusFilter)
 			this.forceRefreshComputed++
-			this.store.setHeaderTitle(this.pageTitleLoc)
+			this.$store.setHeaderTitle(this.pageTitleLoc)
 		})
 
 		// When one or all polls change, the reflect the changes in the UI.
@@ -261,7 +255,7 @@ export default {
 	},
 	
 	mounted() {
-	
+		
 	},
 	
 	methods: {
@@ -309,6 +303,7 @@ export default {
 		},
 
 		goToPoll(pollId) {
+			//TODO: need a delay for visual reasons :-(  this.$store.setPollStatusFilter(undefined) // reset filter when going to a poll
 			this.$router.push("/polls/" + pollId)
 		},
 
@@ -335,7 +330,7 @@ export default {
 		clearSearchAndFilter() {
 			console.log("Clear Search and PollFilter")
 			this.searchQuery = undefined
-			EventBus.emit(EventBus.Event.POLL_FILTER_CHANGED, undefined)
+			this.$store.setPollStatusFilter(undefined)
 		},
 
 		// Transition Height - is ... again ... complex
@@ -380,7 +375,7 @@ export default {
 	height: 6rem;
 	margin-bottom: 10px;
 	overflow: hidden;
-	transition: all 1s;
+	transition: all 0.5s;
 }
 
 .poll-card {

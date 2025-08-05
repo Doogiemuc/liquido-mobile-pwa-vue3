@@ -40,7 +40,7 @@ export default {
 	mounted() {
 		api.devLogin(this.email, this.teamName, this.token).then((res) => {
 			console.log("devLogin successfull.", res)
-			this.$router.replace({name: "teamHome"})		// DevLogin navigates to team-home ! Tests rely on this!
+			this.$router.push({name: "teamHome"})		// DevLogin navigates to team-home ! Tests rely on this!
 		}).catch(err => {
 			this.devLoginErrorMessage = JSON.stringify(err)
 			console.error("DevLogin failed!", err)

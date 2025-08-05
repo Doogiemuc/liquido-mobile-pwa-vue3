@@ -142,7 +142,6 @@
 <script>
 import config from "config"
 import liquidoInput, { STATE } from "@/components/liquido-input.vue"
-import { store }  from "@/services/store.js"
 import dayjs from "dayjs"
 import loginWithJwtResponse from "@/../tests/mocks/loginWithJwtResponse.json"
 
@@ -195,10 +194,8 @@ export default {
 	data() {
 		return {
 			pageTitle: this.$t("LIQUIDO UI Design"),
-
 			mockPolls: loginWithJwtResponse.data.loginWithJwt.team.polls,
 
-			store,
 			// Login via email & password
 			emailInputVal: "",
 			emailInputState: undefined, 	// synced states from liquido-inputs
@@ -219,7 +216,7 @@ export default {
 		}
 	},
 	created() {
-		this.store.setHeaderTitle(this.pageTitle)
+		this.$store.setHeaderTitle(this.pageTitle)
 	},
 	mounted() {
 		this.$root.scrollToTop()

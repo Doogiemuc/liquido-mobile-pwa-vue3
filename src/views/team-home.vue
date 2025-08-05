@@ -56,7 +56,6 @@
 <script>
 import config from "config"
 import QRCode from "qrcode"
-import { store } from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
 
 //TODO: If there are more than 15 members in a team, then show a shorter list
@@ -85,7 +84,6 @@ export default {
 	},
 	data() {
 		return {
-			store,
 			team: {}
 		}
 	},
@@ -108,8 +106,8 @@ export default {
 		this.team = api.getCachedTeam()
 	},
 	mounted() {
-		this.store.setHeaderTitle(this.team ? this.team.teamName : this.$t('team'))
-		this.store.setHeaderBackLink(null)
+		this.$store.setHeaderTitle(this.team ? this.team.teamName : this.$t('team'))
+		this.$store.setHeaderBackLink(null)
 
 		let QRcodeOpts = {
 			scale: 10,

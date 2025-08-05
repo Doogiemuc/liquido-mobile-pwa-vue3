@@ -130,7 +130,6 @@
 import config from "config"
 import liquidoInput, { STATE } from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
-import { store }  from "@/services/store.js"
 //TODO: import WebAuthn from "@/services/quarkus-webauthn.js"
 
 const REQUEST_THROTTLE_SECS = 10
@@ -189,7 +188,6 @@ export default {
 	data() {
 		return {
 			pageTitle: this.$t("Login"),
-			store,
 			// Login via email & password
 			emailInputVal: "",
 			emailInputState: undefined, 	// synced states from liquido-inputs
@@ -234,7 +232,7 @@ export default {
 		}
 	},
 	created() {
-		this.store.setHeaderTitle(this.pageTitle)
+		this.$store.setHeaderTitle(this.pageTitle)
 
 		/*
 		console.debug("Initializing WebAuthn: " + config.LIQUIDO_API_URL + "/q/webauthn")

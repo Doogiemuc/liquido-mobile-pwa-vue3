@@ -18,12 +18,31 @@
 					<div class="proposal-icon">
 						<i class="fas fa-fw" :class="'fa-' + prop.icon"></i>
 					</div>
-					<h4 class="proposal-title">
-						{{ prop.title }}
-					</h4>
+					<div class="title-subtitle-wrapper">
+						<h4 class="proposal-title">
+							{{ prop.title }}
+						</h4>
+						<div v-if="subtitleUnderTitle" class="proposal-subtitle">
+							<div v-if="prop.likedByCurrentUser" class="like-button liked">
+								<i class="fas fa-thumbs-up"></i>&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
+							</div>
+							<div v-else-if="canLike(prop)" class="like-button can-like" @click="clickLike(poll.id, prop)">
+								<i class="far fa-thumbs-up"></i>&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
+							</div>
+							<div v-else class="like-button">
+								<i class="far fa-thumbs-up"></i>&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
+							</div>
+							<div class="created-date">
+								<i class="far fa-clock"></i>&nbsp;{{ formatDate(prop.createdAt) }}
+							</div>
+							<div class="createdby-user">
+								<i class="far fa-user"></i>&nbsp;{{ prop.createdBy.name }}
+							</div>
+						</div>
+					</div>
 				</div>
 				<div class="proposal-description" v-html="prop.description"></div>
-				<div class="proposal-subtitle">
+				<div v-if="!subtitleUnderTitle" class="proposal-subtitle mt-1">
 					<div v-if="prop.likedByCurrentUser" class="like-button liked">
 						<i class="fas fa-thumbs-up"></i>&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
 					</div>
@@ -73,7 +92,8 @@ export default {
 	},
 	data() {
 		return {
-			collapsed: this.collapse || this.poll.status === "FINISHED"
+			collapsed: this.collapse || this.poll.status === "FINISHED",
+			subtitleUnderTitle: true,    // you have no idea how often I switched this. I can't decide if subtitle should be under title or not.
 		}
 	},
 	computed: {
@@ -222,10 +242,18 @@ $proposal_icon_size: 32px;
 			margin-bottom: 6px;
 		}
 
+		.title-subtitle-wrapper {
+			flex: 1;
+			margin-left: 5px;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
 		.proposal-title {
 			color: $primary;
 			font-size: 1rem !important; // a bit smaller then normal h4 for longer titles
-			margin: 0 0 0 10px;
+			margin: 0;
 			padding: 0;
 			white-space: nowrap;
 			overflow: hidden;
@@ -242,10 +270,9 @@ $proposal_icon_size: 32px;
 		.proposal-subtitle {
 			font-size: 0.8rem;
 			color: $secondary;
-			margin-top: 8px;
+			//margin-top: 8px;
 
 			.like-button {
-				cursor: pointer;
 				display: inline;
 				padding: 1px 2px;
 				border-radius: 5px;

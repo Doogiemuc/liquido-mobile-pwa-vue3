@@ -40,7 +40,6 @@
 <script>
 import config from "config"
 import liquidoInput from "@/components/liquido-input.vue"
-import { store } from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
 import log from "loglevel"
 
@@ -66,7 +65,6 @@ export default {
 	components: { liquidoInput },
 	data() {
 		return {
-			store,
 			pollTitle: "",
 		}
 	},
@@ -79,7 +77,7 @@ export default {
 		}
 	},
 	mounted() {
-		this.store.setHeaderTitle(this.$t("newPoll"))
+		this.$store.setHeaderTitle(this.$t("newPoll"))
 		this.$root.scrollToTop()
 	},
 	methods: {

@@ -68,7 +68,6 @@ export default {
 		// These data attributes are reactive and available in EVERY sub-component as this.$root.<attributeName>
 		return {
 			transitionName: "", 	// CSS sliding transition between page components
-			pollStatusFilter: undefined, 
 			// Global popup-modal
 			modalType: "success",
 			modalTitle: "",
@@ -118,12 +117,14 @@ export default {
 	mounted() {
 		// Enable my awesome mobile debug log on mobile devices.
 		// This has some consequences ... be carefull
-		this.$refs["mobileDebugLogRef"].redefineConsoleMethods()
+		//this.$refs["mobileDebugLogRef"].redefineConsoleMethods()
 	
+		/*
 		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (newFilter) => {
 			console.log("Root app POLL_FILTER_CHANGED to", newFilter)
-			this.pollStatusFilter = newFilter
+			//this.pollStatusFilter = newFilter
 		})
+		*/
 
 		//TODO: should I move this to main.js? Would be first. But there I cannot display any error.
 		api.pingApi()

@@ -125,7 +125,6 @@
 
 //TODO: use root popup modal
 
-import { store }  from "@/services/store.js"
 import pollPanel from "@/components/poll-panel.vue"
 import liquidoInput from "@/components/liquido-input.vue"
 import popupModal from "@/components/popup-modal.vue"
@@ -161,7 +160,6 @@ export default {
 	},
 	data() {
 		return {
-			store: store,
 			poll: {},
 			proposal: {},
 			titleMinLength: 10,
@@ -200,8 +198,8 @@ export default {
 	},
 	created() {
 		api.getPollById(this.pollId, true).then(poll => this.poll = poll)
-		this.store.setHeaderTitle(this.$t("addProposal"))
-		this.store.setHeaderBackLink("/polls/"+this.pollId)
+		this.$store.setHeaderTitle(this.$t("addProposal"))
+		this.$store.setHeaderBackLink("/polls/"+this.pollId)
 	},
 	mounted() {
 		this.$root.scrollToTop()		

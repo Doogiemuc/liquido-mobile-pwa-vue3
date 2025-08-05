@@ -72,7 +72,6 @@ const routes = [
 		path: "/polls",
 		name: "polls",
 		component: () => import("@/views/polls.vue"),
-		props: true  // status=ELABORATION|VOTING|FINISHED  or undefined
 	},
 	{
 		path: "/polls/create",
@@ -138,11 +137,11 @@ const routes = [
 ]
 
 const router = createRouter({
-	// The history mode withouth hash "#" needs a special web-server configuration! 
+	// https://router.vuejs.org/guide/essentials/history-mode
+	// The history mode withouth hash "#" needs a special web-server configuration in PROD.
 	// https://router.vuejs.org/guide/essentials/history-mode.html#example-server-configurations
 	// Its advantage is that it provides clean SEO conform URLs, e.g. /liquido-mobile/login
   history: createWebHistory(config.BASE_URL),  // createWebHashHistory(config.BASE_URL),
-	//base: config.BASE_URL || "/",
 	/*
 
 	//TODO: https://router.vuejs.org/guide/advanced/scroll-behavior.html
