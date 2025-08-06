@@ -234,21 +234,29 @@ export default {
 
 $arrowColor: white;
 $arrowColorSelected: $primary;
+$arrowGapColor: white;
 $arrowWidth: 15px;
 $arrowHeight: 30px;
 $arrowGap: 3px;
+$border-radius: 20px;
 
 #navbar {
 	position: fixed;
-	width: 100%;
+	bottom: 10px;
+	width: calc(100% - 10px);
+	margin-left: 5px;         
+	margin-right: 5px;
+	border: 1px solid $arrowGapColor;  
+	border-radius: $border-radius;
+	background-color: $arrowGapColor;
 	max-width: $app-max-width;
 	//height: 2 * $arrowHeight + 4 * $arrowGap;
-	bottom: 0;
 	z-index: 999;
 	font-size: 1.2rem;
-	padding: 10px 5px 20px 5px;  // a bit more padding at the bottom for iOS swipe-up bar
-	margin: 0 0;
-	box-shadow: 0 -2px 3px rgba(0, 0, 0, 0.3); /* horizontal, vertical, blur, color */
+	padding: 0;
+	margin-top: 0;
+	margin-bottom: 0;
+	box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* horizontal, vertical, blur, color */
 	background-color: $navbar-bg;
 	display: flex;
 	flex-wrap: nowrap;
@@ -275,8 +283,7 @@ $arrowGap: 3px;
 
 	.discuss-button, .vote-button, .finished-button {
 		min-width: 30px;
-		flex-grow: 1;
-		//line-height: 1.1;
+		flex-basis: 33%;	// each takes 1/3 of the width
 		background-color: $arrowColor;
 		&::after {
 			-webkit-transition: background-color 0.5s ease, border-color 0.5s ease;
@@ -294,23 +301,16 @@ $arrowGap: 3px;
 			transition: background-color 0.5s ease, border-color 0.5s ease;
 		}
 		&.selected::before {
-			border-color: $arrowColorSelected $arrowColorSelected $arrowColorSelected transparent;
+			border-color: $arrowColorSelected $arrowColorSelected $arrowColorSelected $arrowGapColor;
 		}
-	}
-
-	.team-button, .info-button {
-		flex-grow: 1;
-		border-top-right-radius: 10px;
-		border-bottom-right-radius: 10px;
 	}
 
 	.discuss-button {
 		position: relative;
-		border-top-left-radius: 10px;
-		border-bottom-left-radius: 10px;
+		border-top-left-radius: $border-radius;
+		border-bottom-left-radius: $border-radius;
 		//margin-left: 5px;
 		margin-right: $arrowWidth + $arrowGap;
-		flex-grow: 2;
 		&::after {
 			position: absolute;
 			content: "";
@@ -326,7 +326,6 @@ $arrowGap: 3px;
 	}
 
 	.vote-button {
-		flex-grow: 2;
 		margin-right: $arrowWidth + $arrowGap;
 		&::before {
 			position: absolute;
@@ -354,9 +353,8 @@ $arrowGap: 3px;
 	}
 
 	.finished-button {
-		flex-grow: 2;
-		border-top-right-radius: 10px;
-		border-bottom-right-radius: 10px;
+		border-top-right-radius: $border-radius;;
+		border-bottom-right-radius: $border-radius;;
 		//margin-right: 5px;
 		padding: 0;
 		background-color: $arrowColor;
@@ -406,18 +404,17 @@ $arrowGap: 3px;
 	.counter-badge {
 		position: absolute;
 		text-align: center;
-		top: 0;
-		right: 0;
+		top: -3px;
+		left: 1.1em;
 		color: $primary;
 		background-color: white;
 		border: 1px solid rgba(47, 141, 255, 0.5);
 		border-radius: 1em;
-		font-size: 0.8rem;
+		font-size: 1rem;
 		height: 1.2em;
 		min-width: 1.2em;
 		overflow: hidden;
 		line-height: 1.1;
-		transform: translate(10px, -3px)
 	}
 	.icon-title {
 		font-size: 10px;

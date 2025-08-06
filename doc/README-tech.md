@@ -56,9 +56,11 @@ What sould be at the left and right?  Left: Team  and Right: Info  => What to sh
 
 For the TLS connection to the backend you need a certificate. For development we use a self signed cert. It is not that easy to make Safari on iOS to accept that cert:
 
- 1. Download the .pem file directly
- 2. Install the cert via iOS Settings
- 3. Then under Settings -> General -> About -> Trust the cert root chain
+ 1. Download the .pem file directly in your phone.
+ 2. Install the cert via iOS Settings. -> General -> "Profile downloaded"
+ 3. Then under Settings -> General -> About -> Trust the cert root chain.
+
+See also https://github.com/FiloSottile/mkcert/blob/master/README.md#supported-root-stores
 
 Sometimes it is till necessary to open  https://backend.host:8443/graphql/schema.graphql  at the backend once and again click on "open website" in iOS.
 

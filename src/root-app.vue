@@ -117,7 +117,7 @@ export default {
 	mounted() {
 		// Enable my awesome mobile debug log on mobile devices.
 		// This has some consequences ... be carefull
-		//this.$refs["mobileDebugLogRef"].redefineConsoleMethods()
+		this.$refs["mobileDebugLogRef"].redefineConsoleMethods()
 	
 		/*
 		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (newFilter) => {

@@ -402,7 +402,6 @@ export default {
 		min-height: $iconSize;
 		max-height: $iconSize;
 		height: $iconSize;
-
 		margin: 0 10px;
 	}
 
@@ -447,9 +446,9 @@ export default {
 	margin: 0;
 	padding: 0;
 }
-.poll-list-enter-active,
-.poll-list-leave-active {
-	//background-color: red !important;
+//.poll-list-enter-active,
+.poll-list-leave-active .poll-card {
+	opacity: 0.5;
 }
 
 </style>

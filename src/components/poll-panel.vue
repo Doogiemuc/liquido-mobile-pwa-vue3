@@ -270,11 +270,11 @@ $proposal_icon_size: 32px;
 		.proposal-subtitle {
 			font-size: 0.8rem;
 			color: $secondary;
-			//margin-top: 8px;
+			margin-top: 8px;
 
 			.like-button {
 				display: inline;
-				padding: 1px 2px;
+				padding: 2px 4px;
 				border-radius: 5px;
 			}
 
