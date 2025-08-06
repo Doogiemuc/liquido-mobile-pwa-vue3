@@ -161,6 +161,7 @@ export default {
 		text-align: center;
 		justify-content: center;
 		font-size: 25px;
+		flex: 0 0 $header-height;  // square touch area around icon
 		width: $header-height;
 	}
 	.header-back-link {
@@ -200,7 +201,7 @@ export default {
 	}
 	.header-right {
 		display: flex;
-		flex: 0 0 30px;
+		flex: 0 0 $header-height;
 		align-items: center;
 		text-align: center;
 		justify-content: center;

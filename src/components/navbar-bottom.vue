@@ -233,7 +233,7 @@ export default {
 <style lang="scss" scoped>
 
 $arrowColor: white;
-$arrowColorSelected: $primary;
+$arrowColorSelected: $navbar-bg;
 $arrowGapColor: white;
 $arrowWidth: 15px;
 $arrowHeight: 30px;
@@ -257,7 +257,7 @@ $border-radius: 20px;
 	margin-top: 0;
 	margin-bottom: 0;
 	box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* horizontal, vertical, blur, color */
-	background-color: $navbar-bg;
+	background-color: $arrowGapColor;
 	display: flex;
 	flex-wrap: nowrap;
 	justify-content: space-between;
@@ -331,7 +331,7 @@ $border-radius: 20px;
 			position: absolute;
 			content: "";
 			top: 0px;
-			left: -$arrowWidth;
+			left: -$arrowWidth+1;  // +1, because otherwise there "sometimes??" is a gap
 			width: 0px;
 			height: 0px;
 			border-style: solid;

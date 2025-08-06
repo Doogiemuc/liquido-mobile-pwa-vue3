@@ -195,8 +195,8 @@ $proposal_icon_size: 32px;
 	*/
 
 	.poll-title {
-		margin: 0;
-		font-weight: bold;
+		margin: 0;  
+		//font-weight: bold;
 	}
 
 	.poll-title-icon {
@@ -270,11 +270,13 @@ $proposal_icon_size: 32px;
 		.proposal-subtitle {
 			font-size: 0.8rem;
 			color: $secondary;
-			margin-top: 8px;
+			margin-top: 5px;
+			display: flex;
+			align-items: center;
 
 			.like-button {
 				display: inline;
-				padding: 2px 4px;
+				padding: 1px 4px;
 				border-radius: 5px;
 			}
 
