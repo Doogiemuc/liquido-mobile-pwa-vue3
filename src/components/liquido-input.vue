@@ -126,7 +126,7 @@ export default {
 
 		/** 
 		 * Type of the input: (default: text)
-		 * date|datetime-local|email|month|number|password|range|search|tel|text|time|url|week
+		 * test|password|date|datetime-local|email|month|number|password|range|search|tel|text|time|url|week
 		 * liquido-input adds the type mobilephone, that validates mobilephone numbers (as good as locally possible).
 		 * Will be set as "type" attribute of the inner input element that will be evaluated by modern browsers.
 		 * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
@@ -192,7 +192,7 @@ export default {
 			
 			/** Function that will be used to validate the input value. */
 			internalValidFunc: this.validFunc,
-			showPassword: false, // <-- add this
+			showPassword: false,
 		}
 	},
 	computed: {

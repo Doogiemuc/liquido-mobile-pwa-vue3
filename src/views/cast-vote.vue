@@ -14,7 +14,10 @@
 			</div>
 			<div class="card-body">
 				<div v-if="loading" class="draggable">
-					<b-spinner small />&nbsp;{{ $t('Loading') }}
+					<div class="spinner-border" role="status">
+						<span class="visually-hidden">{{ $t('Loading') }}</span>
+					</div>
+					&nbsp;{{ $t('Loading') }}
 				</div>
 
 				<draggable v-else id="myDraggable" v-model="proposalsInBallot" class="draggable" item-key="id"
@@ -53,12 +56,13 @@
 		</div>
 
 		<div v-if="canCastVote" class="text-center mb-5">
-			<b-button id="castVoteButton" variant="primary" size="lg" :disabled="loading || castVoteLoading"
-				@click="clickCastVote()">
+			<button id="castVoteButton" type="button" class="btn btn-primary btn-lg" :disabled="loading || castVoteLoading" @click="clickCastVote()">
+				<div v-if="castVoteLoading" class="spinner-border" role="status">
+					<span class="visually-hidden">{{ $t("Loading") }}</span>	
+				</div>
 				<i v-if="!castVoteLoading" class="fas fa-vote-yea"></i>
-				<b-spinner v-if="castVoteLoading" small />
 				{{ isUpdatableBallot ? $t("updateBallotButton") : $t("castVoteButton") }}
-			</b-button>
+			</button>
 		</div>
 
 		<div v-if="isUpdatableBallot" id="isUpdateableBallotInfo" class="alert liquido-info">
@@ -71,10 +75,10 @@
 				{{ $t("checksumOfYourBallot") }}
 			</p>
 			<div class="text-center mb-2">
-				<b-button id="verifyBallotButton" variant="primary" size="sm" @click="verifyBallot">
+				<button id="verifyBallotButton" class="btn btn-primary btn-sm" @click="verifyBallot">
 					{{ existingBallot.checksum }}
 					<i v-if="ballotIsVerified" class="fas fa-check-circle text-success"></i>
-				</b-button>
+				</button>
 			</div>
 			<p v-if="ballotIsVerified" id="ballotIsVerifiedInfo">
 				{{ $t('ballotIsVerified') }}
@@ -286,7 +290,7 @@ export default {
 	},
 
 	mounted() {
-
+		this.$root.scrollToTop()
 	},
 	methods: {
 		/** Collapse the descriptions of all proposals in the ballot (not used) */

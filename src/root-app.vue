@@ -35,7 +35,7 @@ import navbarBottom from "@/components/navbar-bottom.vue"
 import popupModal from "@/components/popup-modal.vue"
 import mobileDebugLog from "@/components/mobile-debug-log.vue"
 import api from "@/services/liquido-graphql-client.js"
-import EventBus from "@/services/event-bus.js"
+//import EventBus from "@/services/event-bus.js"
 import config from "config"
 
 /** 

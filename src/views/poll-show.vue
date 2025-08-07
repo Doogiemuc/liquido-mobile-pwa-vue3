@@ -5,16 +5,16 @@
 		</h1>
 
 		<div v-if="loadingPoll" class="my-3">
-			<b-spinner small />&nbsp;{{ $t('Loading') }}
+			<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;{{ $t('Loading') }}
 		</div>
 	
 		<poll-panel v-if="poll.id" :poll="poll" :read-only="true" class="mb-4" />
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
 			<div v-html="$t('cannotFindPoll', {pollId: pollId})" />
-			<b-button variant="primary" class="float-end" @click="gotoPolls()">
+			<button type="button" class="btn btn-primary float-end" @click="goToPolls()">
 				{{ $t("Back") }}
-			</b-button>
+			</button>
 		</div>
 
 		<!-- Text info -->
@@ -32,27 +32,25 @@
 				</p>
 		</div>
 
-		
-
 		<!-- Action button -->
 		<div class="d-flex justify-content-end mt-3">
 		
-			<b-button v-if="poll.status === 'VOTING' && !poll.usersBallot" id="goToCastVoteButton" variant="primary" @click="clickCastVote()">
+			<button v-if="poll.status === 'VOTING' && !poll.usersBallot" id="goToCastVoteButton" type="button" class="btn btn-primary" @click="clickCastVote()">
 				<i class="fas fa-person-booth" />
 				{{ $t("goToCastVote") }}
 				<i class="fas fa-angle-double-right" />
-			</b-button>
+			</button>
 
-			<b-button v-else-if="poll.status === 'VOTING' && poll.usersBallot" variant="primary" @click="clickCastVote()">
+			<button v-else-if="poll.status === 'VOTING' && poll.usersBallot" type="button" class="btn btn-primary" @click="clickCastVote()">
 				<i class="fas fa-person-booth" />
 				{{ $t("editOwnVote") }}
 				<i class="fas fa-angle-double-right" />
-			</b-button>
+			</button>
 	
-			<b-button v-else-if="showAddProposal" id="addProposalButton" variant="primary" @click="clickAddProposal()">
+			<button v-else-if="showAddProposal" id="addProposalButton" type="button" class="btn btn-primary" @click="clickAddProposal()">
 				{{ $t("addProposal") }}
 				<i class="fas fa-angle-double-right" />
-			</b-button>
+			</button>
 		
 		</div>
 
@@ -61,21 +59,21 @@
 		<div v-if="showStartVotingPhase" class="alert alert-admin mt-5">
 			<i class="fas fa-shield-alt float-end"></i>
 			<p v-html="$t('startVotingPhaseInfo')" />
-			<b-button id="startVoteButton" :disabled="startVoteLoading" variant="primary" class="float-end" @click="clickStartVote()">
-				<b-spinner v-if="startVoteLoading" small />
+			<button id="startVoteButton" type="button" :disabled="startVoteLoading" class="btn btn-primary float-end" @click="clickStartVote()">
+				<span v-if="startVoteLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
 				<i v-else class="fas fa-user-shield" />
 				{{ $t("startVotingPhase") }}
-			</b-button>
+			</button>
 		</div>
 
 		<div v-if="showFinishVotingPhase" class="alert alert-admin mt-5">
 			<i class="fas fa-shield-alt float-end"></i>
 			<p v-html="$t('finishVotingPhaseInfo', {numBallots: poll.numBallots})" />
-			<b-button id="finishVoteButton" :disabled="finishVoteLoading" variant="primary" class="float-end" @click="clickFinishVote()">
-				<b-spinner v-if="finishVoteLoading" small />
+			<button id="finishVoteButton" type="button" :disabled="finishVoteLoading" class="btn btn-primary float-end" @click="clickFinishVote()">
+				<span v-if="finishVoteLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
 				<i v-else class="fas fa-user-shield" />
 				{{ $t("finishVotingPhase") }}
-			</b-button>
+			</button>
 		</div>
 
 		<popup-modal 

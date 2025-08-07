@@ -1,5 +1,5 @@
 <template>
-	<b-card :id="law.id" no-body class="law-panel noselect" :class="{'collapse-law-panel' : collapsed}">
+	<div :id="law.id" class="card law-panel noselect" :class="{'collapse-law-panel' : collapsed}">
 		<div class="d-flex align-items-center">
 			<div class="law-icon">
 				<i class="fas fa-fw" :class="'fa-' + law.icon" />
@@ -27,7 +27,7 @@
 		<div class="drag-handle">
 			<i class="fas fa-grip-vertical"></i>
 		</div>
-	</b-card>
+	</div>
 </template>
 
 <script>

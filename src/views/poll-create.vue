@@ -17,7 +17,7 @@
 			</liquido-input>
 
 			<div class="d-flex justify-content-between align-items-center">
-				<a class="cancel-link " @click="goBack">{{ $t("Cancel") }}</a>
+				<a class="cancel-link " @click="clickCancelOrBack">{{ $t("Cancel") }}</a>
 				<b-button
 					id="createPollButton"
 					:disabled="createPollButtonDisabled"
@@ -78,22 +78,35 @@ export default {
 	},
 	mounted() {
 		this.$store.setHeaderTitle(this.$t("newPoll"))
+		// we normally go back to polls page, except when headerBackLinkg was already set from welcome-chat.vue
+		console.log("poll-create mounted, headerBackLink:", this.$store.headerBackLink)
+		if (!this.$store.headerBackLink) {
+			this.$store.setHeaderBackLink("/polls") 
+		}
 		this.$root.scrollToTop()
 	},
 	methods: {
 		isPollTitleValid(val) {
 			return val !== undefined && val !== null && val.trim().length >= config.pollTitleMinLength
 		},
-		goBack() {
-			this.$router.go(-1)
+		
+		/** 
+		 * Go back to list of polls. 
+		 * Keep in mind that user might come directly from welcome-chat.vue
+		 */
+		clickCancelOrBack() {
+			this.$router.push({name: "polls"})
 		},
+
+		/** Create a new poll with the given title */
 		clickCreateNewPoll() {
 			return api.createPoll(this.pollTitle)
 				.then(createdPoll => {
 					log.info("New poll created", createdPoll)
 					this.$router.push("/polls/" + createdPoll.id)
 				})
-				.catch(err => console.warn("Error", err))
+				//TODO: error handling for createPoll: show global popup error message
+				.catch(err => console.warn("Cannot create poll", err))
 		},
 	},
 }
