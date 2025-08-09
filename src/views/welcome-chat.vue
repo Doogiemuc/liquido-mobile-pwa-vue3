@@ -8,7 +8,9 @@
 
 			<!-- What's your name bubble -->
 			<div :class="{ 'hide-left': flowState < FLOW.WhatsYourName }" class="card chat-bubble chat-left shadow-sm">
-				<div class="card-body" v-html="$t('whatsYourName')" />
+				<div class="card-body">
+					{{ $t('whatsYourName') }}
+				</div>
 			</div>
 
 			<!-- Nickname input bubble -->

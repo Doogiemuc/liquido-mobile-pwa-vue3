@@ -118,15 +118,31 @@ button.btn-primary {
 	
 	/* Info bubble for user */
 	.liquido-info {
+		padding: 0.5rem; // same as bootstrap alert
 		color: $liquido-info-color;
-		background-color: $liquido-info-background;	
+		background-color: $liquido-info-background;
+		border: 1px solid $liquido-info-color;
+		border-radius: 0.375rem; // same as bootstrap alert
+		p:last-child {
+			margin-bottom: 0; // no margin at the end of the last paragraph
+		}
 	}
 
 	/* Message to admin. Always used with <i class="fas fa-shield-alt"></i>	*/
 	.alert-admin {
-		color: white;
-		background-color: $admin-info-background !important;	
-		
+		color: $admin-info-color;
+		background-color: $admin-info-background;
+		border: 1px solid $admin-info-color;
+		p:last-child {
+			margin-bottom: 0; // no margin at the end of the last paragraph
+		}
+		&::after {
+			content: "\f3ed"; /* Font Awesome shield icon */
+			font: var(--fa-font-solid);
+			position: absolute;
+			top: 5px;
+			right: 10px;
+		}
 	}
 
   .cancel-link {

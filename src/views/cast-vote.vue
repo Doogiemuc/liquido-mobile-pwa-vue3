@@ -7,7 +7,6 @@
 
 		<div id="castVoteCard" class="card ballot-card mb-5">
 			<div class="card-header">
-
 				<h4 class="poll-title">
 					{{ poll ? poll.title : "" }}
 				</h4>

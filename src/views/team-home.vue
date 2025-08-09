@@ -16,12 +16,13 @@
 
 		<div id="memberCards" class="row row-cols-3 g-2 mb-3">
 			<div class="col" v-for="member in team.members" :key="member.user.id">
-				<b-card :img-src="getImgUrl(member.user.picture)" img-alt="Avatar" img-top class="h-100">
+				<div class="card h-100">
+					<img :src="getImgUrl(member.user.picture)" img-alt="Avatar" class="card-img-top" alt="Member Avatar"/>
 					<i v-if="member.role == 'ADMIN'" class="fas fa-shield-alt admin-shield"></i>
-					<b-card-text>
+					<div class="card-body member-name">
 						{{ member.user.name }}
-					</b-card-text>
-				</b-card>
+					</div>
+				</div>
 			</div>
 		</div>
 
@@ -41,14 +42,13 @@
 		</div>
 
 		<div v-if="isAdmin" class="alert alert-admin mt-5">
-		<i class="fas fa-shield-alt float-end"></i>
-		<p v-html="$t('introForOneAdmin')"></p>
-	</div>
+			<p v-html="$t('introForOneAdmin')"></p>
+		</div>
 
-	<div class="text-center">
-		<button id="logoutButton" type="button" class="btn btn-outline-secondary mt-5" @click="clickLogout">{{ $t("logout")
-			}}</button>
-	</div>
+		<div class="text-center">
+			<button id="logoutButton" type="button" class="btn btn-outline-secondary mt-5" @click="clickLogout">
+				{{ $t("logout") }}</button>
+		</div>
 
 	</div>
 </template>
@@ -109,6 +109,8 @@ export default {
 		this.$store.setHeaderTitle(this.team ? this.team.teamName : this.$t('team'))
 		this.$store.setHeaderBackLink(null)
 
+		this.$root.scrollToTop()
+
 		let QRcodeOpts = {
 			scale: 10,
 			/*
@@ -147,9 +149,6 @@ export default {
 </script>
 
 <style lang="scss">
-.team-home {
-	background-color: white;
-}
 
 .admin-shield {
 	color: $primary;
@@ -158,19 +157,11 @@ export default {
 	right: 5px;
 }
 
-
-#memberCards {
-	width: 100%;
-
+#memberCards {	
 	.card-body {
-		margin: 0;
-		padding: 0;
 		text-align: center;
+		
 	}
 }
 
-
-
-#teamInfo {
-}
 </style>

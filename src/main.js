@@ -16,9 +16,7 @@ if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
 import { createApp } from 'vue'
 import RootApp from '@/root-app.vue'
 import router from '@/services/router.js'
-import BootstrapVue3 from 'bootstrap-vue-3'
 import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
 import { createI18n } from 'vue-i18n'
 import { store } from "@/services/store.js"	
 
@@ -107,6 +105,5 @@ const rootApp = createApp({
 
 rootApp.config.globalProperties.$store = store // make store available in all components via this.$store
 rootApp.use(router)
-rootApp.use(BootstrapVue3)
 rootApp.use(i18n)
 rootApp.mount("#app")

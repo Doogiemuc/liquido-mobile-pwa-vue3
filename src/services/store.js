@@ -29,7 +29,7 @@ export const store = reactive({
 	 * @param {String} newFilter new filter value for the poll status filter
 	 */
 	setPollStatusFilter(newFilter) {
-		console.log("setPollStatusFilter to " + newFilter + " and emmitting event")
+		//console.log("setPollStatusFilter to " + newFilter + " and emmitting event")
 		this.pollStatusFilter = newFilter
 		EventBus.emit(EventBus.Event.POLL_FILTER_CHANGED, newFilter)
 	}

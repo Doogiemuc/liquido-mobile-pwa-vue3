@@ -7,11 +7,11 @@
 			</h4>
 		</div>
 		<div v-if="!poll.proposals || poll.proposals.length === 0" class="card-body">
-			<p class="text-secondary mt-2">
+			<p class="text-secondary">
 				{{ $t("noProposalsInPollYet") }}
 			</p>
 		</div>
-		<ul v-else class="list-group list-group-flush my-3">
+		<ul v-else class="list-group list-group-flush mt-1 mb-3">
 			<li v-for="prop in sortedProposals" :key="prop.id" class="list-group-item proposal-list-group-item"
 				:class="proposalListGroupItemClasses(prop.id)">
 				<div class="proposal-header d-flex align-items-center">
@@ -233,7 +233,10 @@ $proposal_icon_size: 32px;
 		border: none;
 
 		&.collapsed-proposal-panel {
-			height: 50px; // just right enough to NOT see the description.
+			height: 60px; // just right enough to NOT see the description.
+			.proposal-description {
+				display: none
+			}
 			.proposal-separator {
 				margin: 10px 0;
 			}

@@ -4,32 +4,35 @@
 			{{ $t("newPoll") }}
 		</h1>
 
-		<b-card class="chat-bubble">
-			<liquido-input
-				id="pollTitleInput"
-				v-model="pollTitle"
-				class="mb-3"
-				:label="$t('pollTitle')"
-				:valid-func="isPollTitleValid"
-				:invalid-feedback="pollTitleInvalidFeedback"
-				@blur="pollTitleValidated = true"
-			>
-			</liquido-input>
-
-			<div class="d-flex justify-content-between align-items-center">
-				<a class="cancel-link " @click="clickCancelOrBack">{{ $t("Cancel") }}</a>
-				<b-button
-					id="createPollButton"
-					:disabled="createPollButtonDisabled"
-					variant="primary"
-					class="float-end"
-					@click="clickCreateNewPoll()"
+		<div class="card chat-bubble">
+			<div class="card-body">
+				
+				<liquido-input
+					id="pollTitleInput"
+					v-model="pollTitle"
+					class="mb-3"
+					:label="$t('pollTitle')"
+					:valid-func="isPollTitleValid"
+					:invalid-feedback="pollTitleInvalidFeedback"
+					@blur="pollTitleValidated = true"
 				>
-					{{ $t("create") }}
-					<i class="fas fa-angle-double-right" />
-				</b-button>
+				</liquido-input>
+
+				<div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+					<a class="cancel-link " @click="clickCancelOrBack">{{ $t("Cancel") }}</a>
+					<button
+						id="createPollButton"
+						:disabled="createPollButtonDisabled"
+						variant="primary"
+						class="btn btn-primary"
+						@click="clickCreateNewPoll()"
+					>
+						{{ $t("createPoll") }}
+						<i class="fas fa-angle-double-right" />
+					</button>
+				</div>
 			</div>
-		</b-card>
+		</div>
 
 		<div class="alert alert-admin my-5">
 			<div v-html="$t('createPollInfo')" />
@@ -57,7 +60,7 @@ export default {
 					"<p>(3) Erst nachdem du die Wahlphase beendet hast, ist das Wahlergebnis für alle sichtbar.",
 				pollTitle: "Titel der Abstimmung",
 				pollTitleInvalid: "Titel ist zu kurz. Bitte mind. {minLen} Zeichen.",
-				create: "Anlegen",
+				createPoll: "Abstimmung anlegen",
 			},
 		},
 	},

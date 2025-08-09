@@ -7,24 +7,32 @@
 			<div class="card-body">
 
 				<liquido-input id="loginEmailInput" v-model="emailInputVal" v-model:state="emailInputState" type="email"
-					:placeholder="$t('emailPlaceholder')"
 					:required=true
+					:placeholder="$t('emailPlaceholder')"
 					:empty-feedback="$t('emailEmpty')"
-					:feedback-placehoder="true"
-					:invalid-feedback="$t('emailInvalid')"/>
+					:invalid-feedback="$t('emailInvalid')"
+					:feedback-placehoder="true"/>
 
 				<liquido-input id="loginPasswordInput" v-model="passwordInputVal" v-model:state="passwordInputState" type="password"
-					:minLength=10 :required=true
+					:minLength=10 
+					:required=true
 					:placeholder="$t('passwordPlaceholder')"
+					:empty-feedback="$t('passwordInputIsEmpty')"
 					:invalid-feedback="$t('passwordInputIsInvalid')"
 					:feedback-placehoder="true"
 					@keypress.enter="loginWithEmailPassword" />
 
-				<button id="loginWithEmailPasswordButton" type="button" class="btn btn-primary w-100" @click="loginWithEmailPassword">
-					{{ $t("Login") }}
+				<button id="loginWithEmailPasswordButton" 
+					type="button" 
+					class="btn btn-primary w-100 text-center position-relative" 
+					:disabled="loginWithEmailPasswordButtonDisabled"
+					@click="loginWithEmailPassword">
+					<i class="fa-solid fa-sign-in-alt position-absolute top-50 start-0 translate-middle ms-3"></i>
+					<span class="text-center">{{ $t("Login") }}</span>
 				</button>
 
-				<div v-if="loginErrorMessage" id="loginErrorMessage" class="alert alert-danger mt-3" v-html="loginErrorMessage">
+				<div v-if="loginErrorMessage" id="loginErrorMessage" class="alert alert-danger mt-3">
+					{{ loginErrorMessage }}
 				</div>
 
 				<div class="horizontal-line my-5">
@@ -37,30 +45,33 @@
 				<div class="row g-2">
 					<div class="col">
 						<!-- Signin with Google -->
-						<button type="button" class="btn btn-outline-secondary w-100" @click="startGoogleLogin()">
-							<i class="fa-brands fa-google position-absolute start-0 ms-3 top-50 translate-middle-y"></i> 
-							{{ $t("Google") }}
+						<button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" @click="startGoogleLogin()">
+							<i class="fa-brands fa-google"></i>
+							<span class="flex-grow-1 text-center">{{ $t("Google") }}</span>
 						</button>
 					</div>
 					<div class="col">
 						<!-- Signin with Authy App -->
-						<button type="button" class="btn btn-outline-secondary w-100" @click="startFacebookLogin()">
-							<i class="fa fa-shield-halved position-absolute start-0 ms-3 top-50 translate-middle-y"></i> {{ $t("Authy") }}
+						<button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" @click="startFacebookLogin()">
+							<i class="fa fa-shield-halved"></i>
+							<span class="flex-grow-1 text-center">{{ $t("Authy") }}</span>
 						</button>
 					</div>
 				</div>
 				<div class="row g-2">
 					<div class="col">
 						<!-- Signin with Apple -->
-						<button type="button" class="btn btn-outline-secondary w-100 mt-3" @click="startAppleLogin()">
-							<i class="fa-brands fa-apple position-absolute start-0 ms-3 top-50 translate-middle-y"></i> {{ $t("Apple") }}
+						<button type="button" class="btn btn-outline-secondary w-100 mt-3 d-flex align-items-center justify-content-center" @click="startAppleLogin()">
+							<i class="fa-brands fa-apple"></i>
+							<span class="flex-grow-1 text-center">{{ $t("Apple") }}</span>
 						</button>
 
 					</div>
 					<div class="col mb-2">
 						<!-- signin with Telegram -->
-						<button type="button" class="btn btn-outline-secondary w-100 mt-3" @click="startTelegramLogin()">
-							<i class="fa-brands fa-telegram position-absolute start-0 ms-3 top-50 translate-middle-y"></i> {{ $t("Telegram") }}
+						<button type="button" class="btn btn-outline-secondary w-100 mt-3 d-flex align-items-center justify-content-center" @click="startTelegramLogin()">
+							<i class="fa-brands fa-telegram"></i>
+							<span class="flex-grow-1 text-center">{{ $t("Telegram") }}</span>
 						</button>
 					</div>
 				</div>
@@ -70,56 +81,71 @@
 		</div>
 
 		<!-- Password forgotten -->
-
 		<div class="forgot-password-link my-3">
 			<router-link id="forgotPasswordLink" :to="{ name: 'forgotPassword' }">{{ $t('ForgotPassword') }}</router-link>
 		</div>
 
-		<!-- Login via SMS (disabled because expensive) -->
-		<b-card v-if="false" class="border-0 shadow-sm mb-4" :header="$t('LoginViaSms')">
-			<p>{{ $t('LoginViaSmsInfo') }}</p>
-			<liquido-input id="mobilephoneInput" v-model="mobilephone" v-model:state="mobilephoneInputState"
-				type="mobilephone" class="mb-3" :label="$t('yourMobilephone')" :placeholder="$t('mobilephonePlaceholder')"
-				:invalid-feedback="$t('mobilephoneInvalid')" />
-			<div class="text-end">
-				<button id="requestTokenButton" :disabled="requestTokenButtonDisabled" class="btn btn-primary"
-					@click="requestAuthToken">
-					<div v-if="waitUntilNextRequestSecs > 0">
-						{{ $t('TokenSent') }}&nbsp;<b-spinner small />
-					</div>
-					<div v-else>
-						{{ $t('RequestTokenButton') }}
-					</div>
-				</button>
+		<!-- Login via SMS (disabled because sending SMS is expensive :-( -->
+		<div v-if="false" class="card border-0 shadow-sm mb-4">
+			<div class="card-header">
+				{{ $t("LoginViaSms") }}
 			</div>
-			<b-collapse v-model="tokenSentSuccessfully" class="mt-3">
-				<liquido-input id="authTokenInput" v-model="twillioAuthToken" v-model:state="authTokenInputState" type="text"
-					placeholder="<123456>" class="mb-3" :label="$t('AuthTokenLabel')"
-					:invalid-feedback="$t('authTokenInputInvalid')" :minLength=6 :maxLength=6 :required="true"
-					:show-counter="true"></liquido-input>
-			</b-collapse>
-			<div v-if="tokenSentSuccessfully && !tokenErrorMessage" id="tokenSuccessMessage" class="alert alert-success mt-3">
-				{{ $t("AuthtokenSentSuccessfully") }}
+			<div class="card-body">
+				<p>{{ $t('LoginViaSmsInfo') }}</p>
+				<liquido-input id="mobilephoneInput" v-model="mobilephone" v-model:state="mobilephoneInputState"
+					type="mobilephone" class="mb-3" :label="$t('yourMobilephone')" :placeholder="$t('mobilephonePlaceholder')"
+					:invalid-feedback="$t('mobilephoneInvalid')" />
+				<div class="text-end">
+					<button id="requestTokenButton" :disabled="requestTokenButtonDisabled" class="btn btn-primary"
+						@click="requestAuthToken">
+						<div v-if="waitUntilNextRequestSecs > 0">
+							{{ $t('TokenSent') }}&nbsp;<div class="spinner-border spinner-border-sm" role="status"></div>
+						</div>
+						<div v-else>
+							{{ $t('RequestTokenButton') }}
+						</div>
+					</button>
+				</div>
+				
+				<liquido-input id="authTokenInput" 
+					v-model="twillioAuthToken" 
+					v-model:state="authTokenInputState" 
+					type="text"
+					placeholder="<123456>" 
+					class="mb-3" 
+					:label="$t('AuthTokenLabel')"
+					:invalid-feedback="$t('authTokenInputInvalid')"
+					:disabled="!tokenSentSuccessfully"
+					:minLength=6 :maxLength=6 :required="true"
+					:show-counter="true">
+				</liquido-input>
+				
+				<div v-if="tokenSentSuccessfully && !tokenErrorMessage" id="tokenSuccessMessage" class="alert alert-success mt-3">
+					{{ $t("AuthtokenSentSuccessfully") }}
+				</div>
+				<div v-if="tokenErrorMessage" id="tokenErrorMessage" class="alert alert-danger mt-3">
+					{{ tokenErrorMessage }}
+				</div>
 			</div>
-			<div v-if="tokenErrorMessage" id="tokenErrorMessage" class="alert alert-danger mt-3" v-html="tokenErrorMessage">
-			</div>
-		</b-card>
+		</div>
 
 
 		<!-- Register as a new user -->
 
 		<div class="d-flex justify-content-center mt-5 px-3" style="max-width: 540px; margin: 0 auto;">
-			<button id="registerButton" type="button" class="btn btn-outline-secondary w-100" @click="clickRegister()">
-				<i class="fa-solid fa-user-plus me-2"></i> {{ $t("Register") }}
+			<button id="registerButton" type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" @click="clickRegister()">
+				<i class="fa-solid fa-user-plus me-2"></i>
+				<span class="flex-grow-1 text-center">{{ $t("Register") }}</span>
 			</button>
 		</div>
 
 		<div v-if="showDevLogin" class="d-flex flex-column px-3" style="margin-top: 8rem;">
-			<button type="button" class="btn btn-outline-secondary " @click="devLoginAdmin">
-				<i class="fas fa-shield-alt"></i> {{ $t("DevLoginAdmin") }}
+			<button type="button" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" @click="devLoginAdmin">
+				<i class="fas fa-shield-alt me-2"></i>
+				<span class="flex-grow-1 text-center">{{ $t("DevLoginAdmin") }}</span>
 			</button>
-			<button type="button" class="btn btn-outline-secondary mt-1" @click="devLoginMember">
-				{{ $t("DevLoginMember") }}
+			<button type="button" class="btn btn-outline-secondary mt-1 d-flex align-items-center justify-content-center" @click="devLoginMember">
+				<span class="flex-grow-1 text-center">{{ $t("DevLoginMember") }}</span>
 			</button>
 		</div>
 
@@ -143,6 +169,7 @@ export default {
         emailInvalid: "Ungültige Email. Vielleicht nur vertippt?",
 				emailEmpty: "Bitte gib deine E-Mail Adresse ein.",
 				passwordInputIsInvalid: "Mindestens 10 Zeichen.",
+				passwordInputIsEmpty: "Bitte gib dein Passwort ein.",
 				loginFailed: "Login fehlgeschlagen. Bitte überprüfe deine E-Mail und dein Passwort.",
 				
 				// Password reset
@@ -192,7 +219,7 @@ export default {
 			emailInputVal: "",
 			emailInputState: undefined, 	// synced states from liquido-inputs
 			passwordInputVal: "",
-			passwordInputState: null,
+			passwordInputState: undefined,
 			loginErrorMessage: undefined, // error message below email password input
 
 			// Login via E-Mail magic link
@@ -215,6 +242,9 @@ export default {
 	computed: {
 		showDevLogin() {
 			return process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
+		},
+		loginWithEmailPasswordButtonDisabled() {
+			return this.emailInputState !== STATE.VALID || this.passwordInputState !== STATE.VALID
 		},
 		requestTokenButtonDisabled() {
 			return this.mobilephoneInputState !== true || this.waitUntilNextRequestSecs > 0

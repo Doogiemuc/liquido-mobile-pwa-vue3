@@ -28,7 +28,6 @@
 		</form>
 
 		<div class="alert alert-admin create-poll-info mt-5">
-			<i class="fas fa-circle-info float-end"></i>
 			<p>{{ $t('createPollInfo1') }}</p>
 				<ol class='fa-ul'>
 					<li><span class='fa-li'><i class='fas fa-comments'></i></span> {{ $t('createPollInfo2') }} {{ $t('createPollInfo3') }}</li>

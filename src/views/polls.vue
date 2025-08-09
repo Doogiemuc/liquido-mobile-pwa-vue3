@@ -9,7 +9,7 @@
 		</div>
 
 		<div v-if="loading" class="my-3">
-			<b-spinner small />&nbsp;{{ $t('Loading') }}
+			<div class="spinner-border spinner-border-sm" role="status">{{ $t('Loading') }}</div>
 		</div>
 
 		<!-- Search -->
@@ -19,7 +19,7 @@
 		</div>
 
 		<!-- list of polls -->
-		<div v-if="!loading" id="poll-list-wrapper" class="mb-3">
+		<div v-if="!loading" id="poll-list-wrapper" class="mb-5">
 
 			<transition-group name="poll-list" id="poll-list" tag="div">
 				<div v-for="poll in filteredPolls" :key="poll.id" class="poll-card-wrapper">
@@ -62,38 +62,37 @@
 
 		</div>
 		
-		<div v-if="pollStatusFilter === 'ELABORATION'" class="alert text-muted">
+		<div v-if="pollStatusFilter === 'ELABORATION'" class="liquido-info">
 			<p v-if="hasPollInElaboration" v-html="$t('pollsInElaborationInfo')" />
 			<p v-else v-html="$t('noPollsInElaboration')" />
 			<p v-if="!hasPollInElaboration && hasPollInVoting" v-html="$t('butPollInVoting')" />
 		</div>
 
-		<div v-if="pollStatusFilter === 'VOTING'" class="alert text-muted">
+		<div v-if="pollStatusFilter === 'VOTING'" class="liquido-info">
 			<p v-if="hasPollInVoting" v-html="$t('pollsInVotingInfo')" />
 			<p v-else v-html="$t('noPollsInVoting')" />
 			<p v-if="!hasPollInVoting && hasPollInElaboration" v-html="$t('butProposalsInDiscussion')" />
 		</div>
 
-		<div v-if="pollStatusFilter === 'FINISHED'" class="alert text-muted">
+		<div v-if="pollStatusFilter === 'FINISHED'" class="liquido-info">
 			<p v-if="hasFinishedPoll" v-html="$t('finishedPollsInfo')" />
 			<p v-else v-html="$t('noFinishedPolls')" />
 			<p v-if="!hasFinishedPoll && hasPollInVoting" v-html="$t('butPollInVoting')" />
 		</div>
 	
-		<div v-if="false" class="text-end mt-5">
-			<b-button id="scrollToTopButton" variant="secondary" @click="$root.scrollToTop">
+		<div v-if="filteredPolls.length > 5" class="text-end mt-5">
+			<button id="scrollToTopButton" class="btn btn-secondary" @click="$root.scrollToTop">
 				<i class="fas fa-angle-up" />
-			</b-button>
+			</button>
 		</div>
 
 		<div v-if="userIsAdmin" id="createPollInfo" class="alert alert-admin mt-5">
 			<p>
-				<i class="fas fa-shield-alt float-end"></i>
 				{{ $t('onlyAdminCanCreateNewPolls') }}
 			</p>
-			<b-button id="createPollButton" variant="primary" class="float-end" @click="gotoCreatePoll()">
+			<button id="createPollButton" class="btn btn-primary float-end" @click="gotoCreatePoll()">
 				<i class="fas fa-shield-alt" /> {{ $t("createPoll") }} <i class="fas fa-angle-double-right" />
-			</b-button>
+			</button>
 		</div>
 
 		

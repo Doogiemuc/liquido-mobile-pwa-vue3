@@ -57,7 +57,6 @@
 		<!-- Admin only functions -->
 
 		<div v-if="showStartVotingPhase" class="alert alert-admin mt-5">
-			<i class="fas fa-shield-alt float-end"></i>
 			<p v-html="$t('startVotingPhaseInfo')" />
 			<button id="startVoteButton" type="button" :disabled="startVoteLoading" class="btn btn-primary float-end" @click="clickStartVote()">
 				<span v-if="startVoteLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -67,7 +66,6 @@
 		</div>
 
 		<div v-if="showFinishVotingPhase" class="alert alert-admin mt-5">
-			<i class="fas fa-shield-alt float-end"></i>
 			<p v-html="$t('finishVotingPhaseInfo', {numBallots: poll.numBallots})" />
 			<button id="finishVoteButton" type="button" :disabled="finishVoteLoading" class="btn btn-primary float-end" @click="clickFinishVote()">
 				<span v-if="finishVoteLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>

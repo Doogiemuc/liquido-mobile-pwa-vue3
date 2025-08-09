@@ -1,124 +1,143 @@
 <template>
-	<div>
-		<div id="join-team-chat" class="mt-3">
-			<b-card id="joinTeamBubble" :class="{ 'hide-left': flowState < 1 }" class="chat-bubble shadow-sm">
-				<b-card-text v-html="$t('welcome')" />
-			</b-card>
+    <div>
+        <div id="join-team-chat" class="mt-3">
+            <!-- Welcome bubble -->
+            <div id="joinTeamBubble" :class="{ 'hide-left': flowState < 1 }" class="card chat-bubble shadow-sm">
+                <div class="card-body">
+                    <div v-html="$t('welcome')" />
+                </div>
+            </div>
 
-			<b-card class="chat-bubble chat-bubble-error shadow-sm">
-				<b-card-text v-html="$t('passedInviteCodeIsInvalid')" />
-			</b-card>
+            <!-- Invalid invite code bubble -->
+            <div class="card chat-bubble chat-bubble-error shadow-sm">
+                <div class="card-body">
+                    <div v-html="$t('passedInviteCodeIsInvalid')" />
+                </div>
+            </div>
 
-			<b-card :class="{ 'hide-left': flowState < 2 }" class="chat-bubble shadow-sm">
-				<b-card-text v-html="$t('joinTeamInfo', {teamName: 'Die Magischen'})" />
-			</b-card>
+            <!-- Join team info bubble -->
+            <div :class="{ 'hide-left': flowState < 2 }" class="card chat-bubble shadow-sm">
+                <div class="card-body">
+                    <div v-html="$t('joinTeamInfo', {teamName: 'Die Magischen'})" />
+                </div>
+            </div>
 
-			<b-card :class="{ 'hide-left': flowState < 2 }" class="chat-bubble shadow-sm">
-				<b-card-text v-html="$t('whatsYourName')" />
-			</b-card>
+            <!-- What's your name bubble -->
+            <div :class="{ 'hide-left': flowState < 2 }" class="card chat-bubble shadow-sm">
+                <div class="card-body">
+                    <div v-html="$t('whatsYourName')" />
+                </div>
+            </div>
 
-			<b-card :class="{ 'hide-right': flowState < 3 }" class="chat-bubble shadow-sm chat-right">
-				<liquido-input
-					id="userNameInput"
-					ref="userNameInput"
-					v-model="user.name"
-					class="mb-3"
-					:label="$t('yourNickname')"
-					:valid-func="isUsernameValid"
-					:maxlength="100"
-					:invalid-feedback="$t('userNameInvalid')"
-					:disabled="flowState != 3"
-					@keyup.enter="userNameSubmit"
-					@blur="userNameSubmit"
-				/>
-			</b-card>
+            <!-- Nickname input bubble -->
+            <div :class="{ 'hide-right': flowState < 3 }" class="card chat-bubble shadow-sm chat-right">
+                <div class="card-body">
+                    <liquido-input
+                        id="userNameInput"
+                        ref="userNameInput"
+                        v-model="user.name"
+                        class="mb-3"
+                        :label="$t('yourNickname')"
+                        :valid-func="isUsernameValid"
+                        :maxlength="100"
+                        :invalid-feedback="$t('userNameInvalid')"
+                        :disabled="flowState != 3"
+                        @keyup.enter="userNameSubmit"
+                        @blur="userNameSubmit"
+                    />
+                </div>
+            </div>
 
-			<b-card :class="{ 'hide-left': flowState < 4 }" class="chat-bubble shadow-sm">
-				<b-card-text v-html="$t('niceToMeetYou', { nickname: user.name })" />
-			</b-card>
+            <!-- Nice to meet you bubble -->
+            <div :class="{ 'hide-left': flowState < 4 }" class="card chat-bubble shadow-sm">
+                <div class="card-body">
+                    <div v-html="$t('niceToMeetYou', { nickname: user.name })" />
+                </div>
+            </div>
 
-			<!-- Join a team - form (flowState == 10) -->
-			<b-card :class="{ 'collapse-max-height': ![10,11,12].includes(flowState) }" class="chat-bubble chat-right">
-				<form id="joinTeamForm">
-					<liquido-input
-						id="inviteCodeInput"
-						ref="inviteCodeInput"
-						v-model="inviteCode"
-						class="mb-3"
-						:label="$t('inviteCode')"
-						placeholder="ABC123"
-						:valid-func="isInviteCodeValid"
-						:maxlength="100"
-						:invalid-feedback="$t('inviteCodeInvalid')"
-						:disabled="flowState !== 10"
-						tabindex="1"
-					/>
+            <!-- Join a team - form (flowState == 10) -->
+            <div :class="{ 'collapse-max-height': ![10,11,12].includes(flowState) }" class="card chat-bubble chat-right">
+                <div class="card-body">
+                    <form id="joinTeamForm">
+                        <liquido-input
+                            id="inviteCodeInput"
+                            ref="inviteCodeInput"
+                            v-model="inviteCode"
+                            class="mb-3"
+                            :label="$t('inviteCode')"
+                            placeholder="ABC123"
+                            :valid-func="isInviteCodeValid"
+                            :maxlength="100"
+                            :invalid-feedback="$t('inviteCodeInvalid')"
+                            :disabled="flowState !== 10"
+                            tabindex="1"
+                        />
 
-					<liquido-input
-						id="userMobilephoneInput"
-						ref="userMobilephoneInput"
-						v-model="user.mobilephone"
-						class="mb-3"
-						:label="$t('yourMobilephone')"
-						:placeholder="$t('mobilephonePlaceholder')"
-						:valid-func="isMobilephoneValid"
-						:maxlength="100"
-						:invalid-feedback="$t('mobilephoneInvalid')"
-						:disabled="flowState !== 10"
-						tabindex="2"
-					/>
+                        <liquido-input
+                            id="userMobilephoneInput"
+                            ref="userMobilephoneInput"
+                            v-model="user.mobilephone"
+                            class="mb-3"
+                            :label="$t('yourMobilephone')"
+                            :placeholder="$t('mobilephonePlaceholder')"
+                            :valid-func="isMobilephoneValid"
+                            :maxlength="100"
+                            :invalid-feedback="$t('mobilephoneInvalid')"
+                            :disabled="flowState !== 10"
+                            tabindex="2"
+                        />
 
-					<liquido-input
-						id="userEmailInput"
-						ref="userEmailInput"
-						v-model="user.email"
-						class="mb-3"
-						:label="$t('yourEMail')"
-						:placeholder="$t('emailPlaceholder')"
-						:valid-func="isEmailValid"
-						:maxlength="200"
-						:invalid-feedback="$t('emailInvalid')"
-						:disabled="flowState !== 10"
-						tabindex="3"
-					/>
+                        <liquido-input
+                            id="userEmailInput"
+                            ref="userEmailInput"
+                            v-model="user.email"
+                            class="mb-3"
+                            :label="$t('yourEMail')"
+                            :placeholder="$t('emailPlaceholder')"
+                            :valid-func="isEmailValid"
+                            :maxlength="200"
+                            :invalid-feedback="$t('emailInvalid')"
+                            :disabled="flowState !== 10"
+                            tabindex="3"
+                        />
 
-					<div class="d-flex justify-content-between align-items-end">
-						<small :class="{ invisible: flowState !== 10 }" class="ms-1">
-							<a href="#" tabindex="4" @click="cancelJoinTeam()">{{ $t("Cancel") }}</a>
-						</small>
-						<b-button
-							id="joinTeamOkButton"
-							:disabled="joinTeamOkButtonDisabled"
-							variant="primary"
-							tabindex="3"
-							@click="joinTeam()"
-						>
-							{{ $t("Ok") }}
-							<i class="fas fa-angle-double-right" />
-						</b-button>
-					</div>
-				</form>
-			</b-card>
+                        <div class="d-flex justify-content-between align-items-end">
+                            <small :class="{ invisible: flowState !== 10 }" class="ms-1">
+                                <a href="#" tabindex="4" @click="cancelJoinTeam()">{{ $t("Cancel") }}</a>
+                            </small>
+                            <button
+                                id="joinTeamOkButton"
+                                :disabled="joinTeamOkButtonDisabled"
+                                class="btn btn-primary"
+                                tabindex="3"
+                                type="button"
+                                @click="joinTeam()"
+                            >
+                                {{ $t("Ok") }}
+                                <i class="fas fa-angle-double-right" />
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-			<!--Joined team successfully (flowState == 12) -->
-			<b-card	id="joinedTeamBubble"	:class="{ 'collapse-max-height': flowState !== 12 }" class="chat-bubble shadow-sm">
-				<p v-html="$t('joinedTeamSuccessfully', { teamName: team.teamName })" />
-				<b-button
-					id="joinedTeamGoToTeamButton"
-					variant="primary"
-					class="float-end mb-1"
-					@click="gotoTeam"
-				>
-					{{ $t("gotoTeam") }}
-					<i class="fas fa-angle-double-right" />
-				</b-button>
-			</b-card>
-
-
-			
-
-		</div> <!-- end of container -->
-	</div>
+            <!--Joined team successfully (flowState == 12) -->
+            <div id="joinedTeamBubble" :class="{ 'collapse-max-height': flowState !== 12 }" class="card chat-bubble shadow-sm">
+                <div class="card-body">
+                    <p v-html="$t('joinedTeamSuccessfully', { teamName: team.teamName })" />
+                    <button
+                        id="joinedTeamGoToTeamButton"
+                        class="btn btn-primary float-end mb-1"
+                        type="button"
+                        @click="gotoTeam"
+                    >
+                        {{ $t("gotoTeam") }}
+                        <i class="fas fa-angle-double-right" />
+                    </button>
+                </div>
+            </div>
+        </div> <!-- end of container -->
+    </div>
 </template>
 
 <script>
