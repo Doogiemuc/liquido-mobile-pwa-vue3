@@ -84,7 +84,7 @@ export default {
 		},
 
 		showDebugLog() {
-			return process.env.NODE_ENV !== 'production'
+			return false // process.env.NODE_ENV !== 'production'
 		}
 	},
 	// watch the `$route` to determine the transition to use
@@ -92,11 +92,11 @@ export default {
 	watch: {
 		$route(to, from) {
 			//console.log("$route change from " + from.name + " to " + to.name)
-			this.transitionName = "fade"
+			this.transitionName = ""  // default: no transition ("fade" is too much)
 			const fromOrder = page_order[from.name]
 			const toOrder = page_order[to.name]
 			if (fromOrder && toOrder) {	
-				if (fromOrder < toOrder) { this.transitionName = "slide-left" }
+				if (fromOrder < toOrder) { this.transitionName = "slide-left" }   // this is a prefix for the CSS classes. See CSS below 
 				if (fromOrder > toOrder) { this.transitionName = "slide-right"}
 			}
 
@@ -106,8 +106,8 @@ export default {
 				pollsScrollPos = app.scrollTop
 			} else 
 			if (to.name === "polls" && pollsScrollPos !== undefined) {
-				console.log("Restoring scroll pos of " + to.name + " = " + pollsScrollPos)
-				app.scrollTop = pollsScrollPos
+				//console.log("Restoring scroll pos of " + to.name + " = " + pollsScrollPos)
+				//app.scrollTop = pollsScrollPos
 			} else {
 				// this.scrollToTop()   // this has a nasty UI bug, because it scrolls to the top of the page before the transition animation is finished
 			}
@@ -117,7 +117,7 @@ export default {
 	mounted() {
 		// Enable my awesome mobile debug log on mobile devices.
 		// This has some consequences ... be carefull
-		this.$refs["mobileDebugLogRef"].redefineConsoleMethods()
+		//this.$refs["mobileDebugLogRef"]?.redefineConsoleMethods()
 	
 		/*
 		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (newFilter) => {

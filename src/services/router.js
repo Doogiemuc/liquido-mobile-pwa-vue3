@@ -56,7 +56,7 @@ const routes = [
 			inviteCodeQueryParam: route.query.inviteCode
 		}),
 		meta: {
-			public: true
+			public: true   // only welcome and login are public
 		}
 	},
 	{
@@ -64,8 +64,13 @@ const routes = [
 		name: "teamHome",
 		component: () => import("@/views/team-home.vue"),
 		props: true,  // teamId, teamName, teamLogoUrl
+	},
+	{
+		path: "/polly/create",
+		name: "createPolly",
+		component: () => import("@/views/polly-create.vue"),
 		meta: {
-			public: false  // this is not public, because it requires a valid JWT
+			public: true
 		}
 	},
 	{

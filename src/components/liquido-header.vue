@@ -56,11 +56,12 @@ export default {
 	},
 
 	beforeUnmount() {
-		document.getElementById("app").removeEventListener("scroll")
+		document.getElementById("app").removeEventListener("scroll", this.stickyHeader)
 	},
 
 	methods: {
 		/**
+		 * This is called on scroll of the main "app" element.
 		 * When the main "app" is scrolled upwards for more then a given amount of pixels
 		 * Then the "LIQUIDO" title will be replaced with the {{title}} of the page.
 		 * The {{title}} will scroll into view from the bottom.
@@ -79,7 +80,7 @@ export default {
 					pageTitleElem.classList.remove("transition-page-title")
 				}
 			} else {				
-				// we doo have a headerTitle
+				// we do have a headerTitle
 				if (this.isSticky === false && app.scrollTop > scrollAfterPx) {
 					this.isSticky = true
 					headerElem.classList.add("transition-header")
@@ -130,7 +131,8 @@ export default {
 	z-index: 999;
 	transition: all 0.5s;
 	background-color: $header_bg;
-	opacity: 0.95;
+	//opacity: 0.95;   // does not look good with iOS Safari header
+	padding: 0 0.5rem;
 	box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3); /* horizontal, vertical, blur, color */
   z-index: 9999; /* make sure the header is on top of everything */
   

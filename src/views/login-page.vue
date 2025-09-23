@@ -222,6 +222,9 @@ export default {
 			passwordInputState: undefined,
 			loginErrorMessage: undefined, // error message below email password input
 
+			// Google Login
+			GoogleLoginCurrentlyNotAvailable: "Google Login currently not available",
+
 			// Login via E-Mail magic link
 			emailSentSuccessfully: false,
 			emailErrorMessage: undefined,
@@ -301,14 +304,47 @@ export default {
 				})
 		},
 
-		// =============== Forgot Password Process ==================
+		
 
+    /**
+     * Start the Google OAuth Authorization Code Flow.
+     * This will redirect the user to Google's OAuth endpoint with response_type=code.
+     * After login/consent, Google will redirect back to our backend with an authorization code.
+     */
+    startGoogleLoginAuthorizationCodeFlow() {
+        const clientId = config.googleClientId;
+        const redirectUri = encodeURIComponent(config.LIQUIDO_API_URL + "/auth/google/callback");
+        const scope = encodeURIComponent("openid email profile");
+        const state = encodeURIComponent(Math.random().toString(36).substring(2)); // Optional: use a real CSRF token in production
+
+        const googleAuthUrl =
+            `https://accounts.google.com/o/oauth2/v2/auth` +
+            `?client_id=${clientId}` +
+            `&redirect_uri=${redirectUri}` +
+            `&response_type=code` +
+            `&scope=${scope}` +
+            `&state=${state}` +
+            `&access_type=offline` +
+            `&prompt=consent`;
+
+        // Optionally store state in localStorage/sessionStorage for CSRF protection
+        localStorage.setItem("google_oauth_state", state);
+
+        // Redirect to Google OAuth
+        window.location.href = googleAuthUrl;
+    },
+
+
+		// =============== Google OAuth Implicit Flow / Google One Tap  ==================
+   	//   This works, but is less secure than the Authorization Code Flow above.
 	
 		/** 
-		 * Start the google login process only after the user clicked the Google button.
-		 * Dynamically load the google-script and call the google login function.
+		 * (1) Start the google login process.
+		 * For keep data privacy, this is done only <b>after</b> the user clicked the Google button.
+		 * Only then we ynamically load the google-script and call the google login function.
 		 */
-		startGoogleLogin() {
+		startGoogleOneTapLogin() {
+			this.loginErrorMessage = undefined
 			if (!document.getElementById("google-script")) {
 				console.log("loading google script")
         const script = document.createElement("script");
@@ -317,30 +353,36 @@ export default {
         script.onload = this.loginWithGoogle; // Call login after script loads
         document.head.appendChild(script);
       } else {
-        this.loginWithGoogle(); // If script is already loaded, start login
+        this.loginWithGoogleOneTap(); // If script is already loaded, start login
       }
 		},
 
 		/**
-		 * Login with Google. This is called after the google script has been loaded.
+		 * 2. Login with Google. This is called after the google script has been loaded.
 		 */
-		loginWithGoogle() {
+		loginWithGoogleOneTap() {
 			if (window.google && window.google.accounts) {
+				this.loginErrorMessage = undefined
 				window.google.accounts.id.initialize({
 					client_id: config.googleClientId,
 					login_uri: config.LIQUIDO_API_URL + "/auth/google",
-					callback: this.handleGoogleResponse,
+					callback: this.handleGoogleOneTapResponse,
 					auto_select: false,
 					ux_mode: "redirect",
 					scope: "openid email profile"
 				});
 				window.google.accounts.id.prompt(); // Show the Google login prompt
 			} else {
+				this.loginErrorMessage = this.$t("GoogleLoginCurrentlyNotAvailable")
 				console.error("Google accounts not available")
 			}
 		},
 
-		handleGoogleResponse(response) {
+		/**
+		 * 3. After a successful Google login, this callback is called.
+		 * @param response Contains users's clientId and a Google JWT token in response.credential
+		 */
+		handleGoogleOneTapResponse(response) {
 			console.log("Google login response", response)
 			if (response.credential) {
 				this.tokenErrorMessage = undefined
@@ -350,11 +392,11 @@ export default {
 						this.$router.push({name: "teamHome"})
 					})
 					.catch(err => {
-						console.error("Google login failed", err)
+						console.error("Google One Tap login failed", err)
 						this.tokenErrorMessage = this.$t("GoogleLoginFailed")
 					})
 			} else {
-				console.error("No credential in Google login response")
+				console.error("No credential in Google One Tap login response")
 				this.tokenErrorMessage = this.$t("GoogleLoginFailed")
 			}
 		},

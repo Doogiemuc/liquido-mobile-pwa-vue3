@@ -6,11 +6,11 @@
  */
 
 $app-max-width: 1000px;									 // maximum width of the whole app , eg. when shown in a browser
-$header-height: 3rem;											// height of liquido header, also used for scrollToTop
+$header-height: 3rem;										 // height of liquido header, also used for scrollToTop
 
 $primary: #2e8dff;											// primary color, eg. for titles and primary button backgrounds. bootstrap primary color would be #0d6efd
-$secondary: #bbb;										// secondary color for muted texts
-$app-background: #e3e9f5;  						// main background of app. Needs to have high contrast to text color.
+$secondary: #bbb;											// secondary color for muted texts
+$app-background: #e3e9f5;  						// main background of app. Needs to have high contrast to text color. But also towards white cards.
 $liquido-text-color: #333333;					// Standard text forground color. Needs to have high contrast to background color. Also used for chat bubbles.
 
 $chat-left-bg: #aacfff;
@@ -19,14 +19,13 @@ $liquido-input-bg: #afc2fa;						// background color for input bubbles (where us
 
 
 $icon-bg: #a9c6ff;											// background for polls and proposal icons
-$header-bg: #429cf3;  //   #9fb6d4;   	rgb(220, 236, 255);				// background of fixed header
-$navbar-bg: #429cf3; // #79baf6;  //   #9fb6d4;    rgba(220, 236, 255, 0.9);	// background for bottom navbar
+$header-bg: #429cf3;  									// background of fixed header
+$navbar-bg: #429cf3;                   // background for bottom navbar
 
-$liquido-info-color: #777;						// text color for liquido-info alert boxes
-$liquido-info-background: transparent;		 		// background for liquido-info alert boxes
-$admin-info-color: #777;								// text color for admin-info alert boxes
-$admin-info-background: transparent;   	 	// info boxes for admin
-
+$liquido-info-color: #777;							// text color for liquido-info alert boxes
+$liquido-info-background: transparent;	 // background for liquido-info alert boxes
+$admin-info-text-color: #666;				  // text color for admin-info alert boxes
+$admin-info-background: white;   	    // info boxes for admin
 
 
 // There are also some more variables in bootstrap that you can use.

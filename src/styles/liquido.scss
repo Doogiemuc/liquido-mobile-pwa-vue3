@@ -130,9 +130,9 @@ button.btn-primary {
 
 	/* Message to admin. Always used with <i class="fas fa-shield-alt"></i>	*/
 	.alert-admin {
-		color: $admin-info-color;
+		color: $admin-info-text-color;
 		background-color: $admin-info-background;
-		border: 1px solid $admin-info-color;
+		border: none; // no borders on cards in LIQUIDO
 		p:last-child {
 			margin-bottom: 0; // no margin at the end of the last paragraph
 		}

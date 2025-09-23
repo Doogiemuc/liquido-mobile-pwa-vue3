@@ -6,10 +6,10 @@
 
 		<polly 
 			class="mb-4"
-			v-model:isValid="pollIsValid"
-			@savePoll="createNewPoll">
+			:poll="poll">
 		</polly>
 
+		<!-- 
 		<h3>Einstellungen für diese Abstimmung</h3>
 		<form class="mb-4 p-2">
 			<div class="form-check">
@@ -26,12 +26,13 @@
 				</button>
 			</div>
 		</form>
+		-->
 
 		<div class="alert alert-admin create-poll-info mt-5">
 			<p>{{ $t('createPollInfo1') }}</p>
 				<ol class='fa-ul'>
 					<li><span class='fa-li'><i class='fas fa-comments'></i></span> {{ $t('createPollInfo2') }} {{ $t('createPollInfo3') }}</li>
-					<li><span class='fa-li'><i class='fas fa-person-booth'></i></span> {{ $t('createPollInfo4') }}</li>
+					<li><span class='fa-li'><i class='fas fa-person-booth'></i></span> <span v-html="$t('createPollInfo4')"></span></li>
 					<li><span class='fa-li'><i class='fas fa-check-circle'></i></span> {{ $t('createPollInfo5') }}</li>
 				</ol>
 		</div>
@@ -52,10 +53,12 @@ export default {
 			de: {
 				newPolly: "Neues Polly",
 				createPollInfo1: "Abstimmungen laufen durch drei Phasen:",
-				createPollInfo2: "Eine neue Abstimmung wird erst einmal diskutiert.",
-				createPollInfo3: "Du kannst festlegen ob Teammitglieder ihre eigenen Wahlvorschläge hinzufügen können.",
-				createPollInfo4: "Wenn du die Wahlphase der Abstimmung startest, kann jeder im Team seine Stimme anonym abgeben.",
-				createPollInfo5: "Nachdem du die Wahlphase beendet hast, ist das Wahlergebnis für alle sichtbar.",
+				createPollInfo2: "Eine neue Abstimmung wird erst einmal debatiert.",
+				createPollInfo3: "Du kannst festlegen ob Teammitglieder eigene Wahlvorschläge hinzufügen dürfen.",
+				createPollInfo4: "Als Admin startest du die Abstimmung. In LIQUIDO stimmt man nicht nur für <em>einen</em> Vorschlag, " +
+				  "sondern jeder im Team ordnet <em>alle</em> Vorschläge anonym in seine persönliche Reihenfolge.",
+				// Oder für Schulkinder :-)  "In LIQUIDO sucht man sich nicht nur einen Vorschlag aus, sondern jeder ordnet alle Vorschläge heimlich so, wie er sie am liebsten hat."
+				createPollInfo5: "Wenn du die Wahlphase abschliest, wird das Wahlergebnis mit einem cleveren Algorithmus berechnet.",
 				pollTitle: "Titel der Abstimmung",
 				pollTitleInvalid: "Titel ist zu kurz. Bitte mind. {minLen} Zeichen.",
 				create: "Erstellen",
@@ -78,6 +81,19 @@ export default {
 		pollTitleInvalidFeedback() {
 			return this.$t("pollTitleInvalid", {minLen: config.pollTitleMinLength})
 		},
+	},
+	created() {
+		this.poll = {
+			title: "Dummy Title for Testing",
+			proposals: [
+				{ id: Date.now(), title: "Some Title" },
+				{ id: Date.now(), title: "Some Other Title which is very long to test this" },
+			],
+			//status: "NEW",  // discussion, voting, closed
+			//createdBy: undefined,
+			//createdAt: new Date().toISOString(),
+			//updatedAt: new Date().toISOString(),
+		}
 	},
 	mounted() {
 		this.$store.setHeaderTitle(this.$t("newPoll"))

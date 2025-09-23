@@ -1,166 +1,171 @@
 <script setup>
-import { reactive, computed, onMounted, defineModel, watch, watchEffect,ref /*, unref, watch, nextTick*/ } from 'vue'
+/**
+ * Polly.vue
+ * 
+ * A little mobile voting component.
+ * In a Polly the voter doesn't cast a vote for just one proposal (or candidate).
+ * Instead every voter sorts all proposal into their preferred order.
+ */
 
-// ========== VUE Model (for isValid state)
-const isValid = defineModel('isValid')
+import {
+	ref,
+	reactive,
+	computed,
+	//	watch,
+	onMounted,
+	nextTick,
+} from 'vue'
+import { VueDraggableNext as draggable } from 'vue-draggable-next'
+import * as bootstrap from 'bootstrap'
 
-const emit = defineEmits(['update:isValid'])
+// TODO: Not yet implemented:  Types of polls
+// "CHOOSE_ONE": Each voter has one vote that he can give to exactly one proposal.
+// "CHOOSE_ANY": Each voter can select one or many proposals
+// "SORT":       Each voter sorts the proposals/nominations into their preferred order, from top to bottom.
+// "DOT_VOTING": Each voter has a number of "dots" that he can distribute over the proposals. One proposal can receive more than one "dot".
+/*
+const POLL_TYPE = {
+	CHOOSE_ONE: 1,
+	CHOOSE_ANY: 2,
+	SORT: 3,        //  <== for now only this mode is implemented since all other modes are subsets of this
+	DOT_VOTING: 4
+}
+*/
 
-// ========== VUE PROPERTIES
+/* Status flow of a poll */
+const POLL_STATUS = {
+	NEW: "NEW",
+	ELABORATION: "ELABORATION",
+	PREPARE_START: "PREPARE_START",  // this status only exists in the frontend. Here we ask for user's email
+	IN_VOTING: "VOTING",
+	FINISHED: "FINISHED"
+}
+
 const props = defineProps({
+	/* We just simply accept one large poll JSON object as input. This makes updating it really easy. */
 	poll: {
 		type: Object,
-		required: false,
-		default(rawProps) {
-			return {  // default data for an empty new poll
-				title: "",
-				status: "NEW",
-				pollType: "CHOOSE_ONE",
-				usersCanAddProposals: true,
-				maxProposalsPerUser: 1,    // -1 for: Users can add any number of poposals
-				canChangeOwnVote: true,    // Can a user still change his own vote, after he has casted it? But only until the poll is finished.
-				proposals: [
-					{
-						id: 1,
-						title: ""
-					},
-					{
-						id: 2,
-						title: ""
-					}
-				]
-			}
-		}
-	},
-	isValid: false
+		required: true
+	}
+
 })
 
 // The prop is the initial value. Here we copy that to a local proxy that can change.
 // https://vuejs.org/guide/components/props.html#one-way-data-flow
-
-//TODO: use provide-inject instead: https://vuejs.org/guide/components/provide-inject.html#app-level-provide
-//Bug: Now poll is disconnected from the initially passed props.poll
-const poll = reactive(props.poll)
-
+// TODO: use provide-inject instead: https://vuejs.org/guide/components/provide-inject.html#app-level-provide
+//console.log("props", JSON.stringify(props, null, 2))
+const poll = reactive(props.poll);
 
 
+/*
+Example "poll" object with its properties:
 
-// ========== Types of polls
-//TODO: PollTypes
-
-const POLL_TYPE = {
-	CHOOSE_ONE: 1,  // Each voter has one vote that he can give to exactly one proposal.
-	CHOOSE_ANY: 2,  // Each voter can select one or many proposals
-	DOT_VOTING: 3,  // Each voter has a number of "dots" or "likes" that he can distribute over the proposals. One proposal can receive more than one "dot".
-	// Plus-Minus  
-	// Reactions - with many smileys
-	LIQUIDO: 4      // Each voter sorts the proposals/nominations into their preferred order, from top to bottom
-}
-
-
-
-// ========== Computed properties
-const isNew    = computed(() => poll.status == "NEW")         // newly created poll. Not yet persisted. (This status only exists in the frontend.)
-const isInElaboration = computed(() => poll.status == "ELABORATION")    // first status after stored in DB
-const inVoting = computed(() => poll.status == "VOTING")
-const isFinished = computed(() => poll.status == "FINISHED")
-const hasVoted = computed(() => poll.proposals.some(prop =>
-	prop.supporters.some(u => u.id == user.id)
-))
-const sumVotes = computed(() => {
-	let sumVotes = 0
-	poll.proposals.forEach(prop => sumVotes += prop.supporters.length)
-	return sumVotes
-})
-const hasDuplicateTitles = computed(() => {
-  for (let i = 0; i < poll.proposals.length-1; i++) {
-		const prop1 = poll.proposals[i]
-		for (let j = i+1; j < poll.proposals.length; j++) {
-			const prop2 = poll.proposals[j];
-			if (prop1.title === prop2.title) return true
+		{
+			"title": "What shall we do tonight?",
+			"proposals": [   // Proposals have an sorted order in this array!
+				{
+					"id": 4711   // any arbitrary ID
+					"title": "Go to Rave",
+				},
+				{
+					"id": 4712
+					"title": "Go a nice restaurant and do some dinner",
+				},
+				{
+					"id": 4713
+					"title": "Cinema is nice",
+				}
+			],
+			"status": "VOTING",
+			"alreadyVoted": false  // Has the current user already casted a vote in this poll
+			"numVoters": 0,        // How many persons have casted their vote in this poll.
 		}
-	}
-	return false
-})
-const isValidComputed = computed(() => {
-	let res = propHasTitle(0) && propHasTitle(1) && 
-		poll.title !== undefined && poll.title.trim() !== "" && !hasDuplicateTitles.value
-	console.log("isVAlid computed", res)
-	return res
-})
 
-// ========== WATHCERS
-watch(isValidComputed, (newVal) => {
-	console.log("watcher isValidComputed = ", newVal, "emmitting event")
-	emit('update:isValid', newVal)
-})
+*/
 
-// ========== METHODS
-
-function propHasTitle(index) {
-	if (index >= poll.proposals.length) return false
-	if (!poll.proposals[index].title) return false
-	if (poll.proposals[index].title.trim() === "") return false
-	return true
-}
-
-
-/** 
- * Check if a proposal's title is a duplicate of anothe title.
- * @return true, when the title at this index is a duplicate 
- */
-function isDuplicatePropTitle(index) {
-	if (!propHasTitle(index)) return false   // empty is not counted as a duplicate
-	return poll.proposals.some((prop, loopIndex) => 
-		loopIndex !== index && 
-		poll.proposals[index].title === poll.proposals[loopIndex].title
-	)
-}
 
 /**
- * Calculate width of votometer bar.
- * The proposal with the most votes has 100% width.
- * All other proposals have relative width to that.
- * @param {Number} index index of proposal
+ * Initialize default values of poll if not yet set
+ * My dear VUE: tell my how to do this otherwise! :-)
  */
-function votometerStyle(index) {
-	let maxVotes = 0;
-	poll.proposals.forEach(prop => maxVotes = Math.max(maxVotes, prop.numSupporters))
-	let percent = poll.proposals[index].numSupporters / maxVotes * 100
-	return { width: "calc(" + percent + "% - 10px)" }
-}
-
-onMounted(async() => {
-	const pollTitle = document.querySelector("input#poll-title")  //TODO: Does not work yet??? DOM update timing???
-	if (pollTitle) pollTitle.focus()
-});
-
-/** 
- * Can the currently logged in user still vote for this proposal? 
- * 1. If poll type only allows to choose one proposal and voter has already voted, then return false
- * 2. ELSE If iser hasn't vote for this proposal yet, then he can still vote.
- * 
- */
-function canVoteFor(prop) {
-	//TODO: if (poll.pollType === POLL_TYPE.DOT_VOTING) ... count number of already casted dots ...
-	if (poll.pollType === POLL_TYPE.CHOOSE_ONE && hasVoted.value) return false
-	return !prop.supporters.some(u => u.id == user.id)
-}
-
-function addProposal() {
-	//TODO: addProposal in backend has somem more restrictions, eg. a normal user may only have one proposal in a "big" poll.  => Is this a seperate type of QuickPoll?
-	poll.proposals.push({
+if (!poll.status) poll.status = POLL_STATUS.NEW
+if (!poll.numVoters) poll.numVoters = 0
+if (!poll.proposals) poll.proposals = [
+	{
 		id: Date.now(),
 		title: "",
-		status: "NEW",
-		createdAt: new Date().toISOString(),
-		createdBy: {},
-		supporters: []	
-	})
+	},
+	{
+		id: Date.now() + 17,
+		title: "",
+	}
+]
+// default values for each proposal
+for (let i = 0; i < poll.proposals.length; i++) {
+	const prop = poll.proposals[i]
+	if (!prop.id) prop.id = Date.now() + i   // random unique ID
+	if (!prop.title) prop.title = ""
+	// if (!prop.votes) prop.votes = 0  // only needed for other poll types
+}
+
+// IF  Poll is new 
+// AND last element has a title
+// THEN add another empty proposal input at the bottom.
+// (It will be removed when saving.)
+if (poll.status == POLL_STATUS.NEW && propHasTitle(poll.proposals.length - 1)) addProposal()
+
+console.log("reactive poll", JSON.stringify(poll, null, 2))
+
+//TODO: Dummy user for testing
+const user = reactive({
+	id: Date.now(),
+	name: "Donald Duck",
+	email: "dummy@domain.org"
+});
+
+// ========== Computed Properties ===========
+
+const isNew = computed(() => poll.status == POLL_STATUS.NEW);
+const inElaboration = computed(() => poll.status == POLL_STATUS.ELABORATION);
+const prepareStart = computed(() => poll.status == POLL_STATUS.PREPARE_START);
+const inVoting = computed(() => poll.status == POLL_STATUS.IN_VOTING);
+const isFinished = computed(() => poll.status == POLL_STATUS.FINISHED);
+const pollHasTitle = computed(() => /\S/.test(poll.title) && poll.title.length > 2)
+
+/** A poll needs at least a title and two proposals */
+const saveIsActive = computed(() => {
+	return pollHasTitle.value && propHasTitle(0) && propHasTitle(1);
+});
+
+const userEmailIsValid = computed(() => {
+	return isEmail(user.email)
+})
+
+function propHasTitle(index) {
+	const title = poll.proposals?.[index]?.title;
+	return typeof title === "string" && title.trim().length > 0;
+}
+
+/** Popup when user clicks save. */
+let askEmailModal;
+
+onMounted(() => {
+	console.log("Polly poll", poll)
+	askEmailModal = new bootstrap.Modal(document.getElementById('askEmailModal'), {})
+	const pollTitleInput = document.getElementById("pollTitleInput")
+	if (pollTitleInput) pollTitleInput.focus();
+});
+
+function addProposal() {
+	poll.proposals.push({
+		id: Date.now(),  // random unique ID
+		title: "",
+	});
 }
 
 function deleteProposal(index) {
-	if (poll.proposals.length <= 2) return;  // Must always have at lest two proposal inputs
+	console.log("deleteProposal(index=" + index + ")");
+	if (poll.proposals.length <= 2) return; // Must always have at lest two proposal inputs
 	poll.proposals.splice(index, 1);
 }
 
@@ -174,27 +179,70 @@ function deleteProposal(index) {
  *  THEN add another input field at the bottom.
  */
 function onProposalBlurr(evt, index) {
-	let len = poll.proposals.length
+	let len = poll.proposals.length;
 	if (len >= 2 && poll.proposals[index]) {
-		if(index < len-1 && !propHasTitle(index)) {
-			deleteProposal(index)
-		} else if (index === len-1 && propHasTitle(index)) {
-			addProposal()
+		if (index < len - 1 && !propHasTitle(index)) {
+			deleteProposal(index);
+		} else if (index === len - 1 && propHasTitle(index)) {
+			addProposal();
 		}
 	}
 }
 
 /**
+ * Find proposals with duplicate titles. And mark the input fields as invalid.
+ * Empty titles are ok.
+ * (This code is AI generated.)
+ */
+function checkForDuplicateTitles() {
+	let pollyProposalInputs = document.getElementsByClassName("polly-proposal-input") || [];
+	// This may happen in some very exceptional cases. But marking is fine.
+	if (pollyProposalInputs.length != poll.proposals.length) {
+		return;
+	}
+
+	// Create a map to track occurrences of each title
+	const titleOccurrences = new Map();
+
+	// Step 1: Count occurrences of each non-empty title
+	for (let i = 0; i < poll.proposals.length; i++) {
+		const title = poll.proposals[i].title.trim();
+		if (title !== "") {
+			if (!titleOccurrences.has(title)) {
+				titleOccurrences.set(title, []);
+			}
+			titleOccurrences.get(title).push(i); // Store the indices where the title appears
+		}
+	}
+
+	// Step 2: Mark inputs as valid/invalid based on duplicates
+	for (let i = 0; i < poll.proposals.length; i++) {
+		const title = poll.proposals[i].title.trim();
+
+		if (title !== "" && titleOccurrences.get(title)?.length > 1) {
+			// If the title is duplicated, add the "is-invalid" class
+			pollyProposalInputs[i].classList.add("is-invalid");
+		} else {
+			// Otherwise, remove the "is-invalid" class
+			pollyProposalInputs[i].classList.remove("is-invalid");
+		}
+	}
+}
+
+
+/**
  * If last proposals is filled, then add a new empty one below.
  * If user pressed enter on an empty title, remove this proposal. But only if there are more then two proposals.
- * If proposal title is a duplicate, then mark it as invalid.
+ * Then check for duplicate titles.
  */
-function onProposalTitleChange(evt, index) {
-	let len = poll.proposals.length
-	if (index === len-1 && propHasTitle(index)) {
-		addProposal()
-	} else if (evt.key == 'Enter' && len >= 2 && !propHasTitle(index)) {
-		deleteProposal(index)
+function onProposalKeyup(evt, index) {
+	let len = poll.proposals.length;
+	if (index === len - 1 && propHasTitle(index)) {
+		addProposal();
+	} else if (evt.key == "Enter" && len >= 2 && !propHasTitle(index)) {
+		deleteProposal(index);
+	} else {
+		checkForDuplicateTitles()
 	}
 }
 
@@ -203,185 +251,446 @@ function onProposalTitleChange(evt, index) {
  * (Removes the last porposal if its title is empty.)
  */
 function savePoll() {
-	if (!propHasTitle(poll.proposals.length-1)) poll.proposals.pop()
-	emit('savePoll', this.poll)
+	if (!propHasTitle(poll.proposals.length - 1)) poll.proposals.pop()
+	poll.status = POLL_STATUS.ELABORATION
 }
 
-
-
-function likeProposal(prop) {
-	if (poll.status != "VOTING" || prop == null) return
-	if (!prop.supporters.some(u => u.id == user.id))
-		prop.supporters.push(user)
+/** Go back to edit mode. This is only allowed if there no votes yet. */
+function editPoll() {
+	poll.status = POLL_STATUS.NEW
+	onProposalKeyup({}, poll.proposals.length - 1) // to add an empty proposal at the end
 }
+
+function clickStartPollButton() {
+	//poll.status = POLL_STATUS.PREPARE_START
+	//askEmailModal.show()
+	poll.status = POLL_STATUS.IN_VOTING
+}
+
+function startPoll() {
+	//TODO: call backend, store user, send email, ...
+	askEmailModal.hide()
+	console.log("Sending an email to ", user.email)
+	poll.status = POLL_STATUS.IN_VOTING
+}
+
+function cancelStartPoll() {
+	poll.status = POLL_STATUS.ELABORATION
+}
+
+function devReopenPoll() {
+	poll.status = POLL_STATUS.ELABORATION
+}
+
+//TODO: send request to backend.
+function castVote() {
+	// will then receive an updated poll with current votes, that we mock here
+	poll.numVoters++
+	poll.alreadyVoted = true
+}
+
+function finishPoll() {
+	poll.status = POLL_STATUS.FINISHED
+}
+
+/** Check if a string looks like an email adress */
+const eMailRegEx = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,64}/
+function isEmail(s) {
+	return eMailRegEx.test(s)
+}
+
 
 </script>
 
 <template>
+	<div class="polly">
 
-	<div>
-	
-		<div class="card polly-card user-select-none border-0 shadow">
-			<div class="card-header">
-				<input v-if="isNew" type="text" class="form-control poll-title" id="pollTitle" v-model="poll.title" :placeholder="$t('pollTitle')">
-				<h1 v-if="inVoting" class="poll-title" id="pollTitle">{{ poll.title }}</h1>	
+		<div class="card polly-card user-select-none">
+			<div class="card-header position-relative">
+				<input v-if="isNew" type="text" class="form-control poll-title-input" id="pollTitleInput" v-model="poll.title"
+					placeholder="Polly Title" />
+				<h1 v-else class="poll-title" id="pollTitle">{{ poll.title }}</h1>
+				<span @click="shareLinkToPoll" class="fa-stack share-poll-icon" title="Share Poll">
+					<i class="fa-solid fa-circle fa-stack-2x" style="color:#EEE"></i>
+					<i class="fa-solid fa-arrow-up-from-bracket fa-stack-1x"></i>
+				</span>
+				
 			</div>
 
 			<div v-if="isNew" class="card-body">
-				<TransitionGroup name="fade" class="proposal-list-container" tag="ul">
-					<li v-for="(prop, index) in poll.proposals" :key="prop.id" class="polly-proposal-wrapper d-flex">
-						<input 
-							v-model="prop.title"
-							:placeholder="$t('Proposal')"
-							type="text" 
-							class="form-control flex-fill polly-proposal-input"
-							:class="{'is-invalid': isDuplicatePropTitle(index) }"
-							@blur="(evt) => onProposalBlurr(evt, index)"
-							@change="(evt) => onProposalTitleChange(evt, index)">
-						<div class="thumbs-up p-1">
-							<i class="fas fa-bars"></i>
-						</div>
+				<TransitionGroup name="fade" class="polly-proposals-wrapper" tag="ul">
+					<li v-for="(prop, index) in poll.proposals" :key="prop.id" class="polly-proposal d-flex align-items-center">
+						<input v-model="prop.title" placeholder="Add a proposal" type="text"
+							class="form-control flex-grow-1 polly-proposal-input" @blur="(evt) => onProposalBlurr(evt, index)"
+							@keyup="(evt) => onProposalKeyup(evt, index)" />
 					</li>
 				</TransitionGroup>
 			</div>
 
-			<ul v-if="inVoting" class="list-group" tag="div">
-				<li v-for="(prop, index) in poll.proposals" :key="prop.id" @click="likeProposal(prop)" class="list-group-item prop-list-item d-flex position-relative" :class="{'canVote': canVoteFor(prop), 'hasVoted': prop.isLikedByCurrentUser}">
-					<div v-if="isFinished" class="votometer" :style="votometerStyle(index)"></div>
-					<div class="thumbs-up p-1 z-index-500">
-						<i class="fa-regular fa-thumbs-up"></i>
+			<div v-if="inElaboration || prepareStart || isFinished" class="card-body">
+				<!-- read-only view of the poll -->
+				<div class="polly-proposals-wrapper position-relative">
+					<div v-for="(proposal, index) in poll.proposals" class="polly-proposal d-flex align-items-center">
+						<div v-if="isFinished" class="text-secondary me-2">
+							{{ index + 1 }}.
+						</div>
+						<div class="flex-grow-1 form-control readonly-proposal">
+							{{ proposal.title }}
+						</div>
 					</div>
-					<div class="flex-grow-1 p-1 z-index-500 proposal-title">
-						{{ prop.title }}
+				</div>
+			</div>
+			<div v-if="inVoting" class="card-body d-flex flex-row">
+				<div class="me-1">
+					<div v-for="(prop, index) in poll.proposals" :key="prop.id" class="proposal-index-number">
+						{{ index + 1 }}.
 					</div>
-					<div v-if="isFinished" class="p-1 z-index-500 text-secondary">{{ prop.supporters.length }}</div>
-				</li>
-			</ul>
+				</div>
+				<div class="polly-proposals-wrapper">
+				
+					<draggable id="draggableProposals" v-model="poll.proposals" itemKey="id" :animation="500" ghost-class="ghost"
+						drag-class="drag" chosen-class="chosen" can-scroll-x="false">
+						
+						<div v-for="prop in poll.proposals" class="polly-proposal sortable-proposal d-flex align-items-center position-relative form-control">
+							<div class="arrow-up pos-top-middle">&nbsp;</div>
+							<div class="sortable-proposal-content">
+								{{ prop.title }}
+							</div>
+							<div class="proposal-bars ms-1">
+								<i class="fas fa-grip-vertical"></i>
+							</div>
+							<div class="arrow-up pos-bottom-middle-down">&nbsp;</div>
+						</div>
+							
+						
+					</draggable>
+				</div>
+			</div>
 
-			<div v-if="!isNew" class="card-footer">
-				<div class="row justify-content-between">
-					<div v-if="inVoting && !hasVoted" class="col text-start text-muted">
-						Cast your vote!
+			<div class="card-footer">
+				<!-- poll footer with status and buttons -->
+				<div class="d-flex align-items-center">
+					<div class="flex-grow-1 footer-status">
+						&nbsp;
+						<Transition name="slide-up">
+							<div v-if="isNew">New Polly</div>
+							<div v-else-if="inElaboration">Poll not yet started</div>
+							<div v-else-if="prepareStart">Starting poll ...</div>
+							<div v-else-if="inVoting && !poll.alreadyVoted">Sort proposals</div>
+							<div v-else-if="inVoting && poll.alreadyVoted">THX for voting!</div>
+							<div v-else-if="isFinished">Poll is finished ({{ poll.numVoters }} voters)</div>
+							<div v-else>&nbsp;</div>
+						</Transition>
 					</div>
-					<div v-if="inVoting && hasVoted" class="col text-start text-muted">
-						THX for voting
+					<div v-if="isNew" class="text-end">
+						<button @click="savePoll" :disabled="!saveIsActive" type="button"
+							class="btn btn-sm btn-primary save-button">
+							<i class="fa-regular fa-save"></i>&nbsp;Save
+						</button>
 					</div>
-					<div v-if="isFinished" class="col text-start text-muted">
-						Poll is finished
+					<div v-if="inElaboration" class="text-end">
+						<button @click="editPoll" type="button" class="btn btn-sm btn-secondary me-2">
+							<i class="fa-regular fa-edit"></i>&nbsp;Edit
+						</button>
+						<button @click="clickStartPollButton" type="button" class="btn btn-sm btn-primary">
+							<i class="fa-solid fa-play"></i>&nbsp;Start Poll
+						</button>
 					</div>
-					<div v-if="inVoting" class="col text-end text-muted">
-						{{ sumVotes }} votes
+					<div v-if="prepareStart" class="text-end">
+						<button type="button" class="btn btn-sm btn-primary disabled" disabled>
+							<i class="fa-solid fa-play"></i>&nbsp;Start Poll
+						</button>
+					</div>
+					<div v-if="inVoting" class="text-end">
+						<button @click="finishPoll" type="button" class="btn btn-sm btn-secondary me-2">
+							<i class="fa-regular fa-circle-check"></i>&nbsp;Finish Poll
+						</button>
+						<button v-if="!poll.alreadyVoted" @click="castVote" type="button" class="btn btn-sm btn-primary">
+							<i class="fa-solid fa-person-booth"></i>&nbsp;Cast Vote
+						</button>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+
+		<!-- Bootstrap Modal: Ask user for their email -->
+		<div class="modal fade" id="askEmailModal" data-bs-backdrop="static" tabindex="-1"
+			aria-labelledby="askEmailModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header bg-secondary-subtle">
+						<h5 class="modal-title" id="askEmailModalLabel">Start Poll</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+							@click="cancelStartPoll"></button>
+					</div>
+					<div class="modal-body">
+						You’ll receive a private admin link to manage your poll, and a separate voting link to share with your
+						friends.
+						<div class="d-flex mt-2">
+							<div class="flex-grow-1">
+								<input id="userEmailInput" type="email" v-model="user.email" class="form-control form-control-sm"
+									placeholder="Your email" @keyup.enter="userEmailIsValid && startPoll()" aria-label="Your Email">
+							</div>
+							<div>
+								<button type="button" class="btn btn-primary btn-sm ms-2" data-bs-dismiss="modal" @click="startPoll"
+									:disabled="!userEmailIsValid">Send</button>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
 	</div>
-
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
+// A bootstrap card for creating a poll
 
-// A bootstrap card, but with no borders.
+$arrow-size: 10px;
+$proposal-bg: #e6f0ff;
+$polly-proposal-height: 40px;
+$polly-proposal-margin-bottom: 16px;
+
 .polly-card {
-	.poll-title {
-		border: none;
-		//background-color: rgba(0, 0, 0, 0);   // MAYBE? Currently we show the input field also for the title?
-		//margin: 0;
-		//padding: 0;
-		font-size: 1.1rem;
-		font-weight: bold;
+	max-width: 1024px;
+
+	.card-header {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		border-bottom: none;
+		height: 4rem; // Must have fixed height!
 		text-align: center;
 	}
-	.card-header {
-		border: none
-	}
-	.card-footer {
-		border-top: none;
-		background-color: white;
-	}
-	.proposal-list-container {
-		position: relative;
-		padding: 0;
-		list-style-type: none;
-		margin: 0;
-	}
 
-	.polly-proposal-wrapper {
-		height: 30px;    // !!!MUST!!! set fixed height for vue list transition animations!
-		width: 100%;
-		box-sizing: border-box;
-		&:not(:last-child) {
-			margin-bottom: 10px;  // need a margin, otherwiese the focus frame around the input is not visible completely
+	.share-poll-icon {
+		cursor: pointer;
+		position: absolute;
+		top: 0.5rem;
+		right: 0.5rem;
+		//font-size: 1.25rem;
+
+		&:hover {
+			color: $primary;
 		}
 	}
 
-	.polly-proposal-input::placeholder,
-	.poll-title::placeholder {
+	.poll-title-input {
+		margin: 0;
+		padding: 0;
+		font-size: 1.25rem;
+		font-weight: bold;
+		text-align: center;
+
+		&::placeholder {
+			color: lightgrey;
+		}
+	}
+
+	.poll-title {
+		margin: 0;
+		padding: 0;
+		font-size: 1.25rem;
+		font-weight: bold;
+		text-align: center;
+
+	}
+
+	.polly-proposal-input::placeholder {
 		color: lightgrey;
 	}
 
-	.proposal-title {
+	.readonly-proposal {
+		background-color: #EEE;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 
+	.pos-top-middle {
+		position: absolute;
+		top: -$arrow-size;
+		left: 50%
+	}
+
+	.pos-bottom-middle-down {
+		position: absolute;
+		bottom: -$arrow-size;
+		left: 50%;
+		transform: rotate(180deg);
+	}
+
+	.arrow-up {
+		width: 0;
+		height: 0;
+		border-left: $arrow-size solid transparent;
+		border-right: $arrow-size solid transparent;
+		border-bottom: $arrow-size solid $proposal-bg;
+	}
+
+	// Polly footer
+	.card-footer {
+		border-top: none;
+		//background-color: white;
+	}
+
+	.footer-status {
+		position: relative;
+		font-size: 0.8rem;
+	}
+
+	.footer-status div {
+		position: absolute;
+		left: 0;
+		top: 0;
+	}
 }
 
-// ======== VUE List Transition ======
+
+// ======== Proposals List =============
+// Each proposal has a fixed height and a margin-bottom.
+// This is important for the VUE list transition to work properly.
+
+
+// Wrapper around the proposals list
+.polly-proposals-wrapper {
+	position: relative;
+	padding: 0;
+	margin: 0;
+	list-style-type: none;
+	min-width: 0; // must set to keep flexbox from growing too wide
+	flex-grow: 1;
+}
+
+// Each proposal. This is used for editable and non-editable views.
+.polly-proposal {
+	height: $polly-proposal-height;
+	box-sizing: border-box;
+
+	&:not(:last-child) {
+		margin-bottom: $polly-proposal-margin-bottom;
+	}
+}
+
+// The index number at the left side of the sortable proposals. (These are fixed and don't move.)
+.proposal-index-number {
+	height: $polly-proposal-height;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	&:not(:last-child) {
+		margin-bottom: $polly-proposal-margin-bottom;
+	}
+}
+
+// additional styles for sortable proposals
+.sortable-proposal {
+	//background-color: $proposal-bg !important;
+}
+
+.sortable-proposal-content {
+	flex-grow: 1;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.proposal-bars {
+	color: #CCC;
+}
+
+
+// ======== VUE List Transition - used for sortable proposals ======
 // https://vuejs.org/guide/built-ins/transition-group.html
+// DON'T TOUCH THIS! :-)  This is delicate!
+
 
 /* 1. declare transition */
 .fade-move,
 .fade-enter-active,
 .fade-leave-active {
-  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+	transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
 }
 
 /* 2. declare enter from and leave to state */
 .fade-enter-from,
 .fade-leave-to {
-  opacity: 0.5;
-  transform: translateY(-15px) scaleY(0.01);  // order is important!
+	opacity: 0.5;
+	transform: translateY(-50%) scaleY(0); // order is important!
+	padding: 0 !important;
+	margin: 0 !important;
 }
 
 /* 3. ensure leaving items are taken out of layout flow so that moving
-      animations can be calculated correctly. .... Necessary???*/
+      animations can be calculated correctly. */
 .fade-leave-active {
-  //position: absolute;
+	position: absolute;
 }
 
 
-.prop-list-item.canVote:hover {
-	background-color: #a1afff;
+// ========= Slid-up VUE transition - used for status in footer ========
+// adapted from https://vuejs.org/guide/built-ins/transition
+.slide-up-enter-active,
+.slide-up-leave-active {
+	transition: all 0.25s ease-out;
 }
 
-.thumbs-up {
-	color: rgba(0,0,0, 0.1);
-	margin-left: 5px;
+.slide-up-enter-from {
+	opacity: 0;
+	transform: translateY(30px);
 }
-.prop-list-item.canVote:hover .thumbs-up {
-	color: green !important;
+
+.slide-up-leave-to {
+	opacity: 0;
+	transform: translateY(-30px);
 }
-.prop-list-item.hasVoted .thumbs-up {
-	color: green !important;
+
+// ========= For VUE.draggable@next ========
+
+.ghost {
+	// for drop placeholder
+	//border: 1px solid red;
+}
+
+.chosen {
+	// for the chosen item
+	opacity: 0.3;
+}
+
+.drag {
+	// for the dragging item
+	//opacity: 1.0;
+	//border: 1px solid blue;
+}
+
+
+//===== small utility classes =======
+
+.cursor-move {
+	cursor: move;
+}
+
+.info-icon {
+	font-size: 0.5rem;
+	margin-left: 0.25rem;
+}
+
+
+.thx-for-voting {
+	transition: opacity;
+	transition-duration: 1s;
+	opacity: 0;
+}
+
+.thx-for-voting-show {
+	opacity: 1;
 }
 
 .z-index-500 {
-	z-index: 500;  // BEFORE / ABOVE the votometer!
+	z-index: 500; // BEFORE / ABOVE the votometer!
 }
-
-.votometer {
-	position: absolute;
-	//TODO: only a bar below the text with animation from left to right
-	left: 5px;   // The votomoter has some margin arround it.
-	top: 5px;    // This gives a nice effect when voting. It "locks" onto the proposal.
-	bottom: 5px;
-	right: 5px;
-	z-index: 100;  // BEHIND the text
-	background-color: #a1afff;
-	width: 0px;
-}
-
 </style>
