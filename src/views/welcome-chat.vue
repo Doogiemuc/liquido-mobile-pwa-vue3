@@ -696,6 +696,27 @@ export default {
 
 <style lang="scss">
 
+.hide-left {
+	opacity: 0;
+	transform: translateX(-20px);
+}
+
+.hide-right {
+	opacity: 0;
+	transform: translateX(20px);
+}
+
+.collapse-max-height {
+	display: none !important;
+	/*
+	max-height: 0;
+	overflow: hidden;
+	margin-top: 0;
+	margin-bottom: 0;
+	border: none;
+	*/
+}
+
 .login-link {
 	z-index: 999;
 	position: fixed;

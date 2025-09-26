@@ -233,7 +233,7 @@ export default {
 <style lang="scss" scoped>
 
 $arrowColor: white;
-$arrowColorSelected: $navbar-bg;
+$arrowColorSelected: var(--navbar-bg);
 $arrowGapColor: white;
 $arrowWidth: 15px;
 $arrowHeight: 30px;
@@ -249,7 +249,7 @@ $border-radius: 20px;
 	border: 1px solid $arrowGapColor;  
 	border-radius: $border-radius;
 	background-color: $arrowGapColor;
-	max-width: $app-max-width;
+	max-width: var(--app-max-width);
 	//height: 2 * $arrowHeight + 4 * $arrowGap;
 	z-index: 999;
 	font-size: 1.2rem;
@@ -375,7 +375,7 @@ $border-radius: 20px;
 		a {	color: white !important; }
 		background-color: $arrowColorSelected;
 		.counter-badge {
-			color: $primary !important;
+			color: var(--primary) !important;
 		}
 	}
 	.disabled {
@@ -391,7 +391,7 @@ $border-radius: 20px;
 		}
 		.counter-badge {
 			opacity: 0.8;
-			color: $primary !important;
+			color: var(--primary) !important;
 			background: gray !important;
 		}
 	}
@@ -406,7 +406,7 @@ $border-radius: 20px;
 		text-align: center;
 		top: -3px;
 		left: 1.1em;
-		color: $primary;
+		color: var(--primary);
 		background-color: white;
 		border: 1px solid rgba(47, 141, 255, 0.5);
 		border-radius: 1em;
@@ -430,7 +430,7 @@ $border-radius: 20px;
 	background: white;
 	width: 50px;
 	height: 50px;
-	border: 1px solid $primary;
+	border: 1px solid var(--primary);
 	border-radius: 50%;
 	font-size: 1.9rem;
 	position: fixed;

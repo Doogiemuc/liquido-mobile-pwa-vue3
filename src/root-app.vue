@@ -38,6 +38,7 @@ import api from "@/services/liquido-graphql-client.js"
 //import EventBus from "@/services/event-bus.js"
 import config from "config"
 
+
 /** 
  * Pages will slide from right to left in this order 
  * Login and welcome page only do not slide, but fade in/out.
@@ -232,70 +233,11 @@ export default {
 		},
 	},
 }
+
 </script>
 
-<style lang="scss">
-// Import liquido global styles
-@import "styles/liquido.scss";
+<style>
 
-// MUST set this to #appContent and not #rootApp, otherwise page jumps when slide left-right
-#appContent {
-	padding-top: $header-height;  // padding so that page content can bee seen under liquido-header
-}
-
-// Slide animation between pages
-.router-view {
-	transition: all 0.5s ease-in-out;
-}
-
-// Fade transtition (used in lists)
-.fade-enter,
-.fade-leave-to {
-	opacity: 0;
-}
-.fade-leave-active {
-	position: absolute;
-	top: 0;
-	width: 100%;
-}
-
-// Slide left-right animations on navigation
-
-// This is added to the page that enters from the leeft
-.slide-left-enter-from,
-// or leaves to the right
-.slide-right-leave-to {
-	-webkit-transform: translate(100%, 0);
-	transform: translate(100%, 0);
-}
-// This class is added to the page that leaves
-.slide-left-leave-active,
-.slide-right-leave-active {
-	position: absolute;  // MUST position this page absolute, so that incomign page is shown correctly
-	top: 0;
-	width: 100%;
-}
-// This class is added to the page that leaves to the left
-.slide-left-leave-to,
-// or enters from the right
-.slide-right-enter-from {
-	-webkit-transform: translate(-100%, 0);
-	transform: translate(-100%, 0);
-}
-
-/* slide-up  ... not used
-.slide-up-enter {
-	-webkit-transform: translate(0, 100%);
-	transform: translate(0, 100%);
-}
-.slide-up-leave-active {
-	position: absolute;
-	width: 100%;
-}
-.slide-up-leave-to {
-	-webkit-transform: translate(0, 0);
-	transform: translate(0, 0);
-}
-*/
+/* Global styles are defined in liquido.css, which is imported in main.js */
 
 </style>

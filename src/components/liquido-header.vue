@@ -122,7 +122,7 @@ export default {
 	left: 0;
 	top: 0;
 	width: 100%;
-	height: $header-height;
+	height: var(--header-height);
 
 	color: white;
 
@@ -130,7 +130,7 @@ export default {
 	justify-content: space-between;
 	z-index: 999;
 	transition: all 0.5s;
-	background-color: $header_bg;
+	background-color: var(--header-bg);
 	//opacity: 0.95;   // does not look good with iOS Safari header
 	padding: 0 0.5rem;
 	box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3); /* horizontal, vertical, blur, color */
@@ -163,8 +163,8 @@ export default {
 		text-align: center;
 		justify-content: center;
 		font-size: 25px;
-		flex: 0 0 $header-height;  // square touch area around icon
-		width: $header-height;
+		flex: 0 0 var(--header-height);  // square touch area around icon
+		width: var(--header-height);
 	}
 	.header-back-link {
 		display: flex;
@@ -173,7 +173,7 @@ export default {
 		text-align: center;
 		color: white;
 		cursor: pointer;
-		width: $header-height;
+		width: var(--header-height);
 		height: 100%;
 	}
 	.header-center {
@@ -203,11 +203,11 @@ export default {
 	}
 	.header-right {
 		display: flex;
-		flex: 0 0 $header-height;
+		flex: 0 0 var(--header-height);
 		align-items: center;
 		text-align: center;
 		justify-content: center;
-		width: $header-height;
+		width: var(--header-height);
 	}
 	
 }

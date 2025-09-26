@@ -14,9 +14,10 @@ if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
 }
 
 import { createApp } from 'vue'
+import 'bootstrap/dist/css/bootstrap.css'
+import '@/styles/liquido.css'  		// global liquido styles and vars. MUST be imported AFTER bootstrap.css to OVERRIDE bootstraps defaults!
 import RootApp from '@/root-app.vue'
 import router from '@/services/router.js'
-import 'bootstrap/dist/css/bootstrap.css'
 import { createI18n } from 'vue-i18n'
 import { store } from "@/services/store.js"	
 
@@ -42,6 +43,9 @@ const globalTranslations = {
 		Team: "Team",
 		
 		Save: "Speichern",
+		Edit: "Bearbeiten",
+		Send: "Senden",
+		Delete: "Löschen",
 		Cancel: "Abbrechen",
 		Back: "Zurück",
 		Search: "Suche",
@@ -90,8 +94,27 @@ const i18n = new createI18n({
 	fallbackLocale: "de",
 	warnHtmlInMessage: 'off', // disable of the Detected HTML in message
 	silentFallbackWarn: true,
+	//allowComposition: true, // you need to specify that!
 	messages: globalTranslations
 })
+
+/*   for upgrading to vue-i18n v11 with Composition API
+const i18n = new createI18n({
+	legacy: false, // you must set `legacy: false`, to use Composition API
+	locale: "de",
+	fallbackLocale: "de",
+	strictMessage: false,
+	escapeHtml: true,						// escape HTML in localized strings, to avoid XSS attack. See https://vue-i18n.intlify.dev/guide/essentials/syntax.html#escaping
+	escapeParameter: true,    // escape interplated parameters in localized strings, to avoid XSS attack. See https://vue-i18n.intlify.dev/guide/essentials/syntax.html#escaping	
+	warnHtmlMessage: false,   // disable of the Deprecation warning for HTML message
+	warnHtmlInMessage: 'off', // disable of the Detected HTML in message
+	//fallbackWarn: false,
+	missingWarn: false,
+	//silentFallbackWarn: true,
+	globalInjection: true,				// make $t() available in all components without importing i18n
+	messages: globalTranslations
+})
+	*/
 
 //TODO: sanity check config for required attributes
 

@@ -1,15 +1,15 @@
 {
   "name": "liquido",
   "version": "0.103.0",
-	"description": "Liquido - easy, secure & liquid voting",
-	"author": "Liquido Team",
-	"type": "module",
+  "description": "Liquido - easy, secure & liquid voting",
+  "author": "Liquido Team",
+  "type": "module",
   "scripts": {
-		"start": "vite",
-		"build": "vite build",
-		"preview": "vite preview", 
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "dev": "vite",
-		"test": "cypress run --e2e",
+    "test": "cypress run --e2e",
     "test:unit": "vitest",
     "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
     "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open --e2e'",
@@ -26,14 +26,14 @@
     "populating-cache": "^5.7.0",
     "qrcode": "^1.5.3",
     "tiny-emitter": "^2.1.0",
-    "vue": "^3.3.4",
+    "vue": "^3.5.21",
     "vue-draggable-next": "^2.2.1",
     "vue-i18n": "^9.7.1",
     "vue-router": "^4.2.5"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.3.3",
-    "@vitejs/plugin-vue": "^4.4.0",
+    "@vitejs/plugin-vue": "^6.0.1",
     "@vue/eslint-config-prettier": "^8.0.0",
     "@vue/test-utils": "^2.4.1",
     "cypress": "^14.4.0",
@@ -43,7 +43,7 @@
     "jsdom": "^22.1.0",
     "prettier": "^3.0.3",
     "sass": "^1.69.5",
-    "vite": "^6.3.5",
+    "vite": "^7.1.7",
     "vitest": "^0.34.6"
   }
 }

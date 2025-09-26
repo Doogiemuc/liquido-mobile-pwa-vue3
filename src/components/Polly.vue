@@ -8,15 +8,16 @@
  */
 
 import {
-	ref,
+	//ref,
 	reactive,
 	computed,
 	//	watch,
 	onMounted,
-	nextTick,
 } from 'vue'
 import { VueDraggableNext as draggable } from 'vue-draggable-next'
 import * as bootstrap from 'bootstrap'
+import config from "config"
+import liquidoInput from './liquido-input.vue'
 
 // TODO: Not yet implemented:  Types of polls
 // "CHOOSE_ONE": Each voter has one vote that he can give to exactly one proposal.
@@ -31,6 +32,83 @@ const POLL_TYPE = {
 	DOT_VOTING: 4
 }
 */
+
+const globalTranslations = {
+	"en": {
+		"Save": "Save",
+		"Edit": "Edit",
+		"Send": "Send"
+	},
+	"de": {
+		"Save": "Speichern",
+		"Edit": "Bearbeiten",
+		"Send": "Senden"
+	}
+}
+
+const messages = {
+  "en": {
+    "AddProposalPlaceholder": "Add another proposal",
+    "PollyTitlePlaceholder": "Polly Title",
+    "PollyTitleEmptyFeedback": "Please enter a title (at least {minLength} characters).",
+    "PollyTitleInvalidFeedback": "Title is too short, minimum {minLength} characters.",
+    "StartPollInfo": "You’ll receive a private admin link to manage your poll, and a public voting link to share with your friends.",
+		"StartPoll": "Start Poll",
+    "FinishPoll": "Finish Poll",
+    "CastVote": "Cast Vote",
+    "NewPolly": "New Polly",
+    "PollNotYetStarted": "Poll not yet started",
+    "StartingPoll": "Starting poll ...",
+    "SortProposals": "Sort proposals",
+    "ThxForVoting": "THX for voting!",
+    "PollFinished": "Poll is finished ({numVoters} voters)"
+  },
+  "de": {
+    "AddProposalPlaceholder": "Weiteren Vorschlag hinzufügen",
+    "PollyTitlePlaceholder": "Polly Titel",
+    "PollyTitleEmptyFeedback": "Bitte gib einen Titel ein (mindestens {minLength} Zeichen).",
+		"PollyTitleInvalidFeedback": "Titel ist zu kurz, mindestens {minLength} Zeichen.",
+		"StartPollInfo": "Ich schicke dir zwei Links: Einen privaten Admin-Link nur für dich. Und einen öffentlchen Link für deine Freunden, mit dem sie abstimmen können.",
+    "StartPoll": "Abstimmung starten",
+    "FinishPoll": "Abstimmung beenden",
+    "CastVote": "Abstimmen",
+    "NewPolly": "Neues Polly",
+    "PollNotYetStarted": "Noch nicht gestartet",
+    "StartingPoll": "Wird gestartet ...",
+    "SortProposals": "Sortiere jetzt die Vorschläge",
+    "ThxForVoting": "Danke für deine Stimme!",
+    "PollFinished": "Abstimmung beendet. ({numVoters} Teilnehmer)"
+  }
+}
+
+/**
+ * Unbelievablly clever localization function. Supports:
+ * fallback to another language, global translations, and parameter replacement.
+ * @param key The key to be localized
+ * @param params An object with parameters to replace in the localized string
+ */
+function loc(key, params = {}) {
+	const lang = "de"  // TODO: navigator.language.startsWith("en") ? "en" : "de";
+	let message;
+
+	if (messages[lang] && messages[lang][key]) {
+		message = messages[lang][key];
+	} else if (messages["en"] && messages["en"][key]) {
+		message = messages["en"][key];
+	} else if (globalTranslations[lang] && globalTranslations[lang][key]) {
+		message = globalTranslations[lang][key];
+	} else if (globalTranslations["en"] && globalTranslations["en"][key]) {
+		message = globalTranslations["en"][key];
+	} else {
+		console.warn("Missing translation for key '" + key + "'");
+		return key;
+	}
+
+	return message.replace(/\{(\w+)\}/g, (match, placeholder) => {
+		return params.hasOwnProperty(placeholder) ? params[placeholder] : match;
+	});
+}
+
 
 /* Status flow of a poll */
 const POLL_STATUS = {
@@ -47,7 +125,6 @@ const props = defineProps({
 		type: Object,
 		required: true
 	}
-
 })
 
 // The prop is the initial value. Here we copy that to a local proxy that can change.
@@ -88,6 +165,8 @@ Example "poll" object with its properties:
  * Initialize default values of poll if not yet set
  * My dear VUE: tell my how to do this otherwise! :-)
  */
+console.log("Polly.vue init poll", JSON.stringify(poll, null, 2))
+
 if (!poll.status) poll.status = POLL_STATUS.NEW
 if (!poll.numVoters) poll.numVoters = 0
 if (!poll.proposals) poll.proposals = [
@@ -114,8 +193,6 @@ for (let i = 0; i < poll.proposals.length; i++) {
 // (It will be removed when saving.)
 if (poll.status == POLL_STATUS.NEW && propHasTitle(poll.proposals.length - 1)) addProposal()
 
-console.log("reactive poll", JSON.stringify(poll, null, 2))
-
 //TODO: Dummy user for testing
 const user = reactive({
 	id: Date.now(),
@@ -130,17 +207,22 @@ const inElaboration = computed(() => poll.status == POLL_STATUS.ELABORATION);
 const prepareStart = computed(() => poll.status == POLL_STATUS.PREPARE_START);
 const inVoting = computed(() => poll.status == POLL_STATUS.IN_VOTING);
 const isFinished = computed(() => poll.status == POLL_STATUS.FINISHED);
-const pollHasTitle = computed(() => /\S/.test(poll.title) && poll.title.length > 2)
+
+function pollTitleValid() {
+	return typeof poll.title === "string" && poll.title.trim().length >= config.pollTitleMinLength;
+}
 
 /** A poll needs at least a title and two proposals */
 const saveIsActive = computed(() => {
-	return pollHasTitle.value && propHasTitle(0) && propHasTitle(1);
+	return pollTitleValid() && propHasTitle(0) && propHasTitle(1);
 });
 
 const userEmailIsValid = computed(() => {
 	return isEmail(user.email)
 })
 
+
+// ========== Methods ===========
 function propHasTitle(index) {
 	const title = poll.proposals?.[index]?.title;
 	return typeof title === "string" && title.trim().length > 0;
@@ -262,9 +344,9 @@ function editPoll() {
 }
 
 function clickStartPollButton() {
-	//poll.status = POLL_STATUS.PREPARE_START
-	//askEmailModal.show()
-	poll.status = POLL_STATUS.IN_VOTING
+	poll.status = POLL_STATUS.PREPARE_START
+	askEmailModal.show()
+	//Debug: poll.status = POLL_STATUS.IN_VOTING
 }
 
 function startPoll() {
@@ -305,22 +387,41 @@ function isEmail(s) {
 <template>
 	<div class="polly">
 
-		<div class="card polly-card user-select-none">
-			<div class="card-header position-relative">
-				<input v-if="isNew" type="text" class="form-control poll-title-input" id="pollTitleInput" v-model="poll.title"
-					placeholder="Polly Title" />
+		<div class="card polly-card position-relative user-select-none">
+			<span v-if="inVoting" @click="shareLinkToPoll" class="fa-stack share-poll-icon" title="Share Poll">
+				<i class="fa-solid fa-circle fa-stack-2x" style="color:var(--icon-bg)"></i>
+				<i class="fa-solid fa-arrow-up-from-bracket fa-stack-1x"></i>
+			</span>
+			<div class="card-header">
+				<liquido-input v-if="isNew" 
+					id="pollTitleInput"
+					class="poll-title-input"
+					v-model="poll.title"
+					:minLength=10 
+					:required=true
+					:placeholder="loc('PollyTitlePlaceholder')"
+					:empty-feedback="loc('PollyTitleEmptyFeedback', {minLength: 10})"
+					:invalid-feedback="loc('PollyTitleInvalidFeedback', {minLength: 10})"
+					:feedback-placeholder=true
+					/>
+
+				<!-- input v-if="isNew" 
+					id="pollTitleInput"
+					type="text" 
+					class="form-control poll-title-input"  
+					v-model="poll.title"
+					placeholder="Polly Title" 
+					:validFunc="pollTitleValid" 
+					:feedback-placehoder=true 
+					:invalid-feedback="loc('PollTitleInvalid')"
+				/ -->
 				<h1 v-else class="poll-title" id="pollTitle">{{ poll.title }}</h1>
-				<span @click="shareLinkToPoll" class="fa-stack share-poll-icon" title="Share Poll">
-					<i class="fa-solid fa-circle fa-stack-2x" style="color:#EEE"></i>
-					<i class="fa-solid fa-arrow-up-from-bracket fa-stack-1x"></i>
-				</span>
-				
 			</div>
 
 			<div v-if="isNew" class="card-body">
 				<TransitionGroup name="fade" class="polly-proposals-wrapper" tag="ul">
 					<li v-for="(prop, index) in poll.proposals" :key="prop.id" class="polly-proposal d-flex align-items-center">
-						<input v-model="prop.title" placeholder="Add a proposal" type="text"
+						<input v-model="prop.title" :placeholder="loc('AddProposalPlaceholder')" type="text"
 							class="form-control flex-grow-1 polly-proposal-input" @blur="(evt) => onProposalBlurr(evt, index)"
 							@keyup="(evt) => onProposalKeyup(evt, index)" />
 					</li>
@@ -340,7 +441,9 @@ function isEmail(s) {
 					</div>
 				</div>
 			</div>
+
 			<div v-if="inVoting" class="card-body d-flex flex-row">
+				<!-- poll inVoting where user can drag proposals up and down -->
 				<div class="me-1">
 					<div v-for="(prop, index) in poll.proposals" :key="prop.id" class="proposal-index-number">
 						{{ index + 1 }}.
@@ -348,8 +451,7 @@ function isEmail(s) {
 				</div>
 				<div class="polly-proposals-wrapper">
 				
-					<draggable id="draggableProposals" v-model="poll.proposals" itemKey="id" :animation="500" ghost-class="ghost"
-						drag-class="drag" chosen-class="chosen" can-scroll-x="false">
+					<draggable id="draggableProposals" v-model="poll.proposals" itemKey="id" :animation="500" can-scroll-x="false">
 						
 						<div v-for="prop in poll.proposals" class="polly-proposal sortable-proposal d-flex align-items-center position-relative form-control">
 							<div class="arrow-up pos-top-middle">&nbsp;</div>
@@ -361,52 +463,51 @@ function isEmail(s) {
 							</div>
 							<div class="arrow-up pos-bottom-middle-down">&nbsp;</div>
 						</div>
-							
-						
+
 					</draggable>
 				</div>
 			</div>
 
 			<div class="card-footer">
 				<!-- poll footer with status and buttons -->
-				<div class="d-flex align-items-center">
-					<div class="flex-grow-1 footer-status">
+				<div class="d-flex align-items-center justify-content-end">
+					<!-- div class="flex-grow-1 footer-status">
 						&nbsp;
 						<Transition name="slide-up">
-							<div v-if="isNew">New Polly</div>
-							<div v-else-if="inElaboration">Poll not yet started</div>
-							<div v-else-if="prepareStart">Starting poll ...</div>
-							<div v-else-if="inVoting && !poll.alreadyVoted">Sort proposals</div>
-							<div v-else-if="inVoting && poll.alreadyVoted">THX for voting!</div>
-							<div v-else-if="isFinished">Poll is finished ({{ poll.numVoters }} voters)</div>
+							<div v-if="isNew">{{loc('NewPolly')}}</div>
+							<div v-else-if="inElaboration">{{loc('PollNotYetStarted')}}</div>
+							<div v-else-if="prepareStart">{{loc('StartingPoll')}}</div>
+							<div v-else-if="inVoting && !poll.alreadyVoted">{{loc('SortProposals')}}</div>
+							<div v-else-if="inVoting && poll.alreadyVoted">{{loc('ThxForVoting')}}</div>
+							<div v-else-if="isFinished">{{loc('PollFinished', {numVoters: poll.numVoters})}}</div>
 							<div v-else>&nbsp;</div>
 						</Transition>
-					</div>
+					</div -->
 					<div v-if="isNew" class="text-end">
 						<button @click="savePoll" :disabled="!saveIsActive" type="button"
-							class="btn btn-sm btn-primary save-button">
-							<i class="fa-regular fa-save"></i>&nbsp;Save
+							class="btn btn-sm btn-primary">
+							<i class="fa-regular fa-save"></i>&nbsp;{{loc('Save')}}
 						</button>
 					</div>
 					<div v-if="inElaboration" class="text-end">
 						<button @click="editPoll" type="button" class="btn btn-sm btn-secondary me-2">
-							<i class="fa-regular fa-edit"></i>&nbsp;Edit
+							<i class="fa-regular fa-edit"></i>&nbsp;{{loc('Edit')}}
 						</button>
 						<button @click="clickStartPollButton" type="button" class="btn btn-sm btn-primary">
-							<i class="fa-solid fa-play"></i>&nbsp;Start Poll
+							<i class="fa-solid fa-play"></i>&nbsp;{{loc('StartPoll')}}
 						</button>
 					</div>
 					<div v-if="prepareStart" class="text-end">
 						<button type="button" class="btn btn-sm btn-primary disabled" disabled>
-							<i class="fa-solid fa-play"></i>&nbsp;Start Poll
+							<i class="fa-solid fa-play"></i>&nbsp;{{loc('StartPoll')}}
 						</button>
 					</div>
 					<div v-if="inVoting" class="text-end">
 						<button @click="finishPoll" type="button" class="btn btn-sm btn-secondary me-2">
-							<i class="fa-regular fa-circle-check"></i>&nbsp;Finish Poll
+							<i class="fa-regular fa-circle-check"></i>&nbsp;{{loc('FinishPoll')}}
 						</button>
 						<button v-if="!poll.alreadyVoted" @click="castVote" type="button" class="btn btn-sm btn-primary">
-							<i class="fa-solid fa-person-booth"></i>&nbsp;Cast Vote
+							<i class="fa-solid fa-person-booth"></i>&nbsp;{{loc('CastVote')}}
 						</button>
 					</div>
 
@@ -421,13 +522,12 @@ function isEmail(s) {
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header bg-secondary-subtle">
-						<h5 class="modal-title" id="askEmailModalLabel">Start Poll</h5>
+						<h4 class="modal-title" id="askEmailModalLabel">{{ loc('StartPoll') }}</h4>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
 							@click="cancelStartPoll"></button>
 					</div>
 					<div class="modal-body">
-						You’ll receive a private admin link to manage your poll, and a separate voting link to share with your
-						friends.
+						{{ loc('StartPollInfo') }}
 						<div class="d-flex mt-2">
 							<div class="flex-grow-1">
 								<input id="userEmailInput" type="email" v-model="user.email" class="form-control form-control-sm"
@@ -435,7 +535,7 @@ function isEmail(s) {
 							</div>
 							<div>
 								<button type="button" class="btn btn-primary btn-sm ms-2" data-bs-dismiss="modal" @click="startPoll"
-									:disabled="!userEmailIsValid">Send</button>
+									:disabled="!userEmailIsValid">{{ loc('Send') }}</button>
 							</div>
 						</div>
 					</div>
@@ -457,36 +557,36 @@ $polly-proposal-margin-bottom: 16px;
 .polly-card {
 	max-width: 1024px;
 
+	/*
 	.card-header {
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		border-bottom: none;
-		height: 4rem; // Must have fixed height!
+		//height: 4rem; // Must have fixed height!
 		text-align: center;
 	}
+	*/
 
 	.share-poll-icon {
 		cursor: pointer;
+		color: var(--icon-color);
 		position: absolute;
-		top: 0.5rem;
-		right: 0.5rem;
+		top: -0.4rem;
+		right: -0.4rem;
 		//font-size: 1.25rem;
 
 		&:hover {
-			color: $primary;
+			color: var(--primary);
 		}
 	}
 
 	.poll-title-input {
-		margin: 0;
-		padding: 0;
-		font-size: 1.25rem;
-		font-weight: bold;
 		text-align: center;
-
-		&::placeholder {
-			color: lightgrey;
+		input {
+			font-size: 1.25rem;
+			font-weight: bold;
+			text-align: center;
 		}
 	}
 
@@ -504,7 +604,7 @@ $polly-proposal-margin-bottom: 16px;
 	}
 
 	.readonly-proposal {
-		background-color: #EEE;
+		background-color: var(--bs-secondary-bg);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -604,49 +704,21 @@ $polly-proposal-margin-bottom: 16px;
 }
 
 
-// ======== VUE List Transition - used for sortable proposals ======
-// https://vuejs.org/guide/built-ins/transition-group.html
-// DON'T TOUCH THIS! :-)  This is delicate!
-
-
-/* 1. declare transition */
-.fade-move,
-.fade-enter-active,
-.fade-leave-active {
-	transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
-}
-
-/* 2. declare enter from and leave to state */
-.fade-enter-from,
-.fade-leave-to {
-	opacity: 0.5;
-	transform: translateY(-50%) scaleY(0); // order is important!
-	padding: 0 !important;
-	margin: 0 !important;
-}
-
-/* 3. ensure leaving items are taken out of layout flow so that moving
-      animations can be calculated correctly. */
-.fade-leave-active {
-	position: absolute;
-}
-
-
 // ========= Slid-up VUE transition - used for status in footer ========
 // adapted from https://vuejs.org/guide/built-ins/transition
 .slide-up-enter-active,
 .slide-up-leave-active {
-	transition: all 0.25s ease-out;
+	transition: all 0.5s ease-out;
 }
 
 .slide-up-enter-from {
 	opacity: 0;
-	transform: translateY(30px);
+	//transform: translateY(30px);
 }
 
 .slide-up-leave-to {
 	opacity: 0;
-	transform: translateY(-30px);
+	//transform: translateY(-30px);
 }
 
 // ========= For VUE.draggable@next ========
@@ -661,11 +733,13 @@ $polly-proposal-margin-bottom: 16px;
 	opacity: 0.3;
 }
 
+
 .drag {
 	// for the dragging item
 	//opacity: 1.0;
-	//border: 1px solid blue;
+	//border: 1px solid blue !important;
 }
+	
 
 
 //===== small utility classes =======
@@ -679,7 +753,6 @@ $polly-proposal-margin-bottom: 16px;
 	margin-left: 0.25rem;
 }
 
-
 .thx-for-voting {
 	transition: opacity;
 	transition-duration: 1s;
@@ -690,7 +763,8 @@ $polly-proposal-margin-bottom: 16px;
 	opacity: 1;
 }
 
-.z-index-500 {
-	z-index: 500; // BEFORE / ABOVE the votometer!
+#askEmailModal .modal-dialog {
+	margin-top: 5rem;  // space for liquido-header
 }
+
 </style>

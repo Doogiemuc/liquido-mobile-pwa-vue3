@@ -390,7 +390,7 @@ export default {
 
 	.poll-icon {
 		color: white;
-		background-color: $icon_bg;
+		background-color: var(--icon_bg);
 		border-radius: 50%;
 		text-align: center;
 		font-size: 20px;
@@ -405,7 +405,7 @@ export default {
 	}
 
 	.poll-title {
-		//color: $primary;    // poll-titles are black, proposal titles are $primary!
+		//color: var(--primary);    // poll-titles are black, proposal titles are --primary!
 		font-size: 1.0rem !important;   // smaller than normal H3
 	}
 
@@ -423,7 +423,7 @@ export default {
 	position: relative;
 	overflow: hidden;
 	.search-icon {
-		color: $primary;
+		color: var(--primary);
 		position: absolute;
 		top: 50%;
 		right: 0.5em;

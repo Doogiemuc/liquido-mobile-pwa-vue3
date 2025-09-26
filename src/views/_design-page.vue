@@ -314,7 +314,7 @@ export default {
 		}
 
 		.poll-title {
-			color: $primary;
+			color: var(--primary);
 			font-size: 1.0rem !important;   // smaller than normal H3
 		}
 

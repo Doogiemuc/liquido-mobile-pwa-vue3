@@ -254,7 +254,7 @@ $proposal_icon_size: 32px;
 		}
 
 		.proposal-title {
-			color: $primary;
+			color: var(--primary);
 			font-size: 1rem !important; // a bit smaller then normal h4 for longer titles
 			margin: 0;
 			padding: 0;
@@ -272,7 +272,7 @@ $proposal_icon_size: 32px;
 
 		.proposal-subtitle {
 			font-size: 0.8rem;
-			color: $secondary;
+			color: var(--secondary);
 			margin-top: 5px;
 			display: flex;
 			align-items: center;
@@ -292,8 +292,8 @@ $proposal_icon_size: 32px;
 				border: 1px solid #bbb;
 
 				&:hover {
-					color: $primary !important;
-					border-color: $primary !important;
+					color: var(--primary) !important;
+					border-color: var(--primary) !important;
 				}
 			}
 
@@ -318,7 +318,7 @@ $proposal_icon_size: 32px;
 
 		.proposal-icon {
 			color: white;
-			background-color: $icon_bg;
+			background-color: var(--icon_bg);
 			border-radius: 50%;
 			border: none;
 			text-align: center;

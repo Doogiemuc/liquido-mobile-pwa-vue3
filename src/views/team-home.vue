@@ -151,7 +151,7 @@ export default {
 <style lang="scss">
 
 .admin-shield {
-	color: $primary;
+	color: var(--primary);
 	position: absolute;
 	top: 5px;
 	right: 5px;

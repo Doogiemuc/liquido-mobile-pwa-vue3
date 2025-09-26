@@ -52,7 +52,7 @@
 		<div v-if="showEmptyFeedback" class="invalid-feedback">
 			{{ emptyFeedback }}
 		</div>
-		<div v-if="feedbackPlacehoder && !showCounterIfValid && !showInvalidFeedback && !showEmptyFeedback" class="invalid-feedback-placeholder">
+		<div v-if="showFeedbackPlaceholder" class="invalid-feedback-placeholder">
 			&nbsp; <!-- This div is only used to reserve space for the invalid feedback text, so that the input field does not jump up and down -->
 		</div>
 	</div>
@@ -171,7 +171,7 @@ export default {
 		emptyFeedback: { type: String, default: undefined },
 
 		/** Reserve space below the input field for the invalid/emptyFeedback text. */
-		feedbackPlacehoder: { type: Boolean, default: false },
+		feedbackPlaceholder: { type: Boolean, default: false },
 
 		/** 
 		 * In addition to the default "pattern" field supported by HTML5,
@@ -215,6 +215,10 @@ export default {
 
 		showInvalidFeedback() {
 			return this.state === STATE.INVALID && this.invalidFeedback && this.modelValue && this.modelValue.length > 0
+		},
+
+		showFeedbackPlaceholder() {
+			return this.feedbackPlaceholder && !this.showCounterIfValid && !this.showInvalidFeedback && !this.showEmptyFeedback
 		},
 
 		counterVal() {

@@ -201,7 +201,7 @@ export default {
 		background-color: darkgreen;
 	}
 	.header-icon-info {
-		color: $primary;
+		color: var(--primary);
 	}
 	.header-icon-warn {
 		color: darkgoldenrod;

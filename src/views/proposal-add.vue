@@ -292,19 +292,19 @@ export default {
 }
 
 .icon-in-list {
-	color: $secondary;
+	color: var(--secondary);
 	font-size: 1.5em;
 	padding: 1px;
 	.selected {
-		color: $primary;
-		border: 1px solid $primary;
+		color: var(--primary);
+		border: 1px solid var(--primary);
 		border-radius: 5px;
 		padding: 2px;
 	}
 }
 .chosen-icon {
 	font-size: 2em;
-	color: $primary;
+	color: var(--primary);
 	background-color: white;
 	border: 1px solid #ced4da;
 	border-radius: 0.25rem;
