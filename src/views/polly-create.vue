@@ -13,7 +13,7 @@
 			{{ getInfoTextForPollStatus }}
 		</div>
 
-		<div v-if="poll.status == 'VOTING'" class="alert alert-secondary">
+		<div v-if="poll.status == 'VOTING'" class="alert alert-light">
 			<p>{{ $t('PollInVotingInfo1') }}</p>
 			<ol class='fa-ul'>
 				

@@ -33,7 +33,7 @@
 			</div>
 
 			<div v-if="flowState <= FLOW.NicknameInput" class="login-link">
-				<router-link :to="{ name: 'login' }">{{$t('login')}}</router-link>
+				<button class="btn btn-primary btn-sm" @click="goToLogin">{{ $t('Login') }}</button>
 			</div>
 
 			<!-- Nice to meet you bubble -->
@@ -328,7 +328,6 @@ export default {
 					"Ein cleverer Algorithmus berechnet daraus dann den Sieger.</p>",
 				whatsYourName: "Darf ich fragen wie du heißt?",
 				yourNickname: "Dein Spitzname",
-				login: "Login",
 				userNameInvalid: "Bitte mindestens " + config.usernameMinLength + " Zeichen!",
 				niceToMeetYou: "Hallo <b>{nickname}</b> ! Schön dich kennen zu lernen.",
 				createOrJoin: "Möchtest du ein neues Team gründen? Oder hast du einen Einladungscode bekommen und möchtest einem bestehenden Team beitreten?",
@@ -508,6 +507,10 @@ export default {
 				this.flowState = this.FLOW.NicknameInput
 				//this.$root.scrollToBottom()
 			}, smallDelay + mediumDelay)
+		},
+
+		goToLogin() {
+			this.$router.push({ name: 'login' })
 		},
 
 		/* username must not be empty and contain at least n chars */
@@ -720,11 +723,8 @@ export default {
 .login-link {
 	z-index: 999;
 	position: fixed;
-	bottom: 3rem;
-	right: 25px;  // because of scrollbar	
-	a {
-		padding: 1rem 0 1rem 1rem;
-	}
+	bottom: 2rem;
+	right: 2rem;
 }
 
 .createOrJoinTable {

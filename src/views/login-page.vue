@@ -11,7 +11,7 @@
 					:placeholder="$t('emailPlaceholder')"
 					:empty-feedback="$t('emailEmpty')"
 					:invalid-feedback="$t('emailInvalid')"
-					:feedback-placehoder="true"/>
+					:feedback-placeholder="true"/>
 
 				<liquido-input id="loginPasswordInput" v-model="passwordInputVal" v-model:state="passwordInputState" type="password"
 					:minLength=10 
@@ -19,7 +19,7 @@
 					:placeholder="$t('passwordPlaceholder')"
 					:empty-feedback="$t('passwordInputIsEmpty')"
 					:invalid-feedback="$t('passwordInputIsInvalid')"
-					:feedback-placehoder="true"
+					:feedback-placeholder="true"
 					@keypress.enter="loginWithEmailPassword" />
 
 				<button id="loginWithEmailPasswordButton" 
@@ -164,7 +164,7 @@ export default {
   i18n: {
     messages: {
       de: {      
-				emailPlaceholder: "Deine E-Mail",
+				emailPlaceholder: "E-Mail",
         passwordPlaceholder: "Passwort",
         emailInvalid: "Ungültige Email. Vielleicht nur vertippt?",
 				emailEmpty: "Bitte gib deine E-Mail Adresse ein.",
