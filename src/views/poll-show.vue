@@ -102,9 +102,9 @@ export default {
 					"<p>Diese Abstimmung wird gerade noch debatiert.</p>" +
 					"<p>Wenn euer Admin die Wahl startet, kannst du anonym deine Stimme abgeben.</p>",
 				canAddProposal: 
-					"Du kannst in dieser Abstimmung jetzt deinen eigenen Wahlvorschlag hinzufügen.",
+					"Du kannst in dieser Abstimmung jetzt deinen eigenen Vorschlag hinzufügen.",
 				alreadyAddedProposal: 
-					"Du hast bereits einen Wahlvorschlag in dieser Abstimmung hinzugefügt.",
+					"Du hast bereits einen Vorschlag in dieser Abstimmung hinzugefügt.",
 				addProposal: "Vorschlag hinzufügen",
 				startVotingPhaseInfo: 
 					"Hallo Admin! Möchstest du die Wahlphase für diese Abstimmung starten? Dann sind die Wahlvorschläge fixiert und dein Team kann abstimmen.",
@@ -209,9 +209,8 @@ export default {
 				return
 			} 
 			this.loadingPoll = true
-			// Here we do not force a refresh. Fetch from cache if possible.
-			// (When user clicks on cast vote we load everything freshly.)
-			return api.getPollById(this.pollId)
+			// Reload poll from backend. Could also use cached version
+			return api.getPollById(this.pollId, true)
 				.then(receivedPoll => {
 					this.poll = receivedPoll
 					this.loadingPoll = false

@@ -324,7 +324,7 @@ export default {
 			de: {
 				welcome:
 					"<p>Willkommen bei <span class='liquido'></span>, der sicheren, freien und fairen App für digitale Abstimmungen.</p>"+
-					"<p>Bei LIQUIDO stimmst du nicht nur für einen einzelnen Wahlvorschlag, sondern jeder in eurem Team kann die Vorschläge bzw. Kandidaten nach seiner persönlichen Reihenfolge sortieren. " +
+					"<p>Bei LIQUIDO stimmst du nicht nur für einen einzelnen Vorschlag, sondern jeder in eurem Team kann die Vorschläge bzw. Kandidaten nach seiner persönlichen Reihenfolge sortieren. " +
 					"Ein cleverer Algorithmus berechnet daraus dann den Sieger.</p>",
 				whatsYourName: "Darf ich fragen wie du heißt?",
 				yourNickname: "Dein Spitzname",
@@ -359,7 +359,7 @@ export default {
 				teamInfo: "Du findest diesen QR Code auch auf eurer Team Seite.",
 				pollInfo: 
 					"Möchtest du jetzt gleich eine erste Abstimung (<i class='fas fa-poll'></i>) für dein Team erstellen? Jedes Teammitglied kann dann " +
-					"seinen eigenen Wahlvorschlag (<i class='fas fa-vote-yea'></i>) hinzufügen.",
+					"seinen eigenen Vorschlag (<i class='fas fa-vote-yea'></i>) hinzufügen.",
 				createPoll: "Abstimmung anlegen",
 
 				teamWithSameNameExists: "Ein Team mit diesem Namen existiert bereits. Bitte wählen einen anderen Namen für dein Team.",

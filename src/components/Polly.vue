@@ -389,7 +389,7 @@ function isEmail(s) {
 
 		<div class="card polly-card position-relative user-select-none">
 			<span v-if="inVoting" @click="shareLinkToPoll" class="fa-stack share-poll-icon" title="Share Poll">
-				<i class="fa-solid fa-circle fa-stack-2x" style="color:var(--icon-bg)"></i>
+				<i class="fa-solid fa-circle fa-stack-2x" style="color:var(--proposal-icon-bg)"></i>
 				<i class="fa-solid fa-arrow-up-from-bracket fa-stack-1x"></i>
 			</span>
 			<div class="card-header">

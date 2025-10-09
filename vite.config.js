@@ -24,24 +24,28 @@ export default defineConfig({
 		// https://cli.vuejs.org/config/#devserver-proxy
 		// https://github.com/http-party/node-http-proxy#options=
 		// https://github.com/chimurai/http-proxy-middleware/blob/master/README.md
-		/*
+		
 		proxy: {      							
+			/*
 			"^/q": {
 				target: "https://localhost:8443",
 				secure: false,
 				changeOrigin: true,
 				//TODO: cookieDomainRewrite: { "localhost:3001": "localhost:8443" }
 			},
-			"^/liquido-api/v3": {  		// Only proxy API requests. There are others, eg. Webservice "/ws" that sould stay
-				pathRewrite: { '^/liquido-api/v3' : '/' },
+			*/
+			"/graphql": {  		// Only proxy API requests. There are others, eg. Webservice "/ws" that sould stay
+				
 				//ignorePath: true,
-				target: "https://localhost:8443",    			// the matched path will be appended to this!
+				target: "https://192.168.178.134:8443",    			// the full matched path will be appended to this!
+				//rewrite: (path) => path.replace(/^\/graphql/, '/liquido-api/v3'),
+				//OLD: pathRewrite: { '^/liquido-api/v3' : '/' },   
 				secure: false   // allow self-signed backend certificate
 				//ws: true,     // also proxy-websockets
 				//changeOrigin: true
 			}
 		}
-		*/
+		
 		
 	},
   plugins: [

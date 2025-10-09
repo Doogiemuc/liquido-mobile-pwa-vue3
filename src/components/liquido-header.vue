@@ -123,16 +123,14 @@ export default {
 	top: 0;
 	width: 100%;
 	height: var(--header-height);
-
 	color: white;
-
 	flex-direction: row;
 	justify-content: space-between;
 	z-index: 999;
 	transition: all 0.5s;
 	background-color: var(--header-bg);
 	//opacity: 0.95;   // does not look good with iOS Safari header
-	padding: 0 0.5rem;
+	padding: 0;
 	box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3); /* horizontal, vertical, blur, color */
   z-index: 9999; /* make sure the header is on top of everything */
   

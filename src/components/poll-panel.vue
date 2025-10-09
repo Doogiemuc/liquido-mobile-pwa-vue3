@@ -179,7 +179,7 @@ export default {
 <style lang="scss" scoped>
 
 /* size of proposal image */
-$proposal_icon_size: 32px;
+$proposal_icon_size: 2.5rem;
 
 .poll-panel {
 
@@ -318,11 +318,11 @@ $proposal_icon_size: 32px;
 
 		.proposal-icon {
 			color: white;
-			background-color: var(--icon_bg);
+			background-color: var(--proposal-icon-bg);
 			border-radius: 50%;
 			border: none;
 			text-align: center;
-			//font-size: 1.2em;
+			font-size: 1.5rem;
 			line-height: $proposal_icon_size;
 			min-width: $proposal_icon_size;
 			max-width: $proposal_icon_size;

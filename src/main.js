@@ -10,7 +10,7 @@ import config from "config"  // This path is automatically mapped to an environm
 import log from 'loglevel'
 if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
 	log.enableAll()
-	console.log("NODE_ENV="+process.env.NODE_ENV+"   LIQUIDO configuration:\n", config)
+	console.log(JSON.stringify(config, null, 2))
 }
 
 import { createApp } from 'vue'

@@ -243,7 +243,7 @@ router.beforeEach(async (routeTo, routeFrom) => {
 			return true // allow authenticated navigation
 		}
 	}).catch(() => {
-		log.debug("vue-router: anonymous", routeFrom.path, "=>", routeTo.path)
+		//log.debug("vue-router: anonymous", routeFrom.path, "=>", routeTo.path)
 		if (routeTo.meta.public) {
 			return true
 		} else if (routeTo.path === "/" || routeTo.path === "/index.html") {

@@ -142,11 +142,11 @@ export default {
 				butProposalsInDiscussion: "Es gibt jedoch Abstimmungen in Diskussion. Dort könnt ihr die Wahlvorschlägen diskutieren.",
 				butPollInVoting: "Es gibt jedoch eine <b>laufende Abstimmung</b> in der du deine Stimme abgeben kannst.",
 				onlyAdminCanCreateNewPolls: "Nur du als Admin dieses Teams kannst neue Abstimmungen erstellen. " +
-					"Jedes Teammitglied kann dann seinen Wahlvorschlag zur Abstimmung hinzufügen.",
+					"Jedes Teammitglied kann dann seinen Vorschlag zur Abstimmung hinzufügen.",
 				createPoll: "Neue Abstimmung anlegen",
 				votes: "0 Stimmen | 1 Stimme | {n} Stimmen",
 				daysLeft: "Wahl Abgeschlossen | ein Tag noch | noch {n} Tage",
-				numProposals: "Noch keine Wahlvorschläge | ein Wahlvorschlag | {n} Wahlvorschläge",
+				numProposals: "Noch keine Vorschläge | ein Vorschlag | {n} Vorschläge",
 			},
 		},
 	},

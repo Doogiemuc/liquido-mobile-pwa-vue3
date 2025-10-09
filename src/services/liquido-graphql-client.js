@@ -34,7 +34,7 @@ if (!config || !config.LIQUIDO_API_URL) {
 	console.error("liquido-graphql-client: ERROR I have no config!")
 } else {
 	if (process.env.NODE_ENV === "development") {
-		console.log("liquido-graphql-client => " + config.LIQUIDO_API_URL)
+		console.log("liquido-graphql-client => " + config.LIQUIDO_API_URL + " in NODE_ENV=" + process.env.NODE_ENV)
 	}
 }
 
@@ -91,32 +91,83 @@ axios.interceptors.response.use(onSuccess, onError)
  */
 const GRAPHQL = '/graphql'      // ==================== BASE PATH FOR GRAPHQL endpoint  //TODO: should that be in config.common.js ?
 const graphQlQuery = function(query, variables) {
-	//console.debug("GraphQL Query with " + axios.defaults.headers.common["Authorization"])
-	return axios.post(GRAPHQL, { query: query, variables: variables })
-		.then(res => {
-			if (res.data && res.data.errors && res.data.errors.length > 0) {
-				// graphQL's way of returning errors, as defined in the GraphQL spec
-				// https://graphql.org/learn/serving-over-http/#http-status-codes
-				console.info("graphQlQuery() received data errors:", res.data.errors)   
-				if (res.data.errors[0].extensions) {
-					console.info("graphQlQuery() first liquidoException: "+JSON.stringify(res.data.errors[0].extensions))
-					// add the first liquidoException to the response data, so that the caller can handle it more easily
-					res.data.liquidoException = res.data.errors[0].extensions.liquidoException
+	if (config.mock) {
+		return graphQlQueryMOCK(query, variables)
+	} else {
+		return axios.post(GRAPHQL, { query: query, variables: variables })
+			.then(res => {
+				if (res.data && res.data.errors && res.data.errors.length > 0) {
+					// graphQL's way of returning errors, as defined in the GraphQL spec
+					// https://graphql.org/learn/serving-over-http/#http-status-codes
+					console.info("graphQlQuery() received data errors:", res.data.errors)   
+					if (res.data.errors[0].extensions) {
+						console.info("graphQlQuery() first liquidoException: "+JSON.stringify(res.data.errors[0].extensions))
+						// add the first liquidoException to the response data, so that the caller can handle it more easily
+						res.data.liquidoException = res.data.errors[0].extensions.liquidoException
+					}
+					return Promise.reject(res.data)
 				}
-				return Promise.reject(res.data)
+				return res.data // This is the axios HTTP "data". The graphQL response contains another "res.data.data" and the "res.data.errors" attribute. I know, it's confusing.
+			})
+			// No error handling here! Upstream caller is responsible to handle errors
+	}
+}
+
+import teamUserJwt from "@/mockdata/teamUserJwt.json"
+
+const graphQlQueryMOCK = function(query, variables) {
+	if (query.includes("ping")) {
+		console.warn("MOCK responses are active!")
+		return Promise.resolve(
+			{
+				"data": {
+					"ping": "MOCK responses are active!"
+				}
 			}
-			return res.data // This is the axios HTTP "data". The graphQL response contains another "res.data.data" and the "res.data.errors" attribute. I know, it's confusing.
-		})
-		/*   // No error handling here! Upstream caller is responsible to handle errors
-		.catch(err => {
-			if (err && err.response && err.response.status >= 500) {
-				console.error("graphQlQuery SERVEr ERROR(500)", err)
-			} else {
-				console.warn("graphQlQuery ERROR", err)
+		)
+	} else if (query.includes("devLogin(")) {
+		console.log("MOCK: devLogin")
+		return Promise.resolve(
+			{
+				"data": {
+					"devLogin": teamUserJwt
+				}
 			}
-			return Promise.reject(err)
-		})
-			*/
+		)
+	} else if (query.includes("loginWithJwt")) {
+		console.log("MOCK: loginWithJwt")
+		return Promise.resolve(
+			{
+				"data": {
+					"loginWithJwt": teamUserJwt
+				}
+			}
+		)
+	} else if (query.includes("polls")) {
+		console.log("MOCK: all polls")
+		return Promise.resolve(
+			{
+				"data": {
+					"polls": teamUserJwt.team.polls
+				}	
+			}
+		)
+	} else if (query.includes("poll(pollId:")) {
+		const match = query.match(/poll\(pollId:(\d+)\)/);
+		if (match && match[1]) {
+			const pollId = parseInt(match[1], 10);
+			console.log("MOCK: poll(id="+pollId+")")
+			const poll = teamUserJwt.team.polls.find(p => p.id === pollId);
+			return Promise.resolve(
+				{
+					"data": {
+						"poll": poll
+					}
+				}
+			)
+		}
+	}
+	return Promise.reject(new Error("Unhandled mock query: " + query));
 }
 
 
@@ -218,8 +269,8 @@ let graphQlApi = {
 	// and process the error.
 
 	async pingApi() {
-		return axios.post(GRAPHQL, { query: "{ ping }" })
-		//return this.getGraphQLSchema()
+		//return axios.post(GRAPHQL, { query: "{ ping }" })
+		return graphQlQuery(`query { ping }`)
 	},
 
 	/**
