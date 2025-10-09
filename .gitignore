@@ -26,8 +26,6 @@ coverage
 tests/e2e/screenshots
 *.mp4
 
-config/*.production.js
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
