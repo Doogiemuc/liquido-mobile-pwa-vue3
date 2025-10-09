@@ -1,3 +1,5 @@
+# These files shall not be checked into git
+
 # Logs
 logs
 *.log
@@ -15,8 +17,8 @@ coverage
 *.local
 
 # Config files that might contain secrets
-config/config.*.js
-
+/config/config.*.js
+!/config/config.common.js
 
 # Cypress screenshots & videos from tests
 /cypress/videos/

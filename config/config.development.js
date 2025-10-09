@@ -7,9 +7,9 @@ let devConfig = {
 	configSource: "development",
 	
 	// Connection to LIQUIDO backend 
-	// Secure HTTPS with IP, because localhost does not work when testing on a real mobile device.
-	LIQUIDO_API_URL: "https://192.168.178.30:8443", // MacBookPro (James)
-	//LIQUIDO_API_URL: "https://localhost:8443", 		// local development server
+	// Secure HTTPS must be used with IP, because localhost does not work when testing on a real mobile device.
+	LIQUIDO_API_URL: "https://192.168.178.30:8443",  
+	//LIQUIDO_API_URL: "https://localhost:8443",
 
 	googleClientId: "673421517010-lkmgt75rsmgua6aojhpp6crjg1opuhvo.apps.googleusercontent.com",
 	 
