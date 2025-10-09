@@ -192,6 +192,7 @@ export default {
 		},
 		*/
 		userIsAdmin() {
+			console.log("========= is Admin", api.isAdmin())
 			return api.isAdmin()
 		},
 		allPolls() {
@@ -371,7 +372,7 @@ export default {
 
 /** MUST SET THE height TO A FIXED VALUE, for animating it. */
 .poll-card-wrapper {
-	height: 6rem;
+	height: 5rem;
 	margin-bottom: 10px;
 	overflow: hidden;
 	transition: all 0.5s;
@@ -381,19 +382,20 @@ export default {
 	cursor: pointer;
 	height: 100% !important;  // bootstrap .card sets a height that we need to overwrite
 	
+	
 	.card-body {
-		padding-left: 0;
-		padding-right: 10px;
+		padding: 0 10px;
 	}
+	
 
   $iconSize: 40px;
 
 	.poll-icon {
 		color: white;
-		background-color: var(--icon_bg);
+		background-color: var(--proposal-icon-bg);
 		border-radius: 50%;
 		text-align: center;
-		font-size: 20px;
+		font-size: $iconSize * 0.5;
 		line-height: $iconSize;
 		min-width: $iconSize;
 		max-width: $iconSize;
@@ -401,7 +403,7 @@ export default {
 		min-height: $iconSize;
 		max-height: $iconSize;
 		height: $iconSize;
-		margin: 0 10px;
+		margin: 0 10px 0 0;
 	}
 
 	.poll-title {

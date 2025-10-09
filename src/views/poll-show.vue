@@ -18,7 +18,7 @@
 		</div>
 
 		<!-- Text info -->
-		<div class="text-muted">
+		<div class="liquido-info">
 			<p v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" v-html="$t('pollInElaborationInfo')" />
 			<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && userAlreadyHasProposal" v-html="$t('alreadyAddedProposal')" />
 			<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && !userAlreadyHasProposal" v-html="$t('canAddProposal')" />

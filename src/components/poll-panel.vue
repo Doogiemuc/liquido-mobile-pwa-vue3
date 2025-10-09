@@ -322,7 +322,7 @@ $proposal_icon_size: 2.5rem;
 			border-radius: 50%;
 			border: none;
 			text-align: center;
-			font-size: 1.5rem;
+			font-size: $proposal_icon_size * 0.6;
 			line-height: $proposal_icon_size;
 			min-width: $proposal_icon_size;
 			max-width: $proposal_icon_size;

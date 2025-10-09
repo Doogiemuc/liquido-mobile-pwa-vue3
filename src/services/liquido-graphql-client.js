@@ -116,6 +116,7 @@ const graphQlQuery = function(query, variables) {
 import teamUserJwt from "@/mockdata/teamUserJwt.json"
 
 const graphQlQueryMOCK = function(query, variables) {
+	console.log("MOCK request for ", query, variables)
 	if (query.includes("ping")) {
 		console.warn("MOCK responses are active!")
 		return Promise.resolve(
@@ -125,15 +126,35 @@ const graphQlQueryMOCK = function(query, variables) {
 				}
 			}
 		)
-	} else if (query.includes("devLogin(")) {
+	} else if (query.includes("createNewTeam(")) {
 		console.log("MOCK: devLogin")
 		return Promise.resolve(
 			{
 				"data": {
-					"devLogin": teamUserJwt
+					"createNewTeam": teamUserJwt
 				}
 			}
 		)
+	} else if (query.includes("devLogin(")) {
+		const match = query.match(/devLogin\(email: ?"([\w\@.]+)"/)
+		if (match && match[1]) {
+			const email = match[1];
+			
+			const member = teamUserJwt.team.members.find(m => m.user.email === email)
+			if (!member) {
+				console.error("Cannot find user <"+email+"> in team!")
+			} else {
+				console.log("MOCK: devLogin for member", member)
+			}
+			teamUserJwt.user = member.user
+			return Promise.resolve(
+				{
+					"data": {
+						"devLogin": teamUserJwt
+					}
+				}
+			)
+		}
 	} else if (query.includes("loginWithJwt")) {
 		console.log("MOCK: loginWithJwt")
 		return Promise.resolve(
@@ -167,7 +188,7 @@ const graphQlQueryMOCK = function(query, variables) {
 			)
 		}
 	}
-	return Promise.reject(new Error("Unhandled mock query: " + query));
+	return Promise.reject(new Error("Unhandled mock query:" + query));
 }
 
 

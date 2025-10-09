@@ -113,7 +113,7 @@ $proposal_icon_size: 32px;
 	}
 	.law-icon {
 		color: white;
-		background-color: var(--icon_bg);
+		background-color: var(--proposal-icon-bg);
 		border-radius: 50%;
 		border: none;
 		text-align: center;
