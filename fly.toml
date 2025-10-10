@@ -1,0 +1,30 @@
+# fly.toml file generated for liquido-frontend-fly on 2025-10-10T08:33:04+02:00
+
+app = "liquido-frontend-fly"
+kill_signal = "SIGINT"
+kill_timeout = 5
+mounts = []
+primary_region = "fra"
+processes = []
+
+[env]
+  NODE_ENV = "development"
+  PORT = "8080"
+
+[[services]]
+  internal_port = 8080
+  processes = ["app"]
+  protocol = "tcp"
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+    type = "connections"
+
+  [[services.ports]]
+    force_https = true
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443

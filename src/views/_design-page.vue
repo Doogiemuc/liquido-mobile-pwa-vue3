@@ -298,7 +298,7 @@ export default {
 
 		.poll-icon {
 			color: white;
-			background-color: $icon-bg;
+			background-color: var(--proposal-icon-bg);
 			border-radius: 50%;
 			text-align: center;
 			font-size: 20px;

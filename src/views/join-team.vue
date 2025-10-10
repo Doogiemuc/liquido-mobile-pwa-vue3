@@ -383,15 +383,6 @@ export default {
 
 <style lang="scss" scoped>
 
-.createOrJoinTable {
-	td {
-		width: 50%;
-	}
-	td:first-child() {
-		border-right: 1px solid grey;
-	}
-}
-
 #joinOrCreateButtons {
 	width: 100%;
 	height: 40px;

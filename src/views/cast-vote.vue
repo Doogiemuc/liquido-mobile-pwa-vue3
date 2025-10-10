@@ -110,7 +110,6 @@ import config from "config"
 import popupModal from "@/components/popup-modal.vue"
 import api from "@/services/liquido-graphql-client.js"
 import { VueDraggableNext } from 'vue-draggable-next'
-import _ from "lodash"  // for cloneDeep
 import log from "loglevel"
 import dayjs from "dayjs"
 import localizedFormat from 'dayjs/plugin/localizedFormat'
@@ -210,8 +209,8 @@ export default {
 				this.existingBallot = ballot
 				this.proposalsInBallot = ballot.voteOrder.map(elem => proposalsById[elem.id])
 			} else {
-				//this.proposalsInBallot = _.cloneDeep(this.poll.proposals)
-				this.proposalsInBallot = this.poll.proposals
+				// Create a shallow copy of the proposals array for local sorting. This prevents mutating the original `this.poll.proposals` array.
+				this.proposalsInBallot = [...this.poll.proposals]
 			}
 			this.loading = false
 		}

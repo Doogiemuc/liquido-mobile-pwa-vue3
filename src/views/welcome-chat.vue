@@ -727,15 +727,6 @@ export default {
 	right: 2rem;
 }
 
-.createOrJoinTable {
-	td {
-		width: 50%;
-	}
-	td:first-child() {
-		border-right: 1px solid grey;
-	}
-}
-
 #createOrJoinButtons {
 	width: 100%;
 	height: 40px;

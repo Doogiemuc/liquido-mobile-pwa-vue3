@@ -15,7 +15,7 @@ export default defineConfig({
       cert: cert
 		},			    
 		host: "0.0.0.0",  				// "0.0.0.0" = listen on all adresses, incl. LAN and public adresses
-		port: 3001,
+		port: 8080,
 		
 		// Problems with Cross-origin resource sharing (CORS)? 
 		// Either allow all origins in the backend (see application.properties)

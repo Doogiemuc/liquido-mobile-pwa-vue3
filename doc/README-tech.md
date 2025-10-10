@@ -4,15 +4,9 @@ LIQUIDO - A modern aproach to liquid democracy.
 
 This is a HTML5 based mobile application. A PWA - progressive web application.
 
-## TODOs
+ 
 
- - Remove bootstrap-vue-3  use plain bootstrap (mainly only b-card and b-button)
- - Test on real devices, eg. with https://www.browserstack.com/    => This does already work on real hardware locally.
- - Try out PINIA - a store. Especially for status of search filter.
-
-
-
-## Layout, Design, UX/UI
+# Layout, Design, UX/UI
 
 ### Header
 
@@ -35,13 +29,15 @@ Poll Detail page:
  * Big cast vote button
 
 
-### Footer
+### UX/UI Footer
 
 What sould be at the left and right?  Left: Team  and Right: Info  => What to show there?
 
 
 
-## TESTS
+# TESTING LIQUIDO
+
+There are a lot of Cypress test. (Alternative tool: Playwright is also nice, but for now we'll stick with Cypress. An AI can migrate for me later :-)
 
 ### Test Case: Register
 
@@ -65,42 +61,48 @@ See also https://github.com/FiloSottile/mkcert/blob/master/README.md#supported-r
 Sometimes it is till necessary to open  https://backend.host:8443/graphql/schema.graphql  at the backend once and again click on "open website" in iOS.
 
 
-# How to setup vue repo from scratch
+# Deploy
 
-If you *really* want to setup your repo. This is usefull for larger updates with breaking changes.
+## Deploy to fly.io
 
-Create an empty directory and run
+   fly launch  => setup a fly app and create a fly.toml   Configure [env] in there!
+	 fly deploy  => remember to have all "dependencies" in package.json  ("devDependencies" are not installed in productin!)
+	                creates a Dockerfile and pushes to registry.fly.io/liquido-frontend-fly
 
-    npm create vue@latest
+## Fly.io Links
 
-Install (answer yes) Vue Router, Vitest, End-2-End Test with Cypress and optionally ESLint and Prettier. Then do
-
-    npm install axios bootstrap dayjs fontawesome gsap loglevel populating-cache vue-i18n vuedraggable
-
-TODO: do i need vue-bootstrap => currently yes, mostly for <b-card>
-
-
-# Develop offline
-
- * 
+ * Liquido frontend on Fly.io - Web Management Console  https://fly.io/apps/liquido-frontend-fly
+ * Watch server logs on Fly.io  https://fly.io/apps/liquido-frontend-fly/monitoring
+ 
+https://liquido-frontend-fly.fly.dev/ 
 
 
-# TODOs
 
-Larger new features I would like to implement ("Epics")
 
- * Everythign in one page with a super intelligent wobbling funny poll-pannel
+
+
+
+
+# TODO: Larger new features I would like to implement ("Epics")
+ 
+ * Everythign in one page with a super intelligent wobbling funny poll-pannel => Polly works
  * Three levels of complexity
 	 1. for kids: ONly one poll-panel with single line proposals (no description)
 	 2. Polls (for laws) and Elections (for candidates) with descriptions
 	 3. Full blown proxy voting
 
+# TODO: smaller fixes
+
+ - Need muuuuuch more tests for the polls filter at the bottom. When to show it?
+ - Test on real devices, eg. with https://www.browserstack.com/    => This does already work on real hardware locally.
 
 # DONE / New Features 
 
 See also git log
 
-  * Vue List transition for list if polls => Works again,  January 2024
+ * Local MOCK for backend - October 2025
+ * Remove bootstrap-vue-3  use plain bootstrap (mainly only b-card and b-button) - August 2025
+ * Vue List transition for list if polls => Works again,  January 2024
 
 
 
@@ -108,13 +110,26 @@ See also git log
 
  # Further References
 
- # Very nice starter Template One Page Landing Page
+ ### Very nice starter Template One Page Landing Page
 
   - Kudos to https://github.com/marvelapp/devices.css for their css only iOS mobile phone frame, that we adapt here.
   - Bootstrap https://bootstrapmade.com/demo/FlexStart/
 
-## MongoDB Atlas & GraphQL
+### MongoDB Atlas & GraphQL
 
-Very nice howto
-https://www.mongodb.com/developer/products/realm/graphql-easy/
+For some time in 2024 I played around with MongoDB. Very nice noSQL Db. Their functions also look interesting. 
+This would be a completely different aproach of implementing a backend.
+Very nice howto https://www.mongodb.com/developer/products/realm/graphql-easy/
 
+# How to setup vue repo from scratch
+
+Lost in dependency hell after an npm upgrad?
+This is how to setup the repo with all its packages from scratch.
+
+Create an empty directory and run
+
+    npm create vue@latest
+
+Install (answer yes) Vue Router, Vitest, End-2-End Test with Cypress and optionally ESLint and Prettier.
+
+    npm install /* axios bootstrap dayjs fontawesome gsap loglevel populating-cache vue-i18n vuedraggable */

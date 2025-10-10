@@ -87,7 +87,7 @@
 <script>
 import pollPanel from "@/components/poll-panel.vue"
 import popupModal from "@/components/popup-modal.vue"
-import polly from '@/components/polly.vue'
+// import polly from '@/components/polly.vue'
 import EventBus from "@/services/event-bus.js"
 import api from "@/services/liquido-graphql-client.js"
 import log from 'loglevel'
@@ -124,7 +124,7 @@ export default {
 			},
 		},
 	},
-	components: { pollPanel, popupModal, polly },
+	components: { pollPanel, popupModal },
 	props: {
 		// Allow number or string that contains an integer. Url parameter is passed as String, 
 		// but $router.push({name: "pollShow", params: {pollId: 4711 }}) can be passed as number. We'll accept both
