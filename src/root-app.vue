@@ -192,6 +192,7 @@ export default {
 		},
 
 		/** Scroll to top of page. No animation. */
+		//TODO: Do this with  https://router.vuejs.org/guide/advanced/scroll-behavior.html#Delaying-the-scroll     "scrollBehaviour" in router!!!
 		scrollToTop() {
 			this.$nextTick(() => {
 				document.getElementById("app").scrollTop = 0

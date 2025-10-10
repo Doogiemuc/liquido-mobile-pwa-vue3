@@ -85,6 +85,7 @@ https://liquido-frontend-fly.fly.dev/
 
 # TODO: Larger new features I would like to implement ("Epics")
  
+ * Capacitorjs.com A cross platform native runtime for web apps.
  * Everythign in one page with a super intelligent wobbling funny poll-pannel => Polly works
  * Three levels of complexity
 	 1. for kids: ONly one poll-panel with single line proposals (no description)
@@ -93,6 +94,7 @@ https://liquido-frontend-fly.fly.dev/
 
 # TODO: smaller fixes
 
+ - Scroll to top: Do this with  https://router.vuejs.org/guide/advanced/scroll-behavior.html#Delaying-the-scroll     "scrollBehaviour" in router!!!
  - Need muuuuuch more tests for the polls filter at the bottom. When to show it?
  - Test on real devices, eg. with https://www.browserstack.com/    => This does already work on real hardware locally.
 

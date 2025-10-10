@@ -91,7 +91,7 @@ axios.interceptors.response.use(onSuccess, onError)
  */
 const GRAPHQL = '/graphql'      // ==================== BASE PATH FOR GRAPHQL endpoint  //TODO: should that be in config.common.js ?
 const graphQlQuery = function(query, variables) {
-	if (config.mock) {
+	if (config.mockBackend) {
 		return graphQlQueryMOCK(query, variables)
 	} else {
 		return axios.post(GRAPHQL, { query: query, variables: variables })
@@ -289,9 +289,9 @@ let graphQlApi = {
 	// If something goes wrong, then the caller is responsible to catch()
 	// and process the error.
 
+	/** Ping the backend to check if it's alive and reachable. */
 	async pingApi() {
-		//return axios.post(GRAPHQL, { query: "{ ping }" })
-		return graphQlQuery(`query { ping }`)
+		return graphQlQuery("query { ping }")
 	},
 
 	/**

@@ -5,6 +5,8 @@
 console.log("===================")
 console.log("WELCOME to LIQUIDO!")
 console.log("===================")
+console.log("Config.source="+config.configSource)
+console.log("LIQUIDO_API_URL="+config.LIQUIDO_API_URL)
 
 import config from "config"  // This path is automatically mapped to an environment specific config file config/config.<env>.json  See vite.config.js
 import log from 'loglevel'

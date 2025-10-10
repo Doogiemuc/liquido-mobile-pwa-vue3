@@ -1,36 +1,49 @@
-FROM debian:bullseye as builder
+# syntax = docker/dockerfile:1
 
+# Adjust NODE_VERSION as desired
 ARG NODE_VERSION=22.14.0
+FROM node:${NODE_VERSION}-slim AS base
 
-RUN apt-get update; apt install -y curl python-is-python3 pkg-config build-essential
-RUN curl https://get.volta.sh | bash
-ENV VOLTA_HOME /root/.volta
-ENV PATH /root/.volta/bin:$PATH
-RUN volta install node@${NODE_VERSION}
+LABEL fly_launch_runtime="Vite"
 
-#######################################################################
-
-RUN mkdir /app
+# Vite app lives here
 WORKDIR /app
 
-# NPM will not install any package listed in "devDependencies" when NODE_ENV is set to "production",
-# to install all modules: "npm install --production=false".
-# Ref: https://docs.npmjs.com/cli/v9/commands/npm-install#description
+# Set production environment
+ENV NODE_ENV="production"
 
-ENV NODE_ENV production
 
+# Throw-away build stage to reduce size of final image
+FROM base AS build
+
+# Install packages needed to build node modules
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
+
+# Install node modules
+COPY package-lock.json package.json ./
+RUN npm ci --include=dev
+
+# Copy application code
 COPY . .
 
-RUN npm install && npm run build
-FROM debian:bullseye
+# Build application
+RUN npm run build
 
-LABEL fly_launch_runtime="nodejs"
+# Remove development dependencies
+RUN npm prune --omit=dev
 
-COPY --from=builder /root/.volta /root/.volta
-COPY --from=builder /app /app
+# Final stage for app image
+FROM nginx:alpine
 
+# Set the desired target directory for the built app
 WORKDIR /app
-ENV NODE_ENV production
-ENV PATH /root/.volta/bin:$PATH
 
-CMD [ "npm", "run", "start" ]
+# Copy built application
+COPY --from=build /app/dist /app
+# overwrite nginx /conf.d/default.conf for VUE webHistoryMode special configs
+COPY ./deploy/liquido-nginx.conf /etc/nginx/conf.d/default.conf  
+
+# Start the server by default, this can be overwritten at runtime
+EXPOSE 80
+CMD [ "/usr/sbin/nginx", "-g", "daemon off;" ]

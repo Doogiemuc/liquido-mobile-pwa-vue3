@@ -10,12 +10,16 @@ const cert = fs.readFileSync(path.resolve(__dirname, 'tls-certs/liquido-TLS-cert
 // https://vitejs.dev/config/
 export default defineConfig({
 	server: {
-		https: {									// serve frontend over HTTPS
+		/*
+		https: {													// serve frontend over HTTPS. => but not on fly.io
 			key: key,
       cert: cert
-		},			    
+		},
+		*/			    
 		host: true, // "0.0.0.0",  				// "0.0.0.0" = listen on all adresses, incl. LAN and public adresses
 		port: 8080,
+		strictPort: true,    							// only use this port. Exit if not available
+		allowedHosts: ["localhost", "127.0.0.1", ".fly.dev"],
 		
 		// Problems with Cross-origin resource sharing (CORS)? 
 		// Either allow all origins in the backend (see application.properties)

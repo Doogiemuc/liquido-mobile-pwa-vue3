@@ -10,7 +10,7 @@
 
 export default {
 	configSource: "common",
-	BASE_URL: "/",                   				   			// Used for loading JS libs in browser. MUST end with '/'
+	BASE_URL: "/",                   				   				// Used for loading JS libs in browser. MUST end with '/'
 	//LIQUIDO_API_URL: "http://localhost:8080",      	// no TLS
 	//LIQUIDO_API_URL: "https://localhost:8443",  		// URI to Backend API. 
 	
@@ -18,8 +18,9 @@ export default {
 	
 	usernameMinLength: 3,
 	inviteCodeLength: 8,			       				// used for validating inviteCodes in welcome-chat.vue
-	passwordMinLength: 10,
-	
+	passwordMinLength: 10,  // FIXME! Remove duplicate :-)
+	minPasswordLength: 10, // used in forgot-password.vue
+
 	pollTitleMinLength: 10,
 	avatarPath: "./img/avatars",
 	inviteLinkPrefix: "http://localhost:3001/welcome?inviteCode=",
@@ -28,7 +29,7 @@ export default {
 	allowMembersToInvite: true,
 	//TODO: adminMustConfirmNewMembers: ...
 
-	minPasswordLength: 10, // used in forgot-password.vue
+	
 
 	// This is used in tests. 
 	// For testing against prod, this has to match spring's application.local configuratin in PROD!
