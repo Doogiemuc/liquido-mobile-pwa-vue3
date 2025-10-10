@@ -14,7 +14,7 @@ export default defineConfig({
 			key: key,
       cert: cert
 		},			    
-		host: "0.0.0.0",  				// "0.0.0.0" = listen on all adresses, incl. LAN and public adresses
+		host: true, // "0.0.0.0",  				// "0.0.0.0" = listen on all adresses, incl. LAN and public adresses
 		port: 8080,
 		
 		// Problems with Cross-origin resource sharing (CORS)? 
