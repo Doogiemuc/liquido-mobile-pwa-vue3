@@ -11,40 +11,17 @@
 export default {
 	configSource: "common",
 	BASE_URL: "/",                   				   				// Used for loading JS libs in browser. MUST end with '/'
-	//LIQUIDO_API_URL: "http://localhost:8080",      	// no TLS
 	//LIQUIDO_API_URL: "https://localhost:8443",  		// URI to Backend API. 
+	mockBackend: false,
 	
-	//CORS: You can simply but a path here, that then will be proxied by Vue devServer. See vue.config.js / vite.config.js
-	
+	//TODO: implement these settings per Team! in the backend!
 	usernameMinLength: 3,
 	inviteCodeLength: 8,			       				// used for validating inviteCodes in welcome-chat.vue
-	passwordMinLength: 10,  // FIXME! Remove duplicate :-)
-	minPasswordLength: 10, // used in forgot-password.vue
-
+	minPasswordLength: 10, 									// used in forgot-password.vue
+	allowMembersToInvite: true,
 	pollTitleMinLength: 10,
 	avatarPath: "./img/avatars",
 	inviteLinkPrefix: "http://localhost:3001/welcome?inviteCode=",
-
-	//TODO: implement these settings per Team! in the backend!
-	allowMembersToInvite: true,
 	//TODO: adminMustConfirmNewMembers: ...
 
-	
-
-	// This is used in tests. 
-	// For testing against prod, this has to match spring's application.local configuratin in PROD!
-	devLogin: {
-		teamName: "LocalTeam",
-		admin: {
-			name: "Local Admin",
-			email: "adminLocalTeam@liquido.vote",
-			mobilephone: "+4955511111",
-		},
-		member: {
-			name: "Local Member",
-			email: "localTestUser12@liquido.vote",
-			mobilephone: "+4955522222"
-		},		
-		token: "XXXXXXX",
-	}
 }

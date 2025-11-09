@@ -1,10 +1,19 @@
-# LIQUIDO Mobile PWA
+# LIQUIDO
 
 LIQUIDO - A modern aproach to liquid democracy.
 
-This is a HTML5 based mobile application. A PWA - progressive web application.
+http://www.liquido.vote
 
- 
+# LIQUIDO Frontend
+
+This is the LIQUIDO frontend, a progressive web application (PWA) built with VUE.
+This frontend communicates via a GraphQL API with the LIQUIDO quarkus backend.
+
+# Disclaimer
+
+This is a private hobby project. I've been working on this in my free time for nearly a decade. 
+The honest goal of LIQUIDO is to never ever be finished. I use this project to learn.
+
 
 # Layout, Design, UX/UI
 
@@ -60,6 +69,27 @@ See also https://github.com/FiloSottile/mkcert/blob/master/README.md#supported-r
 
 Sometimes it is till necessary to open  https://backend.host:8443/graphql/schema.graphql  at the backend once and again click on "open website" in iOS.
 
+# Social Logins
+
+## Google Login for LIQUIDO
+
+We use the Oauth Authentication Code Flow.
+
+Oauth Client IDs are configured in the Google Cloud Console:
+https://console.cloud.google.com/auth/clients?project=liquido-vote
+
+Very nice comparission of both Oauth Flows:
+https://developers.google.com/identity/oauth2/web/guides/choose-authorization-model#oauth_20_flow_comparison 
+
+Google OAuth
+https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow#obtainingaccesstokens
+https://developers.google.com/identity/oauth2/web/guides/how-user-authz-works 
+https://developers.google.com/identity/protocols/oauth2/web-server#node.js_1  
+
+
+
+
+
 
 # Deploy
 
@@ -69,14 +99,16 @@ Sometimes it is till necessary to open  https://backend.host:8443/graphql/schema
 	 fly deploy  => remember to have all "dependencies" in package.json  ("devDependencies" are not installed in productin!)
 	                creates a Dockerfile and pushes to registry.fly.io/liquido-frontend-fly
 
-## Fly.io Links
+**Fly.io Links**
 
  * Liquido frontend on Fly.io - Web Management Console  https://fly.io/apps/liquido-frontend-fly
  * Watch server logs on Fly.io  https://fly.io/apps/liquido-frontend-fly/monitoring
  
 https://liquido-frontend-fly.fly.dev/ 
 
+## Deploy to IONOS
 
+Copy files with ForkLift sFTP or rsync
 
 
 

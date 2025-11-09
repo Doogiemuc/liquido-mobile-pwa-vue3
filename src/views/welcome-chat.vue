@@ -341,7 +341,7 @@ export default {
 				yourEMail: "Deine E-Mail",
 				emailPlaceholder: "info{'@'}domain.de",
 				emailInvalid: "E-Mail ungültig",
-				passwordInvalid: "Bitte mindestens " + config.passwordMinLength + " Zeichen!",
+				passwordInvalid: "Bitte mindestens " + config.minPasswordLength + " Zeichen!",
 
 				joinedTeamSuccessfully: "Herzlich willkommen im Team <b>{teamName}</b>. Viel Spaß beim Abstimmen und Wählen!",
 				gotoTeam: "Zum Team",
@@ -550,7 +550,7 @@ export default {
 		},
 
 		isPasswordValid(val) {
-			return val !== undefined && val !== null && val.trim().length >= config.passwordMinLength
+			return val !== undefined && val !== null && val.trim().length >= config.minPasswordLength
 		},
 
 		/* team name must be at least 6 chars */

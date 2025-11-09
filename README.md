@@ -6,19 +6,11 @@ A very clever algorithm then calculates the winner from all voter's preferences.
 
 http://www.liquido.vote
 
-# liquido-mobile-pwa
+# liquido-mobile-pwa-vue3
 
-This is a web based mobile client (PWA) for [LIQUIDO](http://www.liquido.vote). 
+This is the LIQUIDO frontend, a web based mobile client (PWA) for [LIQUIDO](http://www.liquido.vote). 
+It talks to the LIQUIDO backend via a GraphQL API.
 
 # Coding
 
-Now updated to VUE3 + Vite
-Originalle based on the awesome Vue PWA boilerplate [Peridot](https://github.com/Gingernaut/Peridot).
-
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) and the official [VSCode VUE Plugin ](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
-
-# Testing
-
-We use Cypress for testing. See ./tests/e2e/specs/
+See ./doc/README-tech.md for more technical details.

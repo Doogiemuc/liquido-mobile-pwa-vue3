@@ -20,7 +20,7 @@
 		<navbar-bottom v-if="showNavbarBottom"></navbar-bottom>
 		<mobile-debug-log  v-if="showDebugLog" ref="mobileDebugLogRef"></mobile-debug-log>
 	</div>
-</template>
+</template>dw
 
 <script>
 /**
@@ -47,7 +47,7 @@ import config from "config"
 const page_order = {
 	"index": 0,
 	"welcome": 1,
-	"login": 1,     // welcome and login are on the same level, so they fade
+	"login": 1,     // welcome and login are on the same level, so they fade instead of sliding sideways
 	"forgotPassword": 2,
 	"teamHome": 3,
 	"polls": 4,
@@ -120,13 +120,6 @@ export default {
 		// This has some consequences ... be carefull
 		//this.$refs["mobileDebugLogRef"]?.redefineConsoleMethods()
 	
-		/*
-		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (newFilter) => {
-			console.log("Root app POLL_FILTER_CHANGED to", newFilter)
-			//this.pollStatusFilter = newFilter
-		})
-		*/
-
 		//TODO: should I move this to main.js? Would be first. But there I cannot display any error.
 		api.pingApi()
 			.then(() => {

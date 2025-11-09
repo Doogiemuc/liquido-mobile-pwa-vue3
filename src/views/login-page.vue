@@ -45,14 +45,14 @@
 				<div class="row g-2">
 					<div class="col">
 						<!-- Signin with Google -->
-						<button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" @click="startGoogleLogin()">
+						<button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" @click="startGoogleLoginAuthorizationCodeFlow">
 							<i class="fa-brands fa-google"></i>
 							<span class="flex-grow-1 text-center">{{ $t("Google") }}</span>
 						</button>
 					</div>
 					<div class="col">
 						<!-- Signin with Authy App -->
-						<button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" @click="startFacebookLogin()">
+						<button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" @click="startFacebookLogin">
 							<i class="fa fa-shield-halved"></i>
 							<span class="flex-grow-1 text-center">{{ $t("Authy") }}</span>
 						</button>
@@ -61,7 +61,7 @@
 				<div class="row g-2">
 					<div class="col">
 						<!-- Signin with Apple -->
-						<button type="button" class="btn btn-outline-secondary w-100 mt-3 d-flex align-items-center justify-content-center" @click="startAppleLogin()">
+						<button type="button" class="btn btn-outline-secondary w-100 mt-3 d-flex align-items-center justify-content-center" @click="startAppleLogin">
 							<i class="fa-brands fa-apple"></i>
 							<span class="flex-grow-1 text-center">{{ $t("Apple") }}</span>
 						</button>
@@ -69,7 +69,7 @@
 					</div>
 					<div class="col mb-2">
 						<!-- signin with Telegram -->
-						<button type="button" class="btn btn-outline-secondary w-100 mt-3 d-flex align-items-center justify-content-center" @click="startTelegramLogin()">
+						<button type="button" class="btn btn-outline-secondary w-100 mt-3 d-flex align-items-center justify-content-center" @click="startTelegramLogin">
 							<i class="fa-brands fa-telegram"></i>
 							<span class="flex-grow-1 text-center">{{ $t("Telegram") }}</span>
 						</button>
@@ -129,9 +129,7 @@
 			</div>
 		</div>
 
-
 		<!-- Register as a new user -->
-
 		<div class="d-flex justify-content-center mt-5 px-3" style="max-width: 540px; margin: 0 auto;">
 			<button id="registerButton" type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" @click="clickRegister()">
 				<i class="fa-solid fa-user-plus me-2"></i>
@@ -140,6 +138,7 @@
 		</div>
 
 		<div v-if="showDevLogin" class="d-flex flex-column px-3" style="margin-top: 8rem;">
+			<!-- quick links only for development -->
 			<button type="button" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" @click="devLoginAdmin">
 				<i class="fas fa-shield-alt me-2"></i>
 				<span class="flex-grow-1 text-center">{{ $t("DevLoginAdmin") }}</span>
@@ -147,6 +146,10 @@
 			<button type="button" class="btn btn-outline-secondary mt-1 d-flex align-items-center justify-content-center" @click="devLoginMember">
 				<span class="flex-grow-1 text-center">{{ $t("DevLoginMember") }}</span>
 			</button>
+			<a class="btn btn-outline-secondary mt-1 d-flex align-items-center justify-content-center" 
+				:href="graphQlSchmeaURL">
+				<span class="flex-grow-1 text-center">graphql.schemea</span>
+			</a>
 		</div>
 
 	</div>
@@ -254,6 +257,9 @@ export default {
 		},
 		adminEmail() {
 			return config.devLogin.admin.email
+		},
+		graphQlSchmeaURL() {
+			return config.LIQUIDO_API_URL + '/graphql/schema.graphql'
 		}
 	},
 	watch: {
@@ -304,18 +310,24 @@ export default {
 				})
 		},
 
-		
+		// =============== Google Oauth - Authorization Code Flow ==================
+		// Very nice comparission of both Oauth Flows:
+		// https://developers.google.com/identity/oauth2/web/guides/choose-authorization-model#oauth_20_flow_comparison 
 
     /**
      * Start the Google OAuth Authorization Code Flow.
      * This will redirect the user to Google's OAuth endpoint with response_type=code.
      * After login/consent, Google will redirect back to our backend with an authorization code.
+		 * https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow#obtainingaccesstokens
+		 * https://developers.google.com/identity/oauth2/web/guides/how-user-authz-works 
+		 * https://developers.google.com/identity/protocols/oauth2/web-server#node.js_1  
      */
     startGoogleLoginAuthorizationCodeFlow() {
         const clientId = config.googleClientId;
         const redirectUri = encodeURIComponent(config.LIQUIDO_API_URL + "/auth/google/callback");
         const scope = encodeURIComponent("openid email profile");
         const state = encodeURIComponent(Math.random().toString(36).substring(2)); // Optional: use a real CSRF token in production
+				console.log("Attempting google login: redirectUri="+config.LIQUIDO_API_URL + "/auth/google/callback")
 
         const googleAuthUrl =
             `https://accounts.google.com/o/oauth2/v2/auth` +
@@ -335,7 +347,7 @@ export default {
     },
 
 
-		// =============== Google OAuth Implicit Flow / Google One Tap  ==================
+		// =============== Google OAuth - Implicit Flow / Google One Tap  ==================
    	//   This works, but is less secure than the Authorization Code Flow above.
 	
 		/** 
@@ -368,7 +380,7 @@ export default {
 					login_uri: config.LIQUIDO_API_URL + "/auth/google",
 					callback: this.handleGoogleOneTapResponse,
 					auto_select: false,
-					ux_mode: "redirect",
+					ux_mode: "redirect",  // popup (default) or redirect
 					scope: "openid email profile"
 				});
 				window.google.accounts.id.prompt(); // Show the Google login prompt
@@ -401,8 +413,11 @@ export default {
 			}
 		},
 
+
+
 		/** Quickly login as an admin user. This is available as a button in the mobile UI when in DEV env.  */
 		devLoginAdmin() {
+			if (process.env.NODE_ENV !== "development" && process.env.NODE_ENV !== "test") return
 			api.logout()
 			api.devLogin(config.devLogin.admin.email, config.devLogin.teamName, config.devLogin.token).then(() => {
 				this.$router.push({name: "polls"})
@@ -411,6 +426,7 @@ export default {
 
 		/** Quickly login as a team member. This is available as a button in the mobile UI when in DEV env.  */
 		devLoginMember() {
+			if (process.env.NODE_ENV !== "development" && process.env.NODE_ENV !== "test") return
 			api.logout()
 			api.devLogin(config.devLogin.member.email, config.devLogin.teamName, config.devLogin.token)
 				.then(() => {

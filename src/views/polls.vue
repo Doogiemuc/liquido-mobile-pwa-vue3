@@ -166,6 +166,7 @@ export default {
 			return this.$store.pollStatusFilter
 		},
 		pageTitleLoc() {
+			console.log("polls.vue: get computed pageTitleLoc")
 			switch (this.$store.pollStatusFilter) {
 				case "ELABORATION":
 					return this.$t("pollsInElaboration")
@@ -177,26 +178,11 @@ export default {
 					return this.$t("YourPolls")
 			}
 		},
-		/*
-		iconForFilter() {
-			switch (this.$store.pollStatusFilter) {
-				case "ELABORATION":
-					return "fas fa-comments"
-				case "VOTING":
-					return "fas fa-person-booth"
-				case "FINISHED":
-					return "fas fa-check-circle"
-				default:
-					return "fas fa-vote-yea"
-			}
-		},
-		*/
 		userIsAdmin() {
-			console.log("========= is Admin", api.isAdmin())
 			return api.isAdmin()
 		},
 		allPolls() {
-			this.forceRefreshComputed;		
+			this.forceRefreshComputed;
 			let polls = api.getCachedPolls()
 			return polls
 		},
