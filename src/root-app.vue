@@ -85,7 +85,7 @@ export default {
 		},
 
 		showDebugLog() {
-			return false // process.env.NODE_ENV !== 'production'
+			return process.env.NODE_ENV !== 'production'
 		}
 	},
 	// watch the `$route` to determine the transition to use
@@ -132,10 +132,10 @@ export default {
 					if (this.$route.name !== "login") this.$router.push({name: "login"})
 				} else
 				if (res.response && res.response.status > 200) {
-					console.error("Network seems ok, but cannot ping backend", res)
+					console.error("Network seems ok, but cannot ping backend at "+config.LIQUIDO_API_URL, res)
 					this.$refs.rootPopupModal.showWarning(this.$t("BackendNotReachable"))
 				} else {
-					console.error("No network. Backend is not reachable at all", res)  
+					console.error("No network. Backend is not reachable at all at "+config.LIQUIDO_API_URL, res)  
 					this.$refs.rootPopupModal.showWarning(this.$t("NetworkOffline"))
 					//TODO: Do something: Show a general "offline" message at the top and implement an offline mode(?)
 				}

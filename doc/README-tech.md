@@ -93,6 +93,8 @@ https://developers.google.com/identity/protocols/oauth2/web-server#node.js_1
 
 # Deploy
 
+Build `npm run build`
+
 ## Deploy to fly.io
 
    fly launch  => setup a fly app and create a fly.toml   Configure [env] in there!
@@ -106,9 +108,9 @@ https://developers.google.com/identity/protocols/oauth2/web-server#node.js_1
  
 https://liquido-frontend-fly.fly.dev/ 
 
-## Deploy to IONOS
+## Deploy LIQUIDO Frontend to IONOS
 
-Copy files with ForkLift sFTP or rsync
+Copy /dist with ForkLift, sFTP or rsync
 
 
 

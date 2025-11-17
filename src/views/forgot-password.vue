@@ -6,8 +6,8 @@
 		<div class="card" v-if="!resetPasswordToken">
 			<div class="card-body">
 
-				 <div class="text-center my-3">
-            <i class="fas fa-key fa-3x" style="color: #007bff;"></i>
+				<div class="text-center my-3">
+            <i class="fas fa-key fa-3x" style="color: var(--primary)"></i>
         </div>
 
 				<p class="text-center">{{ $t('RequestPasswordResetInfo') }}</p>

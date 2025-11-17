@@ -5,6 +5,10 @@
 		<!-- Default Login with email & password  -->
 		<div class="card">
 			<div class="card-body">
+				
+				<div class="text-center my-3">
+            <i class="fas fa-user-circle fa-3x" style="color: var(--primary)"></i>
+        </div>
 
 				<liquido-input id="loginEmailInput" v-model="emailInputVal" v-model:state="emailInputState" type="email"
 					:required=true
@@ -45,7 +49,7 @@
 				<div class="row g-2">
 					<div class="col">
 						<!-- Signin with Google -->
-						<button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" @click="startGoogleLoginAuthorizationCodeFlow">
+						<button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" @click="startGoogleOneTapLogin">
 							<i class="fa-brands fa-google"></i>
 							<span class="flex-grow-1 text-center">{{ $t("Google") }}</span>
 						</button>
@@ -295,11 +299,13 @@ export default {
 	},
 	methods: {
 
-		// =============== Login via E-Mail & Password ==================
+		// =============== Simple Login via E-Mail & Password ==================
 
 		loginWithEmailPassword() {
 			this.loginErrorMessage = null
-			//BUFIX: When password is auto filled, then state is not valid.   if (this.emailInputState !== STATE.VALID || this.passwordInputState !== STATE.VALID) return	
+			//TODO: BUFIX: When password is auto filled, then state is not valid.   manually trigger a state validation here
+			
+			//if (this.emailInputState !== STATE.VALID || this.passwordInputState !== STATE.VALID) return	
 			api.loginWithEmailPassword(this.emailInputVal, this.passwordInputVal)
 				.then(() => {
 					this.$router.push({name: "teamHome"})
@@ -348,7 +354,8 @@ export default {
 
 
 		// =============== Google OAuth - Implicit Flow / Google One Tap  ==================
-   	//   This works, but is less secure than the Authorization Code Flow above.
+   	// This works, but is less secure than the Authorization Code Flow above.
+		// https://developers.google.com/identity/gsi/web/reference/js-reference#google.accounts.id.prompt
 	
 		/** 
 		 * (1) Start the google login process.
@@ -362,7 +369,7 @@ export default {
         const script = document.createElement("script");
         script.id = "google-script";
         script.src = "https://accounts.google.com/gsi/client";
-        script.onload = this.loginWithGoogle; // Call login after script loads
+        script.onload = this.loginWithGoogleOneTap; // Call google login function after script has been loaded
         document.head.appendChild(script);
       } else {
         this.loginWithGoogleOneTap(); // If script is already loaded, start login
@@ -371,16 +378,17 @@ export default {
 
 		/**
 		 * 2. Login with Google. This is called after the google script has been loaded.
+		 * https://developers.google.com/identity/gsi/web/reference/js-reference#google.accounts.id.initialize
 		 */
 		loginWithGoogleOneTap() {
 			if (window.google && window.google.accounts) {
 				this.loginErrorMessage = undefined
 				window.google.accounts.id.initialize({
 					client_id: config.googleClientId,
-					login_uri: config.LIQUIDO_API_URL + "/auth/google",
+					//login_uri: config.LIQUIDO_API_URL + "/auth/google",   // used for ux_mode=redirect
 					callback: this.handleGoogleOneTapResponse,
 					auto_select: false,
-					ux_mode: "redirect",  // popup (default) or redirect
+					ux_mode: "popup",  // popup (default) or redirect
 					scope: "openid email profile"
 				});
 				window.google.accounts.id.prompt(); // Show the Google login prompt
@@ -399,7 +407,7 @@ export default {
 			if (response.credential) {
 				this.tokenErrorMessage = undefined
 				api.logout()
-				api.loginWithGoogle(response.credential)
+				api.googleOneTapLogin(response.credential)
 					.then(() => {
 						this.$router.push({name: "teamHome"})
 					})

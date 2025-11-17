@@ -471,6 +471,19 @@ let graphQlApi = {
 			})
 	},
 
+	/**
+	 * Google OneTap Login: send the googleIdToken to the backend
+	 * and receive login info in response	
+	 */
+	googleOneTapLogin(googleIdToken) {
+		let graphQL = `query { googleOneTapLogin(googleIdToken: "${googleIdToken}") ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
+		return graphQlQuery(graphQL).then(response => {
+			let res = response.data.googleOneTapLogin
+			this.login(res.team, res.user, res.jwt)
+			return res
+		})
+	},
+
 
 	/**
 	 * Request auth token for login. 
