@@ -7,8 +7,8 @@
 			<div class="card-body">
 				
 				<div class="text-center my-3">
-            <i class="fas fa-user-circle fa-3x" style="color: var(--primary)"></i>
-        </div>
+					<i class="fas fa-user-circle fa-3x" style="color: var(--primary)"></i>
+				</div>
 
 				<liquido-input id="loginEmailInput" v-model="emailInputVal" v-model:state="emailInputState" type="email"
 					:required=true

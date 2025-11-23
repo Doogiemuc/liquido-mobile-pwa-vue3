@@ -386,13 +386,15 @@ function isEmail(s) {
 
 <template>
 	<div class="polly">
-
 		<div class="card polly-card position-relative user-select-none">
 			<span v-if="inVoting" @click="shareLinkToPoll" class="fa-stack share-poll-icon" title="Share Poll">
 				<i class="fa-solid fa-circle fa-stack-2x" style="color:var(--proposal-icon-bg)"></i>
 				<i class="fa-solid fa-arrow-up-from-bracket fa-stack-1x"></i>
 			</span>
 			<div class="card-header">
+				<div class="text-center my-3">
+					<i class="fas fa-scale-balanced fa-3x" style="color: var(--primary)"></i>
+				</div>
 				<liquido-input v-if="isNew" 
 					id="pollTitleInput"
 					class="poll-title-input"
@@ -402,25 +404,14 @@ function isEmail(s) {
 					:placeholder="loc('PollyTitlePlaceholder')"
 					:empty-feedback="loc('PollyTitleEmptyFeedback', {minLength: 10})"
 					:invalid-feedback="loc('PollyTitleInvalidFeedback', {minLength: 10})"
-					:feedback-placeholder=true
+					:feedback-placeholder=false
 					/>
-
-				<!-- input v-if="isNew" 
-					id="pollTitleInput"
-					type="text" 
-					class="form-control poll-title-input"  
-					v-model="poll.title"
-					placeholder="Polly Title" 
-					:validFunc="pollTitleValid" 
-					:feedback-placehoder=true 
-					:invalid-feedback="loc('PollTitleInvalid')"
-				/ -->
 				<h1 v-else class="poll-title" id="pollTitle">{{ poll.title }}</h1>
 			</div>
 
 			<div v-if="isNew" class="card-body">
 				<TransitionGroup name="fade" class="polly-proposals-wrapper" tag="ul">
-					<li v-for="(prop, index) in poll.proposals" :key="prop.id" class="polly-proposal d-flex align-items-center">
+					<li v-for="(prop, index) in poll.proposals" :key="prop.id" class="polly-proposal">
 						<input v-model="prop.title" :placeholder="loc('AddProposalPlaceholder')" type="text"
 							class="form-control flex-grow-1 polly-proposal-input" @blur="(evt) => onProposalBlurr(evt, index)"
 							@keyup="(evt) => onProposalKeyup(evt, index)" />
@@ -428,10 +419,10 @@ function isEmail(s) {
 				</TransitionGroup>
 			</div>
 
+			<!-- read-only view of the poll -->
 			<div v-if="inElaboration || prepareStart || isFinished" class="card-body">
-				<!-- read-only view of the poll -->
-				<div class="polly-proposals-wrapper position-relative">
-					<div v-for="(proposal, index) in poll.proposals" class="polly-proposal d-flex align-items-center">
+				<div class="polly-proposals-wrapper">
+					<div v-for="(proposal, index) in poll.proposals" class="polly-proposal">
 						<div v-if="isFinished" class="text-secondary me-2">
 							{{ index + 1 }}.
 						</div>
@@ -442,75 +433,60 @@ function isEmail(s) {
 				</div>
 			</div>
 
+			<!-- poll inVoting where user can drag proposals up and down -->
 			<div v-if="inVoting" class="card-body d-flex flex-row">
-				<!-- poll inVoting where user can drag proposals up and down -->
 				<div class="me-1">
 					<div v-for="(prop, index) in poll.proposals" :key="prop.id" class="proposal-index-number">
 						{{ index + 1 }}.
 					</div>
 				</div>
 				<div class="polly-proposals-wrapper">
-				
-					<draggable id="draggableProposals" v-model="poll.proposals" itemKey="id" :animation="500" can-scroll-x="false">
-						
-						<div v-for="prop in poll.proposals" class="polly-proposal sortable-proposal d-flex align-items-center position-relative form-control">
+					<draggable id="pollyDraggable" v-model="poll.proposals" class="draggable" item-key="id"
+							:swap-threshold="0.5" :delay="40" :animation="500" :can-scroll-x="false">
+						<div v-for="prop in poll.proposals" :id="prop.id" class="form-control polly-proposal sortable-proposal noselect">
 							<div class="arrow-up pos-top-middle">&nbsp;</div>
-							<div class="sortable-proposal-content">
+							<div class="sortable-proposal-title">
 								{{ prop.title }}
 							</div>
-							<div class="proposal-bars ms-1">
-								<i class="fas fa-grip-vertical"></i>
+							<div class="proposal-bars">
+								<i class="fas fa-bars"></i>
 							</div>
 							<div class="arrow-up pos-bottom-middle-down">&nbsp;</div>
 						</div>
-
 					</draggable>
 				</div>
 			</div>
 
+			<!-- Polly footer with button -->
 			<div class="card-footer">
-				<!-- poll footer with status and buttons -->
 				<div class="d-flex align-items-center justify-content-end">
-					<!-- div class="flex-grow-1 footer-status">
-						&nbsp;
-						<Transition name="slide-up">
-							<div v-if="isNew">{{loc('NewPolly')}}</div>
-							<div v-else-if="inElaboration">{{loc('PollNotYetStarted')}}</div>
-							<div v-else-if="prepareStart">{{loc('StartingPoll')}}</div>
-							<div v-else-if="inVoting && !poll.alreadyVoted">{{loc('SortProposals')}}</div>
-							<div v-else-if="inVoting && poll.alreadyVoted">{{loc('ThxForVoting')}}</div>
-							<div v-else-if="isFinished">{{loc('PollFinished', {numVoters: poll.numVoters})}}</div>
-							<div v-else>&nbsp;</div>
-						</Transition>
-					</div -->
 					<div v-if="isNew" class="text-end">
 						<button @click="savePoll" :disabled="!saveIsActive" type="button"
-							class="btn btn-sm btn-primary">
+							class="btn btn-primary">
 							<i class="fa-regular fa-save"></i>&nbsp;{{loc('Save')}}
 						</button>
 					</div>
 					<div v-if="inElaboration" class="text-end">
-						<button @click="editPoll" type="button" class="btn btn-sm btn-secondary me-2">
+						<button @click="editPoll" type="button" class="btn btn-secondary me-2">
 							<i class="fa-regular fa-edit"></i>&nbsp;{{loc('Edit')}}
 						</button>
-						<button @click="clickStartPollButton" type="button" class="btn btn-sm btn-primary">
+						<button @click="clickStartPollButton" type="button" class="btn btn-primary">
 							<i class="fa-solid fa-play"></i>&nbsp;{{loc('StartPoll')}}
 						</button>
 					</div>
 					<div v-if="prepareStart" class="text-end">
-						<button type="button" class="btn btn-sm btn-primary disabled" disabled>
+						<button type="button" class="btn btn-primary disabled" disabled>
 							<i class="fa-solid fa-play"></i>&nbsp;{{loc('StartPoll')}}
 						</button>
 					</div>
 					<div v-if="inVoting" class="text-end">
-						<button @click="finishPoll" type="button" class="btn btn-sm btn-secondary me-2">
+						<button @click="finishPoll" type="button" class="btn btn-secondary me-2">
 							<i class="fa-regular fa-circle-check"></i>&nbsp;{{loc('FinishPoll')}}
 						</button>
-						<button v-if="!poll.alreadyVoted" @click="castVote" type="button" class="btn btn-sm btn-primary">
+						<button v-if="!poll.alreadyVoted" @click="castVote" type="button" class="btn btn-primary">
 							<i class="fa-solid fa-person-booth"></i>&nbsp;{{loc('CastVote')}}
 						</button>
 					</div>
-
 				</div>
 			</div>
 		</div>
@@ -552,21 +528,10 @@ function isEmail(s) {
 $arrow-size: 10px;
 $proposal-bg: #e6f0ff;
 $polly-proposal-height: 40px;
-$polly-proposal-margin-bottom: 16px;
+$polly-proposal-margin-bottom: 20px;
 
 .polly-card {
 	max-width: 1024px;
-
-	/*
-	.card-header {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		border-bottom: none;
-		//height: 4rem; // Must have fixed height!
-		text-align: center;
-	}
-	*/
 
 	.share-poll-icon {
 		cursor: pointer;
@@ -583,8 +548,9 @@ $polly-proposal-margin-bottom: 16px;
 
 	.poll-title-input {
 		text-align: center;
+		padding: 0;
 		input {
-			font-size: 1.25rem;
+			font-size: 1.2rem;
 			font-weight: bold;
 			text-align: center;
 		}
@@ -597,17 +563,6 @@ $polly-proposal-margin-bottom: 16px;
 		font-weight: bold;
 		text-align: center;
 
-	}
-
-	.polly-proposal-input::placeholder {
-		color: lightgrey;
-	}
-
-	.readonly-proposal {
-		background-color: var(--bs-secondary-bg);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
 	}
 
 	.pos-top-middle {
@@ -631,7 +586,10 @@ $polly-proposal-margin-bottom: 16px;
 		border-bottom: $arrow-size solid $proposal-bg;
 	}
 
-	// Polly footer
+	// no borders
+	.card-header {
+		border-bottom: none;
+	}
 	.card-footer {
 		border-top: none;
 		//background-color: white;
@@ -647,103 +605,87 @@ $polly-proposal-margin-bottom: 16px;
 		left: 0;
 		top: 0;
 	}
-}
 
 
-// ======== Proposals List =============
-// Each proposal has a fixed height and a margin-bottom.
-// This is important for the VUE list transition to work properly.
+	// ======== Proposals List =============
+	// Each proposal has a fixed height and a margin-bottom.
+	// This is important for the VUE list transition to work properly.
 
+	.readonly-proposal {
+		background-color: var(--bs-secondary-bg);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 
-// Wrapper around the proposals list
-.polly-proposals-wrapper {
-	position: relative;
-	padding: 0;
-	margin: 0;
-	list-style-type: none;
-	min-width: 0; // must set to keep flexbox from growing too wide
-	flex-grow: 1;
-}
+	// Wrapper around the proposals list
+	.polly-proposals-wrapper {
+		position: relative;
+		padding: 0;
+		margin: 0;
+		list-style-type: none;
+		min-width: 0; // must set to keep flexbox from growing too wide
+		flex-grow: 1;
+	}
 
-// Each proposal. This is used for editable and non-editable views.
-.polly-proposal {
-	height: $polly-proposal-height;
-	box-sizing: border-box;
-
-	&:not(:last-child) {
+	// Each proposal. This is used for all views. (editable, sortable, read-only)
+	.polly-proposal {
+		position: relative;
+		height: $polly-proposal-height;
+		display: flex;
+		align-items: center;
+		//BUGFIX: Every polly-proposal has this margin at the bottom. Also the last one! But cannot remove it, otherwise the drag-fallback also would have this margin and the view jumps a bit up and down.
 		margin-bottom: $polly-proposal-margin-bottom;
 	}
-}
 
-// The index number at the left side of the sortable proposals. (These are fixed and don't move.)
-.proposal-index-number {
-	height: $polly-proposal-height;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	.polly-proposal-input::placeholder {
+		color: lightgrey;
+	}
 
-	&:not(:last-child) {
+	// The index number at the left side of the sortable proposals. (These are fixed and don't move.)
+	.proposal-index-number {
+		height: $polly-proposal-height;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		margin-bottom: $polly-proposal-margin-bottom;
 	}
+
+	.sortable-proposal {
+		background-color: $proposal-bg;
+	}
+
+	.sortable-proposal-title {
+		flex-grow: 1;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.proposal-bars {
+		color: #CCC;
+	}
+
 }
 
-// additional styles for sortable proposals
-.sortable-proposal {
-	//background-color: $proposal-bg !important;
-}
-
-.sortable-proposal-content {
-	flex-grow: 1;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.proposal-bars {
-	color: #CCC;
-}
 
 
-// ========= Slid-up VUE transition - used for status in footer ========
-// adapted from https://vuejs.org/guide/built-ins/transition
-.slide-up-enter-active,
-.slide-up-leave-active {
-	transition: all 0.5s ease-out;
-}
-
-.slide-up-enter-from {
-	opacity: 0;
-	//transform: translateY(30px);
-}
-
-.slide-up-leave-to {
-	opacity: 0;
-	//transform: translateY(-30px);
-}
 
 // ========= For VUE.draggable@next ========
+.draggable {
+	.sortable-ghost {
+		opacity: 0.1;
+	}
 
-.ghost {
-	// for drop placeholder
-	//border: 1px solid red;
+	.sortable-chosen {
+		z-index: 999;
+		-webkit-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
+		box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
+		//transform: translate(3px, 3px);
+	}
 }
-
-.chosen {
-	// for the chosen item
-	opacity: 0.3;
-}
-
-
-.drag {
-	// for the dragging item
-	//opacity: 1.0;
-	//border: 1px solid blue !important;
-}
-	
-
 
 //===== small utility classes =======
-
 .cursor-move {
 	cursor: move;
 }

@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<h1 id="polly-create" class="page-title">
-			{{ pollIsNew ? $t("NewPolly") : $t('Polly') }}
+			{{ pollyHeaderTitle }}
 		</h1>
 
 		<polly 
@@ -9,39 +9,22 @@
 			:poll="poll">
 		</polly>
 
-		<div v-if="poll.status != 'VOTING'" class="alert text-center">
-			{{ getInfoTextForPollStatus }}
+		<div v-if="poll.status === 'NEW'" class="alert text-center" v-html="$t('PollIsNewInfo')"></div>
+		<div v-if="poll.status === 'ELABORATION'" class="alert text-center">
+			{{ $t('PollInElaborationInfo') }}
 		</div>
-
-		<div v-if="poll.status == 'VOTING'" class="alert alert-light">
-			<p>{{ $t('PollInVotingInfo1') }}</p>
+		<div v-if="poll.status == 'VOTING'" class="alert create-poll-info mt-5">
+			<p v-html="$t('PollInVotingInfo1')"></p>
 			<ol class='fa-ul'>
-				
-				<li><span class='fa-li'><i class='fas fa-person-booth'></i></span> <span v-html="$t('createPollInfo4')"></span></li>
-				<li><span class='fa-li'><i class='fas fa-check-circle'></i></span> {{ $t('createPollInfo5') }}</li>
+				<li><span class='fa-li'><i class='fas fa-person-booth'></i></span> <span v-html="$t('PollInVotingInfo2')"></span></li>
+				<li><span class='fa-li'><i class='fas fa-check-circle'></i></span> {{ $t('PollInVotingInfo3') }}</li>
 			</ol>			
 		</div>
+		<div v-if="poll.status === 'FINISHED'" class="alert text-center">
+			{{ $t('PollIsFinishedInfo') }}
+		</div>
 
-
-		<!-- 
-		<h3>Einstellungen für diese Abstimmung</h3>
-		<form class="mb-4 p-2">
-			<div class="form-check">
-				<input type="checkbox" class="form-check-input" id="allowAddProposal" checked>
-				<label class="form-check-label" for="allowAddProposal">Teammitglieder können weitere Vorschläge hinzufügen.</label>
-			</div>
-			<div class="form-check">
-				<input type="checkbox" class="form-check-input" id="allowChangeVote" checked>
-				<label class="form-check-label" for="allowChangeVote">Eine einmal abgegebene Stimme kann noch geändert werden, solange die Abstimmung noch nicht geschlossen ist.</label>
-			</div>
-			<div class="text-end mt-3">
-				<button @click="saveSettings" type="button" class="btn btn-primary btn-lg">
-					<i class="far fa-floppy-disk"></i>&nbsp;&nbsp;{{ $t('SaveSettings') }}
-				</button>
-			</div>
-		</form>
-		-->
-
+		<!-- Extra info for the admin -->
 		<div class="alert alert-admin create-poll-info mt-5">
 			<p>{{ $t('createPollInfo1') }}</p>
 			<ol class='fa-ul'>
@@ -54,6 +37,11 @@
 </template>
 
 <script>
+/**
+ * A Polly is a simple, easy to use component for a quick and private poll.
+ * 
+ * NO configuration. Only defaults!
+ */
 import { defineComponent } from 'vue'
 //import config from "config"
 import liquidoInput from "@/components/liquido-input.vue"
@@ -78,18 +66,22 @@ export default defineComponent({
 			"de": {
 				"Polly": "Polly",
 				"NewPolly": "Neues Polly",
-				"PollIsNewInfo": "Willkommen bei . Dies ist ein neues Polly. Füge einfach oben die Vorschläge hinzu, über die ihr abstimmen wollt.",
+				"PollIsNewInfo": "Willkommen bei <span class='liquido'></span>. Ein Polly ist eine einfache, anonyme und sichere Abstimmung. In  Füge hier die Vorschläge hinzu, über die ihr abstimmen wollt.",
 				"PollInElaborationInfo": "Ok bin bereit. Du kannst die Abstimmung jetzt starten.",
-				"PollInVotingInfo1": "Ein Polly ist eine einfache, anonyme und private Abstimmung hier in LIQUIDO.", 
-				"PollInVotingInfo2": "In LIQUIDO stimmst du nicht nur für einen Vorschlag, sondern du sortierst alle Vorschläge. Schiebe deinen Favoriten ganz nach oben. Bis zu dem Vorschlag dem du am wenigsten zustimmst ganz unten.",
-				"PollIsFinishedInfo": "Diese Abstimmung ist abgeschlossen. Es können keine weiteren Stimmen mehr abgegeben werden.",
-				"createPollInfo1": "Du bist dann der Admin dieser Abstimmungen.",
+				// This info is for voters and shown when polly is in voting
+				"PollInVotingInfo1": "Willkommen bei <span class='liquido'></span>! Ein Polly ist eine einfache, anonyme und sichere Abstimmung.", 
+				"PollInVotingInfo2": "In <span class='liquido'></span> stimmst du nicht nur für einen Vorschlag, sondern du <b>sortierst alle</b> Vorschläge so wie du es möchtest. Mit deinem Favoriten ganz oben.",
+				"PollInVotingInfo3": "Wenn euer Admin die Abstimmung abschließt, wird der Vorschlag mit der größten Zustimmung durch einen cleveren Algorithmus berechnet.",
+				
+				// This info is for the admin, and only shown to him.
+				"createPollInfo1": "Du bist der Polly Admin:",
 				"createPollInfo2": "Eine neue Abstimmung wird erst einmal debatiert.",
 				"createPollInfo3": "Du kannst festlegen ob Teammitglieder eigene Wahlvorschläge hinzufügen dürfen.",
 				"createPollInfo4": "Als Admin startest du die Abstimmung. In LIQUIDO stimmt man nicht nur für einen Vorschlag, sondern jeder im Team ordnet alle Vorschläge anonym in seine persönliche Reihenfolge.",
 				"createPollInfo5": "Wenn du die Abstimmung abschliest, wird der Vorschlag mit der größten Zustimmung durch einen cleveren Algorithmus berechnet.",
 				"createPollInfoForKids_NOT_USED_YET": "In LIQUIDO sucht man sich nicht nur einen Vorschlag aus, sondern jeder ordnet alle Vorschläge heimlich so, wie er sie am liebsten hat.",
-				"create": "Erstellen"
+				
+				"PollIsFinishedInfo": "Diese Abstimmung ist abgeschlossen. Es können keine weiteren Stimmen mehr abgegeben werden.",
 			}
 		}
 	},
@@ -107,12 +99,13 @@ export default defineComponent({
 		}
 	},
 	computed: {
-		pollIsNew() {
-			return this.poll && this.poll.status === "NEW"
+		pollyHeaderTitle() {
+			return this.poll && this.poll.status === "NEW" ? this.$t("NewPolly") : this.$t("Polly")
 		},
 		getInfoTextForPollStatus() {
 			switch (this.poll.status) {
 				case "NEW":
+					console.log("Localizing PollIsNewInfo", this.$root)
 					return this.$t('PollIsNewInfo')
 				case "ELABORATION":
 					return this.$t('PollInElaborationInfo')
@@ -120,6 +113,11 @@ export default defineComponent({
 					return this.$t('PollIsFinishedInfo')
 			}
 			return ""
+		}
+	},
+	watch: {
+		pollyHeaderTitle() {
+			this.$store.setHeaderTitle(this.pollyHeaderTitle)
 		}
 	},
 	created() {
@@ -136,7 +134,7 @@ export default defineComponent({
 		}
 	},
 	mounted() {
-		this.$store.setHeaderTitle(this.$t("NewPolly"))
+		this.$store.setHeaderTitle(this.pollyHeaderTitle)
 		this.$store.setHeaderBackLink("/polls")
 		this.$root.scrollToTop()
 		document.getElementById("pollTitle")?.focus()
@@ -165,14 +163,20 @@ export default defineComponent({
 
 
 
-<style lang="scss">
+<style>
 .cancel-link {
 	font-size: 12px;
-	//margin-left: 10px;
 	color: var(--secondary);
 	cursor: pointer;
 }
 .create-poll-info li {
 	margin-bottom: 1rem;
+}
+
+.config-list {
+	margin: 0;
+  padding-left: 1.2em;
+  list-style: none;
+  text-indent: -1.2em;
 }
 </style>

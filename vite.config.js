@@ -37,12 +37,11 @@ export default defineConfig({
 				//TODO: cookieDomainRewrite: { "localhost:3001": "localhost:8443" }
 			},
 			*/
-			"/graphql": {  		// Only proxy API requests. There are others, eg. Webservice "/ws" that sould stay
+			"/graphql_proxy": {  		// Only proxy API requests. There are others, eg. Webservice "/ws" that sould stay
 				
 				//ignorePath: true,
 				target: "https://192.168.178.134:8443",    			// the full matched path will be appended to this!
-				//rewrite: (path) => path.replace(/^\/graphql/, '/liquido-api/v3'),
-				//OLD: pathRewrite: { '^/liquido-api/v3' : '/' },   
+				rewrite: (path) => path.replace(/^\/graphql_proxy/, '/'),  // or /liquido-api/v3
 				secure: false   // allow self-signed backend certificate
 				//ws: true,     // also proxy-websockets
 				//changeOrigin: true
@@ -65,6 +64,9 @@ export default defineConfig({
     }
 		
   },
+	build: {
+		sourcemap: true
+	},
 	/*
 	css: {
     preprocessorOptions: {

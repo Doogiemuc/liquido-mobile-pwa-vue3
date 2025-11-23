@@ -24,27 +24,27 @@
 					:can-scroll-x="false">
 
 					<div v-for="law in proposalsInBallot" :id="law.id" class="card law-panel d-flex flex-row align-items-center noselect">
-							<div class="law-icon">
-								<i class="fas fa-fw" :class="'fa-' + law.icon" />
-							</div>
-							<div class="d-flex flex-column text-truncate ms-1">
-								<h4 class="law-title">
-									{{ law.title }}
-								</h4>
-								<div class="law-subtitle">
-									<div :class="{ supported: law.supportedByCurrentUser }" class="d-inline">
-										<i :class="{
-												far: !law.supportedByCurrentUser,
-												fas: law.supportedByCurrentUser,
-											}"
-											class="fa-thumbs-up"
-										></i>
-										&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
-									</div>
-									<i class="far fa-user ms-2"></i>&nbsp;{{ law.createdBy.name }}
+						<div class="law-icon">
+							<i class="fas fa-fw" :class="'fa-' + law.icon" />
+						</div>
+						<div class="d-flex flex-column text-truncate ms-1">
+							<h4 class="law-title">
+								{{ law.title }}
+							</h4>
+							<div class="law-subtitle">
+								<div :class="{ supported: law.supportedByCurrentUser }" class="d-inline">
+									<i :class="{
+											far: !law.supportedByCurrentUser,
+											fas: law.supportedByCurrentUser,
+										}"
+										class="fa-thumbs-up"
+									></i>
+									&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
 								</div>
+								<i class="far fa-user ms-2"></i>&nbsp;{{ law.createdBy.name }}
 							</div>
-						
+						</div>
+					
 						<div class="drag-handle">
 							<i class="fas fa-grip-vertical"></i>
 						</div>

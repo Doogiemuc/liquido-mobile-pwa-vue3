@@ -26,7 +26,15 @@
 				</thead>
 				<tr v-for="(entry, idx) in filteredEntries" :key="entry.key" :class="getRowClass(entry, idx)">
 					<td v-for="col in shownColumns" :key="col.key" :class="getCellClass(col, entry)">
-						<span class="log-cell">{{ getColValue(col, entry) }}</span>
+						<!-- message column gets a per-cell wrapper so it can have its own max-height and scroll -->
+						<template v-if="col.key === 'message'">
+							<div class="message-wrapper">
+								<span class="log-cell">{{ getColValue(col, entry) }}</span>
+							</div>
+						</template>
+						<template v-else>
+							<span class="log-cell">{{ getColValue(col, entry) }}</span>
+						</template>
 					</td>
 				</tr>
 				<tr v-if="filteredEntries.length === 0">
@@ -128,7 +136,7 @@ export default {
 		//this.redefineConsoleMethods()
 	},
 	mounted() {
-		this.debug("Mobile Debug log started.")
+		this.info("Mobile Debug log started.")
 	},
 	methods: {
 		
@@ -225,23 +233,28 @@ export default {
 				case "level": 
 					return this.getLevelName(entry.level)
 				case "message": 
-					return this.toString(entry.message)
+					let shortendString = this.toString(entry.message)
+					if (shortendString.length > this.maxMessageLen) {
+						shortendString = shortendString.substring(0, this.maxMessageLen) + "..."
+					}
+					return shortendString
 				default:
 					return ""
 			}
 		},
 
 		/** 
-		 * Convert val to a string in the same way as the browser does. 
-		 * Truncate result to maxMessageLen
+		 * Convert val to a string.
+		 * @return a string representation of val. Will never return null or undefined.
 		 */
 		toString(val) {
-			let str = val
-			if (Array.isArray(val)) {
-				str = val.map(v => typeof v === "object" ? JSON.stringify(v) : v).join(" ")	
+			if (typeof val === "object") {
+				return JSON.stringify(val)
+			} else if (typeof val === "string") {
+				return val
+			} else {
+				return String(val)
 			}
-			if (str.length > this.maxMessageLen) str = str.substr(0, this.maxMessageLen)+" ..."
-			return str
 		},
 
 
@@ -430,9 +443,11 @@ export default {
     //text-indent: -1em;
 	}
 
+	/* Allow no-wrap behavior, but do NOT hide overflow at the td level.
+	   Horizontal scrolling is provided per-message cell via .message-wrapper. */
 	.no-wrap {
 		white-space: nowrap;
-		overflow-x: hidden;
+		/* keep text-overflow rules but do not hide overflow here to allow per-cell scrolling */
 		text-overflow: ellipsis;
 	}
 
@@ -457,5 +472,30 @@ export default {
 	}
 	tr.trace {
 		color: grey;
+	}
+
+	/* === New/adjusted styles for per-message-cell scrolling and max-height === */
+	.log-entries-table td.message .message-wrapper {
+		display: block;            /* ensure block-level box for sizing */
+		max-height: 6em;          /* limit per-cell height (adjust as desired) */
+		overflow-x: auto;         /* allow horizontal scroll when content is wider */
+		overflow-y: auto;         /* allow vertical scroll when wrapped content exceeds max-height */
+		padding: 2px 6px;         /* small padding inside wrapper for readability */
+	}
+
+	/* Ensure the inner log text respects the parent's line-break/no-wrap state */
+	.log-entries-table td.message.line-break .message-wrapper .log-cell {
+		white-space: normal;
+		display: block;
+	}
+
+	.log-entries-table td.message.no-wrap .message-wrapper .log-cell {
+		white-space: nowrap;
+		display: inline-block;    /* inline-block allows horizontal scrolling in the wrapper */
+	}
+
+	/* small visual gap so horizontal scroll isn't flush against edge */
+	.log-entries-table td.message .log-cell {
+		padding-right: 0.5rem;
 	}
 </style>

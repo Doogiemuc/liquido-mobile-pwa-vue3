@@ -86,8 +86,9 @@ https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow
 https://developers.google.com/identity/oauth2/web/guides/how-user-authz-works 
 https://developers.google.com/identity/protocols/oauth2/web-server#node.js_1  
 
+## Passwordless.dev (by Bitwarden)
 
-
+TODO
 
 
 
@@ -112,8 +113,14 @@ https://liquido-frontend-fly.fly.dev/
 
 Copy /dist with ForkLift, sFTP or rsync
 
+Very nice article how to configure DynDNS with dynv6 and FritBox
+https://nocksoft.de/tutorials/dyndns-fuer-ipv6-server-hinter-fritzbox-konfigurieren/
 
 
+## Other possible hosters
+
+  * AWS
+	* serverless.com
 
 
 
@@ -128,6 +135,7 @@ Copy /dist with ForkLift, sFTP or rsync
 
 # TODO: smaller fixes
 
+ - Move Navbar bottom to polls.vue page and ONLY there!  <= IMPORTANT QUICK FIX!
  - Scroll to top: Do this with  https://router.vuejs.org/guide/advanced/scroll-behavior.html#Delaying-the-scroll     "scrollBehaviour" in router!!!
  - Need muuuuuch more tests for the polls filter at the bottom. When to show it?
  - Test on real devices, eg. with https://www.browserstack.com/    => This does already work on real hardware locally.

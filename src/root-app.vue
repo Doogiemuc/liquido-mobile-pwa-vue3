@@ -85,7 +85,7 @@ export default {
 		},
 
 		showDebugLog() {
-			return process.env.NODE_ENV !== 'production'
+			return true // process.env.NODE_ENV !== 'production'
 		}
 	},
 	// watch the `$route` to determine the transition to use
@@ -120,6 +120,9 @@ export default {
 		// This has some consequences ... be carefull
 		//this.$refs["mobileDebugLogRef"]?.redefineConsoleMethods()
 	
+		this.$refs["mobileDebugLogRef"]?.info(config.LIQUIDO_API_URL)
+		this.$refs["mobileDebugLogRef"]?.info(config)
+
 		//TODO: should I move this to main.js? Would be first. But there I cannot display any error.
 		api.pingApi()
 			.then(() => {
@@ -147,6 +150,41 @@ export default {
 		//
 		// These methods are available as this.$root.<method> in all vue sub components of root-app
 		//
+
+		/*
+
+    //TODO: need _componentMessages, each component would need to register these in their mounted() method => own vuw plugin => ok i18n :-)
+		
+
+		 * Unbelievablly clever localization function. Supports:
+		 * fallback to another language, global translations, and parameter replacement.
+		 * @param key The key to be localized
+		 * @param params An object with parameters to replace in the localized string
+		 
+		loc(key, params = {}) {
+			const lang = "de"  // TODO: navigator.language.startsWith("en") ? "en" : "de";
+			const fallbackLang = "en"
+			let message;
+
+			if (messages[lang] && messages[lang][key]) {
+				message = messages[lang][key];
+			} else if (fallbackLang && messages[fallbackLang] && messages[fallbackLang][key]) {
+				message = messages[fallbackLang][key];
+			} else if (globalTranslations[lang] && globalTranslations[lang][key]) {
+				message = globalTranslations[lang][key];
+			} else if (fallbackLang && globalTranslations[fallbackLang] && globalTranslations[fallbackLang][key]) {
+				message = globalTranslations[fallbackLang][key];
+			} else {
+				console.warn("Missing translation for key '" + key + "'");
+				return key;
+			}
+			//TODO: Sanitize HTML here?
+			// replace {variable} with values from params
+			return message.replace(/\{(\w+)\}/g, (match, placeholder) => {
+				return params.hasOwnProperty(placeholder) ? params[placeholder] : match;
+			})
+		},
+		*/
 
 		/**
 		 * INTERNAL: One step in an animation

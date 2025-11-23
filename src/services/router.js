@@ -65,7 +65,6 @@ const routes = [
 		component: () => import("@/views/team-home.vue"),
 		props: true,  // teamId, teamName, teamLogoUrl
 	},
-	/*  nice fun small idea, but later
 	{
 		path: "/polly/create",
 		name: "createPolly",
@@ -74,7 +73,6 @@ const routes = [
 			public: true
 		}
 	},
-	*/
 	{
 		path: "/polls",
 		name: "polls",
