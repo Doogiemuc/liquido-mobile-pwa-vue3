@@ -1,5 +1,5 @@
 <template>
-	<header id="liquidoHeader">
+	<header id="liquidoHeader" :class="headerClass">
 
 		<div class="header-left">
 			<div v-if="headerBackLink" class="header-back-link" @click="clickBack">
@@ -23,6 +23,7 @@
 
 <script>
 import EventBus from "@/services/event-bus.js"
+import config from "config"
 
 /** 
  * After this many pixels the header title will scroll.
@@ -52,7 +53,11 @@ export default {
 		},
 		headerTitle() {
 			return this.$store.headerTitle
-		}	
+		},
+		// If backend is mocked, then make header red
+		headerClass() {
+			return (config.mockBackend) ? "liquidoMockHeader" : ""
+		}
 	},
 
 	beforeUnmount() {
@@ -115,6 +120,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+.liquidoMockHeader {
+	background-color: darkred !important;
+}
 
 #liquidoHeader {
 	display: flex;

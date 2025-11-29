@@ -105,7 +105,6 @@ export default defineComponent({
 		getInfoTextForPollStatus() {
 			switch (this.poll.status) {
 				case "NEW":
-					console.log("Localizing PollIsNewInfo", this.$root)
 					return this.$t('PollIsNewInfo')
 				case "ELABORATION":
 					return this.$t('PollInElaborationInfo')

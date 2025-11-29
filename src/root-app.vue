@@ -37,6 +37,7 @@ import mobileDebugLog from "@/components/mobile-debug-log.vue"
 import api from "@/services/liquido-graphql-client.js"
 //import EventBus from "@/services/event-bus.js"
 import config from "config"
+import axios from "axios"
 
 
 /** 
@@ -85,7 +86,7 @@ export default {
 		},
 
 		showDebugLog() {
-			return true // process.env.NODE_ENV !== 'production'
+			return process.env.NODE_ENV !== 'production'
 		}
 	},
 	// watch the `$route` to determine the transition to use
@@ -123,39 +124,39 @@ export default {
 		this.$refs["mobileDebugLogRef"]?.info(config.LIQUIDO_API_URL)
 		this.$refs["mobileDebugLogRef"]?.info(config)
 
-		//TODO: should I move this to main.js? Would be first. But there I cannot display any error.
+		// Check if we can reach the liquido backend		
 		api.pingApi()
 			.then(() => {
-				console.log("Backend is reachable at " + config.LIQUIDO_API_URL)
+				console.log("We are online and backend is reachable at "+config.LIQUIDO_API_URL)
 				this.$refs.rootPopupModal.hide()
 			})
 			.catch(res => {
 				if (res.response && res.response.status === 401) {
 					console.log("Login is expired")
 					if (this.$route.name !== "login") this.$router.push({name: "login"})
-				} else
-				if (res.response && res.response.status > 200) {
-					console.error("Network seems ok, but cannot ping backend at "+config.LIQUIDO_API_URL, res)
-					this.$refs.rootPopupModal.showWarning(this.$t("BackendNotReachable"))
 				} else {
-					console.error("No network. Backend is not reachable at all at "+config.LIQUIDO_API_URL, res)  
-					this.$refs.rootPopupModal.showWarning(this.$t("NetworkOffline"))
-					//TODO: Do something: Show a general "offline" message at the top and implement an offline mode(?)
+					if (process.env.NODE_ENV == 'development') {
+						//HACK: Must load backend once to accept self signed cert in Firefox
+						console.log("Quick Hack: trying to load: " + config.LIQUIDO_API_URL + '/graphql/schema.graphql')
+						document.location.href = config.LIQUIDO_API_URL + '/graphql/schema.graphql'
+					}
+					console.error("Cannot reach backend at "+config.LIQUIDO_API_URL, res)
+					this.$refs.rootPopupModal.showWarning(this.$t("BackendNotReachable"))
 				}
 			})
-
-			
+	
 	},
 	methods: {
 		//
 		// These methods are available as this.$root.<method> in all vue sub components of root-app
 		//
 
+
+
 		/*
-
-    //TODO: need _componentMessages, each component would need to register these in their mounted() method => own vuw plugin => ok i18n :-)
-		
-
+		// This was a quick idea to have a VERY SIMPLE localization in one method. Because I was mad at vue-i18n
+		// But to provide it centrally here in root-app this would actually need to be a VUE plugin.
+    // TODO: Each component would need to register these in their mounted() method => own vuw plugin => ok this is what vue-i18n is :-( Never reinvent the wheel!
 		 * Unbelievablly clever localization function. Supports:
 		 * fallback to another language, global translations, and parameter replacement.
 		 * @param key The key to be localized

@@ -13,6 +13,9 @@ import EventBus from "@/services/event-bus.js"
 //TODO: log network calls into my mobile debug log. Does that work this way or do I have to load the componant "instance" somehow?
 //import log from "@/components/mobile-debug-log.js"
 
+/** Liquido backend error codes. Must match LiquidoException.java from backend*/
+import LiquidoExceptionCodes from "./LiquidoExceptionCodes.js"
+
 /*
   # Architecture design decisions in liquido-graphql-client.js
 
@@ -115,6 +118,10 @@ const graphQlQuery = function(query, variables) {
 
 import teamUserJwt from "@/mockdata/teamUserJwt.json"
 
+/**
+ * This is a very very easy mock implementation.
+ * And it works amazingly nice.
+ */
 const graphQlQueryMOCK = function(query, variables) {
 	console.log("MOCK request for ", query, variables)
 	if (query.includes("ping")) {
@@ -188,7 +195,8 @@ const graphQlQueryMOCK = function(query, variables) {
 			)
 		}
 	}
-	return Promise.reject(new Error("Unhandled mock query:" + query));
+	console.error("Unhandled mock query "+query)
+	return Promise.reject("Unhandled mock query:" + query);
 }
 
 
@@ -769,65 +777,6 @@ let graphQlApi = {
 		return graphQlQuery(graphQL).then(res => res.data.verifyBallot)
 	},
 
-	/** Liquido backend error codes. Must match LiquidoException.java from backend*/
-	err: {
-		CANNOT_REGISTER_NEED_EMAIL: 1,
-		CANNOT_REGISTER_NEED_MOBILEPHONE: 2,
-
-		// Create New Team
-		TEAM_WITH_SAME_NAME_EXISTS: 10,
-		CANNOT_CREATE_TEAM_ALREADY_REGISTERED: 11,      // Edge case: When a user is already registered and want's to create a team, ...
-		// Join a team
-		CANNOT_JOIN_TEAM_INVITE_CODE_INVALID: 12,
-		CANNOT_JOIN_TEAM_ALREADY_MEMBER: 13,						// with the same email or mobilephone
-		CANNOT_JOIN_TEAM_ALREADY_ADMIN: 14,
-		CANNOT_CREATE_TWILIO_USER: 15,
-		USER_EMAIL_EXISTS: 16,                         	// user with that email already exists
-		USER_MOBILEPHONE_EXISTS: 17,                   	// user with that mobile phone already exists
-		PASSWORD_TOO_SHORT: 18,
-
-		//Login Errors
-		CANNOT_LOGIN_MOBILE_NOT_FOUND: 20,       		// when requesting an SMS login token and mobile number is not known
-		CANNOT_LOGIN_EMAIL_NOT_FOUND: 21,          	// when requesting a login email and email is not known
-		CANNOT_LOGIN_TOKEN_INVALID: 22,            	// when a email or sms login token is invalid or expired
-		CANNOT_LOGIN_TEAM_NOT_FOUND: 23,           	// when changing team
-		CANNOT_LOGIN_USER_NOT_MEMBER_OF_TEAM: 24,  	// when changing team and user is not member or admin of target team
-		CANNOT_LOGIN_INTERNAL_ERROR: 25,  	// when sending of email is not possible
-		CANNOT_REQUEST_SMS_TOKEN: 26,              	// eg. when entered mobile number is not valid
-		WONT_RESET_PASSWORD: 28,	  // Someone requested a password reset for a non registered email.
-		
-
-		//JWT Errors  // these are now handled by Quarkus
-		JWT_TOKEN_INVALID: 30,
-		JWT_TOKEN_EXPIRED: 31,
-
-		// use case errors
-		INVALID_VOTER_TOKEN: 50,
-		CANNOT_CREATE_POLL: 51,
-		CANNOT_JOIN_POLL: 52,
-		CANNOT_ADD_PROPOSAL: 53,
-		CANNOT_START_VOTING_PHASE: 54,
-		CANNOT_ASSIGN_PROXY: 55,                // assign or remove
-		CANNOT_ASSIGN_CIRCULAR_PROXY: 56,
-		CANNOT_REMOVE_PROXY: 57,
-		CANNOT_CAST_VOTE: 58,
-		CANNOT_GET_TOKEN: 59,
-		CANNOT_FINISH_POLL: 60,
-		NO_DELEGATION: 61,
-		NO_BALLOT: 62,                          // 204: voter has no ballot yet. This is OK and not an error.
-		INVALID_POLL_STATUS: 63,
-		PUBLIC_CHECKSUM_NOT_FOUND: 64,
-		CANNOT_ADD_SUPPORTER: 65,              // e.g. when user tries to support his own proposal
-
-		CANNOT_CALCULATE_UNIQUE_RANKED_PAIR_WINNER: 70,    // this is only used in the exceptional situation, that no unique winner can be calculated in RankedPairVoting
-		CANNOT_VERIFY_CHECKSUM: 80,              // ballot's checksum could not be verified
-
-		// general errors
-		GRAPHQL_ERROR: 400,                     // e.g. missing required fields, invalid GraphQL query, ...
-		UNAUTHORIZED: 401,                     // when client tries to call something without being authenticated!
-		CANNOT_FIND_ENTITY: 404,                  // 404: cannot find entity
-		INTERNAL_ERROR: 500
-	},
 
 	/** client side caches */
 	teamCache: teamCache,
@@ -843,12 +792,8 @@ let graphQlApi = {
 	/** default JQL queries for common models */
 	JQL: JQL,
 
-
-	isErrorCode: function(rejectedPromiseErr, errCode) {
-		return rejectedPromiseErr &&
-			  rejectedPromiseErr.liquidoException &&
-				rejectedPromiseErr.liquidoException.liquidoErrorCode === errCode
-	}
+	/** Error codes from LIQUIDO backend. This is read from an automatically generated file LiquidoExceptionCodes.js */
+	err: LiquidoExceptionCodes,
 }
 
 export default graphQlApi
