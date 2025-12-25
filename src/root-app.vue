@@ -72,6 +72,8 @@ export default {
 			transitionName: "", 	// CSS sliding transition between page components
 			// Global popup-modal
 			modalType: "success",
+			// WebAuthn enrollment state for the currently loaded user (client-side only)
+			//TODO: webauthnRegistered: false,
 			modalTitle: "",
 			modalMessage: "",
 			modalContentClass: undefined,
@@ -118,11 +120,14 @@ export default {
 
 	mounted() {
 		// Enable my awesome mobile debug log on mobile devices.
-		// This has some consequences ... be carefull
+		// This has some consequences ... be carefull ... you for example loose context.
+		// All log messages will come from mobile-debug-log.vue
 		//this.$refs["mobileDebugLogRef"]?.redefineConsoleMethods()
 	
 		this.$refs["mobileDebugLogRef"]?.info(config.LIQUIDO_API_URL)
 		this.$refs["mobileDebugLogRef"]?.info(config)
+
+		
 
 		// Check if we can reach the liquido backend		
 		api.pingApi()
@@ -137,8 +142,8 @@ export default {
 				} else {
 					if (process.env.NODE_ENV == 'development') {
 						//HACK: Must load backend once to accept self signed cert in Firefox
-						console.log("Quick Hack: trying to load: " + config.LIQUIDO_API_URL + '/graphql/schema.graphql')
-						document.location.href = config.LIQUIDO_API_URL + '/graphql/schema.graphql'
+						//console.log("Quick Hack: trying to load: " + config.LIQUIDO_API_URL + '/graphql/schema.graphql')
+						//document.location.href = config.LIQUIDO_API_URL + '/graphql/schema.graphql'
 					}
 					console.error("Cannot reach backend at "+config.LIQUIDO_API_URL, res)
 					this.$refs.rootPopupModal.showWarning(this.$t("BackendNotReachable"))

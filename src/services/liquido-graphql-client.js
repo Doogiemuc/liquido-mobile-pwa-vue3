@@ -59,10 +59,11 @@ let onError   = (error) => {
 	} else 
 	if (error.data && error.data.includes("ECONNREFUSED") ||
 		error.response && error.response.body && error.response.body.includes("ECONNREFUSED")) {
-		console.warn("Network connection refused.")
-	} else
-	if (error.response && error.response.status >= 500) { 
-		console.error("liquido-graphql-client: Internal Server Error(500):", error) 
+		console.warn("ECONNREFUSED: Network connection refused.")
+	} else if (error.response && error.response.status >= 400 && error.response.status < 500) { 
+		console.warn("liquido-graphql-client: Invalid request (4xx):", error) 
+	} else if (error.response && error.response.status >= 500) { 
+		console.error("liquido-graphql-client: Internal Server Error(5xx):", error) 
 	} else {
 		console.error("Very strange unknown HTTP error", error)
 	}
@@ -116,7 +117,7 @@ const graphQlQuery = function(query, variables) {
 	}
 }
 
-import teamUserJwt from "@/mockdata/teamUserJwt.json"
+import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
 
 /**
  * This is a very very easy mock implementation.
@@ -138,7 +139,7 @@ const graphQlQueryMOCK = function(query, variables) {
 		return Promise.resolve(
 			{
 				"data": {
-					"createNewTeam": teamUserJwt
+					"createNewTeam": teamUserJwtMock
 				}
 			}
 		)
@@ -147,17 +148,17 @@ const graphQlQueryMOCK = function(query, variables) {
 		if (match && match[1]) {
 			const email = match[1];
 			
-			const member = teamUserJwt.team.members.find(m => m.user.email === email)
+			const member = teamUserJwtMock.team.members.find(m => m.user.email === email)
 			if (!member) {
 				console.error("Cannot find user <"+email+"> in team!")
 			} else {
 				console.log("MOCK: devLogin for member", member)
 			}
-			teamUserJwt.user = member.user
+			teamUserJwtMock.user = member.user
 			return Promise.resolve(
 				{
 					"data": {
-						"devLogin": teamUserJwt
+						"devLogin": teamUserJwtMock
 					}
 				}
 			)
@@ -167,7 +168,7 @@ const graphQlQueryMOCK = function(query, variables) {
 		return Promise.resolve(
 			{
 				"data": {
-					"loginWithJwt": teamUserJwt
+					"loginWithJwt": teamUserJwtMock
 				}
 			}
 		)
@@ -176,7 +177,7 @@ const graphQlQueryMOCK = function(query, variables) {
 		return Promise.resolve(
 			{
 				"data": {
-					"polls": teamUserJwt.team.polls
+					"polls": teamUserJwtMock.team.polls
 				}	
 			}
 		)
@@ -185,7 +186,7 @@ const graphQlQueryMOCK = function(query, variables) {
 		if (match && match[1]) {
 			const pollId = parseInt(match[1], 10);
 			console.log("MOCK: poll(id="+pollId+")")
-			const poll = teamUserJwt.team.polls.find(p => p.id === pollId);
+			const poll = teamUserJwtMock.team.polls.find(p => p.id === pollId);
 			return Promise.resolve(
 				{
 					"data": {
@@ -516,6 +517,71 @@ let graphQlApi = {
 			this.login(res.team, res.user, res.jwt)
 			return res
 		})
+	},
+
+	/* ================== WebAuthn REST client ==================== */
+
+	/**
+	 * Request webauthn registration options (challenge, rp, user, pubKeyCredParams)
+	 * for the currently logged in user. Must be authenticated!
+	 * This sets a cookie!
+	 */
+	async getWebAuthnRegistrationChallenge() {
+		// quarkus-security-webauthn would provide it's own endpoint: /q/webauthn/register-options-challenge?username=testuser
+		// But we use our own custom implementation, adapted to liquido authentication scheme via JWT.
+		return axios.get(
+			'/liquido/v2/webauthn/register-options-challenge',
+			{ withCredentials: true }
+		).then(res => { 
+				console.log("GET /liquido/v2/webauthn/register-options-challenge", res.data)
+				return res.data
+			})
+	},
+
+	/**
+	 * Submit attestation (credential) back to server for verification and receive final login payload
+	 * Must send above cookie!
+	 * @param {Object} credentialResponse
+	 */
+	async submitWebAuthnRegistration(credentialResponse) {
+		return axios.post(
+			'/liquido/v2/webauthn/register',
+			credentialResponse,
+			{ withCredentials: true }  // required. Send cookie back to server
+		).then(res => {
+			// If server returned login payload, perform client-side login
+			console.log("POST /liquido/v2/webauthn/register SUCCESSFULLY logged in", res.data)
+			if (res.data && res.data.jwt && res.data.team && res.data.user) {
+				this.login(res.data.team, res.data.user, res.data.jwt)
+			}
+			return res.data
+		})
+	},
+
+	/**
+	 * Request authentication options (challenge, allowCredentials) from backend.
+	 * Typically called after validating password on server side.
+	 * @param {String} email
+	 * @param {String} password (optional) - server may require password to issue assertion options
+	 */
+	async getWebAuthnLoginChallenge(email, password) {
+		if (!email) throw new Error("Need email for WebAuthn authentication options")
+		return axios.post('/liquido/v2/webauthn//login-options-challenge', { email: email, password: password })
+			.then(res => res.data)
+	},
+
+	/**
+	 * Submit assertion (credential) to server for verification and receive final login payload
+	 * @param {Object} credentialResponse
+	 */
+	async submitWebAuthnLogin(credentialResponse) {
+		return axios.post('/liquido/v2/webauthn/login', credentialResponse)
+			.then(res => {
+				if (res.data && res.data.jwt && res.data.team && res.data.user) {
+					this.login(res.data.team, res.data.user, res.data.jwt)
+				}
+				return res.data
+			})
 	},
 
 	/** 

@@ -39,11 +39,14 @@
 					{{ loginErrorMessage }}
 				</div>
 
+				
+
 				<div class="horizontal-line my-5">
 					<span>
 						{{ $t("orSignInWith") }}
 					</span>
 				</div>
+
 
 				
 				<div class="row g-2">
@@ -84,7 +87,7 @@
 			</div>
 		</div>
 
-		<!-- Password forgotten -->
+		<!-- Password forgotten Link -->
 		<div class="forgot-password-link my-3">
 			<router-link id="forgotPasswordLink" :to="{ name: 'forgotPassword' }">{{ $t('ForgotPassword') }}</router-link>
 		</div>
@@ -156,6 +159,18 @@
 			</a>
 		</div>
 
+		<!-- WebAuthn 2FA Modal -->
+		<webauthn-2fa-modal
+			v-if="show2FAModal"
+			:mode="twoFAMode"
+			:email="tempEmail"
+			:password="tempPassword"
+			@success="handle2FASuccess"
+			@cancel="handle2FACancel"
+			@error="handle2FAError"
+			@needs-registration="twoFAMode='register'"
+		/>
+
 	</div>
 </template>
 
@@ -163,6 +178,7 @@
 import config from "config"
 import liquidoInput, { STATE } from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
+import Webauthn2faModal from '@/components/webauthn-2fa-modal.vue'
 //TODO: import WebAuthn from "@/services/quarkus-webauthn.js"
 
 const REQUEST_THROTTLE_SECS = 10
@@ -170,50 +186,100 @@ const REQUEST_THROTTLE_SECS = 10
 export default {
   i18n: {
     messages: {
-      de: {      
+			de: {      
 				emailPlaceholder: "E-Mail",
-        passwordPlaceholder: "Passwort",
-        emailInvalid: "Ungültige Email. Vielleicht nur vertippt?",
+				passwordPlaceholder: "Passwort",
+				emailInvalid: "Ungültige Email. Vielleicht nur vertippt?",
 				emailEmpty: "Bitte gib deine E-Mail Adresse ein.",
 				passwordInputIsInvalid: "Mindestens 10 Zeichen.",
 				passwordInputIsEmpty: "Bitte gib dein Passwort ein.",
 				loginFailed: "Login fehlgeschlagen. Bitte überprüfe deine E-Mail und dein Passwort.",
-				
+
 				// Password reset
 				needEmailToResetPassword: "Bitte gib oben deine E-Mail Adresse ein, damit ich dir einen Link zum Zurücksetzen deines Passworts schicken kann.",
 				PaswordResetEmailSentSuccessfully: "Ok, ich habe dir eine E-Mail geschickt, mit der du dein Passwort zurücksetzen kannst. Du kannst diese Seite jetzt schließen.",
 
 				// Login via Magic Email Link
-        RequestTokenButton: "Login-Token anfordern",
-        TokenSent: "SMS verschickt ...",
-        AuthTokenLabel: "Login-Token aus SMS",
-        authTokenInputInvalid: "Der Login-Token hat genau sechs Ziffern.",
-        MobilephoneNotFound: "Tut mir leid, ich kenne diese Telefonnummer in LIQUIDO nicht. Bitte <a href='/'>registriere dich zuerst.</a>",
-        TokenInvalid: "Der eingegebene Login-Token wurde nicht akzeptiert. Hast du dich vielleicht einfach nur vertippt? Bitte versuche es noch einmal.",
-        AuthtokenSentSuccessfully: "Ok, die SMS wurde verschickt. Bitte gib den Login-Token aus der SMS ein.",
-        RequestAuthTokenError: "Login-Token konnte nicht angefordert werden. Bitte versuche es noch einmal.",
-        
-        EmailSentSuccessfully: "Ok, ich habe dir eine Email mit einem Code geschickt.",
-        CouldNotSendEmail: "Es gab ein Problem beim Verschicken der E-Mail. Bitte versuche es später noch einmal.",
-        UserWithThatEmailNotFound: "Tut mir leid, ich kenne niemanden mit dieser E-Mail Adresse. Möchtest du dich <a href='/welcome'>zuerst registrieren</a>?",
-        orSignInWith: "oder melde dich an mit",
-				Google: "Google",
-        Facebook: "Facebook",
-        Apple: "Apple",
-        Telegram: "Telegram",
-        LoginViaSms: "SMS Login",
-        LoginViaSmsInfo: "Ich schicke dir einen Zahlencode auf dein Handy. Mit diesem kannst du dich dann hier einloggen.",
+				RequestTokenButton: "Login-Token anfordern",
+				TokenSent: "SMS verschickt ...",
+				AuthTokenLabel: "Login-Token aus SMS",
+				authTokenInputInvalid: "Der Login-Token hat genau sechs Ziffern.",
+				MobilephoneNotFound: "Tut mir leid, ich kenne diese Telefonnummer in LIQUIDO nicht. Bitte <a href='/'>registriere dich zuerst.</a>",
+				TokenInvalid: "Der eingegebene Login-Token wurde nicht akzeptiert. Hast du dich vielleicht einfach nur vertippt? Bitte versuche es noch einmal.",
+				AuthtokenSentSuccessfully: "Ok, die SMS wurde verschickt. Bitte gib den Login-Token aus der SMS ein.",
+				RequestAuthTokenError: "Login-Token konnte nicht angefordert werden. Bitte versuche es noch einmal.",
 
-        ForgotPassword: "Passwort vergessen?",
+				// Google Login
+				GoogleLoginCurrentlyNotAvailable: "Der Google Login ist leider gerade nicht verfügbar.",
+
+				EmailSentSuccessfully: "Ok, ich habe dir eine Email mit einem Code geschickt.",
+				CouldNotSendEmail: "Es gab ein Problem beim Verschicken der E-Mail. Bitte versuche es später noch einmal.",
+				UserWithThatEmailNotFound: "Tut mir leid, ich kenne niemanden mit dieser E-Mail Adresse. Möchtest du dich <a href='/welcome'>zuerst registrieren</a>?",
+				orSignInWith: "oder melde dich an mit",
+				Google: "Google",
+				Facebook: "Facebook",
+				Apple: "Apple",
+				Telegram: "Telegram",
+				LoginViaSms: "SMS Login",
+				LoginViaSmsInfo: "Ich schicke dir einen Zahlencode auf dein Handy. Mit diesem kannst du dich dann hier einloggen.",
+
+				ForgotPassword: "Passwort vergessen?",
 				Register: "Registrieren",
-        DevLoginAdmin: "devLogin: Admin",
-        DevLoginMember: "devLogin: Member",
-        EmailTokenInvalid: "Der eingegebene E-Mail-Token ist ungültig.",
-        GoogleLoginFailed: "Google-Login fehlgeschlagen."
-      }
-    }
-  },
-	components: { liquidoInput },
+				DevLoginAdmin: "devLogin: Admin",
+				DevLoginMember: "devLogin: Member",
+				EmailTokenInvalid: "Der eingegebene E-Mail-Token ist ungültig.",
+				GoogleLoginFailed: "Google-Login fehlgeschlagen.",
+
+				// WebAuthn translations (DE)
+				webauthnRegisterPrompt: "Face ID / Fingerabdruck registrieren",
+				webauthnAuthPrompt: "Mit Face ID / Fingerabdruck bestätigen",
+				webauthnSuccess: "Authentifizierung erfolgreich. Weiterleitung...",
+				webauthnFailure: "Authentifizierung fehlgeschlagen. Bitte versuche es erneut.",
+				webauthnUnsupported: "Dein Gerät/Browser unterstützt keine biometrische Authentifizierung.",
+				webauthnStarting: "Starte Authentifizierungsgerät...",
+				webauthnWaitingForDevice: "Bitte bestätige die Aktion auf deinem Gerät.",
+				webauthnRegisterTitle: "WebAuthn Registrierung",
+				webauthnAuthTitle: "WebAuthn Bestätigung"
+			},
+			en: {
+				emailPlaceholder: "E-Mail",
+				passwordPlaceholder: "Password",
+				emailInvalid: "Invalid email. Maybe a typo?",
+				emailEmpty: "Please enter your email address.",
+				passwordInputIsInvalid: "At least 10 characters.",
+				passwordInputIsEmpty: "Please enter your password.",
+				loginFailed: "Login failed. Please check your email and password.",
+				orSignInWith: "or sign in with",
+				Google: "Google",
+				Facebook: "Facebook",
+				Apple: "Apple",
+				Telegram: "Telegram",
+				LoginViaSms: "SMS Login",
+				LoginViaSmsInfo: "I will send you a numeric code via SMS which you can use to login.",
+				ForgotPassword: "Forgot password?",
+				Register: "Register",
+				DevLoginAdmin: "devLogin: Admin",
+				DevLoginMember: "devLogin: Member",
+				EmailTokenInvalid: "The provided email token is invalid.",
+				GoogleLoginFailed: "Google login failed.",
+
+				// Google Login
+				GoogleLoginCurrentlyNotAvailable: "Google Login currently not available",
+
+				// WebAuthn translations (EN)
+				webauthnRegisterPrompt: "Register Face ID / Touch ID",
+				webauthnAuthPrompt: "Verify with Face ID / Touch ID",
+				webauthnSuccess: "Authentication successful. Redirecting...",
+				webauthnFailure: "Authentication failed. Please try again.",
+				webauthnUnsupported: "Your device/browser does not support biometric authentication.",
+				webauthnStarting: "Starting authentication device...",
+				webauthnWaitingForDevice: "Please confirm the action on your device.",
+				webauthnRegisterTitle: "WebAuthn Registration",
+				webauthnAuthTitle: "WebAuthn Verification"
+			}
+		}
+	},
+	components: { liquidoInput, Webauthn2faModal },
 	props: {
 		// These props are set from URL parameters, e.g. when user logs in via the email link
 		email: { type: String, required: false, default: undefined },
@@ -229,9 +295,7 @@ export default {
 			passwordInputState: undefined,
 			loginErrorMessage: undefined, // error message below email password input
 
-			// Google Login
-			GoogleLoginCurrentlyNotAvailable: "Google Login currently not available",
-
+		
 			// Login via E-Mail magic link
 			emailSentSuccessfully: false,
 			emailErrorMessage: undefined,
@@ -247,6 +311,16 @@ export default {
 			tokenErrorMessage: undefined,   // we show different error messages, depending on error code from backend
 
 			//TODO: count failed login attempts and then offer additional help
+
+			// WebAuthn 2FA
+
+			statusMessage: undefined,
+			busy: false,
+
+			show2FAModal: false,
+			twoFAMode: 'register', // 'authenticate' | 'register'
+			tempEmail: undefined,
+			tempPassword: undefined,
 		}
 	},
 	computed: {
@@ -290,7 +364,7 @@ export default {
 
 		this.$root.scrollToTop()
 
-		// if email and token is passed, then log in user
+		// if email and a valid one time token is passed, then log in user
 		if (this.email && this.emailToken) {
 			this.loginWithEMailToken()
 		}
@@ -299,22 +373,71 @@ export default {
 	},
 	methods: {
 
+		// Handlers for WebAuthn modal events
+		handle2FASuccess(payload) {
+			// Backend submit methods call api.login(...) when returning jwt, so user should be logged in already.
+			this.show2FAModal = false
+			this.$router.push({ name: 'teamHome' })
+		},
+
+		handle2FACancel() {
+			this.show2FAModal = false
+		},
+
+		handle2FAError(msg) {
+			this.loginErrorMessage = msg || this.$t('webauthnFailure')
+			this.show2FAModal = false
+		},
+
+
 		// =============== Simple Login via E-Mail & Password ==================
 
 		loginWithEmailPassword() {
+			console.log("loginWithEmailPassword")
 			this.loginErrorMessage = null
-			//TODO: BUFIX: When password is auto filled, then state is not valid.   manually trigger a state validation here
-			
-			//if (this.emailInputState !== STATE.VALID || this.passwordInputState !== STATE.VALID) return	
-			api.loginWithEmailPassword(this.emailInputVal, this.passwordInputVal)
-				.then(() => {
-					this.$router.push({name: "teamHome"})
+			this.twoFAMode = 'register'
+			this.tempEmail = this.emailInputVal
+			this.tempPassword = this.passwordInputVal
+			this.show2FAModal = true
+			return
+
+			/*
+			// Try to get WebAuthn authentication options from backend (password validated server-side)
+			api.getWebAuthnAuthenticationOptions(this.emailInputVal, this.passwordInputVal)
+				.then(res => {
+					// If server indicates the user needs to register for WebAuthn, switch to register flow
+					if (res && res.needsRegistration) {
+						this.twoFAMode = 'register'
+						this.tempEmail = this.emailInputVal
+						this.tempPassword = this.passwordInputVal
+						this.show2FAModal = true
+						return
+					}
+					// Otherwise start authentication flow via modal
+					this.twoFAMode = 'authenticate'
+					this.tempEmail = this.emailInputVal
+					this.tempPassword = this.passwordInputVal
+					this.show2FAModal = true
 				})
 				.catch(err => {
-					console.warn("Clould not login with email & password", err)
-					this.loginErrorMessage = this.$t("loginFailed") 
+					// Fallback: if WebAuthn options couldn't be obtained, fall back to password-only login
+					console.error("Could not obtain WebAuthn options", err)
+					/*
+					api.loginWithEmailPassword(this.emailInputVal, this.passwordInputVal)
+						.then(() => {
+							this.$router.push({name: "teamHome"})
+						})
+						.catch(err2 => {
+							console.warn("Could not login with email & password", err2)
+							this.loginErrorMessage = this.$t("loginFailed")
+						})
+					
+					this.loginErrorMessage = "getWebAuthnAuthenticationOptions failed"
 				})
+
+				*/
 		},
+
 
 		// =============== Google Oauth - Authorization Code Flow ==================
 		// Very nice comparission of both Oauth Flows:
@@ -428,6 +551,7 @@ export default {
 			if (process.env.NODE_ENV !== "development" && process.env.NODE_ENV !== "test") return
 			api.logout()
 			api.devLogin(config.devLogin.admin.email, config.devLogin.teamName, config.devLogin.token).then(() => {
+				this.$root.scrollToTop()
 				this.$router.push({name: "polls"})
 			}).catch(err => console.error("DevLogin Admin failed!", err))
 		},
@@ -438,6 +562,7 @@ export default {
 			api.logout()
 			api.devLogin(config.devLogin.member.email, config.devLogin.teamName, config.devLogin.token)
 				.then(() => {
+					this.$root.scrollToTop()
 					this.$router.push({name: "polls"})
 				})
 				.catch(err => console.error("DevLogin Member failed!", err))
@@ -584,8 +709,6 @@ export default {
 					this.emailErroMessage = this.$t("EmailTokenInvalid")
 				})
 		},
-
-
 
 		/** Register button at the bottom of the page */
 		clickRegister() {

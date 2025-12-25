@@ -11,7 +11,7 @@
 export default {
 	configSource: "common",
 	BASE_URL: "/",                   				   				// Used for loading JS libs in browser. MUST end with '/'
-	//LIQUIDO_API_URL: "https://localhost:8443",  		// URI to Backend API. 
+	LIQUIDO_API_URL: "https://api.liquido.vote",  		// URI to Backend API. 
 	mockBackend: false,
 	
 	//TODO: implement these settings per Team! in the backend!
@@ -21,7 +21,7 @@ export default {
 	allowMembersToInvite: true,
 	pollTitleMinLength: 10,
 	avatarPath: "./img/avatars",
-	inviteLinkPrefix: "http://localhost:3001/welcome?inviteCode=",
+	inviteLinkPrefix: "http://app.liquido.vote/welcome?inviteCode=",
 	//TODO: adminMustConfirmNewMembers: ...
 
 }

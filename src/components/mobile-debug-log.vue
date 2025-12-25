@@ -131,9 +131,7 @@ export default {
 		}
 	},
 	created() {
-		// when on mobile the redefine console.log methods (because there is no browser log on mobile)
-		//if (process.env.NODE_ENV === "mobile")
-		//this.redefineConsoleMethods()
+		
 	},
 	mounted() {
 		this.info("Mobile Debug log started.")
@@ -192,6 +190,8 @@ export default {
 
 
 		/**
+		 * ONLY DO THIS IF YOU REALLY NEED TO! 
+		 * 
 		 * You CAN redefine the default console.log, console.debug, console.warn, ... methods,
 		 * so that they will also log to the mobile-debug-log. All messages will still also
 		 * appear in the browsers console (if you are in a browser).
@@ -206,11 +206,10 @@ export default {
 			let that = this;
 			["trace", "debug", "info", "warn", "error", "log"].forEach(function(methodName) {
 				let origMethod = console[methodName]
-				console[methodName] = function(...args) {
+				console[methodName] = function(args) {
 					// log to our own mobile debugLog
 					that.logAtLevel(LEVEL[methodName.toUpperCase()], args)
-					// if console in this environment (browser/node/...) has this method, then also log to the original method
-					if (origMethod !== undefined) origMethod(...args) 
+					if (origMethod !== undefined) origMethod(args)   // also call the original console method
 				}
 			})
 			console.debug("console.log() functions have been redefined by mobile-debug-log")
@@ -248,10 +247,10 @@ export default {
 		 * @return a string representation of val. Will never return null or undefined.
 		 */
 		toString(val) {
-			if (typeof val === "object") {
-				return JSON.stringify(val)
-			} else if (typeof val === "string") {
+			if (typeof val === "string") {
 				return val
+			} else if (typeof val === "object") {
+				return "JSON: " + JSON.stringify(val)
 			} else {
 				return String(val)
 			}

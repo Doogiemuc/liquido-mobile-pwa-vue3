@@ -4,14 +4,16 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from "path"
 
-const key = fs.readFileSync(path.resolve(__dirname, 'tls-certs/liquido-TLS-key.pem'), 'utf8');
-const cert = fs.readFileSync(path.resolve(__dirname, 'tls-certs/liquido-TLS-cert.pem'), 'utf8');
+// TLS certificates
+// Can be created with mkcert for SANs: liquido.local localhost 127.0.0.1 192.168.178.134
+const key = fs.readFileSync(path.resolve(__dirname, 'tls-certs/liquido-local-key.pem'), 'utf8');
+const cert = fs.readFileSync(path.resolve(__dirname, 'tls-certs/liquido-local-cert.pem'), 'utf8');
 
 // https://vitejs.dev/config/
 export default defineConfig({
 	server: {
 		
-		https: {													// serve frontend over HTTPS. => but not on fly.io
+		https: {													// serve frontend over HTTPS
 			key: key,
       cert: cert
 		},			    
@@ -27,18 +29,9 @@ export default defineConfig({
 		// https://cli.vuejs.org/config/#devserver-proxy
 		// https://github.com/http-party/node-http-proxy#options=
 		// https://github.com/chimurai/http-proxy-middleware/blob/master/README.md
-		
+		// https://mattslifebytes.com/2025/03/30/unbreaking-cookies-in-local-dev-with-vite-proxy/ 
 		proxy: {      							
-			/*
-			"^/q": {
-				target: "https://localhost:8443",
-				secure: false,
-				changeOrigin: true,
-				//TODO: cookieDomainRewrite: { "localhost:3001": "localhost:8443" }
-			},
-			*/
-			"/graphql_proxy": {  		// Only proxy API requests. There are others, eg. Webservice "/ws" that sould stay
-				
+			"/graphql_proxy": {  		// Only proxy API requests. There are others, eg. Webservice "/ws" that sould stay		
 				//ignorePath: true,
 				target: "https://192.168.178.134:8443",    			// the full matched path will be appended to this!
 				rewrite: (path) => path.replace(/^\/graphql_proxy/, '/'),  // or /liquido-api/v3
@@ -67,7 +60,7 @@ export default defineConfig({
 	build: {
 		sourcemap: true
 	},
-	/*
+	/* DEPRECATED: We only use plain CSS
 	css: {
     preprocessorOptions: {
       scss: {  //TODO: or SASS??
