@@ -190,7 +190,8 @@ async function tryToAuthenticate() {
 				// return liquido error code, eg. JWT_TOKEN_EXPIRED or JWT_TOKEN_INVALID
 				let errCode = err.response &&	err.response.data ? err.response.data.liquidoErrorCode : -1
 				if (errCode === api.err.JWT_TOKEN_EXPIRED || errCode === api.err.JWT_TOKEN_INVALID) {
-					log.debug("Removing expired JWT from localStorage")
+					localStorage.removeItem(api.LIQUIDO_JWT_KEY)
+					log.debug("Removed expired/invalid JWT from localStorage")
 				} else {
 					log.debug("Cannot login with JWT. Will be removed.")  // err has already been logged
 				}

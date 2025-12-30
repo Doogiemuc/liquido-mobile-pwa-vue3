@@ -159,7 +159,7 @@
 			</a>
 		</div>
 
-		<!-- WebAuthn 2FA Modal -->
+		<!-- WebAuthn 2FA Modal 
 		<webauthn-2fa-modal
 			v-if="show2FAModal"
 			:mode="twoFAMode"
@@ -170,6 +170,7 @@
 			@error="handle2FAError"
 			@needs-registration="twoFAMode='register'"
 		/>
+		-->
 
 	</div>
 </template>
@@ -361,14 +362,11 @@ export default {
 		*/
 	},
 	mounted() {
-
 		this.$root.scrollToTop()
-
 		// if email and a valid one time token is passed, then log in user
 		if (this.email && this.emailToken) {
 			this.loginWithEMailToken()
 		}
-
 		//TODO: When user is already logged in (JWT from local storage), THEN show a "welcome back" message. User can jump to his team.
 	},
 	methods: {
