@@ -360,14 +360,14 @@ export default {
 .liquido-input {
 	position: relative;
 	padding-top: 12px;  // need some space for the label
-	
+
 	input::placeholder {
 		color: lightgrey
 	}
 
 	label {
 		position: absolute;
-		color: lightgrey;
+		color: grey;
 		font-size: 12px;
 		font-weight: normal;
 		top: 3px;
@@ -400,6 +400,10 @@ export default {
 		position: absolute;
 		top: 18px;
 		right: 10px;
+	}
+
+	input:disabled {
+		border-color: grey;
 	}
 
 	.invalid-feedback-placeholder {
