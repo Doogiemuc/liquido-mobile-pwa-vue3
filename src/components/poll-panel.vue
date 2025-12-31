@@ -1,18 +1,16 @@
 <template>
 	<div :id="pollCardId" :pollid="poll.id" :data-poll-status="poll.status" class="card poll-panel border-0 shadow">
-		<div class="card-header">
-			<h4 class="poll-title">
-				<!-- i class="fas fa-poll" /-->
-				{{ poll ? poll.title : "" }}
-			</h4>
-		</div>
+		<h3 class="card-header">
+			<!-- i class="fas fa-poll" /-->
+			{{ poll ? poll.title : "" }}
+		</h3>
 		<div v-if="!poll.proposals || poll.proposals.length === 0" class="card-body">
 			<p class="text-secondary">
 				{{ $t("noProposalsInPollYet") }}
 			</p>
 		</div>
 		<ul v-else class="list-group list-group-flush mt-1 mb-3">
-			<li v-for="prop in sortedProposals" :key="prop.id" class="list-group-item proposal-list-group-item"
+			<li v-for="prop in sortedProposals" :key="prop.id" class="list-group-item proposal-list-group-item user-select-none"
 				:class="proposalListGroupItemClasses(prop.id)">
 				<div class="proposal-header d-flex align-items-center">
 					<div class="proposal-icon">
@@ -183,21 +181,11 @@ $proposal_icon_size: 2.5rem;
 
 .poll-panel {
 
-	.card-header {
-		//background-color: white
-		border-bottom: none;
-	}
-
 	/*
 	.card-body {
 		padding-top: 0; // proposal-list-group-item  handles vertical padding  => keep this. Don't touch! ..........
 	}
 	*/
-
-	.poll-title {
-		margin: 0;  
-		//font-weight: bold;
-	}
 
 	.poll-title-icon {
 		font-size: $proposal_icon_size;

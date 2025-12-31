@@ -6,11 +6,9 @@
 		</h2>
 
 		<div id="castVoteCard" class="card ballot-card mb-5">
-			<div class="card-header">
-				<h4 class="poll-title">
-					{{ poll ? poll.title : "" }}
-				</h4>
-			</div>
+			<h3 class="card-header poll-title">
+				{{ poll ? poll.title : "" }}
+			</h3>
 			<div class="card-body">
 				<div v-if="loading" class="draggable">
 					<div class="spinner-border" role="status">
@@ -23,7 +21,7 @@
 					:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
 					:can-scroll-x="false">
 
-					<div v-for="law in proposalsInBallot" :id="law.id" class="card law-panel d-flex flex-row align-items-center noselect">
+					<div v-for="law in proposalsInBallot" :id="law.id" class="card law-panel d-flex flex-row align-items-center user-select-none">
 						<div class="law-icon">
 							<i class="fas fa-fw" :class="'fa-' + law.icon" />
 						</div>
@@ -357,16 +355,7 @@ export default {
 
 
 #castVoteCard {
-	.card-header {
-		//background-color: white;
-		border-bottom: none;
-	}
-
-	.poll-title {
-		font-weight: bold;
-		margin: 0;
-	}
-
+	
 	.draggable {
 
 		.sortable-ghost {

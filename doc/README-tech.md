@@ -15,6 +15,8 @@ This is a private hobby project. I've been working on this in my free time for n
 The honest goal of LIQUIDO is to never ever be finished. I use this project to learn.
 
 
+
+
 # Layout, Design, UX/UI
 
 ### Header
@@ -37,7 +39,6 @@ Poll Detail page:
  * Add Proposal button OR
  * Big cast vote button
 
-
 ### UX/UI Footer
 
 What sould be at the left and right?  Left: Team  and Right: Info  => What to show there?
@@ -48,26 +49,25 @@ What sould be at the left and right?  Left: Team  and Right: Info  => What to sh
 
 There are a lot of Cypress test. (Alternative tool: Playwright is also nice, but for now we'll stick with Cypress. An AI can migrate for me later :-)
 
-### Test Case: Register
+See liquido-testing.md 
 
- 1. Register as new user                                 (welcome-chat.js -> liquido-atlas-client.js)
- 2. Send anonymous REST reqest to /createNewTeam         
-    Response contains { team user jwt }. 
- 3. Store team and user in local cache.                  (welcome-chat.js -> local-cache.js)
- 4.	Set jwt in liquido-atlas-client as HTTP HEADER       (welcome-chat.js -> liquido-atlas-client.js)
+
 
 
 # LIQUDIO Security 
 
+### TLS certificates
+
 For the TLS connection to the backend you need a certificate. For development we use a self signed cert. It is not that easy to make Safari on iOS to accept that cert:
 
- 1. Download the .pem file directly in your phone.
- 2. Install the cert via iOS Settings. -> General -> "Profile downloaded"
- 3. Then under Settings -> General -> About -> Trust the cert root chain.
+ 1. Create a self-signed certificate with `mkcert -install`. On mac this also installs the certificate into the local trust store. See also https://github.com/FiloSottile/mkcert/blob/master/README.md#supported-root-stores 
+ 2. Download the .pem file directly in your phone.
+ 3. Install the cert via iOS Settings. -> General -> "Profile downloaded"
+ 4. Then under Settings -> General -> About -> Trust the cert root chain.
+ 5. In your iOS browser open https://backend.host:8443/graphql/schema.graphql and click on "open website". This is also necessary to trust the cert.
 
-See also https://github.com/FiloSottile/mkcert/blob/master/README.md#supported-root-stores
 
-Sometimes it is till necessary to open  https://backend.host:8443/graphql/schema.graphql  at the backend once and again click on "open website" in iOS.
+
 
 # Social Logins
 
@@ -126,6 +126,7 @@ https://nocksoft.de/tutorials/dyndns-fuer-ipv6-server-hinter-fritzbox-konfigurie
 
 # TODO: Larger new features I would like to implement ("Epics")
  
+ * Timeout for backend requests
  * Capacitorjs.com A cross platform native runtime for web apps.
  * Everythign in one page with a super intelligent wobbling funny poll-pannel => Polly works
  * Three levels of complexity

@@ -29,9 +29,12 @@
 
 	--icon-color: white;
   --proposal-icon-bg: #429cf3;
-  --liquido-info-color: #777;
+
+/* Maybe: distinguish between an info text and and info box */
+  --liquido-info-color: #666;
   --liquido-info-background: transparent;
-  --admin-info-text-color: white;
+  
+	--admin-info-text-color: white;
   --admin-info-background: #217DAA;
 	
 }
@@ -141,7 +144,8 @@
   padding: 0.5rem;
   color: var(--liquido-info-color);
   background-color: var(--liquido-info-background);
-  border: 1px solid var(--liquido-info-color);
+	border: none;
+  /*border: 1px solid var(--liquido-info-color);*/
   border-radius: 0.375rem;
 }
 

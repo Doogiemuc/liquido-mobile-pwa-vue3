@@ -4,23 +4,13 @@
 			{{ team.teamName }}
 		</h1>
 
-		<div id="team-home-user-welcome" class="alert liquido-info">
-			<p v-html="$t('introYourTeam', { name: currentUserName })"></p>
+		<div id="team-home-user-welcome" class="card mb-3">
+			<div class="card-body">
+				<span v-html="$t('introYourTeam', { name: currentUserName })"></span>
+			</div>
 		</div>
 
-		<button id="register2FAButton" 
-			type="button" 
-			class="btn btn-primary btn-lg w-100 text-center position-relative mt-5" 
-			@click="register2FA">
-			<i class="fa-solid fa-fingerprint position-absolute top-50 start-0 translate-middle ms-3"></i>
-			<span class="text-center">Register WebAuthN</span>
-		</button>
-		{{ statusMessage }}
-
-
-
-
-		<button id="gotoPollsButton" class="btn btn-primary btn-lg w-100 my-5" @click="gotoPolls()">
+		<button id="gotoPollsButton" class="btn btn-primary btn-lg w-100 mb-5" @click="gotoPolls()">
 			{{ $t("gotoPolls") }}
 			<i class="fas fa-angle-double-right" />
 		</button>
@@ -39,11 +29,10 @@
 
 		<!-- TODO: make it configurable who can invite more team members. Only the admin? -->
 		<div id="teamInfo" class="card">
-			
+			<h3 class="card-header text-center">
+				{{ $t("inviteNewMembers") }}
+			</h3>
 			<div class="card-body text-center">
-				<h3 class="card-title">
-					{{ $t("inviteNewMembers") }}
-				</h3>
 				<img id="qrCodeImg" src="" class="qr-code" />
 				<a id="inviteLink" :href="inviteLinkURL" :data-invitecode="team.inviteCode" @click.prevent="shareLink()">
 					<span v-html="$t('inviteLink', { inviteCode: team.inviteCode })"></span>
@@ -55,6 +44,14 @@
 		<div v-if="isAdmin" class="alert alert-admin mt-5">
 			<p v-html="$t('introForOneAdmin')"></p>
 		</div>
+
+		<button id="register2FAButton" 
+			type="button" 
+			class="btn btn-primary btn-lg w-100 text-center position-relative mt-5" 
+			@click="register2FA">
+			<i class="fa-solid fa-fingerprint position-absolute top-50 start-0 translate-middle ms-3"></i>
+			<span class="text-center">{{ $t("registerKeepass") }}</span>
+		</button>
 
 		<div class="text-center">
 			<button id="logoutButton" type="button" class="btn btn-outline-secondary mt-5" @click="clickLogout">
@@ -68,7 +65,7 @@
 import config from "config"
 import QRCode from "qrcode"
 import api from "@/services/liquido-graphql-client.js"
-import * as webauthnService from '@/services/webauthn-service.js'
+import webauthnService from '@/services/webauthn-service.js'
 
 
 
@@ -92,6 +89,7 @@ export default {
 				inviteNewMembers: "Teammitglieder einladen",
 				inviteLink: "Einladungscode:&nbsp;<b>{ inviteCode }</b>",
 				qrCode: "QR Code scannen:",
+				registerKeepass: "Keepass registrieren",
 				logout: "Logout"
 			},
 		},
@@ -158,46 +156,9 @@ export default {
 		 */
 		async register2FA() {
 			console.log("register2FA")
-			if (!webauthnService.supportsWebAuthn()) {
-				this.statusMessage = "WebAuthn unsupported!"
-				return
-			}
-			if (!api.isAuthenticated()) {
-				this.statusMessage = "You must be logged in to register an authenticator."
-				return
-			}
-      this.statusMessage = "WebAuthN starting..."
-      try {
-				// (1) Get challenge (a random byte number) from server
-        const optionsResp = await api.getWebAuthnRegistrationChallenge()
-				
-				// (2) Aks hardware device for user's confirmation
-        this.statusMessage += " WebAuthn: Waiting for device ..."
-        const credential = await webauthnService.startRegistrationFlow(optionsResp)
-				console.log("Credentials from startRegistrationFlow", credential)
-
-        // (3) Submit our confirmed private key to the server to register this authenticator
-        const verifyResp = await api.submitWebAuthnRegistration(credential)
-        console.log("Successfully registered authenticator", verifyResp)
-				this.statusMessage = "Successfully registered authenticator"
-
-      } catch (err) {
-        console.error('WebAuthn register error', err)
-        this.statusMessage += " WebAuthn Error in register2FA:" + JSON.stringify(err)
-      }
-			
+			webauthnService.registerWebauthn()
 		},
 		
-
-
-
-
-
-
-
-
-
-
 
 		getImgUrl(imgFile) {
 			return config.avatarPath + "/" + imgFile
@@ -215,7 +176,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style>
 
 .admin-shield {
 	color: var(--primary);
@@ -227,7 +188,6 @@ export default {
 #memberCards {	
 	.card-body {
 		text-align: center;
-		
 	}
 }
 

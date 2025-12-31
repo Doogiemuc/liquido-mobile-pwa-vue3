@@ -549,11 +549,7 @@ let graphQlApi = {
 			credentialResponse,
 			{ withCredentials: true }  // required. Send cookie back to server
 		).then(res => {
-			// If server returned login payload, perform client-side login
-			console.log("POST /liquido/v2/webauthn/register SUCCESSFULLY logged in", res.data)
-			if (res.data && res.data.jwt && res.data.team && res.data.user) {
-				this.login(res.data.team, res.data.user, res.data.jwt)
-			}
+			console.log("POST /liquido/v2/webauthn/register SUCCESSFULLY registered new authenticator", res.data)
 			return res.data
 		})
 	},
@@ -661,7 +657,14 @@ let graphQlApi = {
 			.then(res => res.data.getTeamForInviteCode)
 	},
 
+	/**
+	 * Join a team with inviteCode
+	 * @param {String} inviteCode alphanumerical invite code that the admin of the team shared
+	 * @param {Object} member user data of the new team member that want's to join
+	 * @param {String} password plain text password of the new user
+	 */
 	async joinTeam(inviteCode, member, password) {
+		//TODO: password only as a fallback for passkey
 		let graphQL = `mutation joinTeam($inviteCode: String!, $member: UserEntityInput!, $password: String!) { ` + 
 			` joinTeam(inviteCode: $inviteCode, member: $member, password: $password) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		let variables = {

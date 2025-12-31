@@ -159,19 +159,6 @@
 			</a>
 		</div>
 
-		<!-- WebAuthn 2FA Modal 
-		<webauthn-2fa-modal
-			v-if="show2FAModal"
-			:mode="twoFAMode"
-			:email="tempEmail"
-			:password="tempPassword"
-			@success="handle2FASuccess"
-			@cancel="handle2FACancel"
-			@error="handle2FAError"
-			@needs-registration="twoFAMode='register'"
-		/>
-		-->
-
 	</div>
 </template>
 
@@ -179,7 +166,6 @@
 import config from "config"
 import liquidoInput, { STATE } from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
-import Webauthn2faModal from '@/components/webauthn-2fa-modal.vue'
 //TODO: import WebAuthn from "@/services/quarkus-webauthn.js"
 
 const REQUEST_THROTTLE_SECS = 10
@@ -280,7 +266,7 @@ export default {
 			}
 		}
 	},
-	components: { liquidoInput, Webauthn2faModal },
+	components: { liquidoInput },
 	props: {
 		// These props are set from URL parameters, e.g. when user logs in via the email link
 		email: { type: String, required: false, default: undefined },

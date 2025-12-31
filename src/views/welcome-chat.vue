@@ -33,7 +33,7 @@
 			</div>
 
 			<!-- Login button -->
-			<div v-if="showLoginLink" class="login-link">
+			<div v-if="showLoginButton" class="login-link">
 				<button class="btn btn-primary btn-sm" @click="goToLogin">{{ $t('Login') }}</button>
 			</div>
 
@@ -247,15 +247,23 @@
 				</div>
 				<div class="card-body">
 					<p v-html="$t('SetupPasskeyInfo')" />
+				</div>
+			</div>
+
+			<div id="setupPasskeyCard" :class="{ 'collapse-max-height': !FLOW.SetupPasskey }" class="card chat-bubble chat-right">
+				<div class="card-body">
 					<button
 						id="setupPasskeyButton"
-						class="btn btn-primary float-end mb-3"
+						class="btn btn-primary d-flex align-items-center w-100"
 						type="button"
 						:disabled="FLOW.RegistrationFinished"
 						@click="setupPasskey()"
 					>
-						<i class="fas fa-user-shield" />
-						{{ $t("SetupPasskeyButton") }}
+						<i class="fas fa-fingerprint" />
+						<span class="flex-grow-1 text-center">{{ $t("SetupPasskeyButton") }}</span>
+						<span v-if="FLOW.SetupPasskeySuccessfull" style="color: #0E0;">
+							<i class="fa-solid fa-check"></i>
+						</span>
 					</button>
 				</div>
 			</div>
@@ -362,7 +370,7 @@ export default {
 				teamName: "Team Name",
 				teamNameInvalid: "Bitte mindestens 6 Zeichen als Teamname!",
 				youWillBecomeAdmin: "Du wirst der Admin des neuen Teams.",
-				TeamCreatedSuccessfully: "Ok, dein neues Team ist angelegt.",
+				TeamCreatedSuccessfully: "Ok, dein neues Team ist angelegt. Ich habe dir auch eine E-Mail mit allen Infos geschickt.",
 
 				// Join an existing team
 				JoinTeam: "Einem Team beitreten",
@@ -390,6 +398,10 @@ export default {
 				SetupPasskeyTitle: "<span class='liquido'></span> ist sicher!",
 				SetupPasskeyInfo: "Um sicherzustellen, dass niemand deine Stimme missbrauchen kann, richte bitte jetzt deinen Passkey ein. Künftig kannst du dich damit schnell und sicher per Fingerabdruck, Face-ID oder Geräte-PIN einloggen.</p>",
 				SetupPasskeyButton: "Passkey registrieren",
+				SetupPasskeyErrorTitle: "Passkey Fehler",
+				SetupPasskeyError: "Dein Passkey konnt leider nicht registriert werden. Du kannst das später auf deiner Team Seite noch tun.",
+				TryAgain: "Noch mal versuchen",
+				OkLater: "Ok, später",
 
 				// Create first poll bubble
 				pollInfo: 
@@ -431,7 +443,7 @@ export default {
 			},
 
 			// Our polite and nice chat bot logic :-)
-			chatDelayMs: window.Cypress ? 100 : 1000,
+			chatDelayMs: window.Cypress || process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test" ? 100 : 1000,
 
 			// Chat bubbles are consecutively blended in along these states.
 			FLOW: {
@@ -456,7 +468,10 @@ export default {
 				CreateTeamSuccessfull: false,
 
 				// then continue in both cases
-				SetupPasskey: false,
+				SetupPasskeyBubble: false,
+				SetupPasskeyClicked: false,
+				SetupPasskeySuccessfull: false,
+
 				RegistrationFinished: false
 			},
 			
@@ -495,8 +510,8 @@ export default {
 		}
 	},
 	computed: {
-		showLoginLink() {
-			return this.FLOW.niceToMeetYou == false
+		showLoginButton() {
+			return !this.FLOW.NiceToMeetYou
 		},
 		joinTeamOkButtonDisabled() {
 			return this.FLOW.JoinTeamClicked ||
@@ -519,13 +534,16 @@ export default {
 	},
 	created() {
 		// If a valid inviteCode was passed as URL parameter, then try to load team
-		if (this.isInviteCodeValid(this.inviteCode)) {
-			log.debug("have invite coce", this.inviteCode)
-			api.getTeamForInviteCode(this.inviteCode).then(team => {
+		if (this.isInviteCodeValid(this.inviteCodeQueryParam)) {
+			this.inviteCodeInputField = this.inviteCodeQueryParam
+			this.FLOW.InviteCodePassed = true
+			log.debug("have invite code", this.inviteCodeInputField)
+			api.getTeamForInviteCode(this.inviteCodeInputField).then(team => {
 				log.debug("Found team info ", team)
-				this.teamFromInviteCode = team
-				this.inviteCodeInputField = team.inviteCode
+				this.team = team
 			})
+		} else {
+			//TODO: passed invite code is invalid
 		}
 	},
 	/**
@@ -707,24 +725,7 @@ export default {
 			}, this.chatDelayMs)
 		},
 
-		setupPasskey() {
-			if (!this.FLOW.SetupPasskey) return
-			webauthnService.registerWebauthn()
-				.then(res => {
-					this.FLOW.RegistrationFinished = true
-				}).catch(err => {
-					this.$root.$refs.rootPopupModal.showError(err)
-				})
-		},
-
-		gotoTeam() {
-			this.$router.push({name: "teamHome"})
-		},
-
-		gotoCreatePoll() {
-			this.$router.push({name: "createPoll"})
-		},
-
+	
 		/** Join an existing team */
 		joinTeam() {
 			if (this.joinTeamOkButtonDisabled) return
@@ -759,6 +760,36 @@ export default {
 					this.FLOW.JoinTeamForm = true
 				})
 		},
+
+
+		//TODO: what to do if browser does not support webauthn? => offer mobile & SMS login
+		setupPasskey() {
+			if (!this.FLOW.SetupPasskey || this.FLOW.SetupPasskeyClicked) return
+			this.FLOW.SetupPasskeyClicked = true
+			this.FLOW.SetupPasskeySuccessfull = false
+			webauthnService.registerWebauthn()
+				.then(res => {
+					this.FLOW.SetupPasskeySuccessfull = true
+					this.FLOW.RegistrationFinished = true
+				}).catch(err => {
+					console.log("SetupPasskeyError", err)
+					this.FLOW.SetupPasskeyClicked = false
+					this.FLOW.SetupPasskeySuccessfull = false
+					//this.FLOW.SetupPasskeyError = true
+					this.$root.showError(this.$t('SetupPasskeyError'), this.$t('SetupPasskeyErrorTitle'), this.$t('OkLater'), this.$t('TryAgain'))
+				})
+		},
+
+		gotoTeam() {
+			this.$router.push({name: "teamHome"})
+		},
+
+		gotoCreatePoll() {
+			this.$router.push({name: "createPoll"})
+		},
+
+
+
 
 		shareLink() {
 			if (navigator.share) {

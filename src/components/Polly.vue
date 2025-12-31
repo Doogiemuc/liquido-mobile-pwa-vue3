@@ -392,7 +392,7 @@ function isEmail(s) {
 				<i class="fa-solid fa-arrow-up-from-bracket fa-stack-1x"></i>
 			</span>
 			<div class="card-header">
-				<div class="text-center my-3">
+				<div class="card-header text-center my-3">
 					<i class="fas fa-scale-balanced fa-3x" style="color: var(--primary)"></i>
 				</div>
 				<liquido-input v-if="isNew" 
@@ -443,7 +443,7 @@ function isEmail(s) {
 				<div class="polly-proposals-wrapper">
 					<draggable id="pollyDraggable" v-model="poll.proposals" class="draggable" item-key="id"
 							:swap-threshold="0.5" :delay="40" :animation="500" :can-scroll-x="false">
-						<div v-for="prop in poll.proposals" :id="prop.id" class="form-control polly-proposal sortable-proposal noselect">
+						<div v-for="prop in poll.proposals" :id="prop.id" class="form-control polly-proposal sortable-proposal user-select-none">
 							<div class="arrow-up pos-top-middle">&nbsp;</div>
 							<div class="sortable-proposal-title">
 								{{ prop.title }}

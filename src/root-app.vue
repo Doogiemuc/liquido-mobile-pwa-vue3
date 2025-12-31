@@ -20,7 +20,7 @@
 		<navbar-bottom v-if="showNavbarBottom"></navbar-bottom>
 		<mobile-debug-log  v-if="showDebugLog" ref="mobileDebugLogRef"></mobile-debug-log>
 	</div>
-</template>dw
+</template>
 
 <script>
 /**
@@ -37,7 +37,6 @@ import mobileDebugLog from "@/components/mobile-debug-log.vue"
 import api from "@/services/liquido-graphql-client.js"
 //import EventBus from "@/services/event-bus.js"
 import config from "config"
-import axios from "axios"
 
 
 /** 
@@ -72,8 +71,6 @@ export default {
 			transitionName: "", 	// CSS sliding transition between page components
 			// Global popup-modal
 			modalType: "success",
-			// WebAuthn enrollment state for the currently loaded user (client-side only)
-			//TODO: webauthnRegistered: false,
 			modalTitle: "",
 			modalMessage: "",
 			modalContentClass: undefined,
@@ -191,6 +188,21 @@ export default {
 			})
 		},
 		*/
+
+		/** 
+		 * We have one beautiful error/success modal 
+		 * that we reuse everywhere. This method is just a convenience shortcut
+		 * available as this.$root.showError(errMsg, title) in all child components
+		 */
+		showError(errMsg, errTitle, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined) {
+			return this.$refs.rootPopupModal.showError(errMsg, errTitle, primaryButtonText, secondaryButtonText)
+		},
+		showSuccess(errMsg, errTitle, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined) {
+			return this.$refs.rootPopupModal.showSuccess(errMsg, errTitle, primaryButtonText, secondaryButtonText)
+		},
+		showInfo(errMsg, errTitle, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined) {
+			return this.$refs.rootPopupModal.showInfo(errMsg, errTitle, primaryButtonText, secondaryButtonText)
+		},
 
 		/**
 		 * INTERNAL: One step in an animation

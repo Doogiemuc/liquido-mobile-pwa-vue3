@@ -3,6 +3,9 @@ import { startRegistration, startAuthentication, browserSupportsWebAuthn } from 
 import api from "@/services/liquido-graphql-client.js"
 
 const webauthnAPI = {
+	/**
+	 * Register a biometric (fingerprint, Face-ID or Device-PIN) authenticator for a logged-in user.
+	 */
 	async registerWebauthn() {
 		if (!browserSupportsWebAuthn()) return Promise.reject("WebAuthn not supported in this browser")
 		if (!api.isAuthenticated()) return Promise.reject("You must be logged in to register an authenticator.")

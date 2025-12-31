@@ -24,9 +24,11 @@
 				</div>
 				<div class="modal-footer">
 					<slot name="modal-footer">
-						<button v-if="secondaryButtonText" id="modalSecondaryButton" type="button" class="btn btn-secondary flex-grow-1" @click="clickSecondary">{{ secondaryButtonText }}</button>
+						<button v-if="mySecondaryButtonText" id="modalSecondaryButton" type="button" class="btn btn-secondary flex-grow-1" @click="clickSecondary">
+							{{ mySecondaryButtonText }}
+						</button>
 						<button id="modalPrimaryButton" type="button" class="btn btn-primary flex-grow-1" data-bs-dismiss="modal" @click="clickPrimary">
-							{{ primaryButtonText }}
+							{{ myPrimaryButtonText }}
 						</button>
 					</slot>
 				</div>
@@ -53,17 +55,29 @@
 
 import { Modal } from 'bootstrap'
 
+const MODAL_TYPE = {
+	PRIMARY: "primary",
+	SUCCESS: "success",
+	WARN: "warn",
+	WARNING: "warning",
+	DANGER: "danger",
+	ERROR: "error",
+	INFO: "info"
+}
+
+const OK_text = "Ok"
+
 export default {
 	name: "PopupModal",
 	props: {
 		id: { type: String, required: true },
-		type: { type: String, required: false, default: "info" },
+		type: { type: String, required: false, default: MODAL_TYPE.INFO },
 		showHeaderClose: { type: Boolean, required: false, default: false },
 		centered: { type: Boolean, required: false, default: true },
 		title: { type: String, required: false, default: "" },  // or HTML can be provided into the <slot modal-title>
 		message: { type: String, required: false, default: "" },  // or HTML can be provided into the <slot modal-body>
 		contentClass: { type: String, required: false, default: "" },
-		primaryButtonText: { type: String, required: false, default: function() { return "Ok" } },
+		primaryButtonText: { type: String, required: false, default: function() { return OK_text } },
 		secondaryButtonText: { type: String, required: false, default: undefined },
 	},
 	emits: ["clickPrimary", "clickSecondary"],
@@ -73,23 +87,25 @@ export default {
 			myMessage: this.message,
 			myTitle: this.title,
 			myType: this.type,
+			myPrimaryButtonText: this.primaryButtonText,
+			mySecondaryButtonText: this.secondaryButtonText,
 			myModal: undefined  // reference to Bootstrap Modal instanace. Will be set in "mounted()"
 		}
 	},
 	computed: {
 		headerIconClass() {
 			switch (this.myType) {
-				case "primary":
+				case MODAL_TYPE.PRIMARY:
 					return "far fa-check-circle header-icon header-icon-primary"
-				case "success":
+				case MODAL_TYPE.SUCCESS:
 					return "far fa-check-circle header-icon header-icon-success"
-				case "warn":
-				case "warning":
+				case MODAL_TYPE.WARN:
+				case MODAL_TYPE.WARNING:
 					return "fas fa-exclamation-circle header-icon header-icon-warn"
-				case "danger":
-				case "error":
+				case MODAL_TYPE.DANGER:
+				case MODAL_TYPE.ERROR:
 					return "fas fa-exclamation-circle header-icon header-icon-danger"
-				default:
+				default:  // MODAL_TYPE.INFO
 					return "fas fa-info-circle header-icon header-icon-info"
 			}
 		},
@@ -116,29 +132,37 @@ export default {
 		})
 	},
 	methods: {
-		/** Show the modal. Can optionally pass a message and a title. */
-		show(msg, title, type) {
-			if (msg) this.myMessage = msg
-			if (title) this.myTitle = title
-			if (type) this.myType = type
+		/** 
+		 * Show the popup modal. 
+		 * @param msg {String} message to the user
+		 * @param title {String} title or defaults to "Error"
+		 * @pararm type {ENUM} type of modal: PRIMARY|INFO|SUCCESS|WARN|DANGER|ERROR
+		 */
+		show(msg, title, type = MODAL_TYPE.INFO, primaryButtonText = OK_text, secondaryButtonText = undefined) {
+			console.log("secondaryButtonText", secondaryButtonText)
+			this.myMessage = msg
+			this.myTitle = title
+			this.myType = type
+			this.myPrimaryButtonText = primaryButtonText
+			this.mySecondaryButtonText = secondaryButtonText
 			this.myModal.show()
 		},
-		showSuccess(msg, title) {
-			this.show(msg, title, "success")
+		showSuccess(msg, title, primaryButtonText = OK_text, secondaryButtonText = undefined) {
+			this.show(msg, title, MODAL_TYPE.SUCCESS, primaryButtonText, secondaryButtonText)
 		},
-		showError(msg, title) {
-			this.show(msg, title, "error")
+		showError(msg, title, primaryButtonText = OK_text, secondaryButtonText = undefined) {
+			this.show(msg, title, MODAL_TYPE.ERROR, primaryButtonText, secondaryButtonText)
 		},
-		showInfo(msg, title) {
-			this.show(msg, title, "info")
+		showInfo(msg, title, primaryButtonText = OK_text, secondaryButtonText = undefined) {
+			this.show(msg, title, MODAL_TYPE.INFO, primaryButtonText, secondaryButtonText)
 		},
-		showWarning(msg, title) {
-			this.show(msg, title, "warning")
+		showWarning(msg, title, primaryButtonText = OK_text, secondaryButtonText = undefined) {
+			this.show(msg, title, MODAL_TYPE.WARNING, primaryButtonText, secondaryButtonText)
 		},
 		hide() {
 			this.myModal.hide()
 		},
-		close() {   // be nice to your callers :-) offer hide and close wording
+		close() {   // be nice to your users :-) offer both "hide" and "close"
 			this.myModal.hide()
 		},
 		toggle() {
