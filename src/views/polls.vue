@@ -95,8 +95,7 @@
 			</button>
 		</div>
 
-		
-
+		<navbar-bottom></navbar-bottom>
 	</div>
 </template>
 
@@ -107,6 +106,7 @@
  * But it's getting better and better everytiem! :-)
  */
 
+import navbarBottom from "@/components/navbar-bottom.vue"
 import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
 import dayjs from "dayjs"
@@ -151,6 +151,7 @@ export default {
 		},
 	},
 	name: "PollsList",
+	components: { navbarBottom },
 	data() {
 		return {
 			loading: true,

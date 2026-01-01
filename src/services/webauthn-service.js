@@ -6,7 +6,7 @@ const webauthnAPI = {
 	/**
 	 * Register a biometric (fingerprint, Face-ID or Device-PIN) authenticator for a logged-in user.
 	 */
-	async registerWebauthn() {
+	async registerWebauthn(authenticatorLabel) {
 		if (!browserSupportsWebAuthn()) return Promise.reject("WebAuthn not supported in this browser")
 		if (!api.isAuthenticated()) return Promise.reject("You must be logged in to register an authenticator.")
 		try {
@@ -20,7 +20,7 @@ const webauthnAPI = {
 			console.log("Credentials from startRegistrationFlow", credential)
 
 			// (3) Submit our confirmed private key to the server to register this authenticator
-			const verifyResp = await api.submitWebAuthnRegistration(credential)
+			const verifyResp = await api.submitWebAuthnRegistration(credential, authenticatorLabel)
 			console.log("Successfully registered authenticator", verifyResp)
 
 			return Promise.resolve("Successfully registered authenticator")

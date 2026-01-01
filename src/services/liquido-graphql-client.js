@@ -541,14 +541,20 @@ let graphQlApi = {
 	/**
 	 * Submit attestation (credential) back to server for verification and receive final login payload
 	 * Must send above cookie!
-	 * @param {Object} credentialResponse
+	 * @param {Object} credentialResponse JSON response as returned by getWebAuthnRegistrationChallenge()
+	 * @param {String} authenticatorLabel name of this authenticator
+	 * @return HTTP 204
 	 */
-	async submitWebAuthnRegistration(credentialResponse) {
-		return axios.post(
-			'/liquido/v2/webauthn/register',
-			credentialResponse,
-			{ withCredentials: true }  // required. Send cookie back to server
-		).then(res => {
+	async submitWebAuthnRegistration(credentialResponse, authenticatorLabel) {
+		return axios({
+			method: 'post',
+			url: '/liquido/v2/webauthn/register',
+			params: {
+				label: authenticatorLabel
+			},
+			data: credentialResponse,
+			withCredentials: true  // required. Sends cookie that was set in GET /register-options-challenge back to server
+		}).then(res => {
 			console.log("POST /liquido/v2/webauthn/register SUCCESSFULLY registered new authenticator", res.data)
 			return res.data
 		})

@@ -230,34 +230,36 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
-
-$arrowColor: white;
-$arrowColorSelected: var(--navbar-bg);
-$arrowGapColor: white;
-$arrowWidth: 15px;
-$arrowHeight: 30px;
-$arrowGap: 3px;
-$border-radius: 20px;
+<style scoped>
 
 #navbar {
+	--arrowColor: white;
+	--arrowColorSelected: var(--navbar-bg);
+	--arrowGapColor: white;
+	--arrowWidth: 15px;
+	--arrowHeight: 39px;
+	--arrowGap: 10px;
+	--border-radius: 20px;
+
 	position: fixed;
-	bottom: 10px;
-	width: calc(100% - 10px);
-	margin-left: 5px;         
-	margin-right: 5px;
-	border: 1px solid $arrowGapColor;  
-	border-radius: $border-radius;
-	background-color: $arrowGapColor;
+	left: 10px;
+	right: 22px;  /* some more because of scroll bar */
+	bottom: 1rem;
 	max-width: var(--app-max-width);
-	//height: 2 * $arrowHeight + 4 * $arrowGap;
+	height: calc(2 * var(--arrowHeight) + 2px);   /* Buttons MUST have a fixed height! */
+
+	margin: 0;
+	padding: 0;
+
+	border: 1px solid var(--arrowGapColor);  
+	border-radius: var(--border-radius);
+	background-color: var(--arrowGapColor);
+	
 	z-index: 999;
 	font-size: 1.2rem;
-	padding: 0;
-	margin-top: 0;
-	margin-bottom: 0;
 	box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* horizontal, vertical, blur, color */
-	background-color: $arrowGapColor;
+	background-color: var(--arrowGapColor);
+	
 	display: flex;
 	flex-wrap: nowrap;
 	justify-content: space-between;
@@ -266,7 +268,7 @@ $border-radius: 20px;
 		text-align: center;
 		margin: 0;
 		padding: 0;
-		height: 2 * $arrowHeight;   // Buttons MUST have a fixed height!
+		
 		position: relative;
 		transition: background-color 0.5s;
 		a { 
@@ -283,16 +285,15 @@ $border-radius: 20px;
 
 	.discuss-button, .vote-button, .finished-button {
 		min-width: 30px;
-		flex-basis: 33%;	// each takes 1/3 of the width
-		background-color: $arrowColor;
+		flex-basis: 33%; /* each takes 1/3 of the width */
+		background-color: var(--arrowColor);
 		&::after {
 			-webkit-transition: background-color 0.5s ease, border-color 0.5s ease;
 			-moz-transition: background-color 0.5s ease, border-color 0.5s ease;
-			/* please note that transitions are not supported in IE 9 and there is no -ms prefix */
 			transition: background-color 0.5s ease, border-color 0.5s ease;
 		}
 		&.selected::after {
-			border-color: transparent transparent transparent $arrowColorSelected;
+			border-color: transparent transparent transparent var(--arrowColorSelected);
 		}
 		&::before {
 			-webkit-transition: background-color 0.5s ease, border-color 0.5s ease;
@@ -301,79 +302,76 @@ $border-radius: 20px;
 			transition: background-color 0.5s ease, border-color 0.5s ease;
 		}
 		&.selected::before {
-			border-color: $arrowColorSelected $arrowColorSelected $arrowColorSelected $arrowGapColor;
+			border-color: var(--arrowColorSelected) var(--arrowColorSelected) var(--arrowColorSelected) var(--arrowGapColor);
 		}
 	}
 
 	.discuss-button {
 		position: relative;
-		border-top-left-radius: $border-radius;
-		border-bottom-left-radius: $border-radius;
-		//margin-left: 5px;
-		margin-right: $arrowWidth + $arrowGap;
+		border-top-left-radius: var(--border-radius);
+		border-bottom-left-radius: var(--border-radius);
+		
 		&::after {
 			position: absolute;
 			content: "";
-			top: 0px;
-			right: -$arrowWidth+1;
-			width: 0px;
-			height: 0px;
+			top: 0;
+			right: 0;
+			width: 0;
+			height: 0;
 			border-style: solid;
-			border-width: $arrowHeight 0 $arrowHeight $arrowWidth;
-			border-color: transparent transparent transparent $arrowColor;
+			border-width: var(--arrowHeight) 0 var(--arrowHeight) var(--arrowWidth);
+			border-color: transparent transparent transparent var(--arrowColor);
 			z-index: 150;
-		}	
+		}
 	}
 
 	.vote-button {
-		margin-right: $arrowWidth + $arrowGap;
 		&::before {
 			position: absolute;
 			content: "";
-			top: 0px;
-			left: -$arrowWidth+1;  // +1, because otherwise there "sometimes??" is a gap
+			top: 0;
+			left: calc(-1 * var(--arrowWidth));
 			width: 0px;
 			height: 0px;
 			border-style: solid;
-			border-width: $arrowHeight 0 $arrowHeight $arrowWidth;
-			border-color: $arrowColor $arrowColor $arrowColor transparent;		
+			border-width: var(--arrowHeight) 0 var(--arrowHeight) var(--arrowWidth);
+			border-color: var(--arrowColor) var(--arrowColor) var(--arrowColor) transparent;		
 		}
+		
 		&::after {
 			position: absolute;
 			content: "";
-			top: 0px;
-			right: -$arrowWidth+1;
+			top: 0;
+			right: 0;
 			width: 0px;
 			height: 0px;
 			border-style: solid;
-			border-width: $arrowHeight 0 $arrowHeight $arrowWidth;
-			border-color: transparent transparent transparent $arrowColor;
+			border-width: var(--arrowHeight) 0 var(--arrowHeight) var(--arrowWidth);
+			border-color: transparent transparent transparent var(--arrowColor);
 			z-index: 150;
 		}
 	}
 
 	.finished-button {
-		border-top-right-radius: $border-radius;;
-		border-bottom-right-radius: $border-radius;;
-		//margin-right: 5px;
-		padding: 0;
-		background-color: $arrowColor;
+		border-top-right-radius: var(--border-radius);
+		border-bottom-right-radius: var(--border-radius);
+		
 		&::before {
 			position: absolute;
 			content: "";
 			top: 0px;
-			left: -$arrowWidth+1;
+			left: calc(-1 * var(--arrowWidth));
 			width: 0px;
 			height: 0px;
 			border-style: solid;
-			border-width: $arrowHeight 0 $arrowHeight $arrowWidth;
-			border-color: $arrowColor $arrowColor $arrowColor transparent;		
+			border-width: var(--arrowHeight) 0 var(--arrowHeight) var(--arrowWidth);
+			border-color: var(--arrowColor) var(--arrowColor) var(--arrowColor) transparent;		
 		}
 	}
 
 	.selected {
 		a {	color: white !important; }
-		background-color: $arrowColorSelected;
+		background-color: var(--arrowColorSelected);
 		.counter-badge {
 			color: var(--primary) !important;
 		}

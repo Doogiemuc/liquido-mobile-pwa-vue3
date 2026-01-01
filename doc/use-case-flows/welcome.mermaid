@@ -1,0 +1,27 @@
+flowchart TD
+
+
+
+A(<pre><b>/welcome</b></pre>) --> B[Enters nickname]
+B --> C{{Crete new team or
+Join a team}}
+C -->|Create new team| D[TeamName
+E-Mail
+Password]
+C -->|Join team| E[InviteCode
+E-Mail
+Password
+]
+E --> F["Register Passkey
+(if device supports it)"]
+D --> F
+F --> G((ok))
+G --> H(<pre><b>/team</b></pre>)
+G --> I(<pre><b>/pollCreate</b></pre>)
+
+classDef UserInput fill:#FFF,color:#333;
+
+class B UserInput;
+class D UserInput;
+class E UserInput;
+class F UserInput;

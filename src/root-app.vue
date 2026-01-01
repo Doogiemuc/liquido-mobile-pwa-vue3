@@ -17,7 +17,6 @@
 				<component :is="Component" id="appContent" class="router-view container-lg"/>
 			</transition>
 		</router-view>
-		<navbar-bottom v-if="showNavbarBottom"></navbar-bottom>
 		<mobile-debug-log  v-if="showDebugLog" ref="mobileDebugLogRef"></mobile-debug-log>
 	</div>
 </template>
@@ -31,7 +30,6 @@
  * and it offers some utility functions that are available to all components.
  */
 import liquidoHeader from "@/components/liquido-header.vue"
-import navbarBottom from "@/components/navbar-bottom.vue"
 import popupModal from "@/components/popup-modal.vue"
 import mobileDebugLog from "@/components/mobile-debug-log.vue"
 import api from "@/services/liquido-graphql-client.js"
@@ -64,7 +62,7 @@ let pollsScrollPos = undefined
 export default {
 	name: "LiquidoApp",
 	// Remark: vue-i18n is configured in main.js! Do not overwrite it here by setting the i18n: property
-	components: { liquidoHeader, navbarBottom, popupModal, mobileDebugLog },
+	components: { liquidoHeader, popupModal, mobileDebugLog },
 	data() { 
 		// These data attributes are reactive and available in EVERY sub-component as this.$root.<attributeName>
 		return {
@@ -79,11 +77,6 @@ export default {
 		}
 	},
 	computed: {
-		/** Shall the navbar be shown in the footer */
-		showNavbarBottom() {
-			return this.$route.path.match(/(polls|polls\/\d+)$/)
-		},
-
 		showDebugLog() {
 			return process.env.NODE_ENV !== 'production'
 		}
@@ -269,7 +262,7 @@ export default {
 			if (!elem) return
 			let appElem = document.getElementById("app")
 			let scrollTopFinalValue = elem.offsetTop - marginTop
-			console.log("scrollElemToTop", elem.offsetTop, "-", marginTop, "=", scrollTopFinalValue)
+			//console.log("scrollElemToTop", elem.offsetTop, "-", marginTop, "=", scrollTopFinalValue)
 			this.animate(appElem, "scrollTop", scrollTopFinalValue, durationMs)
 		},
 

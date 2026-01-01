@@ -552,21 +552,9 @@ export default {
 				.catch(err => console.error("DevLogin Member failed!", err))
 		},
 
-		// =============== WebAuthn FaceID ==================
+		// =============== Login via WebAuthn ==================
 		/*
-		registerWebauthn() {
-			console.log("webauthn.register: " + config.devLogin.admin.email)
-			this.webauthn.register({
-				name: config.devLogin.admin.email,
-				displayName: config.devLogin.admin.name
-			})
-			.then(body => {
-				console.log("WebAuthn: registered successfully", body)
-			})
-			.catch(err => {
-				console.error("WebAuthn Rregistration failed"+JSON.stringify(err))
-			})
-		},
+		TODO
 		*/
 
 

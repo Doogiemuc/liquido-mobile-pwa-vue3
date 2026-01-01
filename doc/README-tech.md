@@ -124,35 +124,6 @@ https://nocksoft.de/tutorials/dyndns-fuer-ipv6-server-hinter-fritzbox-konfigurie
 
 
 
-# TODO: Larger new features I would like to implement ("Epics")
- 
- * Timeout for backend requests
- * Capacitorjs.com A cross platform native runtime for web apps.
- * Everythign in one page with a super intelligent wobbling funny poll-pannel => Polly works
- * Three levels of complexity
-	 1. for kids: ONly one poll-panel with single line proposals (no description)
-	 2. Polls (for laws) and Elections (for candidates) with descriptions
-	 3. Full blown proxy voting
-
-# TODO: smaller fixes
-
- - Move Navbar bottom to polls.vue page and ONLY there!  <= IMPORTANT QUICK FIX!
- - Scroll to top: Do this with  https://router.vuejs.org/guide/advanced/scroll-behavior.html#Delaying-the-scroll     "scrollBehaviour" in router!!!
- - Need muuuuuch more tests for the polls filter at the bottom. When to show it?
- - Test on real devices, eg. with https://www.browserstack.com/    => This does already work on real hardware locally.
-
-# DONE / New Features 
-
-See also git log
-
- * Local MOCK for backend - October 2025
- * Remove bootstrap-vue-3  use plain bootstrap (mainly only b-card and b-button) - August 2025
- * Vue List transition for list if polls => Works again,  January 2024
-
-
-
-
-
  # Further References
 
  ### Very nice starter Template One Page Landing Page

@@ -156,6 +156,7 @@ export default {
 		 */
 		async register2FA() {
 			console.log("register2FA")
+			//TODO: label!
 			webauthnService.registerWebauthn()
 		},
 		

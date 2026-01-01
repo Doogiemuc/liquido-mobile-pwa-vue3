@@ -26,8 +26,8 @@
 						:maxlength="100"
 						:invalid-feedback="$t('userNameInvalid')"
 						:disabled="FLOW.NiceToMeetYou"
-						@keyup.enter="userNameSubmit"
-						@blur="userNameSubmit"
+						@keyup.enter="userNameSubmit()"
+						@blur="userNameSubmit()"
 					/>
 				</div>
 			</div>
@@ -128,6 +128,7 @@
 							:invalid-feedback="$t('passwordInvalid')"
 							:disabled="FLOW.JoinTeamSuccessfull"
 							tabindex="4"
+							@keyup.enter="joinTeam()"
 						/>
 
 						<div class="d-flex justify-content-between align-items-center">
@@ -189,8 +190,7 @@
 							:maxlength="200"
 							:invalid-feedback="$t('emailInvalid')"
 							:disabled="FLOW.CreateTeamSuccessfull"
-							tabindex="3"
-							@keyup.enter="createNewTeam()"
+							tabindex="2"
 						/>
 
 						<liquido-input
@@ -205,7 +205,8 @@
 							:maxlength="200"
 							:invalid-feedback="$t('passwordInvalid')"
 							:disabled="FLOW.CreateTeamSuccessfull"
-							tabindex="4"
+							tabindex="3"
+							@keyup.enter="createNewTeam()"
 						/>
 
 
@@ -252,6 +253,17 @@
 
 			<div id="setupPasskeyCard" :class="{ 'collapse-max-height': !FLOW.SetupPasskey }" class="card chat-bubble chat-right">
 				<div class="card-body">
+						<liquido-input
+							id="passkeyInput"
+							ref="passkeyInput"
+							v-model="passkeyLabel"
+							class="mb-3"
+							:label="$t('PasskeyLabel')"
+							:minlength="3"
+							:maxlength="200"
+							:invalid-feedback="$t('PasskeyLabelInvalid')"
+							:disabled="FLOW.RegistrationFinished"
+						/>
 					<button
 						id="setupPasskeyButton"
 						class="btn btn-primary d-flex align-items-center w-100"
@@ -395,8 +407,11 @@ export default {
 				gotoTeam: "Zum Team",
 
 				// Setup Passkey bubble
+				PassKey: "Passkey",
 				SetupPasskeyTitle: "<span class='liquido'></span> ist sicher!",
 				SetupPasskeyInfo: "Um sicherzustellen, dass niemand deine Stimme missbrauchen kann, richte bitte jetzt deinen Passkey ein. Künftig kannst du dich damit schnell und sicher per Fingerabdruck, Face-ID oder Geräte-PIN einloggen.</p>",
+				PasskeyLabel: "Passkey Name",  // the label of the input field
+				PasskeyLabelInvalid: "Bitte mindestens 3 Zeichen!",
 				SetupPasskeyButton: "Passkey registrieren",
 				SetupPasskeyErrorTitle: "Passkey Fehler",
 				SetupPasskeyError: "Dein Passkey konnt leider nicht registriert werden. Du kannst das später auf deiner Team Seite noch tun.",
@@ -435,6 +450,9 @@ export default {
 			// initialize the value of the input field with the passed inviteCode (if any)
 			inviteCodeInputField: this.inviteCodeQueryParam,
 
+			// The "name" of this passkey. To distinguish it from further passkees a user might register later.
+			passkeyLabel: undefined,
+
 			// newly created Team, or team loaded from passed inviteCode
 			team: {
 				//teamName: undefined,
@@ -445,6 +463,12 @@ export default {
 			// Our polite and nice chat bot logic :-)
 			chatDelayMs: window.Cypress || process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test" ? 100 : 1000,
 
+			// Semaphore so that the chat animation is only started once. This is for example relevant when the window is reloaded in the browser
+			chatAnimationStarted: false,
+
+
+
+			// Unbelievably clever use case flow status engine (c)2026 :-)
 			// Chat bubbles are consecutively blended in along these states.
 			FLOW: {
 				Welcome: false,
@@ -477,7 +501,7 @@ export default {
 			
 
 			/*
-			// Just for testing: Enable everything
+			// Just for design and lyout testing: Enable everything
 			FLOW: {
 				Welcome: true,
 				WhatsYourName: true,
@@ -487,7 +511,7 @@ export default {
 				InviteCodePassed: true,
 				PassedInviteCodeIsInvalid: true,
 
-				CreateOrJoinTeam: true,  					// show CreateOrJoinTeam bubble and the two buttons below
+				CreateOrJoinTeam: true,
 
 				// Variant A: join an existing team
 				JoinTeamForm: true,								
@@ -500,13 +524,11 @@ export default {
 				CreateTeamSuccessfull: true,
 
 				// then continue in both cases
-				SetupPasskey: true,
+				SetupPasskeyBubble: true,
 				RegistrationFinished: true
 			},
 			*/
-			
-			// Semaphore so that the chat animation is only started once. This is for example relevant when the window is reloaded in the browser
-			chatAnimationStarted: false,
+				
 		}
 	},
 	computed: {
@@ -703,7 +725,10 @@ export default {
 		},
 
 		/**
-		 * Create the QR code and show the next two bubbles one after another
+		 * When creating a new team was successfull, then
+		 * Create a QR code for inviting firends to this team,
+		 * set a default passkey label and
+		 * show the next bubbles for setting up this passkey
 		 */
 		newTeamCreatedSuccessfully() {
 			let QRcodeOpts = { scale: 10 }
@@ -717,6 +742,7 @@ export default {
 			})
 			this.FLOW.CreateTeamSuccessfull = true
 			window.setTimeout(() => {
+				this.passkeyLabel = this.user.name + "-" + this.$t('Passkey')
 				this.FLOW.SetupPasskey = true
 				this.$nextTick(() => {
 					this.$root.scrollElemToTop(document.getElementById("newTeamCreatedBubble"))
@@ -761,13 +787,16 @@ export default {
 				})
 		},
 
-
 		//TODO: what to do if browser does not support webauthn? => offer mobile & SMS login
+		/**
+		 * Register a new webauthn passkey at our backend
+		 */
 		setupPasskey() {
 			if (!this.FLOW.SetupPasskey || this.FLOW.SetupPasskeyClicked) return
 			this.FLOW.SetupPasskeyClicked = true
 			this.FLOW.SetupPasskeySuccessfull = false
-			webauthnService.registerWebauthn()
+			if (!this.passkeyLabel) this.passkeyLabel = this.user.name + "-" + this.$t('Passkey')
+			webauthnService.registerWebauthn(this.passkeyLabel)
 				.then(res => {
 					this.FLOW.SetupPasskeySuccessfull = true
 					this.FLOW.RegistrationFinished = true
