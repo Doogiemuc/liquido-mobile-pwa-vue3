@@ -11,7 +11,6 @@ export const store = reactive({
   
 	headerTitle: undefined,
 	headerBackLink: undefined,
-	pollStatusFilter: undefined,
 
   setHeaderTitle(newTitle) {
     this.headerTitle = newTitle
@@ -21,16 +20,4 @@ export const store = reactive({
 		this.headerBackLink = newBackLink
 	},
 
-	/**
-	 * This is the central place to set the poll status filter.
-	 * It will also emit an event to notify other components about the change.
-	 * This is used by the bottom navbar to change the filter when the user clicks on an arrow.
-	 * It is then read by the polls.vue component to filter the polls accordingly.
-	 * @param {String} newFilter new filter value for the poll status filter
-	 */
-	setPollStatusFilter(newFilter) {
-		//console.log("setPollStatusFilter to " + newFilter + " and emmitting event")
-		this.pollStatusFilter = newFilter
-		EventBus.emit(EventBus.Event.POLL_FILTER_CHANGED, newFilter)
-	}
 })

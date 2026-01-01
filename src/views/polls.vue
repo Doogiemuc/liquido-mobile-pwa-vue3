@@ -95,7 +95,7 @@
 			</button>
 		</div>
 
-		<navbar-bottom></navbar-bottom>
+		<navbar-bottom @update:selectedFilter="handleNavbarFilterchange"></navbar-bottom>
 	</div>
 </template>
 
@@ -129,13 +129,13 @@ export default {
 			},
 			de: {
 				pollsInElaborationInfo: 
-					"<p>Diese Abstimmungen werden gerade noch debatiert. Weitere Wahlvorschläge können noch hinzugefügt werden.</p>" +
-					"<p>Wenn euer Admin eine Wahl startet, dann kannst du anonym deine Stimme abgeben.</p>",
-				pollsInVotingInfo: "In diesen Abstimmungen kannst du jetzt deine Stimme abgeben.",
+					"<p>Diese Abstimmungen sind neu und werden gerade noch debatiert. Weitere Wahlvorschläge können noch hinzugefügt werden.</p>" +
+					"<p>Sobald euer Admin eine Wahl startet, kannst du sicher und anonym deine Stimme abgeben.</p>",
+				pollsInVotingInfo: "Diesen Abstimmungen laufen jetzt gerade. Wähle eine und gib deine Stimme ab.",
 				finishedPollsInfo: "Diese Abstimmungen sind beendet.",
 				finished: "abgeschlossen",
 				noPollYet: "Euer Admin hat bisher noch keine Abstimmung erstellt.",
-				noPollsMatchSearch: "- // -",
+				noPollsMatchSearch: "<kein Treffer>",
 				noPollsInElaboration: "Aktuell gibt es gerade keine Abstimmungen mit Wahlvorschläge die noch diskutiert werden können.",
 				noPollsInVoting: "Es läuft gerade keine Abstimmungen, in der du deine Stimmen abgegeben könntest.",
 				noFinishedPolls: "In eurem Team gibt es bisher noch keine abgeschlossenen Abstimmungen.",
@@ -157,23 +157,19 @@ export default {
 			loading: true,
 			showSearch: false,
 			searchQuery: "",
-			forceRefreshComputed: 0   
+			forceRefreshComputed: 0,
+			pollStatusFilter: undefined
 		}
 	},
 
 	computed: {
-		pollStatusFilter() {
-			//console.log("polls.vue: get computed pollStatusFilter", this.$root.pollStatusFilter)
-			return this.$store.pollStatusFilter
-		},
 		pageTitleLoc() {
-			console.log("polls.vue: get computed pageTitleLoc")
-			switch (this.$store.pollStatusFilter) {
-				case "ELABORATION":
+			switch (this.pollStatusFilter) {
+				case api.POLL_STATUS.ELABORATION:
 					return this.$t("pollsInElaboration")
-				case "VOTING":
+				case api.POLL_STATUS.VOTING:
 					return this.$t("pollsInVoting")
-				case "FINISHED":
+				case api.POLL_STATUS.FINISHED:
 					return this.$t("finishedPolls")
 				default:
 					return this.$t("YourPolls")
@@ -196,7 +192,7 @@ export default {
 			// So VUE's reactive updates do not work when the data changes in the cache.
 			// Therefore we have to force a recompute of this "computed" value with a nice hack:
 			this.forceRefreshComputed;
-			return api.getCachedPolls(this.$store.pollStatusFilter)
+			return api.getCachedPolls(this.pollStatusFilter)
 				.filter((poll) => this.matchesSearch(poll))
 				.sort((p1,p2) => {
 					//sort polls by status
@@ -225,13 +221,6 @@ export default {
 		this.$store.setHeaderTitle(this.pageTitleLoc)
 		this.$store.setHeaderBackLink("/team")
 
-		// Trick: When poll filter changes in navbar, then force a recompute of computed values (mainly "filteredPolls")
-		EventBus.on(EventBus.Event.POLL_FILTER_CHANGED, (/*newFilterValue*/) => {
-			//console.log("Polls.vue: POLL_FILTER_CHANGED to", this.$store.pollStatusFilter)
-			this.forceRefreshComputed++
-			this.$store.setHeaderTitle(this.pageTitleLoc)
-		})
-
 		// When one or all polls change, the reflect the changes in the UI.
 		EventBus.on(EventBus.Event.POLL_LOADED, () => this.pollsChanged())
 		EventBus.on(EventBus.Event.POLLS_LOADED, () => this.pollsChanged())  // event param "polls" is not used here
@@ -246,6 +235,10 @@ export default {
 	},
 	
 	methods: {
+
+		handleNavbarFilterchange(newFilter) {
+			this.pollStatusFilter = newFilter
+		},
 
 		toggleSearch() {
 			this.showSearch = !this.showSearch
@@ -290,7 +283,7 @@ export default {
 		},
 
 		goToPoll(pollId) {
-			//TODO: need a delay for visual reasons :-(  this.$store.setPollStatusFilter(undefined) // reset filter when going to a poll
+			//TODO: need better transition, that doesn't jump up and down because of scrolling position.
 			this.$router.push("/polls/" + pollId)
 		},
 
@@ -317,7 +310,7 @@ export default {
 		clearSearchAndFilter() {
 			console.log("Clear Search and PollFilter")
 			this.searchQuery = undefined
-			this.$store.setPollStatusFilter(undefined)
+			this.pollStatusFilter = undefined
 		},
 
 		// Transition Height - is ... again ... complex

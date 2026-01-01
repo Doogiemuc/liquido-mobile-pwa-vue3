@@ -59,6 +59,7 @@ const routes = [
 			public: true   // only welcome and login are public
 		}
 	},
+	//TODO: /joinTeam?inviteCode= ...  seperate this from /welcome !
 	{
 		path: "/team",
 		name: "teamHome",

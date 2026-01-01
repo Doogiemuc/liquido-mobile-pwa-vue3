@@ -1,5 +1,5 @@
 <template>
-	<nav id="navbar">
+	<div id="navbar">
 		<!-- div id="teamButton" class="team-button">
 			<a href="#" aria-label="Team" @click="goToTeam()">
 				<div class="nav-bar-icon">
@@ -43,11 +43,10 @@
 				<div class="icon-title">{{ $t("info") }}</div>
 			</a>
 		</div -->
-	</nav>
+	</div>
 </template>
 
 <script>
-import EventBus from "@/services/event-bus.js"
 import api from "@/services/liquido-graphql-client.js"
 
 export default {
@@ -56,137 +55,70 @@ export default {
 		messages: {
 			de: {
 				team: "Team",
-				discuss: "Debatte",      // Verben oder Nomen?   "debattieren" oder "Debatte". 
+				discuss: "Neu",      	// Verben oder Nomen? "debattieren" oder "Debatte".  Or einfach "Neu"
 				vote: "Abstimmung",
-				finished: "Abgeschl.",   // abgeschlossen?  final? fertig? entschieden? Beendet?
+				finished: "Beendet",   	// abgeschlossen? final? fertig? entschieden? beendet?
 				info: "Info"
 			},
 			en: {
 				team: "Team",
-				discuss: "Discuss",  // or debate?
+				discuss: "Discuss",  			// or debate?
 				vote: "Vote",
 				finished: "Finished",
 				info: "Info"
 			}
 		}
 	},
-	data() { 
+	emits: ["update:selectedFilter"],
+	data() {
 		return {
-			selectedItem: -1,         // selectedItem in navbar.  -1: show all polls,  1: discuss, 2: vote, 3: finished
-			forceRefreshComputed: 0   
+			selectedFilter: api.POLL_STATUS.ALL_POLLS,
+			forceRefreshComputed: 0
 		} 
 	},
 	computed: {
 		pollsInElaboration() {
 			this.forceRefreshComputed;
-			let res = api.getCachedPolls("ELABORATION")
+			let res = api.getCachedPolls(api.POLL_STATUS.ELABORATION)
 			return res
 		},
 		pollsInVoting() {
 			this.forceRefreshComputed;
-			return api.getCachedPolls("VOTING")
+			return api.getCachedPolls(api.POLL_STATUS.VOTING)
 		},
 		pollsFinished() {
 			this.forceRefreshComputed;
-			return api.getCachedPolls("FINISHED")
+			return api.getCachedPolls(api.POLL_STATUS.FINISHED)
 		},
 		discussButtonClass() {
 			return { 
-				selected: this.selectedItem === 1 || this.selectedItem === -1,
+				selected: this.selectedFilter === api.POLL_STATUS.ELABORATION || this.selectedFilter === api.POLL_STATUS.ALL_POLLS,
 				disabled: this.pollsInElaboration.length === 0
 			}
 		},
 		voteButtonClass() {
 			return { 
-				selected: this.selectedItem === 2 || this.selectedItem === -1,
+				selected: this.selectedFilter === api.POLL_STATUS.VOTING || this.selectedFilter === api.POLL_STATUS.ALL_POLLS,
 				disabled: this.pollsInVoting.length === 0
 			}
 		},
 		finishedButtonClass() {
 			return { 
-				selected: this.selectedItem === 3 || this.selectedItem === -1,
+				selected: this.selectedFilter === api.POLL_STATUS.FINISHED || this.selectedFilter === api.POLL_STATUS.ALL_POLLS,
 				disabled: this.pollsFinished.length === 0
 			}
 		},
 	},
-	watch: {
-		/*
-		// when navigating via URL, updated navbar accordingly
-		"$route.name": function(routeName) {
-			//console.log("navbar-bottom route.name changed to ", routeName)
-			if (this.$route.params)
-				this.setPollFilter(this.$route.params.status)
-		}
-		*/	
-	},
-	created() {
-		EventBus.on(EventBus.Event.POLLS_LOADED, () => {  // MUST use arrow-function to keep `this` reference!
-			// hack to make computed properties refresh their value
-			// https://logaretm.com/blog/2019-10-11-forcing-recomputation-of-computed-properties/
-			this.forceRefreshComputed++;  
-		})
-		EventBus.on(EventBus.Event.POLL_LOADED, () => {
-			this.forceRefreshComputed++;
-		})
-		EventBus.on(EventBus.Event.LOGIN, () => {
-			this.forceRefreshComputed++;
-		})
-		// Check what needs to be the selected, depending on (query) params
-		/*
-		if (this.$route.query && this.$route.query.status) {
-			this.setPollFilter(this.$route.query.status)
-		} else if (this.$route.params && this.$route.params.status) {
-			this.setPollFilter(this.$route.params.status)
-		}
-		*/
-	},
 	mounted() {
-		//console.log("navbar-bottom mounted: forceRefreshComputed")
-		//this.forceRefreshComputed++;
+		
+	},
+	watch: {
+		// When selectedFilter changes, then notify the parent component
+		"selectedFilter": function() {
+			this.$emit("update:selectedFilter", this.selectedFilter)
+		}
 	},
 	methods: {
-
-		/** 
-		 * User click on a filter arrow in the bottom navbar 
-		 * If we are not on the polls page already, then reset the filter navigate to the polls page.
-		 */
-		setPollFilter(newFilterValue) {
-			if (this.$route && this.$route.name !== "polls") {
-				this.selectedItem = -1
-				newFilterValue = undefined
-				this.$store.setPollStatusFilter(newFilterValue)
-				console.log("setPollFilter: navigate back to polls page")
-				this.$router.push({name: "polls"})
-			} else {
-				this.$store.setPollStatusFilter(newFilterValue)
-				switch (newFilterValue) {
-					case "ELABORATION":
-						this.selectedItem = 1
-						break
-					case "VOTING":
-						this.selectedItem = 2
-						break
-					case "FINISHED":
-						this.selectedItem = 3
-						break
-					default:
-						newFilterValue = undefined
-						this.selectedItem = -1
-				}
-			}
-			
-		},
-
-		goToTeam() {
-			if (this.selectedItem !== 0) {  // prevent firing an unnecessary event
-				this.selectedItem = 0
-			}
-			this.$router.push({name: "teamHome"})
-		},
-
-		goToInfo() {
-			//this.$router.push({name: "aboutPage"})
-		},
 
 		/**
 		 * Behaviour of the three buttons in the navbar<
@@ -202,27 +134,26 @@ export default {
 		 */
 
 		clickPollsInDiscussion() {
-			if (this.selectedItem === 0 || this.selectedItem === 1) {
-				this.setPollFilter(undefined)
+			if (this.selectedFilter === api.POLL_STATUS.ELABORATION) {
+				this.selectedFilter = api.POLL_STATUS.ALL_POLLS
 			} else {
-				this.setPollFilter("ELABORATION")
-			}
-			
+				this.selectedFilter = api.POLL_STATUS.ELABORATION
+			}			
 		},
 
 		clickPollsInVoting() {
-			if (this.selectedItem === 0 || this.selectedItem === 2) {
-				this.setPollFilter(undefined)
+			if (this.selectedFilter === api.POLL_STATUS.VOTING) {
+				this.selectedFilter = api.POLL_STATUS.ALL_POLLS
 			} else {
-				this.setPollFilter("VOTING")
+				this.selectedFilter = api.POLL_STATUS.VOTING
 			}
 		},
 
 		clickFinishedPolls() {
-			if (this.selectedItem === 0 || this.selectedItem === 3) {
-				this.setPollFilter(undefined)
+			if (this.selectedFilter === api.POLL_STATUS.FINISHED) {
+				this.selectedFilter = api.POLL_STATUS.ALL_POLLS
 			} else {
-				this.setPollFilter("FINISHED")
+				this.selectedFilter = api.POLL_STATUS.FINISHED
 			}
 		},
 
@@ -244,7 +175,7 @@ export default {
 	position: fixed;
 	left: 10px;
 	right: 22px;  /* some more because of scroll bar */
-	bottom: 1rem;
+	bottom: 0.5rem;
 	max-width: var(--app-max-width);
 	height: calc(2 * var(--arrowHeight) + 2px);   /* Buttons MUST have a fixed height! */
 
@@ -262,7 +193,9 @@ export default {
 	
 	display: flex;
 	flex-wrap: nowrap;
-	justify-content: space-between;
+	justify-content: space-around;
+	align-items: stretch;
+	gap: 0;
 	
 	.team-button, .discuss-button, .vote-button, .finished-button, .info-button {
 		text-align: center;
@@ -287,86 +220,109 @@ export default {
 		min-width: 30px;
 		flex-basis: 33%; /* each takes 1/3 of the width */
 		background-color: var(--arrowColor);
-		&::after {
-			-webkit-transition: background-color 0.5s ease, border-color 0.5s ease;
-			-moz-transition: background-color 0.5s ease, border-color 0.5s ease;
-			transition: background-color 0.5s ease, border-color 0.5s ease;
-		}
-		&.selected::after {
-			border-color: transparent transparent transparent var(--arrowColorSelected);
-		}
-		&::before {
-			-webkit-transition: background-color 0.5s ease, border-color 0.5s ease;
-			-moz-transition: background-color 0.5s ease, border-color 0.5s ease;
-			/* please note that transitions are not supported in IE 9 and there is no -ms prefix */
-			transition: background-color 0.5s ease, border-color 0.5s ease;
-		}
-		&.selected::before {
-			border-color: var(--arrowColorSelected) var(--arrowColorSelected) var(--arrowColorSelected) var(--arrowGapColor);
-		}
+		position: relative;
+		/* Arrow shape using clip-path */
+		clip-path: polygon(0 0, calc(100% - var(--arrowWidth)) 0, 100% 50%, calc(100% - var(--arrowWidth)) 100%, 0 100%, var(--arrowWidth) 50%);
+		display: flex;
+		justify-content: center;
+		align-items: center;
 	}
 
 	.discuss-button {
-		position: relative;
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 66%;
 		border-top-left-radius: var(--border-radius);
 		border-bottom-left-radius: var(--border-radius);
-		
-		&::after {
-			position: absolute;
-			content: "";
-			top: 0;
-			right: 0;
-			width: 0;
-			height: 0;
-			border-style: solid;
-			border-width: var(--arrowHeight) 0 var(--arrowHeight) var(--arrowWidth);
-			border-color: transparent transparent transparent var(--arrowColor);
-			z-index: 150;
-		}
+		clip-path: polygon(0 0, calc(100% - var(--arrowWidth)) 0, 100% 50%, calc(100% - var(--arrowWidth)) 100%, 0 100%, 0% 50%);
+		z-index: 2;
 	}
 
 	.vote-button {
-		&::before {
-			position: absolute;
-			content: "";
-			top: 0;
-			left: calc(-1 * var(--arrowWidth));
-			width: 0px;
-			height: 0px;
-			border-style: solid;
-			border-width: var(--arrowHeight) 0 var(--arrowHeight) var(--arrowWidth);
-			border-color: var(--arrowColor) var(--arrowColor) var(--arrowColor) transparent;		
-		}
-		
-		&::after {
-			position: absolute;
-			content: "";
-			top: 0;
-			right: 0;
-			width: 0px;
-			height: 0px;
-			border-style: solid;
-			border-width: var(--arrowHeight) 0 var(--arrowHeight) var(--arrowWidth);
-			border-color: transparent transparent transparent var(--arrowColor);
-			z-index: 150;
-		}
+		position: absolute;
+		top: 0;
+		left: 33%;
+		bottom: 0;
+		right: 33%;
+		z-index: 3;
 	}
 
 	.finished-button {
+		position: absolute;
+		top: 0;
+		left: 66%;
+		bottom: 0;
+		right: 0;
 		border-top-right-radius: var(--border-radius);
 		border-bottom-right-radius: var(--border-radius);
-		
-		&::before {
-			position: absolute;
-			content: "";
-			top: 0px;
-			left: calc(-1 * var(--arrowWidth));
-			width: 0px;
-			height: 0px;
-			border-style: solid;
-			border-width: var(--arrowHeight) 0 var(--arrowHeight) var(--arrowWidth);
-			border-color: var(--arrowColor) var(--arrowColor) var(--arrowColor) transparent;		
-		}
+		clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, var(--arrowWidth) 50%);
+	}
+	
+
+	/* OLD VERSION:  Arrow dividers between buttons 
+	.discuss-button::after,
+	.vote-button::after {
+		content: '';
+		position: absolute;
+		right: -10px;
+		width: 0;
+		height: 0;
+		border-left: 8px solid var(--arrowColor);
+		border-top: 20px solid transparent;
+		border-bottom: 20px solid transparent;
+		z-index: 1;
+		transition: border-color 0.5s ease;
+	}
+		*/
+	
+	/*
+	.vote-button::before,
+	.finished-button:before {
+		content: '';
+		position: absolute;
+		left: -10px;
+		width: 0;
+		height: 0;
+		border-right: 8px solid var(--arrowColor);
+		border-top: 20px solid transparent;
+		border-bottom: 20px solid transparent;
+		z-index: 1;
+		transition: border-color 0.5s ease;
+	}
+		*/
+	
+	/*
+	.finished-button::before {
+		content: '';
+		position: absolute;
+		left: -10px;
+		width: 0;
+		height: 0;
+		border-left: 8px solid var(--arrowColor);
+		border-top: 20px solid transparent;
+		border-bottom: 20px solid transparent;
+		z-index: 1;
+		transition: border-color 0.5s ease;
+	}
+		*/
+	
+	/* Selected state arrow dividers */
+	.discuss-button.selected::after {
+		border-left-color: var(--arrowColorSelected);
+	}
+	
+	.vote-button.selected::after {
+		border-left-color: var(--arrowColorSelected);
+	}
+	
+	.vote-button.selected::before {
+		border-right-color: var(--arrowColorSelected);
+	}
+	
+	.finished-button.selected::before {
+		border-right-color: var(--arrowColorSelected);
 	}
 
 	.selected {

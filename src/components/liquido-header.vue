@@ -1,10 +1,8 @@
 <template>
 	<header id="liquidoHeader" :class="headerClass">
 
-		<div class="header-left">
-			<div v-if="headerBackLink" class="header-back-link" @click="clickBack">
-				<i class="fas fa-angle-left" />
-			</div>
+		<div class="header-left" @click="clickLeft">
+			<i class="fas fa-angle-left" />
 		</div>
 		<div class="header-center" @click="clickHeaderCenter">
 			<div class="liquido-claim">
@@ -15,8 +13,8 @@
 				<h1>{{ headerTitle }}</h1>
 			</div>
 		</div>
-		<div class="header-right">
-			<!-- i class="fas fa-bars menu-icon" /-->
+		<div class="header-right" @click="clickRight">
+			<!-- i class="fas fa-bars" /-->
 		</div>
 	</header>
 </template>
@@ -102,13 +100,17 @@ export default {
 			}		
 		},
 
-		clickBack() {
+		clickLeft() {
 			if (this.$store.headerBackLink === "BACK") this.$router.go(-1)
 			else if (this.$store.headerBackLink) this.$router.push(this.$store.headerBackLink)
 		},
 		
 		clickHeaderCenter() {
 			EventBus.emit(EventBus.Event.CLICK_HEADER_CENTER)
+		},
+
+		clickRight() {
+			this.toggleMenu()
 		},
 
 		toggleMenu() {
@@ -163,7 +165,7 @@ export default {
 		}
 	}
 	
-	.header-left {
+	.header-left, .header-right {
 		color: white;
 		display: flex;
 		align-items: center;
@@ -207,14 +209,6 @@ export default {
 				//font-size: 1rem; 
 			}
 		}
-	}
-	.header-right {
-		display: flex;
-		flex: 0 0 var(--header-height);
-		align-items: center;
-		text-align: center;
-		justify-content: center;
-		width: var(--header-height);
 	}
 	
 }

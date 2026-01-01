@@ -852,6 +852,13 @@ let graphQlApi = {
 		return graphQlQuery(graphQL).then(res => res.data.verifyBallot)
 	},
 
+	/** poll status constants (trying to have one central definition for the whole client here) */
+	POLL_STATUS: {
+		ALL_POLLS: undefined,  // <= used in polls.vue & navbar-bottom.vue for filtering
+		ELABORATION: "ELABORATION",
+		VOTING: "VOTING",
+		FINISHED: "FINISHED"
+	},
 
 	/** client side caches */
 	teamCache: teamCache,
