@@ -61,7 +61,7 @@
 						<!-- Signin with Authy App -->
 						<button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" @click="startFacebookLogin">
 							<i class="fa fa-shield-halved"></i>
-							<span class="flex-grow-1 text-center">{{ $t("Authy") }}</span>
+							<span class="flex-grow-1 text-center">{{ $t("AuthyApp") }}</span>
 						</button>
 					</div>
 				</div>
@@ -203,15 +203,17 @@ export default {
 				CouldNotSendEmail: "Es gab ein Problem beim Verschicken der E-Mail. Bitte versuche es später noch einmal.",
 				UserWithThatEmailNotFound: "Tut mir leid, ich kenne niemanden mit dieser E-Mail Adresse. Möchtest du dich <a href='/welcome'>zuerst registrieren</a>?",
 				orSignInWith: "oder melde dich an mit",
+				AuthyApp: "Authy App",
 				Google: "Google",
 				Facebook: "Facebook",
 				Apple: "Apple",
+
 				Telegram: "Telegram",
 				LoginViaSms: "SMS Login",
 				LoginViaSmsInfo: "Ich schicke dir einen Zahlencode auf dein Handy. Mit diesem kannst du dich dann hier einloggen.",
 
 				ForgotPassword: "Passwort vergessen?",
-				Register: "Registrieren",
+				Register: "Neu registrieren",
 				DevLoginAdmin: "devLogin: Admin",
 				DevLoginMember: "devLogin: Member",
 				EmailTokenInvalid: "Der eingegebene E-Mail-Token ist ungültig.",
@@ -298,16 +300,6 @@ export default {
 			tokenErrorMessage: undefined,   // we show different error messages, depending on error code from backend
 
 			//TODO: count failed login attempts and then offer additional help
-
-			// WebAuthn 2FA
-
-			statusMessage: undefined,
-			busy: false,
-
-			show2FAModal: false,
-			twoFAMode: 'register', // 'authenticate' | 'register'
-			tempEmail: undefined,
-			tempPassword: undefined,
 		}
 	},
 	computed: {
@@ -328,7 +320,7 @@ export default {
 		}
 	},
 	watch: {
-		/** UX: When auth token format is valid, then immideately try to login with it. No extra "login" button step. */
+		/** UX: When last character of auth token is entered and token is valid, then immideately try to login with it. No extra click necessary. */
 		authTokenInputState: function(newVal) {
 			if (newVal === true) {
 				this.loginWithAuthToken()
@@ -353,75 +345,25 @@ export default {
 			this.loginWithEMailToken()
 		}
 		this.$nextTick(() => this.$root.scrollToTop())
-		//TODO: When user is already logged in (JWT from local storage), THEN show a "welcome back" message. User can jump to his team.
+		//TODO: When user is already logged in (JWT from local storage), THEN show a "welcome back" message. User can jump to his team. 
+		//TODO: Shall I allow to login as a different user?  NO => not in a voting app!
 	},
 	methods: {
-
-		// Handlers for WebAuthn modal events
-		handle2FASuccess(payload) {
-			// Backend submit methods call api.login(...) when returning jwt, so user should be logged in already.
-			this.show2FAModal = false
-			this.$router.push({ name: 'teamHome' })
-		},
-
-		handle2FACancel() {
-			this.show2FAModal = false
-		},
-
-		handle2FAError(msg) {
-			this.loginErrorMessage = msg || this.$t('webauthnFailure')
-			this.show2FAModal = false
-		},
-
 
 		// =============== Simple Login via E-Mail & Password ==================
 
 		loginWithEmailPassword() {
 			console.log("loginWithEmailPassword")
 			this.loginErrorMessage = null
-			this.twoFAMode = 'register'
-			this.tempEmail = this.emailInputVal
-			this.tempPassword = this.passwordInputVal
-			this.show2FAModal = true
-			return
-
-			/*
-			// Try to get WebAuthn authentication options from backend (password validated server-side)
-			api.getWebAuthnAuthenticationOptions(this.emailInputVal, this.passwordInputVal)
-				.then(res => {
-					// If server indicates the user needs to register for WebAuthn, switch to register flow
-					if (res && res.needsRegistration) {
-						this.twoFAMode = 'register'
-						this.tempEmail = this.emailInputVal
-						this.tempPassword = this.passwordInputVal
-						this.show2FAModal = true
-						return
-					}
-					// Otherwise start authentication flow via modal
-					this.twoFAMode = 'authenticate'
-					this.tempEmail = this.emailInputVal
-					this.tempPassword = this.passwordInputVal
-					this.show2FAModal = true
+			api.loginWithEmailPassword(this.emailInputVal, this.passwordInputVal)
+				.then(() => {
+					this.$router.push({name: "teamHome"})
 				})
-				.catch(err => {
-					// Fallback: if WebAuthn options couldn't be obtained, fall back to password-only login
-					console.error("Could not obtain WebAuthn options", err)
-					/*
-					api.loginWithEmailPassword(this.emailInputVal, this.passwordInputVal)
-						.then(() => {
-							this.$router.push({name: "teamHome"})
-						})
-						.catch(err2 => {
-							console.warn("Could not login with email & password", err2)
-							this.loginErrorMessage = this.$t("loginFailed")
-						})
-					
-					this.loginErrorMessage = "getWebAuthnAuthenticationOptions failed"
+				.catch(err2 => {
+					console.warn("Could not login with email & password", err2)
+					this.loginErrorMessage = this.$t("loginFailed")
 				})
-
-				*/
 		},
-
 
 		// =============== Google Oauth - Authorization Code Flow ==================
 		// Very nice comparission of both Oauth Flows:

@@ -52,6 +52,7 @@ export default {
 			en: {},
 			de: {
 				newPoll: "Neue Abstimmung anlegen",
+				//TODO: Improve Translation: Nicht "Wahlphase", sondern einfach nur "Abstimmung starten"  ?
 				createPollInfo:
 					"<p>Nur du als Admin kannst neue Abstimmungen erstellen. Abstimmung laufen durch drei Phasen:</p>"+
 					"<p>(1) Eine Abstimmung wird erst einmal diskutiert (<i class='fas fa-comments'></i>). Jeder aus deinem Team "+

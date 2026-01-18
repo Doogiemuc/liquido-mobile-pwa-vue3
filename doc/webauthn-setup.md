@@ -26,3 +26,4 @@ This document describes how to test the newly added WebAuthn client flow in the 
 
  - If the biometric prompt does not appear, verify that the site is served over HTTPS and the browser/device supports platform authenticators.
  - For Cypress/e2e tests: automating platform WebAuthn is non-trivial. Consider mocking backend responses or using special test flags/dev-mode endpoints for testing.
+

@@ -136,7 +136,7 @@ export default {
 				voteUpdatedSuccessfully: "Deine Stimme wurde erfolgreich aktualisiert.",
 				voteCastError: "Es gab leider einen technischen Fehler beim Abgeben deiner Stimme. Bitte versuche es später noch einmal.",
 				updateBallotInfo: "Du hast in dieser Abstimmung bereits eine Stimme abgegeben. In <span class='liquido'></span> kannst du deinen Stimmzettel " +
-					"auch jetzt noch ändern, so lange die Wahlphase dieser Abstimmung noch läuft.",
+					"auch jetzt noch ändern, so lange die Abstimmung noch läuft.",
 				checksumOfYourBallot: "Mit dieser Checksumme kannst du prüfen ob dein Stimmzettel korrekt gezählt wurde:",
 				verifyBallotButton: "Prüfen",
 				ballotIsVerified: "Deine Stimme wurde erfolgreich gezählt.",

@@ -1,24 +1,36 @@
 # TODOs
 
-## TODOs: Larger new features I would like to implement ("Epics")
+## Use Case features
+ * Finally finalize the final login flow :-) Login via
+   * Google - DONE
+	 * Apple 
+	 * Authy App
+	 * SMS
+ * Settings:
+   * Can team members add their own proposals to a poll?
+* Three levels of polls:
+	 1. Polly (e.g. for kids): a super intelligent wobbling funny Polly
+	 2. Polls (with proposals/options) and Elections (with candidates) and descriptions for each option
+	 3. Full blown proxy voting
+
+## Full blown liquido
+ * Ideas, that become proposals when they have enough supporters
+ * Alternative ideas that can be suggested, and then become alternative proposals if they gather enough supporters.
+ * Polls that can be started when there are at least two proposals.
+
+## Code cleanup, security, ...
  
  * Timeout for backend requests
  * Move Navbar bottom to polls.vue page and ONLY there!  <= IMPORTANT QUICK FIX!   and add TESTS!
  * Capacitorjs.com A cross platform native runtime for web apps.
- * Everythign in one page with a super intelligent wobbling funny poll-pannel => Polly works
- * Three levels of complexity
-	 1. for kids: ONly one poll-panel with single line proposals (no description)
-	 2. Polls (for laws) and Elections (for candidates) with descriptions
-	 3. Full blown proxy voting
  * split liquido-graphql-client.js  into authentication, cache-service and pure backend HTTP client
 
 ## Smaller fixes
 
-
-
  * Remove all SCSS: CSS is enough -> performance improvement
  * Scroll to top: Do this with  https://router.vuejs.org/guide/advanced/scroll-behavior.html#Delaying-the-scroll     "scrollBehaviour" in router!!!
  * Test on real devices, eg. with https://www.browserstack.com/    => This does already work on real hardware locally.
+
 
 
 # DONE - Implemented Features 

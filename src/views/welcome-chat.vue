@@ -440,9 +440,7 @@ export default {
 				OkLater: "Ok, später",
 
 				// Create first poll bubble
-				pollInfo: 
-					"Möchtest du jetzt gleich eine erste Abstimung (<i class='fas fa-poll'></i>) für dein Team erstellen? Jedes Teammitglied kann dann " +
-					"seinen eigenen Vorschlag (<i class='fas fa-vote-yea'></i>) hinzufügen.",
+				pollInfo: "Möchtest du jetzt gleich eine erste <i class='fas fa-poll'></i> Abstimung für dein Team erstellen?",
 				createPoll: "Abstimmung anlegen",
 
 				teamWithSameNameExists: "Ein Team mit diesem Namen existiert bereits. Bitte wählen einen anderen Namen für dein Team. Oder kann es sein, dass du dich einloggen möchtest?",

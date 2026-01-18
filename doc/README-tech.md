@@ -84,6 +84,17 @@ https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow
 https://developers.google.com/identity/oauth2/web/guides/how-user-authz-works 
 https://developers.google.com/identity/protocols/oauth2/web-server#node.js_1  
 
+## Apple Login - NOT SUPPRTED!
+
+Why we *don't* support Apple Login: https://github.com/pwa-builder/pwa-auth/blob/master/creating-apple-key.md
+
+ * It's not free. Creating an Apple key requires a membership in Apple's Developer Program, which costs $99/year for individuals and businesses; free for non-profits.
+ * You won't get a profile pic. An Apple key doesn't let you get the user's profile picture; when signin-completed event fires, imageUrl will be null. Subsequent sign-ins won't include the user's full name - Apple's flow is such that you'll receive the user's full name only the first time they sign-in. It's your responsibility to save the user's full name the first time he or she signs-in.
+ * You may or may not receive the user's real email address When a user tries to sign in with their Apple account, the user is presented with a prompt, "Do you want to share your email address with XYZ App?" If the user declines, your app will instead receive an Apple-proxied email address which users can disable later. See "Apple email relay" for more details.
+
+
+
+
 ## Passwordless.dev (by Bitwarden)
 
 MAYBE
