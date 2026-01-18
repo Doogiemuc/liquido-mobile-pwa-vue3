@@ -10,6 +10,8 @@
 			:content-class="modalContentClass"
 			:primary-button-text="modalPrimaryButtonText"
 			:secondary-button-text="modalSecondaryButtonText"
+			@clickPrimary="rootPopupClickPrimary"
+			@clickSecondary="rootPopupClickSecondary"
 		>
 		</popup-modal>
 		<router-view v-slot="{ Component }">
@@ -33,6 +35,7 @@ import liquidoHeader from "@/components/liquido-header.vue"
 import popupModal from "@/components/popup-modal.vue"
 import mobileDebugLog from "@/components/mobile-debug-log.vue"
 import api from "@/services/liquido-graphql-client.js"
+import EventBus from "@/services/event-bus.js"
 import config from "config"
 
 
@@ -194,6 +197,12 @@ export default {
 		},
 		showInfo(errMsg, errTitle, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined) {
 			return this.$refs.rootPopupModal.showInfo(errMsg, errTitle, primaryButtonText, secondaryButtonText)
+		},
+		rootPopupClickPrimary(id) {
+			EventBus.$emit(EventBus.Events.ROOT_POPUP_CLICK_PRIMARY, id)
+		},
+		rootPopupClickSecondary(id) {
+			EventBus.$emit(EventBus.Events.ROOT_POPUP_CLICK_SECONDARY, id)
 		},
 
 		/**

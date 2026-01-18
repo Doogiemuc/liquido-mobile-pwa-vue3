@@ -133,31 +133,32 @@ export default {
 	},
 	methods: {
 		/** 
-		 * Show the popup modal. 
+		 * Show the popup modal with a given message, title and type.
 		 * @param msg {String} message to the user
 		 * @param title {String} title or defaults to "Error"
 		 * @pararm type {ENUM} type of modal: PRIMARY|INFO|SUCCESS|WARN|DANGER|ERROR
 		 */
-		show(msg, title, type = MODAL_TYPE.INFO, primaryButtonText = OK_text, secondaryButtonText = undefined) {
-			console.log("secondaryButtonText", secondaryButtonText)
+		showMsgTitle(msg, title, type = MODAL_TYPE.INFO) {
 			this.myMessage = msg
 			this.myTitle = title
 			this.myType = type
-			this.myPrimaryButtonText = primaryButtonText
-			this.mySecondaryButtonText = secondaryButtonText
 			this.myModal.show()
 		},
-		showSuccess(msg, title, primaryButtonText = OK_text, secondaryButtonText = undefined) {
-			this.show(msg, title, MODAL_TYPE.SUCCESS, primaryButtonText, secondaryButtonText)
+		showSuccess(msg, title) {
+			this.showMsgTitle(msg, title, MODAL_TYPE.SUCCESS)
 		},
-		showError(msg, title, primaryButtonText = OK_text, secondaryButtonText = undefined) {
-			this.show(msg, title, MODAL_TYPE.ERROR, primaryButtonText, secondaryButtonText)
+		showError(msg, title) {
+			this.showMsgTitle(msg, title, MODAL_TYPE.ERROR)
 		},
-		showInfo(msg, title, primaryButtonText = OK_text, secondaryButtonText = undefined) {
-			this.show(msg, title, MODAL_TYPE.INFO, primaryButtonText, secondaryButtonText)
+		showInfo(msg, title) {
+			this.showMsgTitle(msg, title, MODAL_TYPE.INFO)
 		},
-		showWarning(msg, title, primaryButtonText = OK_text, secondaryButtonText = undefined) {
-			this.show(msg, title, MODAL_TYPE.WARNING, primaryButtonText, secondaryButtonText)
+		showWarning(msg, title) {
+			this.showMsgTitle(msg, title, MODAL_TYPE.WARNING)
+		},
+		/** Show with message passed via prop or slot */
+		show() {
+			this.myModal.show()
 		},
 		hide() {
 			this.myModal.hide()

@@ -348,11 +348,11 @@ export default {
 		*/
 	},
 	mounted() {
-		this.$root.scrollToTop()
 		// if email and a valid one time token is passed, then log in user
 		if (this.email && this.emailToken) {
 			this.loginWithEMailToken()
 		}
+		this.$nextTick(() => this.$root.scrollToTop())
 		//TODO: When user is already logged in (JWT from local storage), THEN show a "welcome back" message. User can jump to his team.
 	},
 	methods: {

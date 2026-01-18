@@ -95,6 +95,34 @@ context('Happy Case', () => {
 			console.log("New team inviteCode=", fix.inviteCode)
 			cy.log("InviteCode="+fix.inviteCode)
 		})
+
+		// ===== Test passkey registration =====
+		// AND the setupPasskeyCard is shown
+		cy.get('#setupPasskeyCard').should('be.visible')
+		
+		// WHEN user types a passkey label
+		cy.get('#passkeyInput').should('be.visible').clear().type('My Test Passkey')
+		
+		// AND we intercept the webauthn register request to make it fail
+		cy.intercept('POST', '**/webauthn/register', {
+			statusCode: 500,
+			body: { error: 'Failed intentionally in test' }
+		})
+		
+		// AND clicks the setupPasskeyButton
+		cy.get('#setupPasskeyButton').should('be.visible').click()
+		
+		// THEN the info popup modal is shown with error information
+		cy.get('#passkeyModal').should('be.visible')
+		
+		// WHEN user clicks the secondary button (OkLater)
+		cy.get('#passkeyModal .btn-secondary').click()
+		
+		// THEN the modal is closed
+		cy.get('#passkeyModal').should('not.be.visible')
+		
+		// AND the teamQrCode section is visible
+		cy.get('#teamQrCode').should('be.visible')
 	})
 
 	it('[Admin] Returning admin is automatically logged in', function() {

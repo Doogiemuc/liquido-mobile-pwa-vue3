@@ -17,6 +17,8 @@ eventBus.Event = {
 	POLL_LOADED: "poll-loaded",    									// One poll was loaded from the backend. Event param is that one poll
 	POLL_FILTER_CHANGED: "polls-filter-changed",		// Fired by navbar-bottom, when user clicked on filter
 	CLICK_HEADER_CENTER: "click-header-center", 		// click on center area of liquido-header
+	ROOT_POPUP_CLICK_PRIMARY: "root-popup-click-primary",   	// click primary button in root popup modal
+	ROOT_POPUP_CLICK_SECONDARY: "root-popup-click-secondary"	// click secondary button in root popup modal
 }
 
 export default eventBus

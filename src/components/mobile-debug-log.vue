@@ -250,6 +250,7 @@ export default {
 			if (typeof val === "string") {
 				return val
 			} else if (typeof val === "object") {
+				//TODO: add lineBreak support for objects, depending on this.lineBreak
 				return "JSON: " + JSON.stringify(val)
 			} else {
 				return String(val)

@@ -4,20 +4,18 @@ LIQUIDO - A modern aproach to liquid democracy.
 
 http://www.liquido.vote
 
-# LIQUIDO Frontend
-
-This is the LIQUIDO frontend, a progressive web application (PWA) built with VUE.
-This frontend communicates via a GraphQL API with the LIQUIDO quarkus backend.
-
 # Disclaimer
 
 This is a private hobby project. I've been working on this in my free time for nearly a decade. 
 The honest goal of LIQUIDO is to never ever be finished. I use this project to learn.
 
 
+# LIQUIDO Frontend
 
+This is the LIQUIDO frontend, a progressive web application (PWA) built with VUE.
+This frontend communicates via a GraphQL API with the LIQUIDO quarkus backend.
 
-# Layout, Design, UX/UI
+## Layout, Design, UX/UI
 
 ### Header
 
@@ -88,7 +86,7 @@ https://developers.google.com/identity/protocols/oauth2/web-server#node.js_1
 
 ## Passwordless.dev (by Bitwarden)
 
-TODO
+MAYBE
 
 
 

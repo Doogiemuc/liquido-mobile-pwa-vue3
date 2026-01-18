@@ -154,7 +154,7 @@
 			</div>
 
 			<!--Joined team successfully -->
-			<div id="joinedTeamBubble" :class="{ 'collapse-max-height': !FLOW.JoinTeamSuccessfull }" class="card chat-bubble">
+			<div id="joinedTeamBubble" :class="{ 'collapse-max-height': !FLOW.JoinTeamSuccessfull }" class="card chat-bubble chat-left">
 				<div class="card-body">
 					<p v-html="$t('joinedTeamSuccessfully', { teamName: team.teamName })" />
 				</div>
@@ -241,7 +241,7 @@
 				</div>
 			</div>
 
-			<!-- Setup Passkey -->
+			<!-- Setup Passkey Info -->
 			<div :class="{ 'collapse-max-height': !FLOW.SetupPasskey }" class="card chat-bubble chat-left">
 				<div class="card-header">
 					<h3 class="mb-0" v-html="$t('SetupPasskeyTitle')"></h3>
@@ -250,6 +250,20 @@
 					<p v-html="$t('SetupPasskeyInfo')" />
 				</div>
 			</div>
+
+			<!-- Info popup when passkey registration did not work yet: Try again or do it later. -->
+			<popup-modal
+				id="passkeyModal"
+				ref="passkeyModal"
+				type="info"
+				:title="$t('SetupPasskeyInfoTitle')"
+				:message="$t('SetupPasskeyInfoMessage')"
+				:primary-button-text="$t('TryAgain')"
+				:secondary-button-text="$t('OkLater')"
+				@clickPrimary="passkeyTryAgain"
+				@clickSecondary="passkeyRegisterLater"
+			>
+			</popup-modal>
 
 			<div id="setupPasskeyCard" :class="{ 'collapse-max-height': !FLOW.SetupPasskey }" class="card chat-bubble chat-right">
 				<div class="card-body">
@@ -266,7 +280,7 @@
 						/>
 					<button
 						id="setupPasskeyButton"
-						class="btn btn-primary d-flex align-items-center w-100"
+						class="btn btn-primary d-flex align-items-center float-end w-100"
 						type="button"
 						:disabled="FLOW.RegistrationFinished"
 						@click="setupPasskey()"
@@ -281,8 +295,12 @@
 			</div>
 
 			<!-- Team QR code -->
-			<div :class="{ 'collapse-max-height': !FLOW.RegistrationFinished }" class="card chat-bubble chat-left">
+			<div id="teamQrCode" :class="{ 'collapse-max-height': !FLOW.RegistrationFinished }" class="card chat-bubble chat-left">
+				<h3 class="card-header">
+					{{ $t("InviteFriendsTitle") }}
+				</h3>
 				<div class="card-body">
+					<p>{{ $t("ShareLinkInfo") }}</p>
 					<p class="text-center mb-2">
 						<a id="inviteLink" :href="inviteLinkURL" :data-invitecode="team.inviteCode" @click.prevent="shareLink()">
 							{{ $t("shareLink", {teamName: team.teamName, inviteCode: team.inviteCode}) }}
@@ -339,6 +357,7 @@ import config from "config"
 import QRCode from "qrcode"
 import liquidoInput from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
+import popupModal from "../components/popup-modal.vue"
 import log from 'loglevel'
 import webauthnService from "@/services/webauthn-service"
 
@@ -382,7 +401,7 @@ export default {
 				teamName: "Team Name",
 				teamNameInvalid: "Bitte mindestens 6 Zeichen als Teamname!",
 				youWillBecomeAdmin: "Du wirst der Admin des neuen Teams.",
-				TeamCreatedSuccessfully: "Ok, dein neues Team ist angelegt. Ich habe dir auch eine E-Mail mit allen Infos geschickt.",
+				TeamCreatedSuccessfully: "Ok, dein neues Team ist angelegt. Ich habe dir auch bereits eine E-Mail mit allen Infos geschickt.",
 
 				// Join an existing team
 				JoinTeam: "Einem Team beitreten",
@@ -400,21 +419,23 @@ export default {
 				joinedTeamSuccessfully: "Willkommen im Team <b>{teamName}</b>! Viel Spaß beim Abstimmen und Wählen.",
 				
 				// QR code bubble
+				InviteFriendsTitle: "Freunde einladen",
+				ShareLinkInfo: "Teile diesen Link",
 				shareLink: "LIQUIDO Einladung: {teamName} ({inviteCode})",
-				shareInviteCode: "Mit diesem Link kannst du deine Freunde in dein Team einladen.",
 				scanQrCode: "Oder lass sie einfach diesen QR code scannen:",
-				teamInfo: "Du findest diesen QR Code auch auf eurer Team Seite.",
+				teamInfo: "Du findest diesen QR Code auch auf eurer Team Seite wieder.",
 				gotoTeam: "Zum Team",
 
 				// Setup Passkey bubble
 				PassKey: "Passkey",
 				SetupPasskeyTitle: "<span class='liquido'></span> ist sicher!",
-				SetupPasskeyInfo: "Um sicherzustellen, dass niemand deine Stimme missbrauchen kann, richte bitte jetzt deinen Passkey ein. Künftig kannst du dich damit schnell und sicher per Fingerabdruck, Face-ID oder Geräte-PIN einloggen.</p>",
+				SetupPasskeyInfo: "<p>Um sicherzustellen, dass niemand deine Stimme missbrauchen kann, richte bitte jetzt deinen Passkey ein. Künftig kannst du dich damit schnell und sicher per Fingerabdruck, Face-ID oder Geräte-PIN einloggen.</p>" +
+					"<p>Keine Sorge, dein Passkey bleibt auf deinem Gerät. Es werden keine biometrischen Daten gespeichert oder übertragen.</p>",
 				PasskeyLabel: "Passkey Name",  // the label of the input field
 				PasskeyLabelInvalid: "Bitte mindestens 3 Zeichen!",
 				SetupPasskeyButton: "Passkey registrieren",
-				SetupPasskeyErrorTitle: "Passkey Fehler",
-				SetupPasskeyError: "Dein Passkey konnt leider nicht registriert werden. Du kannst das später auf deiner Team Seite noch tun.",
+				SetupPasskeyInfoTitle: "Passkey Hinweis",
+				SetupPasskeyInfoMessage: "Dein Passkey konnte leider gerade nicht registriert werden. Bitte versuche es erneut. Oder du kannst die Registrierung später auch noch auf deiner Team Seite abschließen.",
 				TryAgain: "Noch mal versuchen",
 				OkLater: "Ok, später",
 
@@ -424,7 +445,7 @@ export default {
 					"seinen eigenen Vorschlag (<i class='fas fa-vote-yea'></i>) hinzufügen.",
 				createPoll: "Abstimmung anlegen",
 
-				teamWithSameNameExists: "Ein Team mit diesem Namen existiert bereits. Bitte wählen einen anderen Namen für dein Team.",
+				teamWithSameNameExists: "Ein Team mit diesem Namen existiert bereits. Bitte wählen einen anderen Namen für dein Team. Oder kann es sein, dass du dich einloggen möchtest?",
 				cannotCreateNewTeam: "Es tut uns sehr leid, das neue Team konnt nicht angelegt werden. Bitte versuche es später noch einmal.",
 				cannotJoinTeam: "Du kannst diesem Team nicht beitreten.",
 				cannotJoinTeamInviteCodeInvalid: "Dieser Einladungscode ist ungültig. Hast du dich vielleicht nur vertippt?",
@@ -432,7 +453,7 @@ export default {
 		},
 	},
 	name: "WelcomeChat",
-	components: { liquidoInput },
+	components: { liquidoInput, popupModal },
 	props: {
 		// URL query parameter "?inviteCode=ABC123", mapped in router.js
 		inviteCodeQueryParam: { type: String, required: false },
@@ -467,7 +488,7 @@ export default {
 			chatAnimationStarted: false,
 
 
-
+			
 			// Unbelievably clever use case flow status engine (c)2026 :-)
 			// Chat bubbles are consecutively blended in along these states.
 			FLOW: {
@@ -487,17 +508,18 @@ export default {
 				JoinTeamSuccessfull: false,
 
 				// Variant B: create a new team
-				CreateTeamForm: false,
-				CreateTeamClicked: false,
-				CreateTeamSuccessfull: false,
+				CreateTeamForm: false,							// show the create new team form
+				CreateTeamClicked: false,						// semaphor to prevent double clicking
+				CreateTeamSuccessfull: false,				// used to disable several inputs & controls in "older" chat messages
 
 				// then continue in both cases
-				SetupPasskeyBubble: false,
+				SetupPasskey: false,
 				SetupPasskeyClicked: false,
 				SetupPasskeySuccessfull: false,
 
 				RegistrationFinished: false
 			},
+			
 			
 
 			/*
@@ -524,7 +546,10 @@ export default {
 				CreateTeamSuccessfull: true,
 
 				// then continue in both cases
-				SetupPasskeyBubble: true,
+				SetupPasskey: true,
+				SetupPasskeyClicked: false,
+				SetupPasskeySuccessfull: true,
+
 				RegistrationFinished: true
 			},
 			*/
@@ -578,6 +603,7 @@ export default {
 		}
 		this.$root.scrollToTop()
 		//TODO: Check if user is already logged in. If so, then welcome him. User may want to join yet another existing team.
+
     this.startChatAnimation()
 	},
 	methods: {
@@ -682,8 +708,7 @@ export default {
 				this.FLOW.CreateTeamForm = true
 				this.$nextTick(() => {
 					document.getElementById("teamNameInput").focus()
-					//Let the browser scoll to the focused element. That works fine from what I tested.
-					//this.$root.scrollElemToTop(document.getElementById("createNewTeamCard"))  
+					this.$root.scrollElemToTop(document.getElementById("createOrJoinButtons"))  
 				})
 			}
 		},
@@ -697,23 +722,24 @@ export default {
 				name: this.user.name,
 				mobilephone: this.user.mobilephone,
 				email: this.user.email,
-				picture: "Avatar1.png",      //TODO: let user change his Avatar later
+				picture: "Avatar1.png",      //TODO: let user change his data later (Avatar, website but also change mobilephone or email)
 				//website: ...
 			}
 			api.createNewTeam(this.team.teamName, admin, this.plainPassword)
 				.then((team) => {
+					//Keep in mind: From this point on the user is already logged in! And has a JWT in its browser's localStorage.
 					this.team = team
 					this.newTeamCreatedSuccessfully()
 				})
-				.catch((err) => {			// on error show modal
+				.catch((err) => {			//TODO: Error handling: What to do if createTeam call to backend does not work.  Try again?
 					let errCode = err?.response?.data?.liquidoErrorCode 
 					// err && err.response && err.response && err.response.data ? err.response.data.liquidoErrorCode : undefined
 					// https://babeljs.io/docs/en/babel-plugin-proposal-optional-chaining  Here Babel is cool. Ey, you need this cool top notch language feature. Just "install" it :-)
 					// Update 2025: Optional chaining is now part of the JS standard. So no need to use Babel for this. :-)
 					if (errCode === api.err.TEAM_WITH_SAME_NAME_EXISTS) {
-						this.$root.$refs.rootPopupModal.showError(this.$t("teamWithSameNameExists"), this.$t("Error"))
+						this.$root.$refs.passkeyModal.showError(this.$t("teamWithSameNameExists"), this.$t("Error"))
 					} else 
-					//TODO: if moblephone or email is already registered, THEN forward to login
+					//MAYBE: if moblephone or email is already registered, THEN forward to login
 					{
 						this.$root.$refs.rootPopupModal.showError(this.$t("cannotCreateNewTeam"), this.$t("Error"))
 						log.error("Cannot create new team", err)
@@ -741,14 +767,11 @@ export default {
 				}
 			})
 			this.FLOW.CreateTeamSuccessfull = true
-			window.setTimeout(() => {
-				this.passkeyLabel = this.user.name + "-" + this.$t('Passkey')
-				this.FLOW.SetupPasskey = true
-				this.$nextTick(() => {
-					this.$root.scrollElemToTop(document.getElementById("newTeamCreatedBubble"))
-					console.log(this.FLOW)
-				})
-			}, this.chatDelayMs)
+			this.$nextTick(() => {
+				this.$root.scrollElemToTop(document.getElementById("newTeamCreatedBubble"))
+			})
+
+			this.prepareSetupPasskey()
 		},
 
 	
@@ -787,26 +810,64 @@ export default {
 				})
 		},
 
-		//TODO: what to do if browser does not support webauthn? => offer mobile & SMS login
+
+		/**
+		 * Prepare setting up a passkey, if the local device supports it.
+		 * If not, then we can skip this step and only work with a password.
+		 */
+		prepareSetupPasskey() {
+			this.$root?.$refs?.mobileDebugLogRef?.info("prepareSetupPasskey")
+			this.passkeyLabel = this.user.name + "-" + this.$t('Passkey')
+			if (webauthnService.isWebAuthnSupported()) {
+				this.passkeyLabel = this.user.name + "-" + this.$t('Passkey')
+				window.setTimeout(() => {
+					this.FLOW.SetupPasskey = true
+				}, this.chatDelayMs)
+			} else {
+				this.FLOW.PassKeyNotSupported = true
+				this.FLOW.RegistrationFinished = true
+			}
+		},
+	
 		/**
 		 * Register a new webauthn passkey at our backend
 		 */
 		setupPasskey() {
+			this.$root?.$refs?.mobileDebugLogRef?.info("setupPasskey: START")
 			if (!this.FLOW.SetupPasskey || this.FLOW.SetupPasskeyClicked) return
 			this.FLOW.SetupPasskeyClicked = true
 			this.FLOW.SetupPasskeySuccessfull = false
 			if (!this.passkeyLabel) this.passkeyLabel = this.user.name + "-" + this.$t('Passkey')
 			webauthnService.registerWebauthn(this.passkeyLabel)
 				.then(res => {
+					this.$root?.$refs?.mobileDebugLogRef?.info("setupPasskey: SUCCESSFULL")
 					this.FLOW.SetupPasskeySuccessfull = true
 					this.FLOW.RegistrationFinished = true
 				}).catch(err => {
+					this.$root?.$refs?.mobileDebugLogRef?.info("setupPasskey: ERROR")
+					this.$root?.$refs?.mobileDebugLogRef?.info(err)
 					console.log("SetupPasskeyError", err)
-					this.FLOW.SetupPasskeyClicked = false
-					this.FLOW.SetupPasskeySuccessfull = false
-					//this.FLOW.SetupPasskeyError = true
-					this.$root.showError(this.$t('SetupPasskeyError'), this.$t('SetupPasskeyErrorTitle'), this.$t('OkLater'), this.$t('TryAgain'))
+					this.$refs.passkeyModal.show()
 				})
+		},
+
+		passkeyTryAgain() {
+			console.log("Setup passkey again.")
+			this.$refs.passkeyModal.hide()
+			this.FLOW.SetupPasskeyClicked = false
+			this.FLOW.SetupPasskeySuccessfull = false
+			this.FLOW.RegistrationFinished = false
+		},
+		
+		passkeyRegisterLater() {
+			console.log("User will setup passkey laster.")
+			this.$refs.passkeyModal.hide()
+			this.FLOW.SetupPasskeyClicked = true
+			this.FLOW.SetupPasskeySuccessfull = false
+			this.FLOW.RegistrationFinished = true
+			this.$nextTick(() => {
+				this.$root.scrollElemToTop(document.getElementById("teamQrCode"))
+			})
 		},
 
 		gotoTeam() {
@@ -855,6 +916,7 @@ export default {
 }
 .chat-bubble .card-header {
 	border: none;
+	padding: 0.5rem;
 }
 .chat-bubble .card-body {
   padding: 0.5rem;

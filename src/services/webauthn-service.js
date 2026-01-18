@@ -3,6 +3,16 @@ import { startRegistration, startAuthentication, browserSupportsWebAuthn } from 
 import api from "@/services/liquido-graphql-client.js"
 
 const webauthnAPI = {
+
+	/** "Carefully" check if the local device supports WebAuthN */
+	isWebAuthnSupported() {
+		try {
+			return typeof window !== 'undefined' && browserSupportsWebAuthn()
+		} catch (e) {
+			return false
+		}
+	},
+
 	/**
 	 * Register a biometric (fingerprint, Face-ID or Device-PIN) authenticator for a logged-in user.
 	 */
@@ -20,6 +30,7 @@ const webauthnAPI = {
 			console.log("Credentials from startRegistrationFlow", credential)
 
 			// (3) Submit our confirmed private key to the server to register this authenticator
+			//     Keep ind mind: This only works, when frontend and backend are served on the same DOMAIN!
 			const verifyResp = await api.submitWebAuthnRegistration(credential, authenticatorLabel)
 			console.log("Successfully registered authenticator", verifyResp)
 

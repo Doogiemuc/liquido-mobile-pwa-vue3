@@ -630,7 +630,7 @@ let graphQlApi = {
 			admin: admin,
 			password: password
 		}
-		console.log("createNewTeam Query:\n", graphQL, "variables:\n", JSON.stringify(variables))
+		//console.log("createNewTeam Query:\n", graphQL, "variables:\n", JSON.stringify(variables))
 
 		return graphQlQuery(graphQL, variables)
 			.then(res => {
