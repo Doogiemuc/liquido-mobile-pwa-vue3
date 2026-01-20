@@ -5,84 +5,93 @@
 		<!-- Default Login with email & password  -->
 		<div class="card">
 			<div class="card-body">
-				
+
 				<div class="text-center my-3">
 					<i class="fas fa-user-circle fa-3x" style="color: var(--primary)"></i>
 				</div>
 
 				<liquido-input id="loginEmailInput" v-model="emailInputVal" v-model:state="emailInputState" type="email"
-					:required=true
-					:placeholder="$t('emailPlaceholder')"
-					:empty-feedback="$t('emailEmpty')"
-					:invalid-feedback="$t('emailInvalid')"
-					:feedback-placeholder="true"/>
+					:required=true :placeholder="$t('emailPlaceholder')" :empty-feedback="$t('emailEmpty')"
+					:invalid-feedback="$t('emailInvalid')" :feedback-placeholder="true" @blur="checkEmailForWebAuthn"
+					@keyup.enter="checkEmailForWebAuthn" />
 
-				<liquido-input id="loginPasswordInput" v-model="passwordInputVal" v-model:state="passwordInputState" type="password"
-					:minLength=10 
-					:required=true
-					:placeholder="$t('passwordPlaceholder')"
-					:empty-feedback="$t('passwordInputIsEmpty')"
-					:invalid-feedback="$t('passwordInputIsInvalid')"
-					:feedback-placeholder="true"
-					@keypress.enter="loginWithEmailPassword" />
+				<!-- Password input and Login button - shown only if WebAuthn is NOT available -->
+				<div v-if="emailCheckDone && !webAuthnAvailable" class="password-field-animation">
+					<liquido-input id="loginPasswordInput" v-model="passwordInputVal" v-model:state="passwordInputState"
+						type="password" :minLength=10 :required=true :placeholder="$t('passwordPlaceholder')"
+						:empty-feedback="$t('passwordInputIsEmpty')" :invalid-feedback="$t('passwordInputIsInvalid')"
+						:feedback-placeholder="true" @keypress.enter="loginWithEmailPassword" />
+				</div>
 
-				<button id="loginWithEmailPasswordButton" 
-					type="button" 
-					class="btn btn-primary w-100 text-center position-relative" 
-					:disabled="loginWithEmailPasswordButtonDisabled"
+				<!-- Login button - shown only if WebAuthn is NOT available -->
+				<button v-if="!webAuthnAvailable" id="loginWithEmailPasswordButton" type="button"
+					class="btn btn-primary w-100 text-center position-relative" :disabled="loginWithEmailPasswordButtonDisabled"
 					@click="loginWithEmailPassword">
 					<i class="fa-solid fa-sign-in-alt position-absolute top-50 start-0 translate-middle ms-3"></i>
 					<span class="text-center">{{ $t("Login") }}</span>
 				</button>
 
+				<!-- WebAuthn button - shown only if WebAuthn IS available -->
+				<div v-if="emailCheckDone && webAuthnAvailable">
+					<button id="loginWithWebAuthnButton" type="button" class="btn btn-primary w-100 text-center position-relative"
+						:disabled="loginWithWebAuthnButtonDisabled" @click="loginWithWebAuthn">
+						<i class="fa-solid fa-fingerprint position-absolute top-50 start-0 translate-middle ms-3"></i>
+						<span class="text-center">{{ $t("LoginWithPasskey") }}</span>
+					</button>
+				</div>
+
 				<div v-if="loginErrorMessage" id="loginErrorMessage" class="alert alert-danger mt-3">
 					{{ loginErrorMessage }}
 				</div>
 
-				
-
-				<div class="horizontal-line my-5">
+				<div class="horizontal-line">
 					<span>
 						{{ $t("orSignInWith") }}
 					</span>
 				</div>
 
+				<div class="row g-2">
+					<div class="col">
+						<!-- Signin with SMS -->
+						<button type="button"
+							class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
+							@click="startSmsLogin">
+							<i class="fa-solid fa-comment-sms"></i>
+							<span class="flex-grow-1 text-center">{{ $t("SMS") }}</span>
+						</button>
+					</div>
+					<div class="col mb-2">
+						<!-- signin via Link sent to Email -->
+						<button type="button"
+							class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
+							@click="startTelegramLogin">
+							<i class="fa-regular fa-envelope"></i>
+							<span class="flex-grow-1 text-center">{{ $t("Email") }}</span>
+						</button>
+					</div>
+				</div>
 
-				
 				<div class="row g-2">
 					<div class="col">
 						<!-- Signin with Google -->
-						<button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" @click="startGoogleOneTapLogin">
+						<button type="button"
+							class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
+							@click="startGoogleOneTapLogin">
 							<i class="fa-brands fa-google"></i>
 							<span class="flex-grow-1 text-center">{{ $t("Google") }}</span>
 						</button>
 					</div>
 					<div class="col">
 						<!-- Signin with Authy App -->
-						<button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" @click="startFacebookLogin">
+						<button type="button"
+							class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
+							@click="startFacebookLogin">
 							<i class="fa fa-shield-halved"></i>
 							<span class="flex-grow-1 text-center">{{ $t("AuthyApp") }}</span>
 						</button>
 					</div>
 				</div>
-				<div class="row g-2">
-					<div class="col">
-						<!-- Signin with Apple -->
-						<button type="button" class="btn btn-outline-secondary w-100 mt-3 d-flex align-items-center justify-content-center" @click="startAppleLogin">
-							<i class="fa-brands fa-apple"></i>
-							<span class="flex-grow-1 text-center">{{ $t("Apple") }}</span>
-						</button>
 
-					</div>
-					<div class="col mb-2">
-						<!-- signin with Telegram -->
-						<button type="button" class="btn btn-outline-secondary w-100 mt-3 d-flex align-items-center justify-content-center" @click="startTelegramLogin">
-							<i class="fa-brands fa-telegram"></i>
-							<span class="flex-grow-1 text-center">{{ $t("Telegram") }}</span>
-						</button>
-					</div>
-				</div>
-			
 
 			</div>
 		</div>
@@ -113,21 +122,15 @@
 						</div>
 					</button>
 				</div>
-				
-				<liquido-input id="authTokenInput" 
-					v-model="twillioAuthToken" 
-					v-model:state="authTokenInputState" 
-					type="text"
-					placeholder="<123456>" 
-					class="mb-3" 
-					:label="$t('AuthTokenLabel')"
-					:invalid-feedback="$t('authTokenInputInvalid')"
-					:disabled="!tokenSentSuccessfully"
-					:minLength=6 :maxLength=6 :required="true"
-					:show-counter="true">
+
+				<liquido-input id="authTokenInput" v-model="twillioAuthToken" v-model:state="authTokenInputState" type="text"
+					placeholder="<123456>" class="mb-3" :label="$t('AuthTokenLabel')"
+					:invalid-feedback="$t('authTokenInputInvalid')" :disabled="!tokenSentSuccessfully" :minLength=6 :maxLength=6
+					:required="true" :show-counter="true">
 				</liquido-input>
-				
-				<div v-if="tokenSentSuccessfully && !tokenErrorMessage" id="tokenSuccessMessage" class="alert alert-success mt-3">
+
+				<div v-if="tokenSentSuccessfully && !tokenErrorMessage" id="tokenSuccessMessage"
+					class="alert alert-success mt-3">
 					{{ $t("AuthtokenSentSuccessfully") }}
 				</div>
 				<div v-if="tokenErrorMessage" id="tokenErrorMessage" class="alert alert-danger mt-3">
@@ -138,7 +141,9 @@
 
 		<!-- Register as a new user -->
 		<div class="d-flex justify-content-center mt-5 px-3" style="max-width: 540px; margin: 0 auto;">
-			<button id="registerButton" type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center" @click="clickRegister()">
+			<button id="registerButton" type="button"
+				class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
+				@click="clickRegister()">
 				<i class="fa-solid fa-user-plus me-2"></i>
 				<span class="flex-grow-1 text-center">{{ $t("Register") }}</span>
 			</button>
@@ -146,14 +151,16 @@
 
 		<div v-if="showDevLogin" class="d-flex flex-column px-3" style="margin-top: 8rem;">
 			<!-- quick links only for development -->
-			<button type="button" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" @click="devLoginAdmin">
+			<button type="button" class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+				@click="devLoginAdmin">
 				<i class="fas fa-shield-alt me-2"></i>
 				<span class="flex-grow-1 text-center">{{ $t("DevLoginAdmin") }}</span>
 			</button>
-			<button type="button" class="btn btn-outline-secondary mt-1 d-flex align-items-center justify-content-center" @click="devLoginMember">
+			<button type="button" class="btn btn-outline-secondary mt-1 d-flex align-items-center justify-content-center"
+				@click="devLoginMember">
 				<span class="flex-grow-1 text-center">{{ $t("DevLoginMember") }}</span>
 			</button>
-			<a class="btn btn-outline-secondary mt-1 d-flex align-items-center justify-content-center" 
+			<a class="btn btn-outline-secondary mt-1 d-flex align-items-center justify-content-center"
 				:href="graphQlSchmeaURL">
 				<span class="flex-grow-1 text-center">graphql.schemea</span>
 			</a>
@@ -166,21 +173,22 @@
 import config from "config"
 import liquidoInput, { STATE } from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
-//TODO: import WebAuthn from "@/services/quarkus-webauthn.js"
+import webauthnService from "@/services/webauthn-service.js"
 
 const REQUEST_THROTTLE_SECS = 10
 
 export default {
-  i18n: {
-    messages: {
-			de: {      
+	i18n: {
+		messages: {
+			de: {
 				emailPlaceholder: "E-Mail",
 				passwordPlaceholder: "Passwort",
 				emailInvalid: "Ungültige Email. Vielleicht nur vertippt?",
 				emailEmpty: "Bitte gib deine E-Mail Adresse ein.",
+				emailNotFound: "Ich kenne diese E-Mail nicht.",
 				passwordInputIsInvalid: "Mindestens 10 Zeichen.",
 				passwordInputIsEmpty: "Bitte gib dein Passwort ein.",
-				loginFailed: "Login fehlgeschlagen. Bitte überprüfe deine E-Mail und dein Passwort.",
+				loginFailed: "Login fehlgeschlagen. Bitte check dein Passwort.",
 
 				// Password reset
 				needEmailToResetPassword: "Bitte gib oben deine E-Mail Adresse ein, damit ich dir einen Link zum Zurücksetzen deines Passworts schicken kann.",
@@ -207,6 +215,7 @@ export default {
 				Google: "Google",
 				Facebook: "Facebook",
 				Apple: "Apple",
+				SMS: "SMS",
 
 				Telegram: "Telegram",
 				LoginViaSms: "SMS Login",
@@ -220,28 +229,20 @@ export default {
 				GoogleLoginFailed: "Google-Login fehlgeschlagen.",
 
 				// WebAuthn translations (DE)
-				webauthnRegisterPrompt: "Face ID / Fingerabdruck registrieren",
-				webauthnAuthPrompt: "Mit Face ID / Fingerabdruck bestätigen",
-				webauthnSuccess: "Authentifizierung erfolgreich. Weiterleitung...",
-				webauthnFailure: "Authentifizierung fehlgeschlagen. Bitte versuche es erneut.",
-				webauthnUnsupported: "Dein Gerät/Browser unterstützt keine biometrische Authentifizierung.",
-				webauthnStarting: "Starte Authentifizierungsgerät...",
-				webauthnWaitingForDevice: "Bitte bestätige die Aktion auf deinem Gerät.",
-				webauthnRegisterTitle: "WebAuthn Registrierung",
-				webauthnAuthTitle: "WebAuthn Bestätigung"
+				LoginWithPasskey: "Login mit Passkey",
 			},
 			en: {
 				emailPlaceholder: "E-Mail",
 				passwordPlaceholder: "Password",
 				emailInvalid: "Invalid email. Maybe a typo?",
 				emailEmpty: "Please enter your email address.",
+				emailNotFound: "I don't know this email",
 				passwordInputIsInvalid: "At least 10 characters.",
 				passwordInputIsEmpty: "Please enter your password.",
 				loginFailed: "Login failed. Please check your email and password.",
 				orSignInWith: "or sign in with",
 				Google: "Google",
-				Facebook: "Facebook",
-				Apple: "Apple",
+				Email: "Email",
 				Telegram: "Telegram",
 				LoginViaSms: "SMS Login",
 				LoginViaSmsInfo: "I will send you a numeric code via SMS which you can use to login.",
@@ -256,15 +257,7 @@ export default {
 				GoogleLoginCurrentlyNotAvailable: "Google Login currently not available",
 
 				// WebAuthn translations (EN)
-				webauthnRegisterPrompt: "Register Face ID / Touch ID",
-				webauthnAuthPrompt: "Verify with Face ID / Touch ID",
-				webauthnSuccess: "Authentication successful. Redirecting...",
-				webauthnFailure: "Authentication failed. Please try again.",
-				webauthnUnsupported: "Your device/browser does not support biometric authentication.",
-				webauthnStarting: "Starting authentication device...",
-				webauthnWaitingForDevice: "Please confirm the action on your device.",
-				webauthnRegisterTitle: "WebAuthn Registration",
-				webauthnAuthTitle: "WebAuthn Verification"
+				LoginWithPasskey: "Login with Passkey",
 			}
 		}
 	},
@@ -284,7 +277,12 @@ export default {
 			passwordInputState: undefined,
 			loginErrorMessage: undefined, // error message below email password input
 
-		
+			// WebAuthn login
+			emailCheckDone: false,			// Whether we've checked if email has WebAuthn credentials
+			webAuthnAvailable: false,		// Whether the email has a registered WebAuthn credential
+			webAuthnCheckInProgress: false,  // Prevent multiple concurrent checks
+			webAuthnLoginInProgress: false,	// Prevent multiple concurrent login attempts
+
 			// Login via E-Mail magic link
 			emailSentSuccessfully: false,
 			emailErrorMessage: undefined,
@@ -309,6 +307,9 @@ export default {
 		loginWithEmailPasswordButtonDisabled() {
 			return this.emailInputState !== STATE.VALID || this.passwordInputState !== STATE.VALID
 		},
+		loginWithWebAuthnButtonDisabled() {
+			return !this.webAuthnAvailable || this.webAuthnLoginInProgress || this.emailInputState !== STATE.VALID
+		},
 		requestTokenButtonDisabled() {
 			return this.mobilephoneInputState !== true || this.waitUntilNextRequestSecs > 0
 		},
@@ -321,7 +322,7 @@ export default {
 	},
 	watch: {
 		/** UX: When last character of auth token is entered and token is valid, then immideately try to login with it. No extra click necessary. */
-		authTokenInputState: function(newVal) {
+		authTokenInputState: function (newVal) {
 			if (newVal === true) {
 				this.loginWithAuthToken()
 			}
@@ -334,8 +335,8 @@ export default {
 		console.debug("Initializing WebAuthn: " + config.LIQUIDO_API_URL + "/q/webauthn")
 		this.webauthn = new WebAuthn({
 			callbackPath: config.LIQUIDO_API_URL + '/q/webauthn/callback',
-      registerPath: config.LIQUIDO_API_URL + '/q/webauthn/register',
-      loginPath:    config.LIQUIDO_API_URL + '/q/webauthn/login'
+			registerPath: config.LIQUIDO_API_URL + '/q/webauthn/register',
+			loginPath:    config.LIQUIDO_API_URL + '/q/webauthn/login'
 		})
 		*/
 	},
@@ -343,69 +344,147 @@ export default {
 		// if email and a valid one time token is passed, then log in user
 		if (this.email && this.emailToken) {
 			this.loginWithEMailToken()
+			return
 		}
-		this.$nextTick(() => this.$root.scrollToTop())
-		//TODO: When user is already logged in (JWT from local storage), THEN show a "welcome back" message. User can jump to his team. 
+		this.$root.scrollToTop()
+		let emailInputElem = document.getElementById("loginEmailInput")
+		emailInputElem?.focus()
+
+		//TODO: When user is already logged in (JWT from local storage), THEN show a "welcome back" message. User can jump to his team. Or join another team
 		//TODO: Shall I allow to login as a different user?  NO => not in a voting app!
 	},
 	methods: {
 
 		// =============== Simple Login via E-Mail & Password ==================
 
+		focusPasswordInput() {
+			this.$root.$nextTick(() => {
+				let passwordInputElem = document.getElementById("loginPasswordInput")
+				console.log("passwordInputElem", passwordInputElem)
+				passwordInputElem?.focus()
+			})
+		},
+
 		loginWithEmailPassword() {
 			console.log("loginWithEmailPassword")
 			this.loginErrorMessage = null
 			api.loginWithEmailPassword(this.emailInputVal, this.passwordInputVal)
 				.then(() => {
-					this.$router.push({name: "teamHome"})
+					this.$router.push({ name: "teamHome" })
 				})
 				.catch(err2 => {
 					console.warn("Could not login with email & password", err2)
 					this.loginErrorMessage = this.$t("loginFailed")
+					this.emailCheckDone = false
 				})
+		},
+
+		// =============== WebAuthn Passwordless Login ==================
+
+		/**
+		 * Check if the entered email is registered at all and wether it has a WebAuthn authenticator.
+		 * Called when loginEmailInput field is blurred or the Enter key is pressed.
+		 */
+		checkEmailForWebAuthn() {
+			if (this.emailCheckDone) return  // only check once
+			this.webAuthnAvailable = false
+			this.emailCheckDone = false
+
+			// Only check if email is valid and not already checking
+			if (this.emailInputState !== STATE.VALID || this.webAuthnCheckInProgress) {
+				return
+			}
+
+			this.webAuthnCheckInProgress = true
+			this.loginErrorMessage = null
+
+			api.checkWebAuthnAvailable(this.emailInputVal)
+				.then(response => {
+					this.webAuthnAvailable = response.webauthn === true
+					this.emailCheckDone = true
+					console.debug("WebAuthn available for email:", this.webAuthnAvailable)
+					if (!this.webAuthnAvailable) this.focusPasswordInput()
+				})
+				.catch(err => {
+					if (err.response && err.response.status === 404) {
+						this.loginErrorMessage = this.$t("emailNotFound")
+						return
+					} else {
+						console.warn("Could not check WebAuthn availability", err)
+					}
+					this.webAuthnAvailable = false
+					this.emailCheckDone = true
+				})
+				.finally(() => {
+					this.webAuthnCheckInProgress = false
+				})
+		},
+
+		/**
+		 * Login with WebAuthn authenticator.
+		 * Delegates to webauthnService.loginWithWebAuthn() which handles the complete ceremony.
+		 */
+		async loginWithWebAuthn() {
+			if (!this.webAuthnAvailable || this.webAuthnLoginInProgress) return
+
+			this.webAuthnLoginInProgress = true
+			this.loginErrorMessage = null
+
+			try {
+				console.log("Login page: Starting WebAuthn login for:", this.emailInputVal)
+				await webauthnService.loginWithWebAuthn(this.emailInputVal)
+				console.log("Login page: WebAuthn login successful")
+				this.$router.push({ name: "teamHome" })
+			} catch (err) {
+				console.error("Login page: WebAuthn login failed:", err)
+				this.loginErrorMessage = this.$t("webauthnFailure") || "WebAuthn authentication failed. Please try again."
+				this.emailCheckDone = false
+			} finally {
+				this.webAuthnLoginInProgress = false
+			}
 		},
 
 		// =============== Google Oauth - Authorization Code Flow ==================
 		// Very nice comparission of both Oauth Flows:
 		// https://developers.google.com/identity/oauth2/web/guides/choose-authorization-model#oauth_20_flow_comparison 
 
-    /**
-     * Start the Google OAuth Authorization Code Flow.
-     * This will redirect the user to Google's OAuth endpoint with response_type=code.
-     * After login/consent, Google will redirect back to our backend with an authorization code.
+		/**
+		 * Start the Google OAuth Authorization Code Flow.
+		 * This will redirect the user to Google's OAuth endpoint with response_type=code.
+		 * After login/consent, Google will redirect back to our backend with an authorization code.
 		 * https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow#obtainingaccesstokens
 		 * https://developers.google.com/identity/oauth2/web/guides/how-user-authz-works 
 		 * https://developers.google.com/identity/protocols/oauth2/web-server#node.js_1  
-     */
-    startGoogleLoginAuthorizationCodeFlow() {
-        const clientId = config.googleClientId;
-        const redirectUri = encodeURIComponent(config.LIQUIDO_API_URL + "/auth/google/callback");
-        const scope = encodeURIComponent("openid email profile");
-        const state = encodeURIComponent(Math.random().toString(36).substring(2)); // Optional: use a real CSRF token in production
-				console.log("Attempting google login: redirectUri="+config.LIQUIDO_API_URL + "/auth/google/callback")
+		 */
+		startGoogleLoginAuthorizationCodeFlow() {
+			const clientId = config.googleClientId;
+			const redirectUri = encodeURIComponent(config.LIQUIDO_API_URL + "/auth/google/callback");
+			const scope = encodeURIComponent("openid email profile");
+			const state = encodeURIComponent(Math.random().toString(36).substring(2)); // Optional: use a real CSRF token in production
+			console.log("Attempting google login: redirectUri=" + config.LIQUIDO_API_URL + "/auth/google/callback")
 
-        const googleAuthUrl =
-            `https://accounts.google.com/o/oauth2/v2/auth` +
-            `?client_id=${clientId}` +
-            `&redirect_uri=${redirectUri}` +
-            `&response_type=code` +
-            `&scope=${scope}` +
-            `&state=${state}` +
-            `&access_type=offline` +
-            `&prompt=consent`;
+			const googleAuthUrl =
+				`https://accounts.google.com/o/oauth2/v2/auth` +
+				`?client_id=${clientId}` +
+				`&redirect_uri=${redirectUri}` +
+				`&response_type=code` +
+				`&scope=${scope}` +
+				`&state=${state}` +
+				`&access_type=offline` +
+				`&prompt=consent`;
 
-        // Optionally store state in localStorage/sessionStorage for CSRF protection
-        localStorage.setItem("google_oauth_state", state);
+			// Optionally store state in localStorage/sessionStorage for CSRF protection
+			localStorage.setItem("google_oauth_state", state);
 
-        // Redirect to Google OAuth
-        window.location.href = googleAuthUrl;
-    },
+			// Redirect to Google OAuth
+			window.location.href = googleAuthUrl;
+		},
 
 
 		// =============== Google OAuth - Implicit Flow / Google One Tap  ==================
-   	// This works, but is less secure than the Authorization Code Flow above.
+		// This works, but is less secure than the Authorization Code Flow above.
 		// https://developers.google.com/identity/gsi/web/reference/js-reference#google.accounts.id.prompt
-	
+
 		/** 
 		 * (1) Start the google login process.
 		 * For keep data privacy, this is done only <b>after</b> the user clicked the Google button.
@@ -415,14 +494,14 @@ export default {
 			this.loginErrorMessage = undefined
 			if (!document.getElementById("google-script")) {
 				console.log("loading google script")
-        const script = document.createElement("script");
-        script.id = "google-script";
-        script.src = "https://accounts.google.com/gsi/client";
-        script.onload = this.loginWithGoogleOneTap; // Call google login function after script has been loaded
-        document.head.appendChild(script);
-      } else {
-        this.loginWithGoogleOneTap(); // If script is already loaded, start login
-      }
+				const script = document.createElement("script");
+				script.id = "google-script";
+				script.src = "https://accounts.google.com/gsi/client";
+				script.onload = this.loginWithGoogleOneTap; // Call google login function after script has been loaded
+				document.head.appendChild(script);
+			} else {
+				this.loginWithGoogleOneTap(); // If script is already loaded, start login
+			}
 		},
 
 		/**
@@ -458,7 +537,7 @@ export default {
 				api.logout()
 				api.googleOneTapLogin(response.credential)
 					.then(() => {
-						this.$router.push({name: "teamHome"})
+						this.$router.push({ name: "teamHome" })
 					})
 					.catch(err => {
 						console.error("Google One Tap login failed", err)
@@ -478,7 +557,7 @@ export default {
 			api.logout()
 			api.devLogin(config.devLogin.admin.email, config.devLogin.teamName, config.devLogin.token).then(() => {
 				this.$root.scrollToTop()
-				this.$router.push({name: "polls"})
+				this.$router.push({ name: "polls" })
 			}).catch(err => console.error("DevLogin Admin failed!", err))
 		},
 
@@ -489,7 +568,7 @@ export default {
 			api.devLogin(config.devLogin.member.email, config.devLogin.teamName, config.devLogin.token)
 				.then(() => {
 					this.$root.scrollToTop()
-					this.$router.push({name: "polls"})
+					this.$router.push({ name: "polls" })
 				})
 				.catch(err => console.error("DevLogin Member failed!", err))
 		},
@@ -535,8 +614,8 @@ export default {
 				})
 				.catch(err => {
 					if (err.response &&
-							err.response.data &&
-							err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_MOBILE_NOT_FOUND) {
+						err.response.data &&
+						err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_MOBILE_NOT_FOUND) {
 						this.waitUntilNextRequestSecs = 0
 						this.tokenSentSuccessfully = false
 						this.tokenErrorMessage = this.$t("MobilephoneNotFound")
@@ -557,12 +636,12 @@ export default {
 			this.tokenErrorMessage = undefined
 			api.loginWithAuthToken(this.mobilephone, this.twillioAuthToken)
 				.then(() => {
-					this.$router.push({name: "teamHome"})
+					this.$router.push({ name: "teamHome" })
 				})
 				.catch(err => {
 					// Show a human readable error message
 					console.error("Entered auth token is not valid", err)
-					this.tokenErrorMessage = this.$t("TokenInvalid") 
+					this.tokenErrorMessage = this.$t("TokenInvalid")
 				})
 		},
 
@@ -576,7 +655,7 @@ export default {
 			// Email login button might be disabled, when the email is not valid yet.
 			// But the button is never shown as disabled for non logicall beautiful UX/UI reasons. :-)
 			// So we check here if the current value of the liquido-input is actually valid.
-			if (this.emailInputState !== true) return  
+			if (this.emailInputState !== true) return
 			console.log("requestEmailToken")
 			this.tokenErrorMessage = undefined
 			this.emailErrorMessage = undefined
@@ -589,12 +668,11 @@ export default {
 				})
 				.catch(err => {
 					//this.$root.scrollToBottom()
-					if (err.response &&	
-							err.response.data &&
-							err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_EMAIL_NOT_FOUND) 
-					{
+					if (err.response &&
+						err.response.data &&
+						err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_EMAIL_NOT_FOUND) {
 						//TODO: ask user if he wants to register
-						console.log("There is no user with email: "+this.emailInput)
+						console.log("There is no user with email: " + this.emailInput)
 						this.emailSentSuccessfully = false
 						this.emailErrorMessage = this.$t("UserWithThatEmailNotFound")
 					} else {
@@ -612,9 +690,9 @@ export default {
 		loginWithEMailToken() {
 			this.tokenErrorMessage = undefined
 			this.emailErrorMessage = undefined
-			api.loginWithEmailToken(this.email, this.emailToken)   
+			api.loginWithEmailToken(this.email, this.emailToken)
 				.then(() => {
-					this.$router.push({name: "teamHome"})
+					this.$router.push({ name: "teamHome" })
 				})
 				.catch(err => {
 					console.error("Cannot login with email token", err)
@@ -626,40 +704,55 @@ export default {
 
 		/** Register button at the bottom of the page */
 		clickRegister() {
-			this.$router.push({name: "welcome"})
+			this.$router.push({ name: "welcome" })
 		}
 	}
 }
 </script>
 
 <style>
-
-	.button-outline-liquido {
-		border-color: var(--bs-border-color) !important;
+@keyframes growAndFadeIn {
+	from {
+		opacity: 0;
+		max-height: 0;
+		overflow: hidden;
 	}
 
-	.horizontal-line {
-		text-align: center; border-bottom: 1px solid lightgrey; 
-		line-height: 0;
+	to {
+		opacity: 1;
+		max-height: 200px;
 	}
-	.horizontal-line span {
-		background: white; 
-		color: lightgrey; 
-		font-size: 0.8rem; 
-		padding: 0 1rem;
-	}
+}
 
-	.forgot-password-link {
-		text-align: center; 
-		font-size: 0.8rem;
-		a {
-			color: gray !important;
-		}
-	}
+.password-field-animation {
+	animation: growAndFadeIn 0.4s ease-out;
+}
 
-	/* exctly the same margin-top as our liquido-input */
-	#loginWithEmailPasswordButton {
-		margin-top: 12px;  
+.button-outline-liquido {
+	border-color: var(--bs-border-color) !important;
+}
+
+.horizontal-line {
+	text-align: center;
+	margin-top: 3rem;
+	margin-bottom: 3rem;
+	border-bottom: 1px solid lightgrey;
+	line-height: 0;
+}
+
+.horizontal-line span {
+	background: white;
+	color: lightgrey;
+	font-size: 0.8rem;
+	padding: 0 1rem;
+}
+
+.forgot-password-link {
+	text-align: center;
+	font-size: 0.8rem;
+
+	a {
+		color: gray !important;
 	}
-	
+}
 </style>

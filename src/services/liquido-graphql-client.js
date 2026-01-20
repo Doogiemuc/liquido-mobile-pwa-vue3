@@ -561,6 +561,20 @@ let graphQlApi = {
 	},
 
 	/**
+	 * Check if a user with the given email has registered WebAuthn authenticators.
+	 * This is used in the login flow to determine if we should show the "Login with WebAuthn" button.
+	 * No authentication required for this endpoint.
+	 * @param {String} email The user's email address
+	 * @return { webauthn: boolean }
+	 */
+	async checkWebAuthnAvailable(email) {
+		if (!email) throw new Error("Email is required to check WebAuthn availability")
+		return axios.get('/liquido/v2/webauthn/check-login-email', {
+			params: { email: email }
+		}).then(res => res.data)
+	},
+
+	/**
 	 * Request authentication options (challenge, allowCredentials) from backend.
 	 * Typically called after validating password on server side.
 	 * @param {String} email
