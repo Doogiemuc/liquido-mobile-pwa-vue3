@@ -522,6 +522,20 @@ let graphQlApi = {
 	/* ================== WebAuthn REST client ==================== */
 
 	/**
+	 * Check if a user with the given email has registered WebAuthn authenticators.
+	 * This is used in the login flow to determine if we should show the "Login with WebAuthn" button.
+	 * No authentication required for this endpoint.
+	 * @param {String} email The user's email address
+	 * @return { webauthn: boolean }
+	 */
+	async checkLoginEmail(email) {
+		if (!email) throw new Error("Email is required to check WebAuthn availability")
+		return axios.get('/liquido/v2/webauthn/check-login-email', {
+			params: { email: email }
+		}).then(res => res.data)
+	},
+
+	/**
 	 * Request webauthn registration options (challenge, rp, user, pubKeyCredParams)
 	 * for the currently logged in user. Must be authenticated!
 	 * This sets a cookie!
@@ -531,7 +545,7 @@ let graphQlApi = {
 		// But we use our own custom implementation, adapted to liquido authentication scheme via JWT.
 		return axios.get(
 			'/liquido/v2/webauthn/register-options-challenge',
-			{ withCredentials: true }
+			{ withCredentials: true }  // required!
 		).then(res => { 
 				console.log("GET /liquido/v2/webauthn/register-options-challenge", res.data)
 				return res.data
@@ -547,10 +561,10 @@ let graphQlApi = {
 	 */
 	async submitWebAuthnRegistration(credentialResponse, authenticatorLabel) {
 		return axios({
-			method: 'post',
+			method: 'POST',
 			url: '/liquido/v2/webauthn/register',
 			params: {
-				label: authenticatorLabel
+				label: authenticatorLabel  // Yes POST requests may have URL query parameters!
 			},
 			data: credentialResponse,
 			withCredentials: true  // required. Sends cookie that was set in GET /register-options-challenge back to server
@@ -561,29 +575,17 @@ let graphQlApi = {
 	},
 
 	/**
-	 * Check if a user with the given email has registered WebAuthn authenticators.
-	 * This is used in the login flow to determine if we should show the "Login with WebAuthn" button.
-	 * No authentication required for this endpoint.
-	 * @param {String} email The user's email address
-	 * @return { webauthn: boolean }
-	 */
-	async checkWebAuthnAvailable(email) {
-		if (!email) throw new Error("Email is required to check WebAuthn availability")
-		return axios.get('/liquido/v2/webauthn/check-login-email', {
-			params: { email: email }
-		}).then(res => res.data)
-	},
-
-	/**
 	 * Request authentication options (challenge, allowCredentials) from backend.
 	 * Typically called after validating password on server side.
 	 * @param {String} email
 	 * @param {String} password (optional) - server may require password to issue assertion options
 	 */
 	async getWebAuthnLoginChallenge(email, password) {
-		if (!email) throw new Error("Need email for WebAuthn authentication options")
-		return axios.post('/liquido/v2/webauthn//login-options-challenge', { email: email, password: password })
-			.then(res => res.data)
+		if (!email) throw new Error("Need email for getting WebAuthn login-options-challenge")
+		return axios.get('/liquido/v2/webauthn/login-options-challenge', { 
+			params: { email: email, password: password },
+			withCredentials: true  // required!
+		}).then(res => res.data)
 	},
 
 	/**
@@ -591,13 +593,12 @@ let graphQlApi = {
 	 * @param {Object} credentialResponse
 	 */
 	async submitWebAuthnLogin(credentialResponse) {
-		return axios.post('/liquido/v2/webauthn/login', credentialResponse)
-			.then(res => {
-				if (res.data && res.data.jwt && res.data.team && res.data.user) {
-					this.login(res.data.team, res.data.user, res.data.jwt)
-				}
-				return res.data
-			})
+		return axios({
+			method: 'POST',
+			url: '/liquido/v2/webauthn/login',
+			data: credentialResponse,
+			withCredentials: true
+		}).then(res => res.data)
 	},
 
 	/** 

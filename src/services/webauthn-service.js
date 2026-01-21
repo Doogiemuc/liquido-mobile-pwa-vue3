@@ -82,17 +82,17 @@ const webauthnAPI = {
 			
 			// (1) Get WebAuthn authentication options (challenge) from backend
 			const authOptions = await api.getWebAuthnLoginChallenge(email)
-			console.log("WebAuthn login: Received authentication options")
+			//console.log("WebAuthn login: Received authentication options", authOptions)
 			
 			// (2) Start WebAuthn authentication ceremony (user confirms with biometric)
+			console.log("WebAuthn biometric login: Waiting for device ...")
 			const assertion = await startAuthentication({ optionsJSON: authOptions })
-			console.log("WebAuthn login: User confirmed with biometric")
+			//console.log("WebAuthn login: User confirmed with biometric", assertion)
 			
 			// (3) Submit assertion to backend for verification
-			const loginResponse = await api.submitWebAuthnLogin(assertion)
-			console.log("WebAuthn login: Successfully authenticated")
-			
-			return loginResponse
+			const teamDataResponse = await api.submitWebAuthnLogin(assertion)
+			console.log("WebAuthn login: Successfully authenticated", teamDataResponse)
+			return teamDataResponse
 		} catch (err) {
 			console.error('WebAuthn login ERROR', err)
 			throw err

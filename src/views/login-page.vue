@@ -333,15 +333,6 @@ export default {
 	},
 	created() {
 		this.$store.setHeaderTitle(this.pageTitle)
-
-		/*
-		console.debug("Initializing WebAuthn: " + config.LIQUIDO_API_URL + "/q/webauthn")
-		this.webauthn = new WebAuthn({
-			callbackPath: config.LIQUIDO_API_URL + '/q/webauthn/callback',
-			registerPath: config.LIQUIDO_API_URL + '/q/webauthn/register',
-			loginPath:    config.LIQUIDO_API_URL + '/q/webauthn/login'
-		})
-		*/
 	},
 	mounted() {
 		// if email and a valid one time token is passed, then log in user
@@ -401,7 +392,7 @@ export default {
 			this.emailCheckDone = false
 			this.loginErrorMessage = null
 
-			api.checkWebAuthnAvailable(this.emailInputVal)
+			api.checkLoginEmail(this.emailInputVal)
 				.then(response => {
 					this.webAuthnAvailable = response.webauthn === true
 					this.emailCheckDone = true
@@ -428,14 +419,11 @@ export default {
 		 */
 		async loginWithWebAuthn() {
 			if (!this.webAuthnAvailable || this.webAuthnLoginInProgress) return
-
 			this.webAuthnLoginInProgress = true
 			this.loginErrorMessage = null
-
 			try {
-				console.log("Login page: Starting WebAuthn login for:", this.emailInputVal)
-				await webauthnService.loginWithWebAuthn(this.emailInputVal)
-				console.log("Login page: WebAuthn login successful")
+				let teamData = await webauthnService.loginWithWebAuthn(this.emailInputVal)
+				api.login(teamData.team, teamData.user, teamData.jwt)
 				this.$router.push({ name: "teamHome" })
 			} catch (err) {
 				console.error("Login page: WebAuthn login failed:", err)
