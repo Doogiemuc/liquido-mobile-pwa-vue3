@@ -53,7 +53,7 @@
 		</div>
 
 		<div v-if="canCastVote" class="text-center mb-5">
-			<button id="castVoteButton" type="button" class="btn btn-primary btn-lg" :disabled="loading || castVoteLoading" @click="clickCastVote()">
+			<button id="castVoteButton" type="button" class="btn btn-primary btn-lg w-100" :disabled="loading || castVoteLoading" @click="clickCastVote()">
 				<div v-if="castVoteLoading" class="spinner-border" role="status">
 					<span class="visually-hidden">{{ $t("Loading") }}</span>	
 				</div>
@@ -96,7 +96,6 @@
 		<popup-modal id="errorModal" ref="errorModal" type="error" :message="$t('voteCastError')"></popup-modal>
 
 		<div class="alert liquido-info">
-			<i class="fas fa-info-circle float-end" />
 			<p v-html="$t('castVoteInfo')"></p>
 		</div>
 
@@ -109,9 +108,9 @@ import popupModal from "@/components/popup-modal.vue"
 import api from "@/services/liquido-graphql-client.js"
 import { VueDraggableNext } from 'vue-draggable-next'
 import log from "loglevel"
-import dayjs from "dayjs"
-import localizedFormat from 'dayjs/plugin/localizedFormat'
-dayjs.extend(localizedFormat)
+//import dayjs from "dayjs"
+//import localizedFormat from 'dayjs/plugin/localizedFormat'
+//dayjs.extend(localizedFormat)
 
 export default {
 	i18n: {
@@ -125,7 +124,7 @@ export default {
 			de: {
 				castVoteTitle: "Abstimmen",
 				castVoteInfo:
-					"<p>In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> der Vorschläg, sondern du sortierst " +
+					"<p>In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> der obigen Vorschläg, sondern du sortierst " +
 					"<em>alle</em> Vorschläge nach deiner Präferenz.</p>" +
 					"<p>Schiebe deinen Favoriten ganz nach oben. Ordne alle anderen Vorschläge gemäß deiner persönlichen Reihenfolge darunter an.</p>",
 				voteCountedNTimes: "Deine Stimme als Proxy wurde {voteCount} mal gezählt.",
@@ -183,7 +182,6 @@ export default {
 		 */
 		let loadPoll = () => api.getPollById(this.pollId, true).then(poll => {
 			this.poll = poll
-			if (!this.poll) throw new Error("Cannot find poll(id=" + this.pollId + ")") //TODO: show user error message to user. offer back button
 			return poll
 		}).catch(err => console.warn("Cannot get poll.id=" + this.pollId, err))
 
@@ -339,13 +337,6 @@ export default {
 			})
 		},
 
-		formatDate(dateVal) {
-			return dayjs(dateVal).format("L")
-		},
-
-		goBack() {
-			this.$router.go(-1)
-		}
 
 	},
 }

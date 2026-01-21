@@ -2,7 +2,7 @@
 	<header id="liquidoHeader" :class="headerClass">
 
 		<div class="header-left" @click="clickLeft">
-			<i class="fas fa-angle-left" />
+			<i v-if="headerBackLink" class="fas fa-angle-left" />
 		</div>
 		<div class="header-center" @click="clickHeaderCenter">
 			<div class="liquido-claim">

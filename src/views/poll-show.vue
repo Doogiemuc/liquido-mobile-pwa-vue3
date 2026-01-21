@@ -35,7 +35,7 @@
 		<!-- Action button -->
 		<div class="d-flex justify-content-end mt-3">
 		
-			<button v-if="poll.status === 'VOTING' && !poll.usersBallot" id="goToCastVoteButton" type="button" class="btn btn-primary" @click="clickCastVote()">
+			<button v-if="poll.status === 'VOTING' && !poll.usersBallot" id="goToCastVoteButton" type="button" class="btn btn-lg w-100 btn-primary" @click="clickCastVote()">
 				<i class="fas fa-person-booth" />
 				{{ $t("goToCastVote") }}
 				<i class="fas fa-angle-double-right" />

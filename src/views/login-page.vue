@@ -66,7 +66,7 @@
 							class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
 							@click="startTelegramLogin">
 							<i class="fa-regular fa-envelope"></i>
-							<span class="flex-grow-1 text-center">{{ $t("Email") }}</span>
+							<span class="flex-grow-1 text-center">{{ $t("EmailLink") }}</span>
 						</button>
 					</div>
 				</div>
@@ -190,11 +190,21 @@ export default {
 				passwordInputIsEmpty: "Bitte gib dein Passwort ein.",
 				loginFailed: "Login fehlgeschlagen. Bitte check dein Passwort.",
 
-				// Password reset
-				needEmailToResetPassword: "Bitte gib oben deine E-Mail Adresse ein, damit ich dir einen Link zum Zurücksetzen deines Passworts schicken kann.",
-				PaswordResetEmailSentSuccessfully: "Ok, ich habe dir eine E-Mail geschickt, mit der du dein Passwort zurücksetzen kannst. Du kannst diese Seite jetzt schließen.",
+				// Login via WebAuthn
+				LoginWithPasskey: "Login mit Passkey",
+				WebAuthnLoginFailed: "Login mit Passkey fehlgeschlagen. Bitte versuche es noch einmal.",
 
-				// Login via Magic Email Link
+				// Login options
+				AuthyApp: "Authy App",
+				Google: "Google",
+				Facebook: "Facebook",
+				Apple: "Apple",
+				SMS: "SMS",
+				EmailLink: "Email Link",
+
+				// Login via SMS
+				LoginViaSms: "SMS Login",	
+				LoginViaSmsInfo: "Ich schicke dir einen Zahlencode auf dein Handy. Mit diesem kannst du dich dann hier einloggen.",
 				RequestTokenButton: "Login-Token anfordern",
 				TokenSent: "SMS verschickt ...",
 				AuthTokenLabel: "Login-Token aus SMS",
@@ -206,30 +216,23 @@ export default {
 
 				// Google Login
 				GoogleLoginCurrentlyNotAvailable: "Der Google Login ist leider gerade nicht verfügbar.",
+				GoogleLoginFailed: "Google-Login fehlgeschlagen.",
 
+				// Login via E-Mail
 				EmailSentSuccessfully: "Ok, ich habe dir eine Email mit einem Code geschickt.",
 				CouldNotSendEmail: "Es gab ein Problem beim Verschicken der E-Mail. Bitte versuche es später noch einmal.",
 				UserWithThatEmailNotFound: "Tut mir leid, ich kenne niemanden mit dieser E-Mail Adresse. Möchtest du dich <a href='/welcome'>zuerst registrieren</a>?",
-				orSignInWith: "oder melde dich an mit",
-				AuthyApp: "Authy App",
-				Google: "Google",
-				Facebook: "Facebook",
-				Apple: "Apple",
-				SMS: "SMS",
-
-				Telegram: "Telegram",
-				LoginViaSms: "SMS Login",
-				LoginViaSmsInfo: "Ich schicke dir einen Zahlencode auf dein Handy. Mit diesem kannst du dich dann hier einloggen.",
-
-				ForgotPassword: "Passwort vergessen?",
-				Register: "Neu registrieren",
-				DevLoginAdmin: "devLogin: Admin",
-				DevLoginMember: "devLogin: Member",
 				EmailTokenInvalid: "Der eingegebene E-Mail-Token ist ungültig.",
-				GoogleLoginFailed: "Google-Login fehlgeschlagen.",
+				
+				// Forgot password / password reset
+				ForgotPassword: "Passwort vergessen?",
+				needEmailToResetPassword: "Bitte gib oben deine E-Mail Adresse ein, damit ich dir einen Link zum Zurücksetzen deines Passworts schicken kann.",
+				PaswordResetEmailSentSuccessfully: "Ok, ich habe dir eine E-Mail geschickt, mit der du dein Passwort zurücksetzen kannst. Du kannst diese Seite jetzt schließen.",
 
-				// WebAuthn translations (DE)
-				LoginWithPasskey: "Login mit Passkey",
+				Register: "Neu registrieren",
+				orSignInWith: "oder melde dich an mit",
+				DevLoginAdmin: "devLogin: Admin",
+				DevLoginMember: "devLogin: Member"				
 			},
 			en: {
 				emailPlaceholder: "E-Mail",
@@ -365,6 +368,9 @@ export default {
 			})
 		},
 
+		/**
+		 * Offer email & password input as a fallback, when webauthn is not available or not setup yet.
+		 */
 		loginWithEmailPassword() {
 			console.log("loginWithEmailPassword")
 			this.loginErrorMessage = null
@@ -386,16 +392,13 @@ export default {
 		 * Called when loginEmailInput field is blurred or the Enter key is pressed.
 		 */
 		checkEmailForWebAuthn() {
-			if (this.emailCheckDone) return  // only check once
-			this.webAuthnAvailable = false
-			this.emailCheckDone = false
-
-			// Only check if email is valid and not already checking
-			if (this.emailInputState !== STATE.VALID || this.webAuthnCheckInProgress) {
+			// Only check if email is valid and not already checking and only check once
+			if (this.emailCheckDone || this.emailInputState !== STATE.VALID || this.webAuthnCheckInProgress) {
 				return
 			}
-
 			this.webAuthnCheckInProgress = true
+			this.webAuthnAvailable = false
+			this.emailCheckDone = false
 			this.loginErrorMessage = null
 
 			api.checkWebAuthnAvailable(this.emailInputVal)
@@ -408,12 +411,11 @@ export default {
 				.catch(err => {
 					if (err.response && err.response.status === 404) {
 						this.loginErrorMessage = this.$t("emailNotFound")
-						return
 					} else {
 						console.warn("Could not check WebAuthn availability", err)
 					}
-					this.webAuthnAvailable = false
-					this.emailCheckDone = true
+					//this.webAuthnAvailable = false
+					//this.emailCheckDone = false
 				})
 				.finally(() => {
 					this.webAuthnCheckInProgress = false
@@ -437,8 +439,7 @@ export default {
 				this.$router.push({ name: "teamHome" })
 			} catch (err) {
 				console.error("Login page: WebAuthn login failed:", err)
-				this.loginErrorMessage = this.$t("webauthnFailure") || "WebAuthn authentication failed. Please try again."
-				this.emailCheckDone = false
+				this.loginErrorMessage = this.$t("WebAuthnLoginFailed")
 			} finally {
 				this.webAuthnLoginInProgress = false
 			}
@@ -572,11 +573,6 @@ export default {
 				})
 				.catch(err => console.error("DevLogin Member failed!", err))
 		},
-
-		// =============== Login via WebAuthn ==================
-		/*
-		TODO
-		*/
 
 
 		// =============== login via Twillio (SMS) authToken ==================
