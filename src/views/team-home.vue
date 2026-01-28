@@ -41,17 +41,43 @@
 			</div>
 		</div>
 
-		<div v-if="isAdmin" class="alert alert-admin mt-5">
+		<div v-if="isAdmin" class="alert alert-admin mt-3">
 			<p v-html="$t('introForOneAdmin')"></p>
 		</div>
 
-		<button id="register2FAButton" 
-			type="button" 
-			class="btn btn-primary btn-lg w-100 text-center position-relative mt-5" 
-			@click="register2FA">
-			<i class="fa-solid fa-fingerprint position-absolute top-50 start-0 translate-middle ms-3"></i>
-			<span class="text-center">{{ $t("registerKeepass") }}</span>
-		</button>
+		
+
+		<div id="setupPasskeyCard" class="card mt-3">
+			<h3 class="card-header text-center" v-html="$t('LiquidoIsSave')"></h3>
+			<div v-if="userHasWebauthn" class="card-body">
+				<p v-html="$t('PasskeyAvailable')" />
+			</div>
+			<div v-if="!userHasWebauthn" class="card-body">
+				<p v-html="$t('SetupPasskeyInfo')"></p>
+				<!-- liquido-input
+					id="passkeyInput"
+					ref="passkeyInput"
+					v-model="passkeyLabel"
+					class="mb-3"
+					:label="$t('PasskeyLabel')"
+					:minlength="3"
+					:maxlength="200"
+					:invalid-feedback="$t('PasskeyLabelInvalid')"
+				/-->
+				<button
+					id="setupPasskeyButton"
+					class="btn btn-primary d-flex align-items-center float-end w-100"
+					type="button"
+					@click="setupPasskey()"
+				>
+					<i class="fas fa-fingerprint" />
+					<span class="flex-grow-1 text-center">{{ $t("SetupPasskeyButton") }}</span>
+					<span v-if="userHasWebauthn" style="color: #0E0;">
+						<i class="fa-solid fa-check"></i>
+					</span>
+				</button>
+			</div>
+		</div>
 
 		<div class="text-center">
 			<button id="logoutButton" type="button" class="btn btn-outline-secondary mt-5" @click="clickLogout">
@@ -64,6 +90,7 @@
 <script>
 import config from "config"
 import QRCode from "qrcode"
+import liquidoInput from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
 import webauthnService from '@/services/webauthn-service.js'
 
@@ -89,15 +116,26 @@ export default {
 				inviteNewMembers: "Teammitglieder einladen",
 				inviteLink: "Einladungscode:&nbsp;<b>{ inviteCode }</b>",
 				qrCode: "QR Code scannen:",
-				registerKeepass: "Keepass registrieren",
+
+				// Setup a passkey
+				LiquidoIsSave: "<span class='liquido'></span> ist sicher!",
+				SetupPasskeyInfo: "<p>Um sicherzustellen, dass niemand deine Stimme missbrauchen kann, richte hier einen Passkey ein. Künftig kannst du dich damit schnell und sicher per Fingerabdruck, Face-ID oder Geräte-PIN einloggen.</p>" +
+					"<p>Keine Sorge, dein Passkey bleibt auf deinem Gerät. Es werden keine biometrischen Daten gespeichert oder übertragen.</p>",
+				PasskeyLabel: "Passkey Name",  // the label of the input field
+				PasskeyLabelInvalid: "Bitte mindestens 3 Zeichen!",
+				SetupPasskeyButton: "Passkey registrieren",
+				PasskeyAvailable: "Sehr gut, du hast deinen Passkey registriert und kannst dich damit schnell und sicher per Fingerabdruck, Face-ID oder Geräte-PIN einloggen.",
+
 				logout: "Logout"
 			},
 		},
 	},
+	components: { liquidoInput },
 	data() {
 		return {
 			team: {},
-			statusMessage: undefined
+			statusMessage: undefined,
+			passkeyLabel: undefined
 		}
 	},
 	computed: {
@@ -111,6 +149,10 @@ export default {
 		},
 		isAdmin() {
 			return api.isAdmin()
+		},
+		userHasWebauthn() {
+			let cachedUser = api.getCachedUser()
+			return cachedUser?.hasWebauthn
 		},
 		teamHasPolls() {
 			return api.getCachedPolls().length > 0
@@ -154,12 +196,17 @@ export default {
 		 * Register a new WebAuthn authenticator device.
 		 * Only a logged user is allowed to do this for his own account!
 		 */
-		async register2FA() {
-			console.log("register2FA")
-			//TODO: label!
-			webauthnService.registerWebauthn()
+		async setupPasskey() {
+			if (!this.passkeyLabel) this.passkeyLabel = this.currentUserName + "-Passkey"
+			webauthnService.registerWebauthn(this.passkeyLabel).then(res => {
+				api.getCachedUser().hasWebauthn = true
+				console.log("setupPasskey SUCCESSFULL")
+			}).catch(err => {
+				this.$root?.$refs?.mobileDebugLogRef?.info("setupPasskey: ERROR")
+				this.$root?.$refs?.mobileDebugLogRef?.info(err)
+				console.log("setupPasskey ERROR", err)
+			})
 		},
-		
 
 		getImgUrl(imgFile) {
 			return config.avatarPath + "/" + imgFile

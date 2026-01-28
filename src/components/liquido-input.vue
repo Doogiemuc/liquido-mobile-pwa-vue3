@@ -302,6 +302,14 @@ export default {
 		},
 
 		/** 
+		 * Manually set the valid state of the input field.
+		 * This will force this state. No matter if the field is currently valid according to the validFunc()
+		 */
+		setValidState(newState) {
+			this.state = newState
+		},
+
+		/** 
 		 * When DOM input event is fired on the inner HTML <input>, 
 		 * then fire VUE update event, so that the parent component's value 
 		 * can be updated. */

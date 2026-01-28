@@ -1,6 +1,13 @@
 # TODOs
 
 ## Use Case features
+ 
+### Registration
+
+ * Verify a user's email
+
+### Login
+
  * Finally finalize the final login flow :-) Login via
    * Google - DONE
 	 * Apple 
@@ -8,12 +15,16 @@
 	 * SMS
  * Settings:
    * Can team members add their own proposals to a poll?
-* Three levels of polls:
+
+### Polls
+
+ * Three levels of polls:
 	 1. Polly (e.g. for kids): a super intelligent wobbling funny Polly
 	 2. Polls (with proposals/options) and Elections (with candidates) and descriptions for each option
 	 3. Full blown proxy voting
 
-## Full blown liquido
+## Full blown liquido with ideas that need to get support
+
  * Ideas, that become proposals when they have enough supporters
  * Alternative ideas that can be suggested, and then become alternative proposals if they gather enough supporters.
  * Polls that can be started when there are at least two proposals.
@@ -30,8 +41,6 @@
  * Remove all SCSS: CSS is enough -> performance improvement
  * Scroll to top: Do this with  https://router.vuejs.org/guide/advanced/scroll-behavior.html#Delaying-the-scroll     "scrollBehaviour" in router!!!
  * Test on real devices, eg. with https://www.browserstack.com/    => This does already work on real hardware locally.
-
-
 
 # DONE - Implemented Features 
 

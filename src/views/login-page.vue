@@ -10,37 +10,26 @@
 					<i class="fas fa-user-circle fa-3x" style="color: var(--primary)"></i>
 				</div>
 
-				<liquido-input id="loginEmailInput" v-model="emailInputVal" v-model:state="emailInputState" type="email"
+				<liquido-input id="loginEmailInput" ref="emailInput" v-model="emailInputVal" v-model:state="emailInputState" type="email"
 					:required=true :placeholder="$t('emailPlaceholder')" :empty-feedback="$t('emailEmpty')"
-					:invalid-feedback="$t('emailInvalid')" :feedback-placeholder="true" @blur="checkEmailForWebAuthn"
-					@keyup.enter="checkEmailForWebAuthn" />
+					:invalid-feedback="$t('emailInvalid')" :feedback-placeholder="true" 
+					@blur="checkEmailForLogin"
+					@keyup="emailInputKeyUp" />
 
-				<!-- Password input and Login button - shown only if WebAuthn is NOT available -->
-				<div v-if="emailCheckDone && !webAuthnAvailable" class="password-field-animation">
-					<liquido-input id="loginPasswordInput" v-model="passwordInputVal" v-model:state="passwordInputState"
-						type="password" :minLength=10 :required=true :placeholder="$t('passwordPlaceholder')"
-						:empty-feedback="$t('passwordInputIsEmpty')" :invalid-feedback="$t('passwordInputIsInvalid')"
-						:feedback-placeholder="true" @keypress.enter="loginWithEmailPassword" />
-				</div>
+				<!-- Password input field -->
+				<liquido-input id="loginPasswordInput" v-model="passwordInputVal" v-model:state="passwordInputState"
+					type="password" :minLength=10 :required=true :placeholder="$t('passwordPlaceholder')"
+					:empty-feedback="$t('passwordInputIsEmpty')" :invalid-feedback="$t('passwordInputIsInvalid')"
+					:feedback-placeholder="true" @keypress.enter="loginWithEmailPassword" />
 
-				<!-- Login button - shown only if WebAuthn is NOT available -->
-				<button v-if="!webAuthnAvailable" id="loginWithEmailPasswordButton" type="button"
+				<button id="loginWithEmailPasswordButton" type="button"
 					class="btn btn-primary w-100 text-center position-relative" :disabled="loginWithEmailPasswordButtonDisabled"
 					@click="loginWithEmailPassword">
 					<i class="fa-solid fa-sign-in-alt position-absolute top-50 start-0 translate-middle ms-3"></i>
-					<span class="text-center">{{ $t("Login") }}</span>
-				</button>
+					<span class="text-center">{{ loginButtonText }}</span>
+				</button>	
 
-				<!-- WebAuthn button - shown only if WebAuthn IS available -->
-				<div v-if="emailCheckDone && webAuthnAvailable">
-					<button id="loginWithWebAuthnButton" type="button" class="btn btn-primary w-100 text-center position-relative"
-						:disabled="loginWithWebAuthnButtonDisabled" @click="loginWithWebAuthn">
-						<i class="fa-solid fa-fingerprint position-absolute top-50 start-0 translate-middle ms-3"></i>
-						<span class="text-center">{{ $t("LoginWithPasskey") }}</span>
-					</button>
-				</div>
-
-				<div v-if="loginErrorMessage" id="loginErrorMessage" class="alert alert-danger mt-3">
+				<div v-if="loginErrorMessage" id="loginErrorMessage" class="alert alert-danger mt-3" :data-loginErrorMessageId="loginErrorMessageId">
 					{{ loginErrorMessage }}
 				</div>
 
@@ -50,7 +39,17 @@
 					</span>
 				</div>
 
-				<div class="row g-2">
+				<div v-if="webAuthnAvailable" class="row mb-3">
+					<div class="col">
+						<!-- WebAuthn button - shown only if WebAuthn IS available -->
+						<button id="loginWithWebAuthnButton" type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center"
+							:disabled="loginWithWebAuthnButtonDisabled" @click="loginWithWebAuthn">
+							<i class="fa-solid fa-fingerprint"></i>
+							<span class="flex-grow-1 text-center">{{ $t("LoginWithPasskey") }}</span>
+						</button>
+					</div>
+				</div>
+				<div class="row mb-3">
 					<div class="col">
 						<!-- Signin with SMS -->
 						<button type="button"
@@ -60,7 +59,7 @@
 							<span class="flex-grow-1 text-center">{{ $t("SMS") }}</span>
 						</button>
 					</div>
-					<div class="col mb-2">
+					<div class="col">
 						<!-- signin via Link sent to Email -->
 						<button type="button"
 							class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
@@ -71,7 +70,7 @@
 					</div>
 				</div>
 
-				<div class="row g-2">
+				<div class="row">
 					<div class="col">
 						<!-- Signin with Google -->
 						<button type="button"
@@ -177,10 +176,23 @@ import webauthnService from "@/services/webauthn-service.js"
 
 const REQUEST_THROTTLE_SECS = 10
 
+/** 
+ * All possible error cases, used in automated tests.
+ * (Never ever check for translated texts in automated tests! Instead use data-* attributes.)
+ */
+const ERROR = {
+	UNKNOWN_USER_EMAIL: 1,
+	PASSWORD_LOGIN_FAILED: 2,
+	WEB_AUTHN_LOGIN_FAILED: 3,
+	GOOGLE_LOGIN_NOT_AVAILABLE: 4
+}
+
 export default {
 	i18n: {
 		messages: {
 			de: {
+				Continue: "Ok",
+				Login: "Login",
 				emailPlaceholder: "E-Mail",
 				passwordPlaceholder: "Passwort",
 				emailInvalid: "Ungültige Email. Vielleicht nur vertippt?",
@@ -188,11 +200,11 @@ export default {
 				emailNotFound: "Ich kenne diese E-Mail nicht.",
 				passwordInputIsInvalid: "Mindestens 10 Zeichen.",
 				passwordInputIsEmpty: "Bitte gib dein Passwort ein.",
-				loginFailed: "Login fehlgeschlagen. Bitte check dein Passwort.",
+				loginFailed: "Login fehlgeschlagen. Bitte check deine E-Mail und dein Passwort.",
 
 				// Login via WebAuthn
 				LoginWithPasskey: "Login mit Passkey",
-				WebAuthnLoginFailed: "Login mit Passkey fehlgeschlagen. Bitte versuche es noch einmal.",
+				WebAuthnLoginFailed: "Login mit Passkey fehlgeschlagen. Bitte versuche es noch einmal oder log dich mit deinem Passwort ein.",
 
 				// Login options
 				AuthyApp: "Authy App",
@@ -273,17 +285,19 @@ export default {
 	data() {
 		return {
 			pageTitle: this.$t("Login"),
+
 			// Login via email & password
 			emailInputVal: "",
-			emailInputState: undefined, 	// synced states from liquido-inputs
+			emailInputState: STATE.INIT, 		// synced states from liquido-inputs
 			passwordInputVal: "",
-			passwordInputState: undefined,
-			loginErrorMessage: undefined, // error message below email password input
+			passwordInputState: STATE.INIT,
+			loginErrorMessage: undefined, 	// error message below email password input
+			loginErrorMessageId: undefined, // this is used for testing
 
 			// WebAuthn login
-			emailCheckDone: false,			// Whether we've checked if email has WebAuthn credentials
-			webAuthnAvailable: false,		// Whether the email has a registered WebAuthn credential
-			webAuthnCheckInProgress: false,  // Prevent multiple concurrent checks
+			emailIsValid: false,						// Email has been checked in the backend and is valid
+			webAuthnAvailable: false,				// Whether the email has a registered WebAuthn credential
+			webAuthnCheckInProgress: false, // Prevent multiple concurrent checks
 			webAuthnLoginInProgress: false,	// Prevent multiple concurrent login attempts
 
 			// Login via E-Mail magic link
@@ -306,6 +320,13 @@ export default {
 	computed: {
 		showDevLogin() {
 			return process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
+		},
+		loginButtonText() {
+			if (this.emailIsValid) {
+				return this.$t("Login")
+			} else {
+				return this.$t("Continue")
+			}
 		},
 		loginWithEmailPasswordButtonDisabled() {
 			return this.emailInputState !== STATE.VALID || this.passwordInputState !== STATE.VALID
@@ -372,41 +393,65 @@ export default {
 				.catch(err2 => {
 					console.warn("Could not login with email & password", err2)
 					this.loginErrorMessage = this.$t("loginFailed")
-					this.emailCheckDone = false
+					this.loginErrorMessageId = ERROR.PASSWORD_LOGIN_FAILED
+					this.passwordInputVal = ""
+					//this.emailIsValid = false // let the password input field stay visible
 				})
 		},
 
 		// =============== WebAuthn Passwordless Login ==================
 
 		/**
+		 * WHEN user blurs the input field presses enter, 
+		 * THEN the email adress is validated against the backend.
+		 * WHEN this is just any other keypress in the email field,
+		 * THEN invalidate the emailInputField
+		 */
+		emailInputKeyUp(event) {
+			if (event.key === "Enter") {
+				this.checkEmailForLogin()
+			} else {
+				this.emailIsValid = false
+				this.loginErrorMessage = null
+				this.loginErrorMessageId = undefined
+			}
+		},
+
+
+		/**
 		 * Check if the entered email is registered at all and wether it has a WebAuthn authenticator.
 		 * Called when loginEmailInput field is blurred or the Enter key is pressed.
 		 */
-		checkEmailForWebAuthn() {
+		checkEmailForLogin() {
+			console.log("checkEmailForLogin", this.emailIsValid, this.emailInputState)
 			// Only check if email is valid and not already checking and only check once
-			if (this.emailCheckDone || this.emailInputState !== STATE.VALID || this.webAuthnCheckInProgress) {
+			if (this.emailIsValid || this.emailInputState !== STATE.VALID || this.webAuthnCheckInProgress) {
 				return
 			}
 			this.webAuthnCheckInProgress = true
 			this.webAuthnAvailable = false
-			this.emailCheckDone = false
+			this.emailIsValid = false
 			this.loginErrorMessage = null
+			this.loginErrorMessageId = undefined
 
 			api.checkLoginEmail(this.emailInputVal)
 				.then(response => {
+					this.emailIsValid = true
 					this.webAuthnAvailable = response.webauthn === true
-					this.emailCheckDone = true
 					console.debug("WebAuthn available for email:", this.webAuthnAvailable)
-					if (!this.webAuthnAvailable) this.focusPasswordInput()
+					this.focusPasswordInput()
 				})
 				.catch(err => {
 					if (err.response && err.response.status === 404) {
 						this.loginErrorMessage = this.$t("emailNotFound")
+						this.loginErrorMessageId = ERROR.UNKNOWN_USER_EMAIL
+						console.log(this.$refs)
+						this.$refs.emailInput.setValidState(STATE.INVALID)
 					} else {
 						console.warn("Could not check WebAuthn availability", err)
 					}
-					//this.webAuthnAvailable = false
-					//this.emailCheckDone = false
+					this.webAuthnAvailable = false
+					this.emailIsValid = false
 				})
 				.finally(() => {
 					this.webAuthnCheckInProgress = false
@@ -421,6 +466,7 @@ export default {
 			if (!this.webAuthnAvailable || this.webAuthnLoginInProgress) return
 			this.webAuthnLoginInProgress = true
 			this.loginErrorMessage = null
+			this.loginErrorMessageId = undefined
 			try {
 				let teamData = await webauthnService.loginWithWebAuthn(this.emailInputVal)
 				api.login(teamData.team, teamData.user, teamData.jwt)
@@ -428,6 +474,7 @@ export default {
 			} catch (err) {
 				console.error("Login page: WebAuthn login failed:", err)
 				this.loginErrorMessage = this.$t("WebAuthnLoginFailed")
+				this.loginErrorMessageId = ERROR.WEB_AUTHN_LOGIN_FAILED
 			} finally {
 				this.webAuthnLoginInProgress = false
 			}
@@ -481,6 +528,7 @@ export default {
 		 */
 		startGoogleOneTapLogin() {
 			this.loginErrorMessage = undefined
+			this.loginErrorMessageId = undefined
 			if (!document.getElementById("google-script")) {
 				console.log("loading google script")
 				const script = document.createElement("script");
@@ -500,6 +548,7 @@ export default {
 		loginWithGoogleOneTap() {
 			if (window.google && window.google.accounts) {
 				this.loginErrorMessage = undefined
+				this.loginErrorMessageId = undefined
 				window.google.accounts.id.initialize({
 					client_id: config.googleClientId,
 					//login_uri: config.LIQUIDO_API_URL + "/auth/google",   // used for ux_mode=redirect
@@ -507,11 +556,12 @@ export default {
 					auto_select: false,
 					ux_mode: "popup",  // popup (default) or redirect
 					scope: "openid email profile"
-				});
+				})
 				window.google.accounts.id.prompt(); // Show the Google login prompt
 			} else {
 				this.loginErrorMessage = this.$t("GoogleLoginCurrentlyNotAvailable")
-				console.error("Google accounts not available")
+				this.loginErrorMessageId = ERROR.GOOGLE_LOGIN_NOT_AVAILABLE
+				console.error("Google login not available")
 			}
 		},
 
@@ -718,8 +768,8 @@ export default {
 
 .horizontal-line {
 	text-align: center;
-	margin-top: 3rem;
-	margin-bottom: 3rem;
+	margin-top: 2rem;
+	margin-bottom: 2rem;
 	border-bottom: 1px solid lightgrey;
 	line-height: 0;
 }

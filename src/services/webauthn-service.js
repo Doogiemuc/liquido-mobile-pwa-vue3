@@ -70,15 +70,10 @@ const webauthnAPI = {
 	 * @throws Error if WebAuthn not supported, not available for email, or authentication fails
 	 */
 	async loginWithWebAuthn(email) {
-		if (!browserSupportsWebAuthn()) {
-			throw new Error('WebAuthn not supported in this browser')
-		}
-		if (!email) {
-			throw new Error('Email is required for WebAuthn login')
-		}
-
+		if (!browserSupportsWebAuthn()) throw new Error('WebAuthn not supported in this browser')
+		if (!email) throw new Error('Email is required for WebAuthn login')
 		try {
-			console.log("WebAuthn login: Starting authentication for", email)
+			//console.log("WebAuthn login: Starting authentication for", email)
 			
 			// (1) Get WebAuthn authentication options (challenge) from backend
 			const authOptions = await api.getWebAuthnLoginChallenge(email)
@@ -91,7 +86,7 @@ const webauthnAPI = {
 			
 			// (3) Submit assertion to backend for verification
 			const teamDataResponse = await api.submitWebAuthnLogin(assertion)
-			console.log("WebAuthn login: Successfully authenticated", teamDataResponse)
+			//console.log("WebAuthn login: Successfully authenticated", teamDataResponse)
 			return teamDataResponse
 		} catch (err) {
 			console.error('WebAuthn login ERROR', err)

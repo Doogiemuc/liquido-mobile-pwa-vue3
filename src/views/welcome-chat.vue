@@ -267,17 +267,17 @@
 
 			<div id="setupPasskeyCard" :class="{ 'collapse-max-height': !FLOW.SetupPasskey }" class="card chat-bubble chat-right">
 				<div class="card-body">
-						<liquido-input
-							id="passkeyInput"
-							ref="passkeyInput"
-							v-model="passkeyLabel"
-							class="mb-3"
-							:label="$t('PasskeyLabel')"
-							:minlength="3"
-							:maxlength="200"
-							:invalid-feedback="$t('PasskeyLabelInvalid')"
-							:disabled="FLOW.RegistrationFinished"
-						/>
+					<liquido-input
+						id="passkeyInput"
+						ref="passkeyInput"
+						v-model="passkeyLabel"
+						class="mb-3"
+						:label="$t('PasskeyLabel')"
+						:minlength="3"
+						:maxlength="200"
+						:invalid-feedback="$t('PasskeyLabelInvalid')"
+						:disabled="FLOW.RegistrationFinished"
+					/>
 					<button
 						id="setupPasskeyButton"
 						class="btn btn-primary d-flex align-items-center float-end w-100"
@@ -395,7 +395,7 @@ export default {
 				niceToMeetYou: "Hallo <b>{nickname}</b>, schön dich kennen zu lernen!",
 				createOrJoin: "Möchtest du ein neues Team gründen? Oder hast du einen Einladungscode bekommen und möchtest einem bestehenden Team beitreten?",
 
-				// Create a new t eam
+				// Create a new team
 				CreateNewTeam: "Neues Team gründen",
 				createNewTeamButton: "Team gründen",
 				teamName: "Team Name",

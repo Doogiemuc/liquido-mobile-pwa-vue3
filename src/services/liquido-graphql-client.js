@@ -203,7 +203,8 @@ const graphQlQueryMOCK = function(query, variables) {
 
 
 /** Shorthands for JQL return values */
-const JQL_USER = `{ id name email mobilephone picture website } `
+const JQL_LOGIN_USER = `{ id name email mobilephone picture website hasWebauthn } `
+const JQL_USER = `{ id name email mobilephone picture website  } `
 const JQL_TEAM_MEMBER = `{ role joinedAt user ${JQL_USER} } `
 const JQL_PROPOSAL =  `{ id title description icon status createdAt numSupporters likedByCurrentUser createdBy ${JQL_USER} } `   // no "is" before likedByCurrentUser!
 const JQL_POLL = `{ id title status votingStartAt votingEndAt proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `  //TODO: numBallots duelMatrix { data }
@@ -215,7 +216,7 @@ const JQL = {
 	PROPOSAL: JQL_PROPOSAL,
 	CREATE_OR_JOIN_TEAM_RESULT: `{ ` +
 		`team ${JQL_TEAM} ` +
-		`user ${JQL_USER} ` + 
+		`user ${JQL_LOGIN_USER} ` + 
 		`jwt } `, 
 	POLL: JQL_POLL,
 }
