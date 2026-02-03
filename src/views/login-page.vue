@@ -3,27 +3,37 @@
 		<h1 id="login-page" class="page-title">{{ pageTitle }}</h1>
 
 		<!-- Default Login with email & password  -->
-		<div class="card">
+		<div class="card" id="loginCard">
 			<div class="card-body">
 
-				<div class="text-center my-3">
-					<i class="fas fa-user-circle fa-3x" style="color: var(--primary)"></i>
+				<div class="text-center mb-3">
+					<i class="fas fa-envelope fa-3x" style="color: var(--primary)"></i>
 				</div>
 
 				<liquido-input id="loginEmailInput" ref="emailInput" v-model="emailInputVal" v-model:state="emailInputState" type="email"
-					:required=true :placeholder="$t('emailPlaceholder')" :empty-feedback="$t('emailEmpty')"
-					:invalid-feedback="$t('emailInvalid')" :feedback-placeholder="true" 
+					:required=true :placeholder="$t('emailPlaceholder')"
+					:invalid-feedback="$t('emailInvalid')" :feedback-placeholder="false" 
 					@blur="checkEmailForLogin"
-					@keyup="emailInputKeyUp" />
+					@keyup="emailInputKeyUp" 
+					tabindex="1" />
 
-				<!-- Password input field -->
-				<liquido-input id="loginPasswordInput" v-model="passwordInputVal" v-model:state="passwordInputState"
-					type="password" :minLength=10 :required=true :placeholder="$t('passwordPlaceholder')"
-					:empty-feedback="$t('passwordInputIsEmpty')" :invalid-feedback="$t('passwordInputIsInvalid')"
-					:feedback-placeholder="true" @keypress.enter="loginWithEmailPassword" />
+				<!-- Password input field (shown when email is validated) -->
+				<div v-if="emailIsValid" class="password-field-animation">
+					<!-- WebAuthn button - shown only if WebAuthn IS available -->
+					<button v-if="webAuthnAvailable" id="loginWithWebAuthnButton" type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center mt-3 mb-3"
+						:disabled="loginWithWebAuthnButtonDisabled" @click="loginWithWebAuthn" tabindex="2">
+						<i class="fa-solid fa-fingerprint"></i>
+						<span class="flex-grow-1 text-center">{{ $t("LoginWithPasskey") }}</span>
+					</button>
+
+					<liquido-input id="loginPasswordInput" v-model="passwordInputVal" v-model:state="passwordInputState" class="mt-2"
+						type="password" :minLength=10 :required=true :placeholder="$t('passwordPlaceholder')"
+						:invalid-feedback="$t('passwordInputIsInvalid')"
+						:feedback-placeholder="false" @keypress.enter="loginWithEmailPassword" tabindex="3" />
+				</div>
 
 				<button id="loginWithEmailPasswordButton" type="button"
-					class="btn btn-primary w-100 text-center position-relative" :disabled="loginWithEmailPasswordButtonDisabled"
+					class="btn btn-primary w-100 text-center position-relative mt-3" :disabled="loginWithEmailPasswordButtonDisabled"
 					@click="loginWithEmailPassword">
 					<i class="fa-solid fa-sign-in-alt position-absolute top-50 start-0 translate-middle ms-3"></i>
 					<span class="text-center">{{ loginButtonText }}</span>
@@ -33,74 +43,67 @@
 					{{ loginErrorMessage }}
 				</div>
 
-				<div class="horizontal-line">
-					<span>
-						{{ $t("orSignInWith") }}
-					</span>
-				</div>
+				<div v-if="emailIsValid" class="password-field-animation">
 
-				<div v-if="webAuthnAvailable" class="row mb-3">
-					<div class="col">
-						<!-- WebAuthn button - shown only if WebAuthn IS available -->
-						<button id="loginWithWebAuthnButton" type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center"
-							:disabled="loginWithWebAuthnButtonDisabled" @click="loginWithWebAuthn">
-							<i class="fa-solid fa-fingerprint"></i>
-							<span class="flex-grow-1 text-center">{{ $t("LoginWithPasskey") }}</span>
-						</button>
+					<div class="horizontal-line">
+						<span>
+							{{ $t("orSignInWith") }}
+						</span>
 					</div>
-				</div>
-				<div class="row mb-3">
-					<div class="col">
-						<!-- Signin with SMS -->
-						<button type="button"
-							class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
-							@click="showSmsLoginCard = true">
-							<i class="fa-solid fa-comment-sms"></i>
-							<span class="flex-grow-1 text-center">{{ $t("SMS") }}</span>
-						</button>
-					</div>
-					<div class="col">
-						<!-- signin via Link sent to Email -->
-						<button type="button"
-							class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
-							@click="startTelegramLogin">
-							<i class="fa-regular fa-envelope"></i>
-							<span class="flex-grow-1 text-center">{{ $t("EmailLink") }}</span>
-						</button>
-					</div>
-				</div>
 
-				<div class="row">
-					<div class="col">
-						<!-- Signin with Google -->
-						<button type="button"
-							class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
-							@click="startGoogleOneTapLogin">
-							<i class="fa-brands fa-google"></i>
-							<span class="flex-grow-1 text-center">{{ $t("Google") }}</span>
-						</button>
+					<div class="row mb-3">
+						<div class="col">
+							<!-- Signin with SMS -->
+							<button type="button"
+								class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
+								@click="showSmsLoginCard = true">
+								<i class="fa-solid fa-comment-sms"></i>
+								<span class="flex-grow-1 text-center">{{ $t("SMS") }}</span>
+							</button>
+						</div>
+						<div class="col">
+								<!-- Signin with Google -->
+							<button type="button"
+								class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
+								@click="startGoogleOneTapLogin">
+								<i class="fa-brands fa-google"></i>
+								<span class="flex-grow-1 text-center">{{ $t("Google") }}</span>
+							</button>
+						</div>
 					</div>
-					<div class="col">
-						<!-- Signin with Authy App -->
-						<button type="button"
-							class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
-							@click="startFacebookLogin">
-							<i class="fa fa-shield-halved"></i>
-							<span class="flex-grow-1 text-center">{{ $t("AuthyApp") }}</span>
-						</button>
-					</div>
-				</div>
 
+					<div class="row">
+						<div class="col">
+							<!-- signin via Link sent to Email -->
+							<button type="button"
+								class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
+								@click="startTelegramLogin">
+								<i class="fa-regular fa-envelope"></i>
+								<span class="flex-grow-1 text-center">{{ $t("EmailLink") }}</span>
+							</button>
+						</div>
+						<div class="col">
+							<!-- Signin with Authy App -->
+							<button type="button"
+								class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
+								@click="startFacebookLogin">
+								<i class="fa fa-shield-halved"></i>
+								<span class="flex-grow-1 text-center">{{ $t("AuthyApp") }}</span>
+							</button>
+						</div>
+					</div>
+
+				</div>
 
 			</div>
 		</div>
 
 		<!-- Password forgotten Link -->
-		<div class="forgot-password-link my-3">
+		<div v-if="emailIsValid" class="forgot-password-link my-3">
 			<router-link id="forgotPasswordLink" :to="{ name: 'forgotPassword' }">{{ $t('ForgotPassword') }}</router-link>
 		</div>
 
-		<!-- Login via SMS (disabled because sending SMS is expensive :-( -->
+		<!-- Login via SMS -->
 		<div v-if="showSmsLoginCard" class="card border-0 shadow-sm mb-4">
 			<div class="card-header">
 				{{ $t("LoginViaSms") }}
@@ -139,13 +142,8 @@
 		</div>
 
 		<!-- Register as a new user -->
-		<div class="d-flex justify-content-center mt-5 px-3" style="max-width: 540px; margin: 0 auto;">
-			<button id="registerButton" type="button"
-				class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
-				@click="clickRegister()">
-				<i class="fa-solid fa-user-plus me-2"></i>
-				<span class="flex-grow-1 text-center">{{ $t("Register") }}</span>
-			</button>
+		<div class="forgot-password-link my-3">
+			<router-link id="forgotPasswordLink" :to="{ name: 'welcome' }">{{ $t('Register') }}</router-link>
 		</div>
 
 		<div v-if="showDevLogin" class="d-flex flex-column px-3" style="margin-top: 8rem;">
@@ -193,6 +191,7 @@ export default {
 			de: {
 				Continue: "Ok",
 				Login: "Login",
+				LoginWithPassword: "Login mit Passwort",
 				emailPlaceholder: "E-Mail",
 				passwordPlaceholder: "Passwort",
 				emailInvalid: "Ungültige Email. Vielleicht nur vertippt?",
@@ -327,7 +326,7 @@ export default {
 		},
 		loginButtonText() {
 			if (this.emailIsValid) {	
-				return this.$t("Login")
+				return this.$t("LoginWithPassword")
 			} else {
 				return this.$t("Continue")
 			}
@@ -408,11 +407,12 @@ export default {
 		/**
 		 * WHEN user blurs the input field presses enter, 
 		 * THEN the email adress is validated against the backend.
-		 * WHEN this is just any other keypress in the email field,
+		 * ELSE if this is just any other keypress in the email field,
 		 * THEN invalidate the emailInputField
 		 */
 		emailInputKeyUp(event) {
 			if (event.key === "Enter") {
+				this.passwordInputVal = undefined
 				this.checkEmailForLogin()
 			} else {
 				this.emailIsValid = false
@@ -749,6 +749,11 @@ export default {
 </script>
 
 <style>
+#loginCard .card-body {
+	padding: 3rem 10%;  
+}
+
+
 @keyframes growAndFadeIn {
 	from {
 		opacity: 0;
