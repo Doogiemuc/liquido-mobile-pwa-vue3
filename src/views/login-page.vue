@@ -54,7 +54,7 @@
 						<!-- Signin with SMS -->
 						<button type="button"
 							class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
-							@click="startSmsLogin">
+							@click="showSmsLoginCard = true">
 							<i class="fa-solid fa-comment-sms"></i>
 							<span class="flex-grow-1 text-center">{{ $t("SMS") }}</span>
 						</button>
@@ -101,15 +101,15 @@
 		</div>
 
 		<!-- Login via SMS (disabled because sending SMS is expensive :-( -->
-		<div v-if="false" class="card border-0 shadow-sm mb-4">
+		<div v-if="showSmsLoginCard" class="card border-0 shadow-sm mb-4">
 			<div class="card-header">
 				{{ $t("LoginViaSms") }}
 			</div>
 			<div class="card-body">
 				<p>{{ $t('LoginViaSmsInfo') }}</p>
 				<liquido-input id="mobilephoneInput" v-model="mobilephone" v-model:state="mobilephoneInputState"
-					type="mobilephone" class="mb-3" :label="$t('yourMobilephone')" :placeholder="$t('mobilephonePlaceholder')"
-					:invalid-feedback="$t('mobilephoneInvalid')" />
+					type="mobilephone" class="mb-3" :label="$t('YourMobilephone')" :placeholder="$t('MobilephonePlacehoder')"
+					:invalid-feedback="$t('MobilephoneInvalid')" />
 				<div class="text-end">
 					<button id="requestTokenButton" :disabled="requestTokenButtonDisabled" class="btn btn-primary"
 						@click="requestAuthToken">
@@ -123,7 +123,7 @@
 				</div>
 
 				<liquido-input id="authTokenInput" v-model="twillioAuthToken" v-model:state="authTokenInputState" type="text"
-					placeholder="<123456>" class="mb-3" :label="$t('AuthTokenLabel')"
+					placeholder="123456" class="mb-3" :label="$t('AuthTokenLabel')"
 					:invalid-feedback="$t('authTokenInputInvalid')" :disabled="!tokenSentSuccessfully" :minLength=6 :maxLength=6
 					:required="true" :show-counter="true">
 				</liquido-input>
@@ -217,6 +217,9 @@ export default {
 				// Login via SMS
 				LoginViaSms: "SMS Login",	
 				LoginViaSmsInfo: "Ich schicke dir einen Zahlencode auf dein Handy. Mit diesem kannst du dich dann hier einloggen.",
+				YourMobilephone: "Deine Handynummer",
+				MobilephonePlacehoder: "0151 123456",
+				MobilephoneInvalid: "Keine gültige Handynummer",
 				RequestTokenButton: "Login-Token anfordern",
 				TokenSent: "SMS verschickt ...",
 				AuthTokenLabel: "Login-Token aus SMS",
@@ -305,11 +308,12 @@ export default {
 			emailErrorMessage: undefined,
 			emailCode: undefined,
 
-			// auth token (via SMS)
+			// Login via SMS
+			showSmsLoginCard: false,
 			mobilephone: "",
 			twillioAuthToken: undefined,		// twilio authToken from SMS 
-			mobilephoneInputState: null,    // synced states from liquido-inputs
-			authTokenInputState: null,      // synced states from liquido-inputs
+			mobilephoneInputState: STATE.INIT,    // synced states from liquido-inputs
+			authTokenInputState: STATE.INIT,      // synced states from liquido-inputs
 			waitUntilNextRequestSecs: 0,    // Throttling: Only allow request auth token once every few seconds
 			tokenSentSuccessfully: false,  	// token request returned success from backend. SMS should have been sent successfully
 			tokenErrorMessage: undefined,   // we show different error messages, depending on error code from backend
@@ -322,7 +326,7 @@ export default {
 			return process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
 		},
 		loginButtonText() {
-			if (this.emailIsValid) {
+			if (this.emailIsValid) {	
 				return this.$t("Login")
 			} else {
 				return this.$t("Continue")
@@ -335,7 +339,7 @@ export default {
 			return !this.webAuthnAvailable || this.webAuthnLoginInProgress || this.emailInputState !== STATE.VALID
 		},
 		requestTokenButtonDisabled() {
-			return this.mobilephoneInputState !== true || this.waitUntilNextRequestSecs > 0
+			return this.mobilephoneInputState !== STATE.VALID || this.waitUntilNextRequestSecs > 0
 		},
 		adminEmail() {
 			return config.devLogin.admin.email
