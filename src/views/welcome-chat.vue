@@ -5,16 +5,11 @@
 			<div class="card-body" v-html="$t('welcome')"></div>
 		</div>
 
-		<!-- If a valid invite code was passed, mention the teamName, right at the start -->
-		<div v-if="FLOW.InviteCodeValid" :class="{ 'hide-left': !FLOW.WhatsYourName }" class="card chat-bubble chat-left">
-			<div class="card-body" v-html="$t('hasInviteCodeForTeam', { teamName: team.teamName })">	
-			</div>
-		</div>
-
 		<!-- What's your name? -->
 		<div :class="{ 'hide-left': !FLOW.WhatsYourName }" class="card chat-bubble chat-left">
 			<div class="card-body">
-				{{ $t('whatsYourName') }}
+				<p v-if="FLOW.InviteCodeValid" v-html="$t('hasInviteCodeForTeam', { teamName: team.teamName })"></p>
+				<p>{{ $t('whatsYourName') }}</p>
 			</div>
 		</div>
 
@@ -44,8 +39,7 @@
 
 		<!-- Nice to meet you bubble -->
 		<div :class="{ 'hide-left': !FLOW.NiceToMeetYou }" class="card chat-bubble chat-left">
-			<div v-if="!FLOW.InviteCodeValid" class="card-body" v-html="$t('niceToMeetYou', { nickname: user.name })" />
-			<div v-else class="card-body" v-html="$t('nicetoMeetYouWithInviteCode', { nickname: user.name, teamName: team.teamName })" />
+			<div class="card-body" v-html="$t('niceToMeetYou', { nickname: user.name })" />
 		</div>
 
 		<!-- create or join a team bubble -->
@@ -154,12 +148,13 @@
 			</div>
 		</div>
 
-		<!--Joined team successfully -->
+		<!--Joined team successfully 
 		<div id="joinedTeamBubble" :class="{ 'collapse-max-height': !FLOW.JoinTeamSuccessfull }" class="card chat-bubble chat-left">
 			<div class="card-body">
 				<p v-html="$t('joinedTeamSuccessfully', { teamName: team.teamName })" />
 			</div>
 		</div>
+		-->
 
 		<!-- Create a new team - form -->
 		<div id="createNewTeamCard" :class="{ 'collapse-max-height': !FLOW.CreateTeamForm }" class="card chat-bubble chat-right">
@@ -243,8 +238,7 @@
 		</div>
 
 		<!-- Setup Passkey Info -->
-		<div :class="{ 'collapse-max-height': !FLOW.SetupPasskey }" class="card chat-bubble chat-left">
-			
+		<div id="setupPasskeyInfoCard" :class="{ 'collapse-max-height': !FLOW.SetupPasskey }" class="card chat-bubble chat-left">
 			<div class="card-body">
 				<h3 v-html="$t('SetupPasskeyTitle')"></h3>
 				<p v-html="$t('SetupPasskeyInfo')" />
@@ -294,8 +288,8 @@
 			</div>
 		</div>
 
-		<!-- Team QR code -->
-		<div id="teamQrCode" :class="{ 'collapse-max-height': !FLOW.RegistrationFinished }" class="card chat-bubble chat-left">
+		<!-- CreatTeam Successfull and registration finished: Admin can invite members via QR -->
+		<div id="teamQrCode" :class="{ 'collapse-max-height': !(FLOW.RegistrationFinished && FLOW.CreateTeamSuccessfull) }" class="card chat-bubble chat-left">
 			<h3 class="card-header">
 				{{ $t("InviteFriendsTitle") }}
 			</h3>
@@ -324,8 +318,8 @@
 			</div>
 		</div>
 
-		<!-- Create first poll -->
-		<div :class="{ 'collapse-max-height': !FLOW.RegistrationFinished }" class="card chat-bubble chat-left">
+		<!-- Admin can create a first poll -->
+		<div :class="{ 'collapse-max-height': !(FLOW.RegistrationFinished && FLOW.CreateTeamSuccessfull) }" class="card chat-bubble chat-left">
 			<div class="card-body">
 				<p v-html="$t('pollInfo')" />
 				<button
@@ -340,6 +334,24 @@
 				</button>
 			</div>
 		</div>
+
+		<!-- join team successfull: GoTo Team-->
+		<div id="joinTeamSuccessfullBubble" :class="{ 'collapse-max-height': !(FLOW.RegistrationFinished && FLOW.JoinTeamSuccessfull) }" class="card chat-bubble chat-left">
+			<div class="card-body">
+				<p v-html="$t('joinedTeamSuccessfully', { teamName: team.teamName })"></p>
+				<button
+					id="gotoTeamButton"
+					class="btn btn-primary w-100"
+					type="button"
+					@click="gotoTeam"
+				>
+					<i class="fas fa-users" />
+					{{ $t("gotoTeam") }}
+					<i class="fas fa-angle-double-right" />
+				</button>
+			</div>
+		</div>
+
 
 	</div> <!-- end of container -->
 
@@ -389,13 +401,11 @@ export default {
 					"<p>Der App für sichere, faire und <em>liquide</em> Abstimmungen.</p>"+
 					"<p>Hier stimmst du nicht nur für einen <em>einzelnen</em> Vorschlag, sondern jeder in eurem Team sortiert <em>alle</em> Vorschläge nach der eigenen Präferenz. " + 
 					"Ein cleverer Algorithmus berechnet daraus dann den Vorschlag mit der größten Zustimmung.</p>",
+				hasInviteCodeForTeam: "Hey, du wurdest in das Team <b>{teamName}</b> eingeladen.",
 				whatsYourName: "Darf ich fragen wie du heißt?",
-				hasInviteCodeForTeam: "Ich sehe du hast eine Einladung in das Team <b>{teamName}</b>.",
 				yourNickname: "Dein Spitzname",
 				userNameInvalid: "Bitte mindestens " + config.usernameMinLength + " Zeichen!",
-				niceToMeetYou: "Hallo <b>{nickname}</b>, schön dich kennen zu lernen!",
-
-				nicetoMeetYouWithInviteCode: "Hallo <b>{nickname}</b>, schön dass du im Team <b>{teamName}</b> dabei bist. Ich benötige jetzt noch deine E-Mail und ein Passwort.",
+				niceToMeetYou: "Hallo <b>{nickname}</b>, freut mich, dich kennen zu lernen! Ich benötige jetzt bitte noch deine E-Mail und ein Passwort.",
 
 				// Create or join team
 				createOrJoin: "Möchtest du ein neues Team gründen? Oder hast du einen Einladungscode bekommen und möchtest einem bestehenden Team beitreten?",
@@ -422,7 +432,7 @@ export default {
 				emailInvalid: "E-Mail Adresse ungültig",
 				passwordInvalid: "Bitte mindestens " + config.minPasswordLength + " Zeichen!",
 
-				joinedTeamSuccessfully: "Willkommen im Team <b>{teamName}</b>! Viel Spaß beim Abstimmen und Wählen.",
+				joinedTeamSuccessfully: "Willkommen im Team <b>{teamName}</b>!",  // last message with GoToTeam button
 				
 				// QR code bubble
 				InviteFriendsTitle: "Freunde einladen",
@@ -430,7 +440,7 @@ export default {
 				shareLink: "{teamName} ({inviteCode})",
 				scanQrCode: "Oder lass sie einfach diesen QR code scannen:",
 				teamInfo: "Du findest diesen QR Code später auch auf deiner Team Seite wieder.",
-				gotoTeam: "Zum Team",
+				gotoTeam: "Zu deinem Team",
 
 				// Setup Passkey bubble
 				PassKey: "Passkey",
@@ -445,10 +455,11 @@ export default {
 				TryAgain: "Noch mal versuchen",
 				OkLater: "Ok, später",
 
-				// Create first poll bubble
+				// Admin: Create first poll bubble
 				pollInfo: "Möchtest du jetzt gleich eine erste <i class='fas fa-poll'></i> Abstimung für dein Team erstellen?",
 				createPoll: "Abstimmung anlegen",
 
+				// Error messages
 				teamWithSameNameExists: "Ein Team mit diesem Namen existiert bereits. Bitte wählen einen anderen Namen für dein Team. Oder kann es sein, dass du dich einloggen möchtest?",
 				cannotCreateNewTeam: "Es tut uns sehr leid, das neue Team konnt nicht angelegt werden. Bitte versuche es später noch einmal.",
 				cannotJoinTeam: "Du kannst diesem Team nicht beitreten.",
@@ -508,19 +519,19 @@ export default {
 				// Variant A: join an existing team
 				JoinTeamForm: false,								
 				JoinTeamClicked: false,
-				JoinTeamSuccessfull: false,
+				JoinTeamSuccessfull: false,					// user successfully joined an existing team => continue with setup passkey
 
 				// Variant B: create a new team
 				CreateTeamForm: false,							// show the create new team form
 				CreateTeamClicked: false,						// semaphor to prevent double clicking
-				CreateTeamSuccessfull: false,				// used to disable several inputs & controls in "older" chat messages
+				CreateTeamSuccessfull: false,				// user successfully created a new team => continue with setup passkey
 
 				// then continue in both cases
 				SetupPasskey: false,
 				SetupPasskeyClicked: false,
 				SetupPasskeySuccessfull: false,
 
-				RegistrationFinished: false
+				RegistrationFinished: false,				// used to disable several inputs & controls in "older" chat messages 
 			},			
 				
 		}
@@ -736,9 +747,8 @@ export default {
 
 		/**
 		 * When creating a new team was successfull, then
-		 * Create a QR code for inviting firends to this team,
-		 * set a default passkey label and
-		 * show the next bubbles for setting up this passkey
+		 * Create a QR code for inviting friends to this team,
+		 * and then prepare setting up a passkey
 		 */
 		newTeamCreatedSuccessfully() {
 			let QRcodeOpts = { scale: 10 }
@@ -753,9 +763,8 @@ export default {
 			this.FLOW.CreateTeamSuccessfull = true
 			this.$nextTick(() => {
 				this.$root.scrollElemToTop(document.getElementById("newTeamCreatedBubble"))
+				this.prepareSetupPasskey()
 			})
-
-			this.prepareSetupPasskey()
 		},
 
 	
@@ -778,6 +787,7 @@ export default {
 					this.team = team
 					this.$nextTick(() => {
 						this.$root.scrollElemToTop(document.getElementById("joinedTeamBubble"))
+						this.prepareSetupPasskey()
 					})
 				})
 				.catch(err => {
@@ -806,6 +816,9 @@ export default {
 				this.passkeyLabel = this.user.name + "-" + this.$t('Passkey')
 				window.setTimeout(() => {
 					this.FLOW.SetupPasskey = true
+					this.$nextTick(() => {
+						this.$root.scrollElemToTop(document.getElementById("setupPasskeyInfoCard"))			
+					})
 				}, this.chatDelayMs)
 			} else {
 				this.FLOW.PassKeyNotSupported = true
@@ -850,7 +863,7 @@ export default {
 			this.FLOW.SetupPasskeySuccessfull = false
 			this.FLOW.RegistrationFinished = true
 			this.$nextTick(() => {
-				this.$root.scrollElemToTop(document.getElementById("teamQrCode"))
+				this.$root.scrollElemToTop(document.getElementById("setupPasskeyCard"))
 			})
 		},
 
