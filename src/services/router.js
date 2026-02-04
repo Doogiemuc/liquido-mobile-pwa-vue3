@@ -56,10 +56,26 @@ const routes = [
 			inviteCodeQueryParam: route.query.inviteCode
 		}),
 		meta: {
-			public: true   // only welcome and login are public
+			public: true
 		}
 	},
-	//TODO: /joinTeam?inviteCode= ...  seperate this from /welcome !
+	//TODO: currently we are handling join team through welcome chat   /joinTeam?inviteCode= ...  seperate this from /welcome !
+	/*
+	{
+		path: "/joinTeam",
+		name: "joinTeam",
+		component: joinTeam,
+		props: route => ({
+			inviteCodeQueryParam: route.query.inviteCode
+		}),
+		meta: {
+			public: true
+		}
+	},
+	*/
+
+	// ========= authenticated pages ============
+
 	{
 		path: "/team",
 		name: "teamHome",

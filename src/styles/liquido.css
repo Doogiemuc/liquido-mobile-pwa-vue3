@@ -12,7 +12,7 @@
 :root {
 	
   --app-max-width: 1000px;
-	--app-background: #e3e7f0;
+	--app-background: #f3f4f6;  /* abit darker #e3e7f0; */
 	
   --header-height: 3rem;
   --header-bg: #429cf3;
@@ -23,7 +23,7 @@
   
   --liquido-text-color: #333333;
 
-  --chat-left-bg: #aacfff;
+  --chat-left-bg: #dbeafe; /* light blue by stich google,   that was a darker one #aacfff; */
   --chat-right-bg: #fff;
   --liquido-input-bg: #afc2fa;
 
@@ -105,7 +105,7 @@
   margin: 0;
   background-color: var(--app-background);
 	padding-top: var(--header-height);  /* padding so that page content can bee seen under liquido-header */
-  padding-bottom: 200px;
+  padding-bottom: 10px;
   padding-left: 10px;
   padding-right: 10px;
 }

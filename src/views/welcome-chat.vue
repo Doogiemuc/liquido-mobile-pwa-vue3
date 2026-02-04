@@ -1,349 +1,348 @@
 <template>
-	<div>
-		<div id="welcome-chat" class="mt-3">
-			<!-- Welcome -->
-			<div id="welcomeBubble" :class="{ 'hide-left': !FLOW.Welcome }" class="card chat-bubble chat-left">
-				<div class="card-body" v-html="$t('welcome')" />
-			</div>
+	<div id="welcome-chat">
+		<!-- Welcome -->
+		<div id="welcomeBubble" :class="{ 'hide-left': !FLOW.Welcome }" class="card chat-bubble chat-left mt-3">
+			<div class="card-body" v-html="$t('welcome')"></div>
+		</div>
 
-			<!-- What's your name  -->
-			<div :class="{ 'hide-left': !FLOW.WhatsYourName }" class="card chat-bubble chat-left">
-				<div class="card-body">
-					{{ $t('whatsYourName') }}
-				</div>
+		<!-- If a valid invite code was passed, mention the teamName, right at the start -->
+		<div v-if="FLOW.InviteCodeValid" :class="{ 'hide-left': !FLOW.WhatsYourName }" class="card chat-bubble chat-left">
+			<div class="card-body" v-html="$t('hasInviteCodeForTeam', { teamName: team.teamName })">	
 			</div>
+		</div>
 
-			<!-- Nickname input -->
-			<div :class="{ 'hide-right': !FLOW.NicknameInput }" class="card chat-bubble chat-right">
-				<div class="card-body">
-					<liquido-input
-						id="userNameInput"
-						ref="userNameInput"
-						v-model="user.name"
-						class="mb-2"
-						:label="$t('yourNickname')"
-						:valid-func="isUsernameValid"
-						:maxlength="100"
-						:invalid-feedback="$t('userNameInvalid')"
-						:disabled="FLOW.NiceToMeetYou"
-						@keyup.enter="userNameSubmit()"
-						@blur="userNameSubmit()"
-					/>
-				</div>
+		<!-- What's your name? -->
+		<div :class="{ 'hide-left': !FLOW.WhatsYourName }" class="card chat-bubble chat-left">
+			<div class="card-body">
+				{{ $t('whatsYourName') }}
 			</div>
+		</div>
 
-			<!-- Login button -->
-			<div v-if="showLoginButton" class="login-link">
-				<button class="btn btn-primary btn-sm" @click="goToLogin">{{ $t('Login') }}</button>
+		<!-- Nickname input -->
+		<div id="usernameCard" :class="{ 'hide-right': !FLOW.NicknameInput }" class="card chat-bubble chat-right">
+			<div class="card-body">
+				<liquido-input
+					id="userNameInput"
+					ref="userNameInput"
+					v-model="user.name"
+					class="mb-2"
+					:label="$t('yourNickname')"
+					:valid-func="isUsernameValid"
+					:maxlength="100"
+					:invalid-feedback="$t('userNameInvalid')"
+					:disabled="FLOW.NiceToMeetYou"
+					@keyup.enter="userNameSubmit()"
+					@blur="userNameSubmit()"
+				/>
 			</div>
+		</div>
 
-			<!-- Nice to meet you bubble -->
-			<div :class="{ 'hide-left': !FLOW.NiceToMeetYou }" class="card chat-bubble chat-left">
-				<div class="card-body" v-html="$t('niceToMeetYou', { nickname: user.name })" />
-			</div>
+		<!-- Login button -->
+		<div v-if="showLoginButton" class="login-link">
+			<button class="btn btn-primary btn-sm" @click="goToLogin">{{ $t('Login') }}</button>
+		</div>
+
+		<!-- Nice to meet you bubble -->
+		<div :class="{ 'hide-left': !FLOW.NiceToMeetYou }" class="card chat-bubble chat-left">
+			<div v-if="!FLOW.InviteCodeValid" class="card-body" v-html="$t('niceToMeetYou', { nickname: user.name })" />
+			<div v-else class="card-body" v-html="$t('nicetoMeetYouWithInviteCode', { nickname: user.name, teamName: team.teamName })" />
+		</div>
+
+		<!-- create or join a team bubble -->
+		<div id="createOrJoinBubble" :class="{ 'hide-left': !FLOW.CreateOrJoinTeam, 'collapse-max-height': FLOW.InviteCodeValid }" class="card chat-bubble chat-left">
+			<div class="card-body" v-html="$t('createOrJoin')" />
+		</div>
+
+		<!-- create or join a team buttons -->
+		<div id="createOrJoinButtons" :class="{ 'hide-left': !FLOW.CreateOrJoinTeam }" class="mb-3 transition-all">
+			<button
+				id="createNewTeamButton"
+				:class="{
+					'btn-primary': true,
+					'moveToCenterFromLeft btn-light': FLOW.CreateTeamForm,
+					opacity0: FLOW.JoinTeamForm,
+				}"
+				class="btn"
+				@click="chooseCreateNewTeam()"
+			>
+				{{ $t("createNewTeamButton") }}
+			</button>
+
+			<button
+				id="joinTeamButton"
+				:class="{
+					'btn-primary': true,
+					'moveToCenterFromRight btn-light': FLOW.JoinTeamForm,
+					opacity0: FLOW.CreateTeamForm,
+				}"
+				class="btn"
+				@click="chooseJoinTeam()"
+			>
+				{{ $t("joinTeamButton") }}
+			</button>
 			
-			<!-- Invite code passed bubble (currently v-if="false") -->
-			<div v-if="false" :class="{ 'hide-left': !FLOW.InviteCodePassed }" class="card chat-bubble chat-left">
-				<div class="card-body" v-html="$t('inviteCodePassed')" />
-			</div>
+		</div>
 
-			<!-- create or join a team bubble -->
-			<div id="createOrJoinBubble" :class="{ 'hide-left': !FLOW.CreateOrJoinTeam }" class="card chat-bubble chat-left">
-				<div class="card-body" v-html="$t('createOrJoin')" />
-			</div>
+		<!-- Join a team - form -->
+		<div :class="{ 'collapse-max-height': !FLOW.JoinTeamForm }" class="card chat-bubble chat-right">
+			<div class="card-header">
+				{{ $t("JoinTeam") }}
+			</div>	
+			<div class="card-body">
+				<form id="joinTeamForm">
+					<liquido-input
+						id="inviteCodeInput"
+						ref="inviteCodeInput"
+						v-model="inviteCodeInputField"
+						class="mb-3"
+						:label="$t('inviteCode')"
+						placeholder="$t('inviteCodePlaceholder')"
+						:valid-func="isInviteCodeSyntaxValid"
+						:maxlength="100"
+						:invalid-feedback="$t('inviteCodeInvalid')"
+						:disabled="FLOW.JoinTeamSuccessfull"
+						tabindex="1"
+					/>
 
-			<!-- create or join a team buttons -->
-			<div id="createOrJoinButtons" :class="{ 'hide-left': !FLOW.CreateOrJoinTeam }" class="mb-3 transition-all">
+					<liquido-input
+						id="userEmailInput"
+						ref="userEmailInput"
+						v-model="user.email"
+						class="mb-3"
+						:label="$t('YourEMail')"
+						:valid-func="isEmailValid"
+						:maxlength="200"
+						:invalid-feedback="$t('emailInvalid')"
+						:disabled="FLOW.JoinTeamSuccessfull"
+						tabindex="3"
+					/>
+
+					<liquido-input
+						id="userPasswordInput"
+						ref="userPasswordInput"
+						v-model="plainPassword"
+						type="password"
+						class="mb-3"
+						:label="$t('Password')"
+						:valid-func="isPasswordValid"
+						:maxlength="200"
+						:invalid-feedback="$t('passwordInvalid')"
+						:disabled="FLOW.JoinTeamSuccessfull"
+						tabindex="4"
+						@keyup.enter="joinTeam()"
+					/>
+
+					<div class="d-flex justify-content-between align-items-center">
+						<a href="#" tabindex="4" 
+							class="cancel-link"
+							:class="{ 'invisible' : FLOW.JoinTeamSuccessfull }"
+							@click="cancelCreateOrJoinTeam()">
+							{{ $t("Cancel") }}
+						</a>
+						<button
+							id="joinTeamOkButton"
+							:disabled="joinTeamOkButtonDisabled"
+							class="btn btn-primary"
+							tabindex="4"
+							type="button"
+							@click="joinTeam()"
+						>
+							{{ $t("Ok") }}
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<!--Joined team successfully -->
+		<div id="joinedTeamBubble" :class="{ 'collapse-max-height': !FLOW.JoinTeamSuccessfull }" class="card chat-bubble chat-left">
+			<div class="card-body">
+				<p v-html="$t('joinedTeamSuccessfully', { teamName: team.teamName })" />
+			</div>
+		</div>
+
+		<!-- Create a new team - form -->
+		<div id="createNewTeamCard" :class="{ 'collapse-max-height': !FLOW.CreateTeamForm }" class="card chat-bubble chat-right">
+			<div class="card-header">
+				{{ $t("CreateNewTeam") }}
+			</div>	
+			<div class="card-body">
+				<form>
+					<liquido-input
+						id="teamNameInput"
+						ref="teamNameInput"
+						v-model="team.teamName"
+						class="mb-3"
+						:label="$t('teamName')"
+						:valid-func="isTeamNameValid"
+						:maxlength="100"
+						:invalid-feedback="$t('teamNameInvalid')"
+						:disabled="FLOW.CreateTeamSuccessfull"
+						tabindex="1"
+					/>
+
+					<liquido-input
+						id="adminEmailInput"
+						ref="adminEmailInput"
+						v-model="user.email"
+						class="mb-3"
+						:label="$t('YourEMail')"
+						:valid-func="isAdminEmailValid"
+						:maxlength="200"
+						:invalid-feedback="$t('emailInvalid')"
+						:disabled="FLOW.CreateTeamSuccessfull"
+						tabindex="2"
+					/>
+
+					<liquido-input
+						id="adminPasswordInput"
+						ref="adminPasswordInput"
+						type="password"
+						v-model="plainPassword"
+						class="mb-3"
+						:label="$t('Password')"
+						:placeholder=undefined
+						:valid-func="isPasswordValid"
+						:maxlength="200"
+						:invalid-feedback="$t('passwordInvalid')"
+						:disabled="FLOW.CreateTeamSuccessfull"
+						tabindex="3"
+						@keyup.enter="createNewTeam()"
+					/>
+
+
+					<small class="text-secondary">{{ $t("youWillBecomeAdmin") }}</small>
+
+					<div class="d-flex justify-content-between align-items-center mt-3">
+						<a href="#" tabindex="4" 
+							class="cancel-link" 
+							:class="{ 'invisible' : FLOW.CreateTeamSuccessfull }"
+							@click="cancelCreateOrJoinTeam()">
+							{{ $t("Cancel") }}
+						</a>
+						<button
+							id="createNewTeamOkButton"
+							:disabled="createNewTeamOkButtonDisabled"
+							class="btn btn-primary"
+							tabindex="3"
+							type="button"
+							@click="createNewTeam()"
+						>
+							{{ $t("Ok") }}
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<!-- New team created successfully -->
+		<div id="newTeamCreatedBubble" :class="{ 'collapse-max-height': !FLOW.CreateTeamSuccessfull }" class="card chat-bubble chat-left">
+			<div class="card-body">
+				<p>{{ $t("TeamCreatedSuccessfully") }}</p>
+			</div>
+		</div>
+
+		<!-- Setup Passkey Info -->
+		<div :class="{ 'collapse-max-height': !FLOW.SetupPasskey }" class="card chat-bubble chat-left">
+			
+			<div class="card-body">
+				<h3 v-html="$t('SetupPasskeyTitle')"></h3>
+				<p v-html="$t('SetupPasskeyInfo')" />
+			</div>
+		</div>
+
+		<!-- Info popup when passkey registration did not work yet: Try again or do it later. -->
+		<popup-modal
+			id="passkeyModal"
+			ref="passkeyModal"
+			type="info"
+			:title="$t('SetupPasskeyInfoTitle')"
+			:message="$t('SetupPasskeyInfoMessage')"
+			:primary-button-text="$t('TryAgain')"
+			:secondary-button-text="$t('OkLater')"
+			@clickPrimary="passkeyTryAgain"
+			@clickSecondary="passkeyRegisterLater"
+		>
+		</popup-modal>
+
+		<div id="setupPasskeyCard" :class="{ 'collapse-max-height': !FLOW.SetupPasskey }" class="card chat-bubble chat-right">
+			<div class="card-body">
+				<liquido-input
+					id="passkeyInput"
+					ref="passkeyInput"
+					v-model="passkeyLabel"
+					class="mb-3"
+					:label="$t('PasskeyLabel')"
+					:minlength="3"
+					:maxlength="200"
+					:invalid-feedback="$t('PasskeyLabelInvalid')"
+					:disabled="FLOW.RegistrationFinished"
+				/>
 				<button
-					id="createNewTeamButton"
-					:class="{
-						'btn-primary': true,
-						'moveToCenterFromLeft btn-light': FLOW.CreateTeamForm,
-						opacity0: FLOW.JoinTeamForm,
-					}"
-					class="btn"
-					@click="chooseCreateNewTeam()"
+					id="setupPasskeyButton"
+					class="btn btn-primary d-flex align-items-center float-end w-100"
+					type="button"
+					:disabled="FLOW.RegistrationFinished"
+					@click="setupPasskey()"
 				>
-					{{ $t("createNewTeamButton") }}
+					<i class="fas fa-fingerprint" />
+					<span class="flex-grow-1 text-center">{{ $t("SetupPasskeyButton") }}</span>
+					<span v-if="FLOW.SetupPasskeySuccessfull" style="color: #0E0;">
+						<i class="fa-solid fa-check"></i>
+					</span>
 				</button>
+			</div>
+		</div>
 
-				<button
-					id="joinTeamButton"
-					:class="{
-						'btn-primary': true,
-						'moveToCenterFromRight btn-light': FLOW.JoinTeamForm,
-						opacity0: FLOW.CreateTeamForm,
-					}"
-					class="btn"
-					@click="chooseJoinTeam()"
-				>
-					{{ $t("joinTeamButton") }}
+		<!-- Team QR code -->
+		<div id="teamQrCode" :class="{ 'collapse-max-height': !FLOW.RegistrationFinished }" class="card chat-bubble chat-left">
+			<h3 class="card-header">
+				{{ $t("InviteFriendsTitle") }}
+			</h3>
+			<div class="card-body">
+				<p>{{ $t("ShareLinkInfo") }}</p>
+				<button class="btn btn-primary position-relative w-100" @click="shareLink">
+					<i class="fas fa-external-link-alt position-absolute top-50 start-0 translate-middle ms-3" />
+					{{ $t("shareLink", {teamName: team.teamName, inviteCode: team.inviteCode}) }}
 				</button>
 				
-			</div>
-
-			<!-- Join a team - form -->
-			<div :class="{ 'collapse-max-height': !FLOW.JoinTeamForm }" class="card chat-bubble chat-right">
-				<div class="card-header">
-					{{ $t("JoinTeam") }}
-				</div>	
-				<div class="card-body">
-					<form id="joinTeamForm">
-						<liquido-input
-							id="inviteCodeInput"
-							ref="inviteCodeInput"
-							v-model="inviteCodeInputField"
-							class="mb-3"
-							:label="$t('inviteCode')"
-							placeholder="ABC123"
-							:valid-func="isInviteCodeValid"
-							:maxlength="100"
-							:invalid-feedback="$t('inviteCodeInvalid')"
-							:disabled="FLOW.JoinTeamSuccessfull"
-							tabindex="1"
-						/>
-
-						<liquido-input
-							id="userEmailInput"
-							ref="userEmailInput"
-							v-model="user.email"
-							class="mb-3"
-							:label="$t('YourEMail')"
-							:valid-func="isEmailValid"
-							:maxlength="200"
-							:invalid-feedback="$t('emailInvalid')"
-							:disabled="FLOW.JoinTeamSuccessfull"
-							tabindex="3"
-						/>
-
-						<liquido-input
-							id="userPasswordInput"
-							ref="userPasswordInput"
-							v-model="plainPassword"
-							type="password"
-							class="mb-3"
-							:label="$t('Password')"
-							:valid-func="isPasswordValid"
-							:maxlength="200"
-							:invalid-feedback="$t('passwordInvalid')"
-							:disabled="FLOW.JoinTeamSuccessfull"
-							tabindex="4"
-							@keyup.enter="joinTeam()"
-						/>
-
-						<div class="d-flex justify-content-between align-items-center">
-							<a href="#" tabindex="4" 
-								class="cancel-link"
-								:class="{ 'invisible' : FLOW.JoinTeamSuccessfull }"
-								@click="cancelCreateOrJoinTeam()">
-								{{ $t("Cancel") }}
-							</a>
-							<button
-								id="joinTeamOkButton"
-								:disabled="joinTeamOkButtonDisabled"
-								class="btn btn-primary"
-								tabindex="4"
-								type="button"
-								@click="joinTeam()"
-							>
-								{{ $t("Ok") }}
-							</button>
-						</div>
-					</form>
+				<p class="mt-3">{{ $t("scanQrCode") }}</p>
+				<div class="text-center mb-3">
+					<img id="qrCodeImg" src="" class="qr-code">
 				</div>
+				<p v-html="$t('teamInfo')" />
+				<button
+					id="gotoTeamButton"
+					class="btn btn-primary float-end mb-3"
+					type="button"
+					@click="gotoTeam"
+				>
+					<i class="fas fa-users" />
+					{{ $t("gotoTeam") }}
+					<i class="fas fa-angle-double-right" />
+				</button>
 			</div>
+		</div>
 
-			<!--Joined team successfully -->
-			<div id="joinedTeamBubble" :class="{ 'collapse-max-height': !FLOW.JoinTeamSuccessfull }" class="card chat-bubble chat-left">
-				<div class="card-body">
-					<p v-html="$t('joinedTeamSuccessfully', { teamName: team.teamName })" />
-				</div>
+		<!-- Create first poll -->
+		<div :class="{ 'collapse-max-height': !FLOW.RegistrationFinished }" class="card chat-bubble chat-left">
+			<div class="card-body">
+				<p v-html="$t('pollInfo')" />
+				<button
+					id="gotoCreatePollButton"
+					class="btn btn-primary float-end mb-3"
+					type="button"
+					@click="gotoCreatePoll()"
+				>
+					<i class="fas fa-user-shield" />
+					{{ $t("createPoll") }}
+					<i class="fas fa-angle-double-right" />
+				</button>
 			</div>
+		</div>
 
-			<!-- Create a new team - form -->
-			<div id="createNewTeamCard" :class="{ 'collapse-max-height': !FLOW.CreateTeamForm }" class="card chat-bubble chat-right">
-				<div class="card-header">
-					{{ $t("CreateNewTeam") }}
-				</div>	
-				<div class="card-body">
-					<form>
-						<liquido-input
-							id="teamNameInput"
-							ref="teamNameInput"
-							v-model="team.teamName"
-							class="mb-3"
-							:label="$t('teamName')"
-							:valid-func="isTeamNameValid"
-							:maxlength="100"
-							:invalid-feedback="$t('teamNameInvalid')"
-							:disabled="FLOW.CreateTeamSuccessfull"
-							tabindex="1"
-						/>
+	</div> <!-- end of container -->
 
-						<liquido-input
-							id="adminEmailInput"
-							ref="adminEmailInput"
-							v-model="user.email"
-							class="mb-3"
-							:label="$t('YourEMail')"
-							:valid-func="isAdminEmailValid"
-							:maxlength="200"
-							:invalid-feedback="$t('emailInvalid')"
-							:disabled="FLOW.CreateTeamSuccessfull"
-							tabindex="2"
-						/>
-
-						<liquido-input
-							id="adminPasswordInput"
-							ref="adminPasswordInput"
-							type="password"
-							v-model="plainPassword"
-							class="mb-3"
-							:label="$t('Password')"
-							:placeholder=undefined
-							:valid-func="isPasswordValid"
-							:maxlength="200"
-							:invalid-feedback="$t('passwordInvalid')"
-							:disabled="FLOW.CreateTeamSuccessfull"
-							tabindex="3"
-							@keyup.enter="createNewTeam()"
-						/>
-
-
-						<small class="text-secondary">{{ $t("youWillBecomeAdmin") }}</small>
-
-						<div class="d-flex justify-content-between align-items-center mt-3">
-							<a href="#" tabindex="4" 
-								class="cancel-link" 
-								:class="{ 'invisible' : FLOW.CreateTeamSuccessfull }"
-								@click="cancelCreateOrJoinTeam()">
-								{{ $t("Cancel") }}
-							</a>
-							<button
-								id="createNewTeamOkButton"
-								:disabled="createNewTeamOkButtonDisabled"
-								class="btn btn-primary"
-								tabindex="3"
-								type="button"
-								@click="createNewTeam()"
-							>
-								{{ $t("Ok") }}
-							</button>
-						</div>
-					</form>
-				</div>
-			</div>
-
-			<!-- New team created successfully -->
-			<div id="newTeamCreatedBubble" :class="{ 'collapse-max-height': !FLOW.CreateTeamSuccessfull }" class="card chat-bubble chat-left">
-				<div class="card-body">
-					<p>{{ $t("TeamCreatedSuccessfully") }}</p>
-				</div>
-			</div>
-
-			<!-- Setup Passkey Info -->
-			<div :class="{ 'collapse-max-height': !FLOW.SetupPasskey }" class="card chat-bubble chat-left">
-				<div class="card-header">
-					<h3 class="mb-0" v-html="$t('SetupPasskeyTitle')"></h3>
-				</div>
-				<div class="card-body">
-					<p v-html="$t('SetupPasskeyInfo')" />
-				</div>
-			</div>
-
-			<!-- Info popup when passkey registration did not work yet: Try again or do it later. -->
-			<popup-modal
-				id="passkeyModal"
-				ref="passkeyModal"
-				type="info"
-				:title="$t('SetupPasskeyInfoTitle')"
-				:message="$t('SetupPasskeyInfoMessage')"
-				:primary-button-text="$t('TryAgain')"
-				:secondary-button-text="$t('OkLater')"
-				@clickPrimary="passkeyTryAgain"
-				@clickSecondary="passkeyRegisterLater"
-			>
-			</popup-modal>
-
-			<div id="setupPasskeyCard" :class="{ 'collapse-max-height': !FLOW.SetupPasskey }" class="card chat-bubble chat-right">
-				<div class="card-body">
-					<liquido-input
-						id="passkeyInput"
-						ref="passkeyInput"
-						v-model="passkeyLabel"
-						class="mb-3"
-						:label="$t('PasskeyLabel')"
-						:minlength="3"
-						:maxlength="200"
-						:invalid-feedback="$t('PasskeyLabelInvalid')"
-						:disabled="FLOW.RegistrationFinished"
-					/>
-					<button
-						id="setupPasskeyButton"
-						class="btn btn-primary d-flex align-items-center float-end w-100"
-						type="button"
-						:disabled="FLOW.RegistrationFinished"
-						@click="setupPasskey()"
-					>
-						<i class="fas fa-fingerprint" />
-						<span class="flex-grow-1 text-center">{{ $t("SetupPasskeyButton") }}</span>
-						<span v-if="FLOW.SetupPasskeySuccessfull" style="color: #0E0;">
-							<i class="fa-solid fa-check"></i>
-						</span>
-					</button>
-				</div>
-			</div>
-
-			<!-- Team QR code -->
-			<div id="teamQrCode" :class="{ 'collapse-max-height': !FLOW.RegistrationFinished }" class="card chat-bubble chat-left">
-				<h3 class="card-header">
-					{{ $t("InviteFriendsTitle") }}
-				</h3>
-				<div class="card-body">
-					<p>{{ $t("ShareLinkInfo") }}</p>
-					<p class="text-center mb-2">
-						<a id="inviteLink" :href="inviteLinkURL" :data-invitecode="team.inviteCode" @click.prevent="shareLink()">
-							{{ $t("shareLink", {teamName: team.teamName, inviteCode: team.inviteCode}) }}
-							<i class="fas fa-external-link-alt" />
-						</a>
-					</p>
-					<p>{{ $t("scanQrCode") }}</p>
-					<div class="text-center mb-3">
-						<img id="qrCodeImg" src="" class="qr-code">
-					</div>
-					<p v-html="$t('teamInfo')" />
-					<button
-						id="gotoTeamButton"
-						class="btn btn-primary float-end mb-3"
-						type="button"
-						@click="gotoTeam"
-					>
-						<i class="fas fa-users" />
-						{{ $t("gotoTeam") }}
-						<i class="fas fa-angle-double-right" />
-					</button>
-				</div>
-			</div>
-
-			<!-- Create first poll -->
-			<div :class="{ 'collapse-max-height': !FLOW.RegistrationFinished }" class="card chat-bubble chat-left">
-				<div class="card-body">
-					<p v-html="$t('pollInfo')" />
-					<button
-						id="gotoCreatePollButton"
-						class="btn btn-primary float-end mb-3"
-						type="button"
-						@click="gotoCreatePoll()"
-					>
-						<i class="fas fa-user-shield" />
-						{{ $t("createPoll") }}
-						<i class="fas fa-angle-double-right" />
-					</button>
-				</div>
-			</div>
-
-		</div> <!-- end of container -->
-	</div>
 </template>
 
 <script>
@@ -386,13 +385,19 @@ export default {
 			},
 			de: {
 				welcome:
-					"<p>Willkommen bei <span class='liquido'></span>, der freien, sicheren und fairen App für digitale Abstimmungen.</p>"+
+					"<p>Willkommen bei <span class='liquido'></span>!</p>"+
+					"<p>Der App für sichere, faire und <em>liquide</em> Abstimmungen.</p>"+
 					"<p>Hier stimmst du nicht nur für einen <em>einzelnen</em> Vorschlag, sondern jeder in eurem Team sortiert <em>alle</em> Vorschläge nach der eigenen Präferenz. " + 
-					"Ein cleverer Algorithmus berechnet daraus dann den Vorschlag (bzw. Kandidaten) mit der größten Zustimmung.</p>",
+					"Ein cleverer Algorithmus berechnet daraus dann den Vorschlag mit der größten Zustimmung.</p>",
 				whatsYourName: "Darf ich fragen wie du heißt?",
+				hasInviteCodeForTeam: "Ich sehe du hast eine Einladung in das Team <b>{teamName}</b>.",
 				yourNickname: "Dein Spitzname",
 				userNameInvalid: "Bitte mindestens " + config.usernameMinLength + " Zeichen!",
 				niceToMeetYou: "Hallo <b>{nickname}</b>, schön dich kennen zu lernen!",
+
+				nicetoMeetYouWithInviteCode: "Hallo <b>{nickname}</b>, schön dass du im Team <b>{teamName}</b> dabei bist. Ich benötige jetzt noch deine E-Mail und ein Passwort.",
+
+				// Create or join team
 				createOrJoin: "Möchtest du ein neues Team gründen? Oder hast du einen Einladungscode bekommen und möchtest einem bestehenden Team beitreten?",
 
 				// Create a new team
@@ -407,6 +412,7 @@ export default {
 				JoinTeam: "Einem Team beitreten",
 				joinTeamButton: "Team beitreten",
 				inviteCode: "Einladungscode",
+				inviteCodePlaceholder: "AB12CD34",
 				inviteCodeInvalid: "Einladungscode muss genau 6 Zeichen lang sein.",
 				yourMobilephone: "Deine Handynummer",
 				mobilephonePlaceholder: "+49 555 111111",
@@ -420,10 +426,10 @@ export default {
 				
 				// QR code bubble
 				InviteFriendsTitle: "Freunde einladen",
-				ShareLinkInfo: "Teile diesen Link",
-				shareLink: "LIQUIDO Einladung: {teamName} ({inviteCode})",
+				ShareLinkInfo: "Teile diesen Link mit deinen Freunden:",
+				shareLink: "{teamName} ({inviteCode})",
 				scanQrCode: "Oder lass sie einfach diesen QR code scannen:",
-				teamInfo: "Du findest diesen QR Code auch auf eurer Team Seite wieder.",
+				teamInfo: "Du findest diesen QR Code später auch auf deiner Team Seite wieder.",
 				gotoTeam: "Zum Team",
 
 				// Setup Passkey bubble
@@ -480,7 +486,7 @@ export default {
 			},
 
 			// Our polite and nice chat bot logic :-)
-			chatDelayMs: window.Cypress || process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test" ? 100 : 1000,
+			chatDelayMs: 1000, //window.Cypress || process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test" ? 100 : 1000,
 
 			// Semaphore so that the chat animation is only started once. This is for example relevant when the window is reloaded in the browser
 			chatAnimationStarted: false,
@@ -495,8 +501,7 @@ export default {
 				NicknameInput: false,
 				NiceToMeetYou: false,
 
-				InviteCodePassed: false,
-				PassedInviteCodeIsInvalid: false,
+				InviteCodeValid: false,						// a valid invite code that was also validated at the backend was passed as URL parameter
 
 				CreateOrJoinTeam: false,  					// show CreateOrJoinTeam bubble and the two buttons below
 
@@ -516,41 +521,7 @@ export default {
 				SetupPasskeySuccessfull: false,
 
 				RegistrationFinished: false
-			},
-			
-			
-
-			/*
-			// Just for design and lyout testing: Enable everything
-			FLOW: {
-				Welcome: true,
-				WhatsYourName: true,
-				NicknameInput: true,
-				NiceToMeetYou: true,
-
-				InviteCodePassed: true,
-				PassedInviteCodeIsInvalid: true,
-
-				CreateOrJoinTeam: true,
-
-				// Variant A: join an existing team
-				JoinTeamForm: true,								
-				JoinTeamClicked: true,
-				JoinTeamSuccessfull: true,
-
-				// Variant B: create a new team
-				CreateTeamForm: true,
-				CreateTeamClicked: true,
-				CreateTeamSuccessfull: true,
-
-				// then continue in both cases
-				SetupPasskey: true,
-				SetupPasskeyClicked: false,
-				SetupPasskeySuccessfull: true,
-
-				RegistrationFinished: true
-			},
-			*/
+			},			
 				
 		}
 	},
@@ -560,7 +531,7 @@ export default {
 		},
 		joinTeamOkButtonDisabled() {
 			return this.FLOW.JoinTeamClicked ||
-				!this.isInviteCodeValid(this.inviteCodeInputField) || 
+				!this.isInviteCodeSyntaxValid(this.inviteCodeInputField) || 
 				!this.isEmailValid(this.user.email)
 		},
 		createNewTeamOkButtonDisabled() {
@@ -579,16 +550,19 @@ export default {
 	},
 	created() {
 		// If a valid inviteCode was passed as URL parameter, then try to load team
-		if (this.isInviteCodeValid(this.inviteCodeQueryParam)) {
+		if (this.isInviteCodeSyntaxValid(this.inviteCodeQueryParam)) {
 			this.inviteCodeInputField = this.inviteCodeQueryParam
-			this.FLOW.InviteCodePassed = true
-			log.debug("have invite code", this.inviteCodeInputField)
-			api.getTeamForInviteCode(this.inviteCodeInputField).then(team => {
-				log.debug("Found team info ", team)
-				this.team = team
-			})
+			api.getTeamForInviteCode(this.inviteCodeInputField)
+				.then(team => {
+					this.FLOW.InviteCodeValid = true
+					log.debug("Invite code is valid for team", team)
+					this.team = team
+				}).catch(err => {
+					console.error("Cannot find team for invite code", this.inviteCodeQueryParam)
+					
+				})
 		} else {
-			//TODO: passed invite code is invalid
+			console.warn("Got invalid inviteCode in URL")
 		}
 	},
 	/**
@@ -603,6 +577,8 @@ export default {
 		//TODO: Check if user is already logged in. If so, then welcome him. User may want to join yet another existing team.
 
     this.startChatAnimation()
+
+		//this.debugDesignMode() // only for debugging
 	},
 	methods: {
 		/**
@@ -632,23 +608,8 @@ export default {
 			return val !== undefined && val !== null && val.trim().length >= config.usernameMinLength
 		},
 
-		/* username can be submitted by pressing ENTER or by blurring the field or by clicking on "done" on the iOS keyboard */
-		userNameSubmit() {
-			this.$refs.userNameInput.validateField(true)
-			if (this.FLOW.NicknameInput && this.isUsernameValid(this.user.name)) {
-				this.user.name = this.user.name.trim()
-				this.FLOW.NiceToMeetYou = true
-				document.getElementById("userNameInput").blur()
-				this.$root.scrollToBottom()
-				setTimeout(() => {
-					this.FLOW.CreateOrJoinTeam = true
-					this.$root.scrollToBottom()
-				}, this.chatDelayMs)
-			}
-		},
-
 		/* invite must be ast least 6 chars */
-		isInviteCodeValid(val) {
+		isInviteCodeSyntaxValid(val) {
 			return val !== undefined && val !== null && val.trim().length === config.inviteCodeLength
 		},
 
@@ -675,14 +636,39 @@ export default {
 			return val !== undefined && val !== null && eMailRegEx.test(val)
 		},
 
+		// ========= these methods control the FLOW through our chat ==============
+
+		/* username can be submitted by pressing ENTER or by blurring the field or by clicking on "done" on the iOS keyboard */
+		userNameSubmit() {
+			this.$refs.userNameInput.validateField(true)
+			if (this.FLOW.NicknameInput && this.isUsernameValid(this.user.name)) {
+				this.user.name = this.user.name.trim()
+				this.FLOW.NiceToMeetYou = true
+				document.getElementById("userNameInput").blur()
+				setTimeout(() => {
+					this.$root.scrollElemToTop(document.getElementById("usernameCard"))
+					if (this.FLOW.InviteCodeValid) {
+						this.FLOW.CreateOrJoinTeam = true
+						this.chooseJoinTeam()
+					} else {
+						this.FLOW.CreateOrJoinTeam = true
+					}
+				}, this.chatDelayMs)
+			}
+		},
+
 		/** User chooses to join an existing team */
 		chooseJoinTeam() {
-			if (this.FLOW.CreateOrJoinTeam) {
+			if (this.FLOW.CreateOrJoinTeam  || this.FLOW.InviteCodeValid) {
 				this.FLOW.CreateTeamForm = false
 				this.FLOW.JoinTeamForm = true
 				this.$nextTick(() => {
-					document.getElementById("inviteCodeInput").focus()
-					//this.$root.scrollElemToTop(document.getElementById("createNewTeamCard"))
+					if (this.FLOW.InviteCodeValid) {
+						// when invite code was already passed via URL, then jump directly to userEmailInput field.
+						document.getElementById("userEmailInput").focus()
+					} else {
+						document.getElementById("inviteCodeInput").focus()
+					}
 				})
 			}
 		},
@@ -773,7 +759,7 @@ export default {
 		},
 
 	
-		/** Join an existing team */
+		/** User has an inviteCode and entered all data, then he can now join an existing team */
 		joinTeam() {
 			if (this.joinTeamOkButtonDisabled) return
 			this.FLOW.JoinTeamClicked = true
@@ -876,15 +862,13 @@ export default {
 			this.$router.push({name: "createPoll"})
 		},
 
-
-
-
 		shareLink() {
 			if (navigator.share) {
 				navigator
 					.share({
-						title: "Share LIQUIDO invite",
-						url: this.team.inviteLink,
+						title: "LIQUIDO Einladung: " + this.team.teamName,
+						//BUGFIX: don't use "text" field, then sharing URLs doesn't work anymore on iOS
+						url: this.inviteLinkURL
 					})
 					.then(() => {
 						log.debug("Invite has been sent!")
@@ -894,6 +878,54 @@ export default {
 				log.debug("No native support")
 			}
 		},
+
+		/**
+		 * For debugging the design:
+		 * set everything to enabled and shown
+		 * and fill in dummy values where possible
+		 */
+		debugDesignMode() {
+			this.user = {
+				name: "Debug User",
+				email: "debugtestr@liquido.vote",
+				mobilephone: "123 " + Math.round(Math.random()*1000000)
+			},
+			this.team = {
+				teamName: "DummyDesign Team",
+				inviteCode: "A3F43D",
+				//admins: [ ]
+			}
+				
+			this.passkeyLabel = this.user.name + "-" + this.$t('Passkey')
+
+			this.FLOW.Welcome= true
+			this.FLOW.WhatsYourName= true
+			this.FLOW.NicknameInput= true
+			this.FLOW.NiceToMeetYou= true
+
+			this.FLOW.InviteCodeValid= true
+
+			this.FLOW.CreateOrJoinTeam= true
+
+			// Variant A: join an existing team
+			this.FLOW.JoinTeamForm= true					
+			this.FLOW.JoinTeamClicked= true
+			this.FLOW.JoinTeamSuccessfull= true
+
+			// Variant B: create a new team
+			this.FLOW.CreateTeamForm= true
+			this.FLOW.CreateTeamClicked= true
+			this.FLOW.CreateTeamSuccessfull= true
+
+			// then continue in both cases
+			this.FLOW.SetupPasskey= true
+			this.FLOW.SetupPasskeyClicked= false
+			this.FLOW.SetupPasskeySuccessfull= true
+
+			this.FLOW.RegistrationFinished= true
+		}
+
+
 	},
 }
 </script>
@@ -906,7 +938,7 @@ export default {
   opacity: 1;
   transform: none;
   max-height: 1000px;
-	box-shadow: 0.1rem 0.1rem 0.25rem rgba(32, 32, 32, 0.2);
+	/* box-shadow: 0.1rem 0.1rem 0.25rem rgba(32, 32, 32, 0.2); */
   -webkit-transition: all 0.5s ease;
   -moz-transition: all 0.5s ease;
   -o-transition: all 0.5s ease;
@@ -914,10 +946,10 @@ export default {
 }
 .chat-bubble .card-header {
 	border: none;
-	padding: 0.5rem;
+	/*padding: 0.5rem; Bootstrap's default is fine. "Don't be afraid of whitespace!"  :-)  */  
 }
 .chat-bubble .card-body {
-  padding: 0.5rem;
+  /*padding: 0.5rem;*/
 }
 .chat-bubble .card-body ul {
   padding-inline-start: 25px;
@@ -928,6 +960,7 @@ export default {
 
 .chat-left {
   position: relative;
+	color: #1e3a8a;  /* dark blue */
   background-color: var(--chat-left-bg);
   margin-right: 2rem;
   margin-bottom: 1rem;
@@ -949,6 +982,7 @@ export default {
   background-color: var(--chat-right-bg);
   margin-left: 2rem;
   margin-bottom: 1rem;
+	box-shadow: 0.1rem 0.1rem 0.25rem rgba(32, 32, 32, 0.2);
   &::before {
     content: '';
     position: absolute;

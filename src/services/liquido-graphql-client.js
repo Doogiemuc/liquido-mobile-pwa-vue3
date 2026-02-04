@@ -671,12 +671,9 @@ let graphQlApi = {
 	 * @returns the team
 	 */
 	async getTeamForInviteCode(inviteCode) {
-		let graphQL = `query { getTeamForInviteCode(inviteCode: "${inviteCode}") ${JQL.TEAM} }`
-		let variables = {
-			inviteCode: inviteCode
-		}
-		return graphQlQuery(graphQL, variables)
-			.then(res => res.data.getTeamForInviteCode)
+		let graphQL = `query { teamForInviteCode(inviteCode: "${inviteCode}") ${JQL.TEAM} }`
+		return graphQlQuery(graphQL)
+			.then(res => res.data.teamForInviteCode)
 	},
 
 	/**

@@ -428,7 +428,7 @@ export default {
 		 */
 		checkEmailForLogin() {
 			console.log("checkEmailForLogin", this.emailIsValid, this.emailInputState)
-			// Only check if email is valid and not already checking and only check once
+			// Only check if emailInputField is valid and not already checking and only check once or one given emailInputValue
 			if (this.emailIsValid || this.emailInputState !== STATE.VALID || this.webAuthnCheckInProgress) {
 				return
 			}
@@ -450,7 +450,7 @@ export default {
 						this.loginErrorMessage = this.$t("emailNotFound")
 						this.loginErrorMessageId = ERROR.UNKNOWN_USER_EMAIL
 						console.log(this.$refs)
-						this.$refs.emailInput.setValidState(STATE.INVALID)
+						this.$refs?.emailInput?.setValidState(STATE.INVALID)
 					} else {
 						console.warn("Could not check WebAuthn availability", err)
 					}
@@ -749,8 +749,13 @@ export default {
 </script>
 
 <style>
-#loginCard .card-body {
-	padding: 3rem 10%;  
+#loginCard {
+	margin-left: 1rem;
+	margin-right: 1rem;
+
+  .card-body {
+		padding: 3rem 1.5rem;  
+	}
 }
 
 
