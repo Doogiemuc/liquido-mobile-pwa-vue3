@@ -746,16 +746,14 @@ let graphQlApi = {
 	},
 
 	/** 
-	 * Synchronously get currently cached polls (optionally filterd by status).
+	 * Synchronously get all currently cached polls.
 	 * 
-	 * @param {String} status Optionally filter by status. If ELABORATION|VOTING|FINISHED only polls of that status are returned. 
-	 *      If undefined, then all polls in the cache will be returned.
-	 * @returns {Array} array of locally cached polls or empty array if nothing is there
+	 * @returns {Array} array of all locally cached polls or empty array if nothing is there
 	 */
-	getCachedPolls(status) {
+	getCachedPolls() {
 		let cacheData = this.pollsCache.getCacheData()
 		if (!cacheData || !cacheData.polls) return []
-		return cacheData.polls.filter(poll => !status ||  poll.status === status)  // Keep in mind that "filter" creates a copy of the polls array!
+		return cacheData.polls
 	},
 
 	/**

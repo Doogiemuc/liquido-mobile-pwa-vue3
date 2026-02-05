@@ -79,16 +79,18 @@ export default {
 	computed: {
 		pollsInElaboration() {
 			this.forceRefreshComputed;
-			let res = api.getCachedPolls(api.POLL_STATUS.ELABORATION)
-			return res
+			let allPolls = api.getCachedPolls()
+			return allPolls.filter(poll => poll.status === api.POLL_STATUS.ELABORATION)
 		},
 		pollsInVoting() {
 			this.forceRefreshComputed;
-			return api.getCachedPolls(api.POLL_STATUS.VOTING)
+			let allPolls = api.getCachedPolls()
+			return allPolls.filter(poll => poll.status === api.POLL_STATUS.VOTING)
 		},
 		pollsFinished() {
 			this.forceRefreshComputed;
-			return api.getCachedPolls(api.POLL_STATUS.FINISHED)
+			let allPolls = api.getCachedPolls()
+			return allPolls.filter(poll => poll.status === api.POLL_STATUS.FINISHED)
 		},
 		discussButtonClass() {
 			return { 
@@ -167,9 +169,9 @@ export default {
 	--arrowColor: white;
 	--arrowColorSelected: var(--navbar-bg);
 	--arrowGapColor: white;
-	--arrowWidth: 15px;
-	--arrowHeight: 39px;
-	--arrowGap: 10px;
+	--arrowWidth: 20px;
+	--arrowHeight: 2rem;
+	--arrowGap: -15px;  /* negative margin, higher values = smaller gap */
 	--border-radius: 20px;
 
 	position: fixed;
@@ -193,7 +195,7 @@ export default {
 	
 	display: flex;
 	flex-wrap: nowrap;
-	justify-content: space-around;
+	justify-content: center;
 	align-items: stretch;
 	gap: 0;
 	
@@ -218,46 +220,56 @@ export default {
 
 	.discuss-button, .vote-button, .finished-button {
 		min-width: 30px;
-		flex-basis: 33%; /* each takes 1/3 of the width */
+		flex: 1; /* Allows them to grow/shrink equally */
+		/* flex-basis: 33%; each takes 1/3 of the width */
 		background-color: var(--arrowColor);
 		position: relative;
-		/* Arrow shape using clip-path */
-		clip-path: polygon(0 0, calc(100% - var(--arrowWidth)) 0, 100% 50%, calc(100% - var(--arrowWidth)) 100%, 0 100%, var(--arrowWidth) 50%);
 		display: flex;
 		justify-content: center;
 		align-items: center;
 	}
 
 	.discuss-button {
+		/*
 		position: absolute;
 		top: 0;
 		left: 0;
 		bottom: 0;
-		right: 66%;
+		right: calc(100% * 2/3);
+		*/
 		border-top-left-radius: var(--border-radius);
 		border-bottom-left-radius: var(--border-radius);
 		clip-path: polygon(0 0, calc(100% - var(--arrowWidth)) 0, 100% 50%, calc(100% - var(--arrowWidth)) 100%, 0 100%, 0% 50%);
 		z-index: 2;
+		margin-right: var(--arrowGap);
 	}
 
 	.vote-button {
+		/*
 		position: absolute;
 		top: 0;
 		left: 33%;
 		bottom: 0;
 		right: 33%;
+		*/
 		z-index: 3;
+		/* Arrow shape using clip-path */
+		clip-path: polygon(0 0, calc(100% - var(--arrowWidth)) 0, 100% 50%, calc(100% - var(--arrowWidth)) 100%, 0 100%, var(--arrowWidth) 50%);
 	}
 
 	.finished-button {
+		/*
 		position: absolute;
 		top: 0;
 		left: 66%;
 		bottom: 0;
 		right: 0;
+		*/
+		z-index: 4;
 		border-top-right-radius: var(--border-radius);
 		border-bottom-right-radius: var(--border-radius);
 		clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, var(--arrowWidth) 50%);
+		margin-left: var(--arrowGap);
 	}
 	
 
@@ -308,7 +320,7 @@ export default {
 	}
 		*/
 	
-	/* Selected state arrow dividers */
+	/* Selected state arrow dividers 
 	.discuss-button.selected::after {
 		border-left-color: var(--arrowColorSelected);
 	}
@@ -324,6 +336,7 @@ export default {
 	.finished-button.selected::before {
 		border-right-color: var(--arrowColorSelected);
 	}
+		*/
 
 	.selected {
 		a {	color: white !important; }
@@ -332,6 +345,7 @@ export default {
 			color: var(--primary) !important;
 		}
 	}
+	/*
 	.disabled {
 		a { color: lightgray !important; }
 		.counter-badge {
@@ -341,14 +355,15 @@ export default {
 	.disabled.selected {
 		a {
 			opacity: 0.8;
-			color: gray !important; 
+			color: lightgray !important; 
 		}
 		.counter-badge {
 			opacity: 0.8;
 			color: var(--primary) !important;
-			background: gray !important;
+			background: lightgray !important;
 		}
 	}
+		*/
 
 	.nav-bar-icon {
 		position: relative;

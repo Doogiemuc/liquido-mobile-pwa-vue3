@@ -26,9 +26,16 @@
 					<div class="poll-card card border-0" @click="goToPoll(poll.id)">
 						<div class="card-body d-flex flex-nowrap align-items-center">
 							<div class="flex-grow-0">
-								<div class="poll-icon">
-									<i :class="iconForPoll(poll)" />
+								<div v-if="poll.status === 'ELABORATION'" class="poll-icon-elaboration">
+									<i class="far fa-comments" />
 								</div>
+								<div v-if="poll.status === 'VOTING'" class="poll-icon-voting">
+									<i class="fas fa-person-booth" />
+								</div>
+								<div v-if="poll.status === 'FINISHED'" class="poll-icon-finished">
+									<i class="fas fa-check-circle" />
+								</div>
+
 							</div>
 							<div class="flex-grow-1">
 								<h3 class="poll-title">{{ poll.title }}</h3>
@@ -56,7 +63,7 @@
 
 			<p v-if="allPolls.length === 0 && !loading" class="text-center" v-html="$t('noPollYet')" />
 
-			<div v-if="filteredPolls.length == 0" id="emptySearchResultInfo" class="text-center" @click="clearSearchAndFilter">
+			<div v-if="filteredPolls.length == 0 && allPolls.length > 0" id="emptySearchResultInfo" class="text-center" @click="clearSearchAndFilter">
 				<p>{{ $t('noPollsMatchSearch') }}</p>
 			</div>
 
@@ -103,7 +110,7 @@
 /**
  * This is by far the most important view in the whole app.
  * Meanwhile I redesigned this page dozens of times ... and yet it's not perfect :-)
- * But it's getting better and better everytiem! :-)
+ * But it's getting better and better everytime! :-)
  */
 
 import navbarBottom from "@/components/navbar-bottom.vue"
@@ -192,13 +199,14 @@ export default {
 			// So VUE's reactive updates do not work when the data changes in the cache.
 			// Therefore we have to force a recompute of this "computed" value with a nice hack:
 			this.forceRefreshComputed;
-			return api.getCachedPolls(this.pollStatusFilter)
-				.filter((poll) => this.matchesSearch(poll))
+			let polls = api.getCachedPolls()
+			return polls
+				.filter((poll) => {
+					if (this.pollStatusFilter && poll.status !== this.pollStatusFilter) return false
+					return this.matchesSearch(poll)
+				})
 				.sort((p1,p2) => {
-					//sort polls by status
-					
-					//TODO: make it possible to sort polls by date created
-					
+					//TODO: make it possible to sort polls by status, date created, ...
 					return pollStatusOrder[p1.status] - pollStatusOrder[p2.status]
 				})    
 				
@@ -207,13 +215,13 @@ export default {
 			return this.allPolls.length > 0 && this.filteredPolls.length === 0 /* && this.searchQuery && this.searchQuery.trim().length > 0 */
 		},
 		hasPollInElaboration() {
-			return api.getCachedPolls("ELABORATION").length > 0
+			return api.getCachedPolls().filter(p => p.status === "ELABORATION").length
 		},
 		hasPollInVoting() {
-			return api.getCachedPolls("VOTING").length > 0
+			return api.getCachedPolls().filter(p => p.status === "VOTING").length
 		},
 		hasFinishedPoll() {
-			return api.getCachedPolls("FINISHED").length > 0
+			return api.getCachedPolls().filter(p => p.status === "FINISHED").length
 		}
 	},
 	
@@ -244,6 +252,7 @@ export default {
 			this.showSearch = !this.showSearch
 		},
 
+		/** Each poll has an icon, depending on its status */
 		iconForPoll(poll) {
 			if (!poll) return undefined
 			switch (poll.status) {
@@ -255,6 +264,21 @@ export default {
 					return "fas fa-check-circle"
 				default:
 					return "far fa-vote-yea"
+			}
+		},
+		
+		/** And the icons have different colors */
+		pollIconClass(poll) {
+			if (!poll) return undefined
+			switch (poll.status) {
+				case "ELABORATION":
+					return "poll-icon-elaboration"
+				case "VOTING":
+					return "poll-icon-voting"
+				case "FINISHED":
+					return "poll-icon-finished"
+				default:
+					return undefined
 			}
 		},
 
@@ -370,7 +394,7 @@ export default {
 
   $iconSize: 40px;
 
-	.poll-icon {
+	.poll-icon-elaboration, .poll-icon-voting {
 		color: white;
 		background-color: var(--proposal-icon-bg);
 		border-radius: 50%;
@@ -383,6 +407,17 @@ export default {
 		min-height: $iconSize;
 		max-height: $iconSize;
 		height: $iconSize;
+		margin: 0 10px 0 0;
+	}
+
+	.poll-icon-elaboration {
+		background-color: lightgray;
+	}
+
+	.poll-icon-finished {
+		font-size: $iconSize;
+		color: var(--primary);
+		filter: brightness(50%);
 		margin: 0 10px 0 0;
 	}
 

@@ -14,7 +14,7 @@
 		</div>
 
 		<!-- Nickname input -->
-		<div id="usernameCard" :class="{ 'hide-right': !FLOW.NicknameInput }" class="card chat-bubble chat-right">
+		<div id="usernameCard" :class="{ 'collapse-max-height': !FLOW.NicknameInput }" class="card chat-bubble chat-right">
 			<div class="card-body">
 				<liquido-input
 					id="userNameInput"
@@ -78,12 +78,12 @@
 		</div>
 
 		<!-- Join a team - form -->
-		<div :class="{ 'collapse-max-height': !FLOW.JoinTeamForm }" class="card chat-bubble chat-right">
+		<div id="JoinTeamForm" :class="{ 'collapse-max-height': !FLOW.JoinTeamForm }" class="card chat-bubble chat-right">
 			<div class="card-header">
 				{{ $t("JoinTeam") }}
 			</div>	
 			<div class="card-body">
-				<form id="joinTeamForm">
+				<form>
 					<liquido-input
 						id="inviteCodeInput"
 						ref="inviteCodeInput"
@@ -148,13 +148,16 @@
 			</div>
 		</div>
 
-		<!--Joined team successfully 
+		<!--Joined team successfully -->
 		<div id="joinedTeamBubble" :class="{ 'collapse-max-height': !FLOW.JoinTeamSuccessfull }" class="card chat-bubble chat-left">
 			<div class="card-body">
-				<p v-html="$t('joinedTeamSuccessfully', { teamName: team.teamName })" />
+				<p v-html="$t('JoinedTeamSuccessfully', { teamName: team.teamName })" />
 			</div>
 		</div>
-		-->
+
+
+
+
 
 		<!-- Create a new team - form -->
 		<div id="createNewTeamCard" :class="{ 'collapse-max-height': !FLOW.CreateTeamForm }" class="card chat-bubble chat-right">
@@ -259,6 +262,7 @@
 		>
 		</popup-modal>
 
+		<!-- Setup Passkey - label and button -->
 		<div id="setupPasskeyCard" :class="{ 'collapse-max-height': !FLOW.SetupPasskey }" class="card chat-bubble chat-right">
 			<div class="card-body">
 				<liquido-input
@@ -287,6 +291,26 @@
 				</button>
 			</div>
 		</div>
+
+
+		<!-- JoinTeam and Passkey successfull: GoToTeam Button -->
+		<div id="JoinTeamFinishedCard" :class="{ 'collapse-max-height': !(FLOW.RegistrationFinished && FLOW.JoinTeamSuccessfull) }" class="card chat-bubble chat-left">
+			<div class="card-body">
+				<p v-html="$t('JoinTeamFinished', { teamName: team.teamName })"></p>
+				<button
+					id="gotoTeamButton"
+					class="btn btn-primary w-100"
+					type="button"
+					@click="gotoTeam"
+				>
+					<i class="fas fa-users" />
+					{{ $t("gotoTeam") }}
+					<i class="fas fa-angle-double-right" />
+				</button>
+			</div>
+		</div>
+
+
 
 		<!-- CreatTeam Successfull and registration finished: Admin can invite members via QR -->
 		<div id="teamQrCode" :class="{ 'collapse-max-height': !(FLOW.RegistrationFinished && FLOW.CreateTeamSuccessfull) }" class="card chat-bubble chat-left">
@@ -335,22 +359,7 @@
 			</div>
 		</div>
 
-		<!-- join team successfull: GoTo Team-->
-		<div id="joinTeamSuccessfullBubble" :class="{ 'collapse-max-height': !(FLOW.RegistrationFinished && FLOW.JoinTeamSuccessfull) }" class="card chat-bubble chat-left">
-			<div class="card-body">
-				<p v-html="$t('joinedTeamSuccessfully', { teamName: team.teamName })"></p>
-				<button
-					id="gotoTeamButton"
-					class="btn btn-primary w-100"
-					type="button"
-					@click="gotoTeam"
-				>
-					<i class="fas fa-users" />
-					{{ $t("gotoTeam") }}
-					<i class="fas fa-angle-double-right" />
-				</button>
-			</div>
-		</div>
+		
 
 
 	</div> <!-- end of container -->
@@ -432,7 +441,8 @@ export default {
 				emailInvalid: "E-Mail Adresse ungültig",
 				passwordInvalid: "Bitte mindestens " + config.minPasswordLength + " Zeichen!",
 
-				joinedTeamSuccessfully: "Willkommen im Team <b>{teamName}</b>!",  // last message with GoToTeam button
+				JoinedTeamSuccessfully: "Ok, du bist dabei. Willkommen im Team <b>{teamName}</b>. Ich habe dir auch bereits eine E-Mail mit allen Infos geschickt.",  // Shown after JoinTeamInput bubble
+				JoinTeamFinished: "Hier geht's weiter:",  // last message with GoToTeam button
 				
 				// QR code bubble
 				InviteFriendsTitle: "Freunde einladen",
@@ -584,12 +594,11 @@ export default {
 			this.gotoTeam()
 			return
 		}
-		this.$root.scrollToTop()
 		//TODO: Check if user is already logged in. If so, then welcome him. User may want to join yet another existing team.
 
     this.startChatAnimation()
 
-		//this.debugDesignMode() // only for debugging
+		//this._debugDesignMode() // only for debugging
 	},
 	methods: {
 		/**
@@ -599,6 +608,7 @@ export default {
 			if (this.chatAnimationStarted) return  // start chat animation only once
 			this.chatAnimationStarted = true
 			this.FLOW.Welcome = true
+			this.$root.scrollToTop()
 			window.setTimeout(() => {
 				this.FLOW.WhatsYourName = true
 			}, this.chatDelayMs*2)
@@ -608,10 +618,6 @@ export default {
 					document.getElementById("userNameInput").focus()
 				})
 			}, this.chatDelayMs*2.5)
-		},
-
-		goToLogin() {
-			this.$router.push({ name: 'login' })
 		},
 
 		/* username must not be empty and contain at least n chars */
@@ -786,8 +792,10 @@ export default {
 					this.FLOW.JoinTeamSuccessfull = true
 					this.team = team
 					this.$nextTick(() => {
-						this.$root.scrollElemToTop(document.getElementById("joinedTeamBubble"))
-						this.prepareSetupPasskey()
+						this.$root.scrollElemToTop(document.getElementById("JoinTeamForm"))
+						setTimeout(() => {
+							this.prepareSetupPasskey()
+						}, this.chatDelayMs)
 					})
 				})
 				.catch(err => {
@@ -840,6 +848,9 @@ export default {
 					this.$root?.$refs?.mobileDebugLogRef?.info("setupPasskey: SUCCESSFULL")
 					this.FLOW.SetupPasskeySuccessfull = true
 					this.FLOW.RegistrationFinished = true
+					this.$nextTick(() => {
+						this.$root.scrollElemToTop(document.getElementById("setupPasskeyCard"))
+					})
 				}).catch(err => {
 					this.$root?.$refs?.mobileDebugLogRef?.info("setupPasskey: ERROR")
 					this.$root?.$refs?.mobileDebugLogRef?.info(err)
@@ -875,6 +886,10 @@ export default {
 			this.$router.push({name: "createPoll"})
 		},
 
+		goToLogin() {
+			this.$router.push({ name: 'login' })
+		},
+
 		shareLink() {
 			if (navigator.share) {
 				navigator
@@ -897,7 +912,7 @@ export default {
 		 * set everything to enabled and shown
 		 * and fill in dummy values where possible
 		 */
-		debugDesignMode() {
+		_debugDesignMode() {
 			this.user = {
 				name: "Debug User",
 				email: "debugtestr@liquido.vote",

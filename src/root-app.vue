@@ -270,7 +270,7 @@ export default {
 			if (!elem) return
 			let appElem = document.getElementById("app")
 			let scrollTopFinalValue = elem.offsetTop - marginTop
-			//console.log("scrollElemToTop id=", elem.id,  elem.offsetTop, "-", marginTop, "=", scrollTopFinalValue)
+			console.log("scrollElemToTop id=", elem.id,  elem.offsetTop, "-", marginTop, "=", scrollTopFinalValue)
 			this.animate(appElem, "scrollTop", scrollTopFinalValue, durationMs)
 		},
 
