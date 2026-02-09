@@ -1,9 +1,9 @@
 <template>
 	<div :id="pollCardId" :pollid="poll.id" :data-poll-status="poll.status" class="card poll-panel border-0 shadow">
-		<h3 class="card-header">
+		<h2 class="card-header">
 			<!-- i class="fas fa-poll" /-->
 			{{ poll ? poll.title : "" }}
-		</h3>
+		</h2>
 		<div v-if="!poll.proposals || poll.proposals.length === 0" class="card-body">
 			<p class="text-secondary">
 				{{ $t("noProposalsInPollYet") }}
@@ -181,6 +181,10 @@ $proposal_icon_size: 2.5rem;
 
 .poll-panel {
 
+	.card-header {
+		border-bottom: none;
+		//background-color: white;
+	}
 	/*
 	.card-body {
 		padding-top: 0; // proposal-list-group-item  handles vertical padding  => keep this. Don't touch! ..........
@@ -328,7 +332,7 @@ $proposal_icon_size: 2.5rem;
 	//.proposal-list-group-item:not(:last-child):not(.collapsed-proposal-panel)
 	.proposal-separator {
 		//transition: all 0.5s;		
-		border-top: 1px solid red; //lightgrey;//  rgba(128,128,128, 0.5);
+		border-top: 1px solid lightgrey;//  rgba(128,128,128, 0.5);
 		width: 50%;
 		margin: 1rem 0;
 	}

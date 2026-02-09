@@ -82,18 +82,7 @@
 			</p>
 		</div>
 
-		<popup-modal id="castVoteSuccessModal" ref="castVoteSuccessModal" type="success">
-			<template #default>
-				<div class="text-center">
-					<p>{{ isFirstVote ? $t("voteCastedSuccessfully") : $t("voteUpdatedSuccessfully") }}</p>
-					<p v-if="voteCount > 1">
-						{{ $t('voteCountedNTimes', { voteCount: voteCount }) }}
-					</p>
-				</div>
-			</template>
-		</popup-modal>
 
-		<popup-modal id="errorModal" ref="errorModal" type="error" :message="$t('voteCastError')"></popup-modal>
 
 		<div class="alert liquido-info">
 			<p v-html="$t('castVoteInfo')"></p>
@@ -104,7 +93,6 @@
 
 <script>
 import config from "config"
-import popupModal from "@/components/popup-modal.vue"
 import api from "@/services/liquido-graphql-client.js"
 import { VueDraggableNext } from 'vue-draggable-next'
 import log from "loglevel"
@@ -143,7 +131,7 @@ export default {
 			},
 		},
 	},
-	components: { draggable: VueDraggableNext, popupModal },
+	components: { draggable: VueDraggableNext },
 	props: {
 		// the cast-vote page only receives the pollId and reloads the poll from the backend
 		pollId: { type: String, required: true },
@@ -298,8 +286,6 @@ export default {
 
 		clickCastVote() {
 			this.castVoteLoading = true
-			this.$refs["castVoteSuccessModal"].hide()
-			this.$refs["errorModal"].hide()
 			let voteOrderIds = this.proposalsInBallot.map(proposal => proposal.id)
 
 			//TODO: start a timer for timeout
@@ -312,12 +298,18 @@ export default {
 					this.existingBallot = castVoteResponse.ballot
 					this.voteCount = castVoteResponse.voteCount
 					this.castVoteLoading = false
-					this.$refs["castVoteSuccessModal"].show()
+					
+					// Build success message
+					let successMsg = this.isFirstVote ? this.$t("voteCastedSuccessfully") : this.$t("voteUpdatedSuccessfully")
+					if (this.voteCount > 1) {
+						successMsg += "\n" + this.$t('voteCountedNTimes', { voteCount: this.voteCount })
+					}
+					this.$root.showSuccess(successMsg, "")
 				})
 			}).catch((err) => {
 				console.error("Cannot cast vote", err)
 				this.castVoteLoading = false
-				this.$refs["errorModal"].show()
+				this.$root.showError(this.$t('voteCastError'), "")
 			})
 		},
 

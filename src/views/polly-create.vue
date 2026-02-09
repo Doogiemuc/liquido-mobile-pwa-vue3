@@ -85,17 +85,28 @@ export default defineComponent({
 			}
 		}
 	},
-	setup(/*props*/) {
-		/*
-		console.log("usei18n setup")
-		const { t } = useI18n()
-		return { t }
-		*/
+	setup(props) {
+		return {
+			initialPoll: props.poll
+		}
+	},
+	props: {
+		poll: { type: Object, required: false, default: undefined },
 	},
 	components: { liquidoInput, polly },
 	data() {
 		return {
-			poll: undefined,
+			poll: this.poll || {
+				title: "Dummy Title for Testing",
+				proposals: [
+					{ id: Date.now(), title: "Some Title" },
+					{ id: Date.now(), title: "Some Other Title which is very long to test this" },
+				],
+				status: "NEW",  // ELABORATION, VOTING, FINISHED
+				//createdBy: undefined,
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString(),
+			}
 		}
 	},
 	computed: {
@@ -117,19 +128,6 @@ export default defineComponent({
 	watch: {
 		pollyHeaderTitle() {
 			this.$store.setHeaderTitle(this.pollyHeaderTitle)
-		}
-	},
-	created() {
-		this.poll = {
-			title: "Dummy Title for Testing",
-			proposals: [
-				{ id: Date.now(), title: "Some Title" },
-				{ id: Date.now(), title: "Some Other Title which is very long to test this" },
-			],
-			status: "NEW",  // ELABORATION, VOTING, FINISHED
-			//createdBy: undefined,
-			//createdAt: new Date().toISOString(),
-			//updatedAt: new Date().toISOString(),
 		}
 	},
 	mounted() {

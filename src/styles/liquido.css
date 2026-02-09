@@ -102,7 +102,6 @@
 
 /** This is the scrolling part of the page */
 #app #appContent {
-  margin: 0;
   background-color: var(--app-background);
 	padding-top: var(--header-height);  /* padding so that page content can bee seen under liquido-header */
   padding-bottom: 10px;

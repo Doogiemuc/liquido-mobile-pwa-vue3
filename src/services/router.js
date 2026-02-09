@@ -11,6 +11,7 @@ import { store }  from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
 import config from "config"
 import log from 'loglevel'
+import { route } from 'fontawesome'
 if (process.env.NODE_ENV === "development") log.enableAll()
 
 const routes = [
@@ -35,20 +36,6 @@ const routes = [
 		}
 	},
 	{
-		// Development login that can be used in testing
-		path: "/devLogin",
-		name: "devLogin",
-		component: () => import("@/views/dev-login.vue"),
-		props: route => ({ 
-			email: route.query.email,
-			teamName: route.query.teamName,
-			emailToken: route.query.emailToken
-		}),
-		meta: {
-			public: true
-		}
-	},
-	{
 		path: "/welcome",
 		name: "welcome",
 		component: welcomeChat,
@@ -59,20 +46,6 @@ const routes = [
 			public: true
 		}
 	},
-	//TODO: currently we are handling join team through welcome chat   /joinTeam?inviteCode= ...  seperate this from /welcome !
-	/*
-	{
-		path: "/joinTeam",
-		name: "joinTeam",
-		component: joinTeam,
-		props: route => ({
-			inviteCodeQueryParam: route.query.inviteCode
-		}),
-		meta: {
-			public: true
-		}
-	},
-	*/
 
 	// ========= authenticated pages ============
 
@@ -136,14 +109,6 @@ const routes = [
 		}
 	},
 	{
-		path: "/design",
-		name: "liquidoDesign",
-		component: () => import("@/views/_design-page.vue"),
-		meta: {
-			public: true
-		}
-	},
-	{
 		path: "/404",
 		name: "pageNotFound",
 		component: () => import("@/views/not-found-page.vue"),
@@ -157,6 +122,30 @@ const routes = [
 		redirect: "404",
 	},
 ]
+
+if (process.env.NODE_ENV === "development") {
+	routes.push({
+		// Development login that can be used in testing
+		path: "/devLogin",
+		name: "devLogin",
+		component: () => import("@/views/dev-login.vue"),
+		props: route => ({ 
+			email: route.query.email,
+			teamName: route.query.teamName,
+			emailToken: route.query.emailToken
+		}),
+		meta: {
+			public: true
+		}
+	})
+	routes.push({
+    path: '/_design-overview',
+    component: () => import('@/views/_design-overview.vue'),
+		meta: {
+			public: true
+		}
+  })
+}
 
 const router = createRouter({
 	// https://router.vuejs.org/guide/essentials/history-mode
@@ -253,14 +242,14 @@ router.beforeEach(async (routeTo, routeFrom) => {
 	}
 	
 	return tryToAuthenticate().then(() => {
-		//log.debug("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
+		log.debug("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
 		if (routeTo.path === "/" || routeTo.path === "/index.html") {
 			return {name: "teamHome"}  
 		} else {
 			return true // allow authenticated navigation
 		}
 	}).catch(() => {
-		//log.debug("vue-router: anonymous", routeFrom.path, "=>", routeTo.path)
+		log.debug("vue-router: anonymous", routeFrom.path, "=>", routeTo.path)
 		if (routeTo.meta.public) {
 			return true
 		} else if (routeTo.path === "/" || routeTo.path === "/index.html") {

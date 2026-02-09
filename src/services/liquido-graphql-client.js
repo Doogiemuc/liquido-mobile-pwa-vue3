@@ -126,7 +126,6 @@ import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
 const graphQlQueryMOCK = function(query, variables) {
 	console.log("MOCK request for ", query, variables)
 	if (query.includes("ping")) {
-		console.warn("MOCK responses are active!")
 		return Promise.resolve(
 			{
 				"data": {
@@ -195,11 +194,19 @@ const graphQlQueryMOCK = function(query, variables) {
 				}
 			)
 		}
+	} else if (query.includes("myBallot")) {
+		console.log("MOCK: myBallot")
+		return Promise.resolve(
+			{
+				"data": {
+					"myBallot": undefined
+				}
+			}
+		)
 	}
 	console.error("Unhandled mock query "+query)
 	return Promise.reject("Unhandled mock query:" + query);
 }
-
 
 
 /** Shorthands for JQL return values */
@@ -888,5 +895,17 @@ let graphQlApi = {
 	/** Error codes from LIQUIDO backend. This is read from an automatically generated file LiquidoExceptionCodes.js */
 	err: LiquidoExceptionCodes,
 }
+
+if (config.mockBackend) {
+	console.warn("======== MOCK responses are active! Login dummy user =========")
+	//graphQlApi.login(teamUserJwtMock.team, teamUserJwtMock.user, teamUserJwtMock.jwt)
+	
+	teamCache.put(graphQlApi.TEAM_KEY, teamUserJwtMock.team)
+	teamCache.put(graphQlApi.CURRENT_USER_KEY, teamUserJwtMock.user)
+	teamCache.put(graphQlApi.JWT_KEY, teamUserJwtMock.jwt)
+	graphQlApi.putPollsIntoCache(teamUserJwtMock.team.polls)
+	
+}
+
 
 export default graphQlApi

@@ -94,8 +94,6 @@ import liquidoInput from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
 import webauthnService from '@/services/webauthn-service.js'
 
-
-
 //TODO: If there are more than 15 members in a team, then show a shorter list
 
 export default {

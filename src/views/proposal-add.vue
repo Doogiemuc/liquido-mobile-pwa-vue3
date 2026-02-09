@@ -101,33 +101,13 @@
 		<div v-else class="alert mb-3">
 			{{ $t('noProposalYet') }}
 		</div>
-
-		<popup-modal
-			id="proposalSuccessfullyAddedModal"
-			ref="proposalSuccessfullyAddedModal"
-			type="success"
-			:message="$t('createdSuccessfully')"
-			:primaryButtonText="$t('gotoPoll')"
-			@clickPrimary="gotoPoll"			
-		>
-		</popup-modal>
-		
-		<popup-modal 
-			id="proposalAddErrorModal"
-			ref="proposalAddErrorModal"
-			type="error"
-			:message="$t('proposalAddError')"
-		/>
 	</div>
 </template>
 
 <script>
 
-//TODO: use root popup modal
-
 import pollPanel from "@/components/poll-panel.vue"
 import liquidoInput from "@/components/liquido-input.vue"
-import popupModal from "@/components/popup-modal.vue"
 import api from "@/services/liquido-graphql-client.js"
 import faSolidIconsFree from "@/styles/fontawesome-solid-icons-free.json"  // List of free fontawesome icon names
 
@@ -154,7 +134,7 @@ export default {
 			},
 		},
 	},
-	components: { pollPanel, liquidoInput, popupModal },
+	components: { pollPanel, liquidoInput },
 	props: {
 		pollId: { type: String, required: true },
 	},
@@ -244,11 +224,13 @@ export default {
 		saveProposal() {
 			return api.addProposal(this.poll.id, this.proposal.title, this.proposal.description, this.chosenIcon)
 				.then(() => {
-					this.$refs["proposalSuccessfullyAddedModal"].showSuccess()
+					this.$root.showSuccess(this.$t('createdSuccessfully'), "", this.$t('gotoPoll')).then(() => {
+						this.gotoPoll()
+					})
 				})
 				.catch(err => {
 					console.error("Cannot add proposal", err)
-					this.$refs["proposalAddErrorModal"].showError()
+					this.$root.showError(this.$t('proposalAddError'), "")
 				})
 		},
 

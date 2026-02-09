@@ -192,11 +192,11 @@ export default {
 		showError(errMsg, errTitle, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined) {
 			return this.$refs.rootPopupModal.showError(errMsg, errTitle, primaryButtonText, secondaryButtonText)
 		},
-		showSuccess(errMsg, errTitle, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined) {
-			return this.$refs.rootPopupModal.showSuccess(errMsg, errTitle, primaryButtonText, secondaryButtonText)
+		showSuccess(msg, title, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined) {
+			return this.$refs.rootPopupModal.showSuccess(msg, title, primaryButtonText, secondaryButtonText)
 		},
-		showInfo(errMsg, errTitle, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined) {
-			return this.$refs.rootPopupModal.showInfo(errMsg, errTitle, primaryButtonText, secondaryButtonText)
+		showInfo(msg, title, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined) {
+			return this.$refs.rootPopupModal.showInfo(msg, title, primaryButtonText, secondaryButtonText)
 		},
 		rootPopupClickPrimary(id) {
 			EventBus.$emit(EventBus.Events.ROOT_POPUP_CLICK_PRIMARY, id)

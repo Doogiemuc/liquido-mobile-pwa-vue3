@@ -248,20 +248,6 @@
 			</div>
 		</div>
 
-		<!-- Info popup when passkey registration did not work yet: Try again or do it later. -->
-		<popup-modal
-			id="passkeyModal"
-			ref="passkeyModal"
-			type="info"
-			:title="$t('SetupPasskeyInfoTitle')"
-			:message="$t('SetupPasskeyInfoMessage')"
-			:primary-button-text="$t('TryAgain')"
-			:secondary-button-text="$t('OkLater')"
-			@clickPrimary="passkeyTryAgain"
-			@clickSecondary="passkeyRegisterLater"
-		>
-		</popup-modal>
-
 		<!-- Setup Passkey - label and button -->
 		<div id="setupPasskeyCard" :class="{ 'collapse-max-height': !FLOW.SetupPasskey }" class="card chat-bubble chat-right">
 			<div class="card-body">
@@ -377,8 +363,8 @@ import config from "config"
 import QRCode from "qrcode"
 import liquidoInput from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
-import popupModal from "../components/popup-modal.vue"
 import log from 'loglevel'
+import EventBus from "@/services/event-bus.js"
 import webauthnService from "@/services/webauthn-service"
 
 const eMailRegEx = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,64}$/
@@ -478,7 +464,7 @@ export default {
 		},
 	},
 	name: "WelcomeChat",
-	components: { liquidoInput, popupModal },
+	components: { liquidoInput },
 	props: {
 		// URL query parameter "?inviteCode=ABC123", mapped in router.js
 		inviteCodeQueryParam: { type: String, required: false },
@@ -579,11 +565,10 @@ export default {
 					log.debug("Invite code is valid for team", team)
 					this.team = team
 				}).catch(err => {
-					console.error("Cannot find team for invite code", this.inviteCodeQueryParam)
-					
+					console.warn("Cannot find team for invite code", this.inviteCodeQueryParam)		
 				})
-		} else {
-			console.warn("Got invalid inviteCode in URL")
+		} else if (!!this.inviteCodeQueryParam) {
+			console.warn("Got inviteCode in URL with invalid syntax.")
 		}
 	},
 	/**
@@ -738,11 +723,11 @@ export default {
 					// https://babeljs.io/docs/en/babel-plugin-proposal-optional-chaining  Here Babel is cool. Ey, you need this cool top notch language feature. Just "install" it :-)
 					// Update 2025: Optional chaining is now part of the JS standard. So no need to use Babel for this. :-)
 					if (errCode === api.err.TEAM_WITH_SAME_NAME_EXISTS) {
-						this.$root.$refs.passkeyModal.showError(this.$t("teamWithSameNameExists"), this.$t("Error"))
+						this.$root.showError(this.$t("teamWithSameNameExists"), this.$t("Error"))
 					} else 
 					//MAYBE: if moblephone or email is already registered, THEN forward to login
 					{
-						this.$root.$refs.rootPopupModal.showError(this.$t("cannotCreateNewTeam"), this.$t("Error"))
+						this.$root.showError(this.$t("cannotCreateNewTeam"), this.$t("Error"))
 						log.error("Cannot create new team", err)
 					}
 					this.FLOW.CreateTeamClicked = false
@@ -855,13 +840,27 @@ export default {
 					this.$root?.$refs?.mobileDebugLogRef?.info("setupPasskey: ERROR")
 					this.$root?.$refs?.mobileDebugLogRef?.info(err)
 					console.log("SetupPasskeyError", err)
-					this.$refs.passkeyModal.show()
+					
+					// Show root modal with two buttons: Try Again (primary) and Ok Later (secondary)
+					this.$root.$refs.rootPopupModal.showInfo(
+						this.$t('SetupPasskeyInfoTitle'),
+						this.$t('SetupPasskeyInfoMessage'),
+						this.$t('TryAgain'),
+						this.$t('OkLater')
+					)
+					/* Subscribe to click events once(!) */
+					EventBus.once(EventBus.Events.ROOT_POPUP_CLICK_PRIMARY, () => {
+						this.passkeyTryAgain()
+					})
+					EventBus.once(EventBus.Events.ROOT_POPUP_CLICK_SECONDARY, () => {
+						this.passkeyRegisterLater()
+					})
 				})
 		},
 
 		passkeyTryAgain() {
 			console.log("Setup passkey again.")
-			this.$refs.passkeyModal.hide()
+			this.$root.$refs.rootPopupModal.hide()
 			this.FLOW.SetupPasskeyClicked = false
 			this.FLOW.SetupPasskeySuccessfull = false
 			this.FLOW.RegistrationFinished = false
@@ -869,7 +868,7 @@ export default {
 		
 		passkeyRegisterLater() {
 			console.log("User will setup passkey laster.")
-			this.$refs.passkeyModal.hide()
+			this.$root.$refs.rootPopupModal.hide()
 			this.FLOW.SetupPasskeyClicked = true
 			this.FLOW.SetupPasskeySuccessfull = false
 			this.FLOW.RegistrationFinished = true

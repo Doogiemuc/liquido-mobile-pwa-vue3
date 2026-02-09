@@ -391,8 +391,8 @@ function isEmail(s) {
 				<i class="fa-solid fa-circle fa-stack-2x" style="color:var(--proposal-icon-bg)"></i>
 				<i class="fa-solid fa-arrow-up-from-bracket fa-stack-1x"></i>
 			</span>
-			<div class="card-header">
-				<div class="card-header text-center my-3">
+			<div class="card-header pb-3">
+				<div class="text-center my-3">
 					<i class="fas fa-scale-balanced fa-3x" style="color: var(--primary)"></i>
 				</div>
 				<liquido-input v-if="isNew" 
@@ -408,7 +408,6 @@ function isEmail(s) {
 					/>
 				<h1 v-else class="poll-title" id="pollTitle">{{ poll.title }}</h1>
 			</div>
-
 			<div v-if="isNew" class="card-body">
 				<TransitionGroup name="fade" class="polly-proposals-wrapper" tag="ul">
 					<li v-for="(prop, index) in poll.proposals" :key="prop.id" class="polly-proposal">
@@ -589,10 +588,12 @@ $polly-proposal-margin-bottom: 20px;
 	// no borders
 	.card-header {
 		border-bottom: none;
+		background-color: white;
 	}
 	.card-footer {
 		border-top: none;
-		//background-color: white;
+		background-color: white;
+		margin-bottom: 1rem;
 	}
 
 	.footer-status {

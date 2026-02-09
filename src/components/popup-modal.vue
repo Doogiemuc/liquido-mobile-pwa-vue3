@@ -1,8 +1,9 @@
 <template>
 	<div :id="id"
 		class="modal"
+		:class="{ 'inline-mode': inlineMode }"
 		tabindex="-1"
-		data-backdrop="static"
+		data-bs-backdrop="static"
 		data-keyboard="false"
 		aria-labelledby="modalLabel"
 		aria-hidden="true"
@@ -14,7 +15,7 @@
 						<i :class="headerIconClass" class="bounce-anim-icon"></i>
 						<div class="header-icon-shadow bounce-anim-shadow">&nbsp;</div>
 						<h1 v-if="myTitle" id="modalLabel" class="modal-title">{{ myTitle }}</h1>
-						<button v-if="showHeaderClose" type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<button v-if="showHeaderClose" type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
 							<span aria-hidden="true">&times;</span>
 						</button>
 					</slot>
@@ -79,6 +80,7 @@ export default {
 		contentClass: { type: String, required: false, default: "" },
 		primaryButtonText: { type: String, required: false, default: function() { return OK_text } },
 		secondaryButtonText: { type: String, required: false, default: undefined },
+		inlineMode: { type: Boolean, required: false, default: false },  // if true, modal appears inline within content instead of fixed overlay
 	},
 	emits: ["clickPrimary", "clickSecondary"],
 	data() {
@@ -127,9 +129,7 @@ export default {
 		}
 	},
 	mounted() {
-		this.myModal = new Modal(document.getElementById(this.id), {
-			backdrop: "static"
-		})
+		this.myModal = new Modal(document.getElementById(this.id))
 	},
 	methods: {
 		/** 
@@ -181,6 +181,20 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.modal {
+	&.inline-mode {
+		position: relative !important;
+		display: block !important;
+		background: transparent !important;
+		
+		.modal-dialog {
+			position: relative !important;
+			width: 100% !important;
+			margin: 2rem auto !important;
+		}
+	}
+}
+
 .modal-content {
 	.modal-header {
 		border-bottom: none;   // "Less is more in UI-design!"

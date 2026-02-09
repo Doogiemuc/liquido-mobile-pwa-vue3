@@ -73,20 +73,11 @@
 				{{ $t("finishVotingPhase") }}
 			</button>
 		</div>
-
-		<popup-modal 
-			id="votingPhaseStartedModal"
-			ref="votingPhaseStartedModal"
-			type="success"
-		>
-			{{ $t("votingPhaseStartedSuccessfully") }}
-		</popup-modal>
 	</div>
 </template>
 
 <script>
 import pollPanel from "@/components/poll-panel.vue"
-import popupModal from "@/components/popup-modal.vue"
 // import polly from '@/components/polly.vue'
 import EventBus from "@/services/event-bus.js"
 import api from "@/services/liquido-graphql-client.js"
@@ -124,7 +115,7 @@ export default {
 			},
 		},
 	},
-	components: { pollPanel, popupModal },
+	components: { pollPanel },
 	props: {
 		// Allow number or string that contains an integer. Url parameter is passed as String, 
 		// but $router.push({name: "pollShow", params: {pollId: 4711 }}) can be passed as number. We'll accept both
@@ -242,7 +233,7 @@ export default {
 			api.startVotingPhase(this.poll.id).then(poll => {
 				this.startVoteLoading = false
 				this.poll = poll  // startVotingPhase returns updated poll in new status
-				this.$refs["votingPhaseStartedModal"].show()
+				this.$root.showSuccess(this.$t("votingPhaseStartedSuccessfully"), "")
         document.getElementsByTagName("html").scrollTop = 0
 				//$("html, body").animate({ scrollTop: 0 }, 500)
 			}).catch(err => {
