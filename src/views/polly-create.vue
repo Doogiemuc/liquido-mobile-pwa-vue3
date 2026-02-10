@@ -132,7 +132,7 @@ export default defineComponent({
 	},
 	mounted() {
 		this.$store.setHeaderTitle(this.pollyHeaderTitle)
-		this.$store.setHeaderBackLink("/polls")
+		this.$store.setHeaderBackLink({ name: "polls" })
 		this.$root.scrollToTop()
 		document.getElementById("pollTitle")?.focus()
 		
@@ -150,7 +150,7 @@ export default defineComponent({
 			return api.createPoll(this.pollTitle)
 				.then(createdPoll => {
 					console.log("New poll created", createdPoll)
-					this.$router.push("/polls/" + createdPoll.id)
+					this.$router.push({name: "showPoll", params: {pollId: createdPoll.id} })
 				})
 				.catch(err => console.warn("Error", err))
 		},

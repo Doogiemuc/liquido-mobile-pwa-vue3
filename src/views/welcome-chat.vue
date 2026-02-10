@@ -287,7 +287,7 @@
 					id="gotoTeamButton"
 					class="btn btn-primary w-100"
 					type="button"
-					@click="gotoTeam"
+					@click="$root.gotoTeam"
 				>
 					<i class="fas fa-users" />
 					{{ $t("gotoTeam") }}
@@ -319,7 +319,7 @@
 					id="gotoTeamButton"
 					class="btn btn-primary float-end mb-3"
 					type="button"
-					@click="gotoTeam"
+					@click="$root.gotoTeam"
 				>
 					<i class="fas fa-users" />
 					{{ $t("gotoTeam") }}
@@ -576,10 +576,10 @@ export default {
 	 */
 	mounted() {
 		if (api.isAuthenticated()) {
-			this.gotoTeam()
+			//TODO: Check if user is already logged in. If so, then welcome him. User may want to join yet another existing team.
+			this.$root.gotoTeam()
 			return
 		}
-		//TODO: Check if user is already logged in. If so, then welcome him. User may want to join yet another existing team.
 
     this.startChatAnimation()
 
@@ -875,10 +875,6 @@ export default {
 			this.$nextTick(() => {
 				this.$root.scrollElemToTop(document.getElementById("setupPasskeyCard"))
 			})
-		},
-
-		gotoTeam() {
-			this.$router.push({name: "teamHome"})
 		},
 
 		gotoCreatePoll() {

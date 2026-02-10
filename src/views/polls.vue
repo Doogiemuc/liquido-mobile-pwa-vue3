@@ -1,11 +1,10 @@
 <template>
 	<div>
-		<div id="polls-page" class="d-flex justify-content-between align-items-center">
+		<div id="pollsPage" class="d-flex justify-content-between align-items-center">
 			<div>&nbsp;</div>
 			<h1 class="page-title flex-grow-1">
 				{{ pageTitleLoc }}
 			</h1>
-			<i class="fas fa-search text-secondary" @click="toggleSearch" />
 		</div>
 
 		<div v-if="loading" class="my-3">
@@ -38,7 +37,7 @@
 
 							</div>
 							<div class="flex-grow-1">
-								<h3 class="poll-title">{{ poll.title }}</h3>
+								<h2 class="poll-title">{{ poll.title }}</h2>
 								<div class="poll-footer">
 									<div v-if="poll.status === 'VOTING'">
 										<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
@@ -101,8 +100,6 @@
 				<i class="fas fa-shield-alt" /> {{ $t("createPoll") }} <i class="fas fa-angle-double-right" />
 			</button>
 		</div>
-
-		<navbar-bottom @update:selectedFilter="handleNavbarFilterchange"></navbar-bottom>
 	</div>
 </template>
 
@@ -142,7 +139,7 @@ export default {
 				finishedPollsInfo: "Diese Abstimmungen sind beendet.",
 				finished: "abgeschlossen",
 				noPollYet: "Euer Admin hat bisher noch keine Abstimmung erstellt.",
-				noPollsMatchSearch: "<kein Treffer>",
+				noPollsMatchSearch: "",
 				noPollsInElaboration: "Aktuell gibt es gerade keine Abstimmungen mit Wahlvorschläge die noch diskutiert werden können.",
 				noPollsInVoting: "Es läuft gerade keine Abstimmungen, in der du deine Stimmen abgegeben könntest.",
 				noFinishedPolls: "In eurem Team gibt es bisher noch keine abgeschlossenen Abstimmungen.",
@@ -239,7 +236,8 @@ export default {
 	},
 	
 	mounted() {
-		
+		this.$store.setHeaderTitle(this.pageTitleLoc)
+		this.$store.setHeaderBackLink({name: "team"})
 	},
 	
 	methods: {
@@ -308,11 +306,11 @@ export default {
 
 		goToPoll(pollId) {
 			//TODO: need better transition, that doesn't jump up and down because of scrolling position.
-			this.$router.push("/polls/" + pollId)
+			this.$router.push( {name: "showPoll", params: { pollId: pollId } })
 		},
 
 		gotoCreatePoll() {
-			this.$router.push("/polls/create")
+			this.$router.push({ name: "createPoll" })
 		},
 
 		/** Try to flexibly match as much as possible. Case insesitive */
@@ -372,41 +370,41 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style>
+
 
 /** MUST SET THE height TO A FIXED VALUE, for animating it. */
 .poll-card-wrapper {
-	height: 5rem;
+	height: 7rem;
 	margin-bottom: 10px;
 	overflow: hidden;
 	transition: all 0.5s;
 }
 
 .poll-card {
+	--iconSize: 40px;
+	
 	cursor: pointer;
-	height: 100% !important;  // bootstrap .card sets a height that we need to overwrite
-	
-	
+	height: 100% !important;  /* bootstrap .card sets a height that we need to overwrite */
+	border-radius: var(--liquido-border-radius);
+
 	.card-body {
 		padding: 0 10px;
 	}
 	
-
-  $iconSize: 40px;
-
 	.poll-icon-elaboration, .poll-icon-voting {
 		color: white;
 		background-color: var(--proposal-icon-bg);
 		border-radius: 50%;
 		text-align: center;
-		font-size: $iconSize * 0.5;
-		line-height: $iconSize;
-		min-width: $iconSize;
-		max-width: $iconSize;
-		width: $iconSize;
-		min-height: $iconSize;
-		max-height: $iconSize;
-		height: $iconSize;
+		font-size: var(--iconSize) * 0.5;
+		line-height: var(--iconSize);
+		min-width: var(--iconSize);
+		max-width: var(--iconSize);
+		width: var(--iconSize);
+		min-height: var(--iconSize);
+		max-height: var(--iconSize);
+		height: var(--iconSize);
 		margin: 0 10px 0 0;
 	}
 
@@ -415,15 +413,20 @@ export default {
 	}
 
 	.poll-icon-finished {
-		font-size: $iconSize;
+		font-size: var(--iconSize);
 		color: var(--primary);
 		filter: brightness(50%);
 		margin: 0 10px 0 0;
 	}
 
 	.poll-title {
-		//color: var(--primary);    // poll-titles are black, proposal titles are --primary!
-		font-size: 1.0rem !important;   // smaller than normal H3
+		color: black;    /* poll-titles are black, proposal titles are --primary! */
+		font-size: 1.2rem !important;  /* a bit smaller than normal h2 */
+		display: -webkit-box;
+		-webkit-line-clamp: 2;  /* max 2 lines */
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		
 	}
 
 	.poll-footer {
@@ -462,8 +465,7 @@ export default {
 	margin: 0;
 	padding: 0;
 }
-//.poll-list-enter-active,
-.poll-list-leave-active .poll-card {
+.poll-list-enter-active, .poll-list-leave-active .poll-card {
 	opacity: 0.5;
 }
 

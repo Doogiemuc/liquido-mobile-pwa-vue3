@@ -183,7 +183,7 @@ $proposal_icon_size: 2.5rem;
 
 	.card-header {
 		border-bottom: none;
-		//background-color: white;
+		background-color: white;
 	}
 	/*
 	.card-body {

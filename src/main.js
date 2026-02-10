@@ -67,7 +67,7 @@ const globalTranslations = {
 		vote: "abstimmen",   // Verb
 		Poll: "Abstimmung",
 		Polls: "Abstimmungen",
-		Law: "Regel",
+		Law: "Regel",   // Gesetz? ... vielleicht irgendwann mal wenn die LIQUIDO Liquid Democracy Revolution erfolgreich war :-)
 		Laws: "Regeln",
 
 		newPoll: "Neue Abstimmung",
@@ -127,6 +127,9 @@ const rootApp = createApp({
 	...RootApp, // merge these attributes into root-app.vue
 	//render: (h) => h(App),
 })
+
+//MAYBE: It is possible to register components globally. https://vuejs.org/guide/components/registration.html#global-registration
+//rootApp.component('globalComponent', globalComponent)
 
 rootApp.config.globalProperties.$store = store // make store available in all components via this.$store
 rootApp.use(router)

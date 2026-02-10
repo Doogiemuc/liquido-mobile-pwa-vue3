@@ -129,7 +129,7 @@
                         id="joinedTeamGoToTeamButton"
                         class="btn btn-primary float-end mb-1"
                         type="button"
-                        @click="gotoTeam"
+                        @click="$root.gotoTeam"
                     >
                         {{ $t("gotoTeam") }}
                         <i class="fas fa-angle-double-right" />
@@ -338,11 +338,6 @@ export default {
 		/* user's email must match regex */
 		isEmailValid(val) {
 			return val !== undefined && val !== null && eMailRegEx.test(val)
-		},
-
-
-		gotoTeam() {
-			this.$router.push({name: "teamHome"})
 		},
 
 		/** Join an existing team */

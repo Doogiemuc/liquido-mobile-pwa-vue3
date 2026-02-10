@@ -51,7 +51,7 @@ const routes = [
 
 	{
 		path: "/team",
-		name: "teamHome",
+		name: "team",
 		component: () => import("@/views/team-home.vue"),
 		props: true,  // teamId, teamName, teamLogoUrl
 	},
@@ -148,7 +148,7 @@ if (process.env.NODE_ENV === "development") {
 }
 
 const router = createRouter({
-	// https://router.vuejs.org/guide/essentials/history-mode
+	// https://router.vuejs.org/guide/essentials/history-mode.html#HTML5-Mode
 	// The history mode withouth hash "#" needs a special web-server configuration in PROD.
 	// Its advantage is that it provides clean SEO conform URLs, e.g. /liquido-mobile/login
   history: createWebHistory(config.BASE_URL),  // createWebHashHistory(config.BASE_URL),
@@ -244,7 +244,7 @@ router.beforeEach(async (routeTo, routeFrom) => {
 	return tryToAuthenticate().then(() => {
 		log.debug("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
 		if (routeTo.path === "/" || routeTo.path === "/index.html") {
-			return {name: "teamHome"}  
+			return {name: "team"}  
 		} else {
 			return true // allow authenticated navigation
 		}

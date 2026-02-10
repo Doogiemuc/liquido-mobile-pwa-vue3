@@ -534,7 +534,7 @@ $polly-proposal-margin-bottom: 20px;
 
 	.share-poll-icon {
 		cursor: pointer;
-		color: var(--icon-color);
+		color: white;
 		position: absolute;
 		top: -0.4rem;
 		right: -0.4rem;
@@ -561,7 +561,10 @@ $polly-proposal-margin-bottom: 20px;
 		font-size: 1.25rem;
 		font-weight: bold;
 		text-align: center;
-
+		display: -webkit-box;
+		-webkit-line-clamp: 2;  /* max 2 lines */
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
 
 	.pos-top-middle {

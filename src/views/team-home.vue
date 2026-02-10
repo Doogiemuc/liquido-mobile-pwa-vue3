@@ -10,7 +10,7 @@
 			</div>
 		</div>
 
-		<button id="gotoPollsButton" class="btn btn-primary btn-lg w-100 mb-5" @click="gotoPolls()">
+		<button id="gotoPollsButton" class="btn btn-primary btn-lg w-100 mb-5" @click="$root.gotoPolls">
 			{{ $t("gotoPolls") }}
 			<i class="fas fa-angle-double-right" />
 		</button>
@@ -208,10 +208,6 @@ export default {
 
 		getImgUrl(imgFile) {
 			return config.avatarPath + "/" + imgFile
-		},
-
-		gotoPolls() {
-			this.$router.push({ name: "polls" })
 		},
 
 		clickLogout() {

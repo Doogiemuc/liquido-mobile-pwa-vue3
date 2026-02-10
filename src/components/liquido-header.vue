@@ -124,7 +124,7 @@ export default {
 <style lang="scss" scoped>
 
 .liquidoMockHeader {
-	background-color: darkred !important;
+	/* background-color: darkred !important; */
 }
 
 #liquidoHeader {
@@ -133,16 +133,16 @@ export default {
 	left: 0;
 	top: 0;
 	width: 100%;
-	height: var(--header-height);
-	color: white;
+	/*height: var(--header-height);*/
+	color: var(--header-color);
 	flex-direction: row;
 	justify-content: space-between;
 	z-index: 999;
-	transition: all 0.5s;
+	transition: height 0.5s;
 	background-color: var(--header-bg);
 	//opacity: 0.95;   // does not look good with iOS Safari header
-	padding: 0;
-	box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3); /* horizontal, vertical, blur, color */
+	padding: 0.5rem 0;
+	/*box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3); /* horizontal, vertical, blur, color */
   z-index: 9999; /* make sure the header is on top of everything */
   
 	
@@ -158,7 +158,7 @@ export default {
 			padding: 0;
 			margin: 0;
 			h1 {
-				font-family: 'Libre Baskerville', serif;
+				/*font-family: 'Libre Baskerville', serif;*/
 				margin: 0;
 				padding: 0;
 			}
@@ -166,7 +166,7 @@ export default {
 	}
 	
 	.header-left, .header-right {
-		color: white;
+		color: var(--header-color);
 		display: flex;
 		align-items: center;
 		text-align: center;

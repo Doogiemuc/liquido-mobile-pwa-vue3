@@ -12,31 +12,65 @@
 :root {
 	
   --app-max-width: 1000px;
-	--app-background: #f3f4f6;  /* abit darker #e3e7f0; */
-	
-  --header-height: 3rem;
-  --header-bg: #429cf3;
-  --navbar-bg: #429cf3;
+	--app-background: #f2f3f5;  /* also nice, abit darker: #e3e7f0; */
 
-  --primary: #2e8dff;
+	--primary: #2e8dff;
   --secondary: #bbb;
   
-  --liquido-text-color: #333333;
+  --header-height: 3rem;
+	--header-color: #2e8dff;     /* Header TEXT color */
+  --header-bg: #f3f4f6;        /* Nice color by stitch.withgoogle.com #429cf3; */
+  
+	--liquido-border-radius: 20px;   /* also used navbar-arrows and for poll cards */
 
+  /* Welcome Chat */
   --chat-left-bg: #dbeafe; /* light blue by stich google,   that was a darker one #aacfff; */
   --chat-right-bg: #fff;
   --liquido-input-bg: #afc2fa;
 
-	--icon-color: white;
+	/* Proposals in a poll */
   --proposal-icon-bg: #429cf3;
 
-/* Maybe: distinguish between an info text and and info box */
+	/* Info text in .alert on --app-background */
   --liquido-info-color: #666;
   --liquido-info-background: transparent;
   
 	--admin-info-text-color: white;
   --admin-info-background: #217DAA;
-	
+}
+
+/** Ensure html and body fill the viewport without overflow
+ * This prevents iOS Safari from showing its UI on PWA pages with minimal content */
+html, body {
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+}
+
+/* The outermost VUE app element */
+#app {
+  margin: 0 auto;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  max-width: var(--app-max-width);
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: var(--app-background);
+  /* Reserve space for scrollbar to prevent navbar jumping when scrollbar appears/disappears */
+  scrollbar-gutter: stable;
+}
+
+/** This is the scrolling part of the page */
+#app #appContent {
+  background-color: var(--app-background);
+  min-height: 100%;  /* Always fill viewport, even with minimal content */
+	padding-top: var(--header-height);  /* padding so that page content can bee seen under liquido-header */
+  /*padding-bottom: 110px;  /* Account for fixed navbar (100px) + spacing */
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 /** LIQUIDO - beautifull brand mark */
@@ -78,6 +112,8 @@
 	position: absolute;  /* MUST position this page absolute, so that incomign page is shown correctly */
 	top: 0;
 	width: 100%;
+	height: 100%;
+	min-height: 100%;  /* Keep leaving page at full viewport height during transition */
 }
 /* This class is added to the page that leaves to the left */
 .slide-left-leave-to,
@@ -87,30 +123,10 @@
 	transform: translate(-100%, 0);
 }
 
-/* The outermost VUE app element */
-#app {
-  margin: 0 auto;
-  position: relative;
-  height: 100vh;
-  width: 100%;
-  max-width: var(--app-max-width);
-  overflow-x: hidden;
-  overflow-y: scroll;
-  background-color: var(--app-background);
 
-}
-
-/** This is the scrolling part of the page */
-#app #appContent {
-  background-color: var(--app-background);
-	padding-top: var(--header-height);  /* padding so that page content can bee seen under liquido-header */
-  padding-bottom: 10px;
-  padding-left: 10px;
-  padding-right: 10px;
-}
 
 #app .page-title {
-  font-family: 'Libre Baskerville', serif;
+  /*font-family: 'Libre Baskerville', serif; */
 	color: var(--primary);
 	transition: opacity 0.2s linear;
   margin: 2rem 0;

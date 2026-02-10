@@ -85,7 +85,7 @@ export default {
 		// we normally go back to polls page, except when headerBackLinkg was already set from welcome-chat.vue
 		console.log("poll-create mounted, headerBackLink:", this.$store.headerBackLink)
 		if (!this.$store.headerBackLink) {
-			this.$store.setHeaderBackLink("/polls") 
+			this.$store.setHeaderBackLink({name: "polls"}) 
 		}
 		this.$root.scrollToTop()
 	},
@@ -99,7 +99,7 @@ export default {
 		 * Keep in mind that user might come directly from welcome-chat.vue
 		 */
 		clickCancelOrBack() {
-			this.$router.push({name: "polls"})
+			this.$root.gotoPolls()
 		},
 
 		/** Create a new poll with the given title */
@@ -107,7 +107,7 @@ export default {
 			return api.createPoll(this.pollTitle)
 				.then(createdPoll => {
 					log.info("New poll created", createdPoll)
-					this.$router.push("/polls/" + createdPoll.id)
+					this.$router.push({name: "showPoll", params: { pollId: createdPoll.id } })
 				})
 				//TODO: error handling for createPoll: show global popup error message
 				.catch(err => console.warn("Cannot create poll", err))

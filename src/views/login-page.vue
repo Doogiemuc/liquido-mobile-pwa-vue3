@@ -235,7 +235,7 @@ export default {
 				// Login via E-Mail
 				EmailSentSuccessfully: "Ok, ich habe dir eine Email mit einem Code geschickt.",
 				CouldNotSendEmail: "Es gab ein Problem beim Verschicken der E-Mail. Bitte versuche es später noch einmal.",
-				UserWithThatEmailNotFound: "Tut mir leid, ich kenne niemanden mit dieser E-Mail Adresse. Möchtest du dich <a href='/welcome'>zuerst registrieren</a>?",
+				UserWithThatEmailNotFound: "Tut mir leid, ich kenne niemanden mit dieser E-Mail Adresse. Möchtest du dich <RouterLink to='/welcome'>zuerst registrieren</RouterLink>?",
 				EmailTokenInvalid: "Der eingegebene E-Mail-Token ist ungültig.",
 				
 				// Forgot password / password reset
@@ -391,7 +391,7 @@ export default {
 			this.loginErrorMessage = null
 			api.loginWithEmailPassword(this.emailInputVal, this.passwordInputVal)
 				.then(() => {
-					this.$router.push({ name: "teamHome" })
+					this.$root.gotoTeam()
 				})
 				.catch(err2 => {
 					console.warn("Could not login with email & password", err2)
@@ -474,7 +474,7 @@ export default {
 			try {
 				let teamData = await webauthnService.loginWithWebAuthn(this.emailInputVal)
 				api.login(teamData.team, teamData.user, teamData.jwt)
-				this.$router.push({ name: "teamHome" })
+				this.$root.gotoTeam()
 			} catch (err) {
 				console.error("Login page: WebAuthn login failed:", err)
 				this.loginErrorMessage = this.$t("WebAuthnLoginFailed")
@@ -580,7 +580,7 @@ export default {
 				api.logout()
 				api.googleOneTapLogin(response.credential)
 					.then(() => {
-						this.$router.push({ name: "teamHome" })
+						this.$root.gotoTeam()
 					})
 					.catch(err => {
 						console.error("Google One Tap login failed", err)
@@ -600,7 +600,7 @@ export default {
 			api.logout()
 			api.devLogin(config.devLogin.admin.email, config.devLogin.teamName, config.devLogin.token).then(() => {
 				this.$root.scrollToTop()
-				this.$router.push({ name: "polls" })
+				this.$root.gotoPolls()
 			}).catch(err => console.error("DevLogin Admin failed!", err))
 		},
 
@@ -611,7 +611,7 @@ export default {
 			api.devLogin(config.devLogin.member.email, config.devLogin.teamName, config.devLogin.token)
 				.then(() => {
 					this.$root.scrollToTop()
-					this.$router.push({ name: "polls" })
+					this.$root.gotoPolls()
 				})
 				.catch(err => console.error("DevLogin Member failed!", err))
 		},
@@ -674,7 +674,7 @@ export default {
 			this.tokenErrorMessage = undefined
 			api.loginWithAuthToken(this.mobilephone, this.twillioAuthToken)
 				.then(() => {
-					this.$router.push({ name: "teamHome" })
+					this.$root.gotoTeam()
 				})
 				.catch(err => {
 					// Show a human readable error message
@@ -730,7 +730,7 @@ export default {
 			this.emailErrorMessage = undefined
 			api.loginWithEmailToken(this.email, this.emailToken)
 				.then(() => {
-					this.$router.push({ name: "teamHome" })
+					this.$root.gotoTeam()
 				})
 				.catch(err => {
 					console.error("Cannot login with email token", err)

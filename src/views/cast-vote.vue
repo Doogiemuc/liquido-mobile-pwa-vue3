@@ -163,7 +163,7 @@ export default {
 	created() {
 		this.loading = true
 		this.$store.setHeaderTitle(this.$t("castVoteTitle"))
-		this.$store.setHeaderBackLink("/polls/" + this.pollId)
+		this.$store.setHeaderBackLink({name: "showPoll", params: {pollId: this.pollId} })
 
 		/** 
 		 * Force refresh of the poll we want to cast a vote on. Load the from the backend.

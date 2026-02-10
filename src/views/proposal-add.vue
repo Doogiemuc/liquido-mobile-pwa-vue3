@@ -179,7 +179,7 @@ export default {
 	created() {
 		api.getPollById(this.pollId, true).then(poll => this.poll = poll)
 		this.$store.setHeaderTitle(this.$t("addProposal"))
-		this.$store.setHeaderBackLink("/polls/"+this.pollId)
+		this.$store.setHeaderBackLink({name: "showPoll", params: {pollId: this.pollId} })
 	},
 	mounted() {
 		this.$root.scrollToTop()		
@@ -236,7 +236,7 @@ export default {
 
 		/** Called on successfull save. */
 		gotoPoll() {
-			this.$router.push("/polls/" + this.poll.id)
+			this.$router.push({ name: "showPoll", params: { pollId: this.pollId } })
 		},
 		
 		goBack() {

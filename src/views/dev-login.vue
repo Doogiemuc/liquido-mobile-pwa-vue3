@@ -14,7 +14,7 @@
 <script>
 /**
  * Development login used for testing. Must provide correcct devLogin.token via query parameter.
- * When login is successfull, then user is forwarded to teamHome.
+ * When login is successfull, then user is forwarded to team.
  */
 
 import api from "@/services/liquido-graphql-client"
@@ -40,7 +40,7 @@ export default {
 	mounted() {
 		api.devLogin(this.email, this.teamName, this.token).then((res) => {
 			console.log("devLogin successfull.", res)
-			this.$router.push({name: "teamHome"})		// DevLogin navigates to team-home ! Tests rely on this!
+			this.$root.gotoTeam()
 		}).catch(err => {
 			this.devLoginErrorMessage = JSON.stringify(err)
 			console.error("DevLogin failed!", err)

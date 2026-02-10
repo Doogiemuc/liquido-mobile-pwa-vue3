@@ -19,7 +19,8 @@
 				<component :is="Component" id="appContent" class="router-view container-lg"/>
 			</transition>
 		</router-view>
-		<mobile-debug-log  v-if="showDebugLog" ref="mobileDebugLogRef"></mobile-debug-log>
+		<navbar-bottom v-model="pollStatusFilter"></navbar-bottom>
+		<mobile-debug-log v-if="showDebugLog" ref="mobileDebugLogRef"></mobile-debug-log>
 	</div>
 </template>
 
@@ -36,6 +37,7 @@ import popupModal from "@/components/popup-modal.vue"
 import mobileDebugLog from "@/components/mobile-debug-log.vue"
 import api from "@/services/liquido-graphql-client.js"
 import EventBus from "@/services/event-bus.js"
+import navbarBottom from "@/components/navbar-bottom.vue"
 import config from "config"
 
 
@@ -49,7 +51,7 @@ const page_order = {
 	"welcome": 1,
 	"login": 1,     // welcome and login are on the same level, so they fade instead of sliding sideways
 	"forgotPassword": 2,
-	"teamHome": 3,
+	"team": 3,
 	"polls": 4,
 	"createPoll": 5,
 	"showPoll": 6,
@@ -64,11 +66,12 @@ let pollsScrollPos = undefined
 export default {
 	name: "LiquidoApp",
 	// Remark: vue-i18n is configured in main.js! Do not overwrite it here by setting the i18n: property
-	components: { liquidoHeader, popupModal, mobileDebugLog },
+	components: { liquidoHeader, popupModal, navbarBottom, mobileDebugLog },
 	data() { 
 		// These data attributes are reactive and available in EVERY sub-component as this.$root.<attributeName>
 		return {
 			transitionName: "", 	// CSS sliding transition between page components
+			pollStatusFilter: api.POLL_STATUS.ALL_POLLS,
 			// Global popup-modal
 			modalType: "success",
 			modalTitle: "",
@@ -95,7 +98,7 @@ export default {
 				if (fromOrder < toOrder) { this.transitionName = "slide-left" }   // this is a prefix for the CSS classes. See CSS below 
 				if (fromOrder > toOrder) { this.transitionName = "slide-right"}
 			}
-
+			
 			let app = document.getElementById("app")
 			if (from.name === "polls") {
 				//console.log("Saving scroll pos of " + from.name + " = " + app.scrollTop)
@@ -147,7 +150,17 @@ export default {
 		//
 		// These methods are available as this.$root.<method> in all vue sub components of root-app
 		//
+		gotoPoll(pollId) {
+			this.$router.push({name: "showPoll", params: {pollId: pollId}})
+		},
+		
+		gotoPolls() {
+			this.$router.push({name: "polls"})
+		},
 
+		gotoTeam() {
+			this.$router.push({name: "team"})
+		},
 
 
 		/*

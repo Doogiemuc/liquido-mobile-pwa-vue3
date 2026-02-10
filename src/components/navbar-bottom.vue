@@ -1,49 +1,47 @@
 <template>
-	<div id="navbar">
-		<!-- div id="teamButton" class="team-button">
-			<a href="#" aria-label="Team" @click="goToTeam()">
-				<div class="nav-bar-icon">
-					<i class="fas fa-users"></i>
-				</div>
-				<div class="icon-title">{{ $t("team") }}</div>
-			</a>
-		</div -->
-		<div id="pollsInDiscussionArrow" :class="discussButtonClass" class="discuss-button">
-			<a href="" aria-label="Polls to discuss" @click.prevent="clickPollsInDiscussion()">
-				<div class="nav-bar-icon">
-					<i class="fas fa-comments"></i>
-					<span class="counter-badge">{{ pollsInElaboration.length }}</span>
-				</div>
-				<div class="icon-title">{{ $t("discuss") }}</div>
-			</a>
+	<nav id="navbar">
+		<a href="#" class="team-button" aria-label="Team" @click="$root.gotoTeam">
+			<div class="nav-bar-icon">
+				<i class="fas fa-users"></i>
+			</div>
+			<div class="icon-title">{{ $t("team") }}</div>
+		</a>
+		<div id="navbar-arrows">
+			<div id="pollsInDiscussionArrow" :class="discussButtonClass" class="discuss-button">
+				<a href="" aria-label="Polls to discuss" @click.prevent="clickPollsInDiscussion()">
+					<div class="nav-bar-icon">
+						<i class="fas fa-comments"></i>
+						<span class="counter-badge">{{ pollsInElaboration.length }}</span>
+					</div>
+					<div class="icon-title">{{ $t("discuss") }}</div>
+				</a>
+			</div>
+			<div id="pollsInVotingArrow" :class="voteButtonClass" class="vote-button">
+				<a href="" aria-label="Polls in voting" @click.prevent="clickPollsInVoting()">
+					<div class="nav-bar-icon">
+						<i class="fas fa-person-booth"></i>
+						<span class="counter-badge">{{ pollsInVoting.length }}</span>
+					</div>
+					<div class="icon-title">{{ $t("vote") }}</div>
+				</a>
+			</div>
+			<div id="finishedPollsArrow" :class="finishedButtonClass" class="finished-button">
+				<a href="" aria-label="Finished polls" @click.prevent="clickFinishedPolls()">
+					<div class="nav-bar-icon">
+						<i class="fas fa-check-circle"></i>
+						<span class="counter-badge">{{ pollsFinished.length }}</span>
+					</div>
+					<div class="icon-title">{{ $t("finished") }}</div>
+				</a>
+			</div>
 		</div>
-		<div id="pollsInVotingArrow" :class="voteButtonClass" class="vote-button">
-			<a href="" aria-label="Polls in voting" @click.prevent="clickPollsInVoting()">
-				<div class="nav-bar-icon">
-					<i class="fas fa-person-booth"></i>
-					<span class="counter-badge">{{ pollsInVoting.length }}</span>
-				</div>
-				<div class="icon-title">{{ $t("vote") }}</div>
-			</a>
-		</div>
-		<div id="finishedPollsArrow" :class="finishedButtonClass" class="finished-button">
-			<a href="" aria-label="Finished polls" @click.prevent="clickFinishedPolls()">
-				<div class="nav-bar-icon">
-					<i class="fas fa-check-circle"></i>
-					<span class="counter-badge">{{ pollsFinished.length }}</span>
-				</div>
-				<div class="icon-title">{{ $t("finished") }}</div>
-			</a>
-		</div>
-		<!-- div id="infoButton" class="info-button">
-			<a href="#" aria-label="Info" @click="goToInfo()">
-				<div class="nav-bar-icon">
-					<i class="fas fa-info"></i>
-				</div>
-				<div class="icon-title">{{ $t("info") }}</div>
-			</a>
-		</div -->
-	</div>
+		<a href="#" aria-label="Info" class="info-button" @click="gotoInfo">
+			<div class="nav-bar-icon">
+				<i class="fas fa-info"></i>
+			</div>
+			<div class="icon-title">{{ $t("info") }}</div>
+		</a>
+	</nav>
 </template>
 
 <script>
@@ -69,61 +67,66 @@ export default {
 			}
 		}
 	},
-	emits: ["update:selectedFilter"],
+	props: {
+		modelValue: { type: String, required: false, default: api.POLL_STATUS.ALL_POLLS },
+	},
+	emits: ['update:modelValue'],
 	data() {
 		return {
-			selectedFilter: api.POLL_STATUS.ALL_POLLS,
-			forceRefreshComputed: 0
+			selectedFilter: this.modelValue,
+			//forceRefreshComputed: 0
 		} 
 	},
 	computed: {
 		pollsInElaboration() {
-			this.forceRefreshComputed;
+			//this.forceRefreshComputed;
 			let allPolls = api.getCachedPolls()
 			return allPolls.filter(poll => poll.status === api.POLL_STATUS.ELABORATION)
 		},
 		pollsInVoting() {
-			this.forceRefreshComputed;
+			//this.forceRefreshComputed;
 			let allPolls = api.getCachedPolls()
 			return allPolls.filter(poll => poll.status === api.POLL_STATUS.VOTING)
 		},
 		pollsFinished() {
-			this.forceRefreshComputed;
+			//this.forceRefreshComputed;
 			let allPolls = api.getCachedPolls()
 			return allPolls.filter(poll => poll.status === api.POLL_STATUS.FINISHED)
 		},
 		discussButtonClass() {
 			return { 
-				selected: this.selectedFilter === api.POLL_STATUS.ELABORATION || this.selectedFilter === api.POLL_STATUS.ALL_POLLS,
+				deselected: this.selectedFilter !== api.POLL_STATUS.ELABORATION && this.selectedFilter !== api.POLL_STATUS.ALL_POLLS,
 				disabled: this.pollsInElaboration.length === 0
 			}
 		},
 		voteButtonClass() {
 			return { 
-				selected: this.selectedFilter === api.POLL_STATUS.VOTING || this.selectedFilter === api.POLL_STATUS.ALL_POLLS,
+				deselected: this.selectedFilter !== api.POLL_STATUS.VOTING && this.selectedFilter !== api.POLL_STATUS.ALL_POLLS,
 				disabled: this.pollsInVoting.length === 0
 			}
 		},
 		finishedButtonClass() {
 			return { 
-				selected: this.selectedFilter === api.POLL_STATUS.FINISHED || this.selectedFilter === api.POLL_STATUS.ALL_POLLS,
+				deselected: this.selectedFilter !== api.POLL_STATUS.FINISHED && this.selectedFilter !== api.POLL_STATUS.ALL_POLLS,
 				disabled: this.pollsFinished.length === 0
 			}
 		},
 	},
 	mounted() {
-		
+		this.selectedFilter = api.POLL_STATUS.ALL_POLLS
 	},
 	watch: {
-		// When selectedFilter changes, then notify the parent component
-		"selectedFilter": function() {
-			this.$emit("update:selectedFilter", this.selectedFilter)
+		selectedFilter(newValue) {
+			this.$emit('update:modelValue', newValue)
+		},
+		modelValue(newValue) {
+			this.selectedFilter = newValue
 		}
 	},
 	methods: {
 
 		/**
-		 * Behaviour of the three buttons in the navbar<
+		 * Behaviour of the three buttons in the navbar
 		 * 
 		 * 1. Debate
 		 * 2. Vote
@@ -159,6 +162,10 @@ export default {
 			}
 		},
 
+		goToInfo() {
+			this.$router.push({name: "info"}) // TODO
+		},
+
 	},
 }
 </script>
@@ -166,217 +173,44 @@ export default {
 <style scoped>
 
 #navbar {
-	--arrowColor: white;
-	--arrowColorSelected: var(--navbar-bg);
+	--arrowColor: white;  /* TEXT color */
+	--arrowBgColor: var(--primary);
 	--arrowGapColor: white;
 	--arrowWidth: 20px;
-	--arrowHeight: 2rem;
+	--arrowHeight: 60px;
 	--arrowGap: -15px;  /* negative margin, higher values = smaller gap */
-	--border-radius: 20px;
 
-	position: fixed;
-	left: 10px;
-	right: 22px;  /* some more because of scroll bar */
-	bottom: 0.5rem;
-	max-width: var(--app-max-width);
-	height: calc(2 * var(--arrowHeight) + 2px);   /* Buttons MUST have a fixed height! */
-
-	margin: 0;
-	padding: 0;
-
-	border: 1px solid var(--arrowGapColor);  
-	border-radius: var(--border-radius);
-	background-color: var(--arrowGapColor);
-	
-	z-index: 999;
-	font-size: 1.2rem;
-	box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* horizontal, vertical, blur, color */
-	background-color: var(--arrowGapColor);
-	
+	position: sticky;
+	left: 0;
+	right: 0;
+	bottom: 0;
 	display: flex;
-	flex-wrap: nowrap;
-	justify-content: center;
-	align-items: stretch;
-	gap: 0;
+	align-items: start;
 	
-	.team-button, .discuss-button, .vote-button, .finished-button, .info-button {
-		text-align: center;
-		margin: 0;
-		padding: 0;
-		
-		position: relative;
-		transition: background-color 0.5s;
-		a { 
-			position: relative;
-			text-decoration: none;
-			width: 100%;
-			height: 100%;
-			display: flex;
-			flex-direction: column;
-			justify-content: center;
-			align-items: center;
-		}
-	} 
+	/*box-sizing: border-box;*/
+	height: 100px;
+	margin: 0;
+	padding: 10px 10px 0 10px;
+	border-top: 1px solid lightgray;
 
-	.discuss-button, .vote-button, .finished-button {
-		min-width: 30px;
-		flex: 1; /* Allows them to grow/shrink equally */
-		/* flex-basis: 33%; each takes 1/3 of the width */
-		background-color: var(--arrowColor);
-		position: relative;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-	}
-
-	.discuss-button {
-		/*
-		position: absolute;
-		top: 0;
-		left: 0;
-		bottom: 0;
-		right: calc(100% * 2/3);
-		*/
-		border-top-left-radius: var(--border-radius);
-		border-bottom-left-radius: var(--border-radius);
-		clip-path: polygon(0 0, calc(100% - var(--arrowWidth)) 0, 100% 50%, calc(100% - var(--arrowWidth)) 100%, 0 100%, 0% 50%);
-		z-index: 2;
-		margin-right: var(--arrowGap);
-	}
-
-	.vote-button {
-		/*
-		position: absolute;
-		top: 0;
-		left: 33%;
-		bottom: 0;
-		right: 33%;
-		*/
-		z-index: 3;
-		/* Arrow shape using clip-path */
-		clip-path: polygon(0 0, calc(100% - var(--arrowWidth)) 0, 100% 50%, calc(100% - var(--arrowWidth)) 100%, 0 100%, var(--arrowWidth) 50%);
-	}
-
-	.finished-button {
-		/*
-		position: absolute;
-		top: 0;
-		left: 66%;
-		bottom: 0;
-		right: 0;
-		*/
-		z-index: 4;
-		border-top-right-radius: var(--border-radius);
-		border-bottom-right-radius: var(--border-radius);
-		clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, var(--arrowWidth) 50%);
-		margin-left: var(--arrowGap);
-	}
-	
-
-	/* OLD VERSION:  Arrow dividers between buttons 
-	.discuss-button::after,
-	.vote-button::after {
-		content: '';
-		position: absolute;
-		right: -10px;
-		width: 0;
-		height: 0;
-		border-left: 8px solid var(--arrowColor);
-		border-top: 20px solid transparent;
-		border-bottom: 20px solid transparent;
-		z-index: 1;
-		transition: border-color 0.5s ease;
-	}
-		*/
-	
-	/*
-	.vote-button::before,
-	.finished-button:before {
-		content: '';
-		position: absolute;
-		left: -10px;
-		width: 0;
-		height: 0;
-		border-right: 8px solid var(--arrowColor);
-		border-top: 20px solid transparent;
-		border-bottom: 20px solid transparent;
-		z-index: 1;
-		transition: border-color 0.5s ease;
-	}
-		*/
-	
-	/*
-	.finished-button::before {
-		content: '';
-		position: absolute;
-		left: -10px;
-		width: 0;
-		height: 0;
-		border-left: 8px solid var(--arrowColor);
-		border-top: 20px solid transparent;
-		border-bottom: 20px solid transparent;
-		z-index: 1;
-		transition: border-color 0.5s ease;
-	}
-		*/
-	
-	/* Selected state arrow dividers 
-	.discuss-button.selected::after {
-		border-left-color: var(--arrowColorSelected);
-	}
-	
-	.vote-button.selected::after {
-		border-left-color: var(--arrowColorSelected);
-	}
-	
-	.vote-button.selected::before {
-		border-right-color: var(--arrowColorSelected);
-	}
-	
-	.finished-button.selected::before {
-		border-right-color: var(--arrowColorSelected);
-	}
-		*/
-
-	.selected {
-		a {	color: white !important; }
-		background-color: var(--arrowColorSelected);
-		.counter-badge {
-			color: var(--primary) !important;
-		}
-	}
-	/*
-	.disabled {
-		a { color: lightgray !important; }
-		.counter-badge {
-			color: lightgray !important;
-		}
-	}
-	.disabled.selected {
-		a {
-			opacity: 0.8;
-			color: lightgray !important; 
-		}
-		.counter-badge {
-			opacity: 0.8;
-			color: var(--primary) !important;
-			background: lightgray !important;
-		}
-	}
-		*/
+	z-index: 999;
+	background-color: white;
+	font-size: 1.2rem;
+	/*will-change: transform;*/
 
 	.nav-bar-icon {
 		position: relative;
 		display: inline-block;
 		font-size: 22px;
 	}
+
 	.counter-badge {
 		position: absolute;
 		text-align: center;
 		top: -3px;
 		left: 1.1em;
 		color: var(--primary);
-		background-color: white;
+		background-color: var(--arrowColor);
 		border: 1px solid rgba(47, 141, 255, 0.5);
 		border-radius: 1em;
 		font-size: 1rem;
@@ -385,11 +219,212 @@ export default {
 		overflow: hidden;
 		line-height: 1.1;
 	}
+
 	.icon-title {
 		font-size: 10px;
 		text-decoration: none;
 		line-height: 1.0;
 	}
+
+	.team-button, .info-button {	
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		color: var(--primary);
+		padding: 0 1rem;
+		height: var(--arrowHeight);
+		text-decoration: none;
+	}
+
+	#navbar-arrows {
+		flex-grow: 1;  /* the arrows take up as much width as possible */
+		color: var(--arrowColor);
+		background-color: var(--arrowGapColor);
+		transition: background-color 0.5s;
+		/*box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* horizontal, vertical, blur, color */
+		overflow: hidden;
+		
+		display: flex;
+		flex-wrap: nowrap;
+		justify-content: center;
+		align-items: stretch;
+		gap: 0;
+		height: var(--arrowHeight);
+		border: none;  
+		border-radius: var(--liquido-border-radius);
+		
+		.discuss-button, .vote-button, .finished-button {
+			min-width: 30px;
+			flex: 1; /* Allows them to grow/shrink equally */
+			/* flex-basis: 33%; each takes 1/3 of the width */
+
+			opacity: 1.0;  /* will be set to 1.0 when .selected */
+			color: var(--arrowColor);
+			background-color: var(--arrowBgColor);
+			
+			position: relative;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+
+			a {
+				color: var(--arrowColor);
+				position: relative;
+				text-decoration: none;
+				width: 100%;
+				height: 100%;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+			}
+		}
+		
+		.deselected {
+			opacity: 0.6;
+			/*
+			a {	color: white !important; }
+			background-color: var(--arrowColorSelected);
+			.counter-badge {
+				color: var(--primary) !important;
+			}
+			*/
+		}
+
+
+		.discuss-button {
+			/*
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: calc(100% * 2/3);
+			*/
+			border-top-left-radius: var(--border-radius);
+			border-bottom-left-radius: var(--border-radius);
+			clip-path: polygon(0 0, calc(100% - var(--arrowWidth)) 0, 100% 50%, calc(100% - var(--arrowWidth)) 100%, 0 100%, 0% 50%);
+			z-index: 2;
+			margin-right: var(--arrowGap);
+		}
+
+		.vote-button {
+			/*
+			position: absolute;
+			top: 0;
+			left: 33%;
+			bottom: 0;
+			right: 33%;
+			*/
+			z-index: 3;
+			/* Arrow shape using clip-path */
+			clip-path: polygon(0 0, calc(100% - var(--arrowWidth)) 0, 100% 50%, calc(100% - var(--arrowWidth)) 100%, 0 100%, var(--arrowWidth) 50%);
+		}
+
+		.finished-button {
+			/*
+			position: absolute;
+			top: 0;
+			left: 66%;
+			bottom: 0;
+			right: 0;
+			*/
+			z-index: 4;
+			border-top-right-radius: var(--border-radius);
+			border-bottom-right-radius: var(--border-radius);
+			clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, var(--arrowWidth) 50%);
+			margin-left: var(--arrowGap);
+		}
+		
+
+		/* OLD VERSION:  Arrow dividers between buttons 
+		.discuss-button::after,
+		.vote-button::after {
+			content: '';
+			position: absolute;
+			right: -10px;
+			width: 0;
+			height: 0;
+			border-left: 8px solid var(--arrowColor);
+			border-top: 20px solid transparent;
+			border-bottom: 20px solid transparent;
+			z-index: 1;
+			transition: border-color 0.5s ease;
+		}
+			*/
+		
+		/*
+		.vote-button::before,
+		.finished-button:before {
+			content: '';
+			position: absolute;
+			left: -10px;
+			width: 0;
+			height: 0;
+			border-right: 8px solid var(--arrowColor);
+			border-top: 20px solid transparent;
+			border-bottom: 20px solid transparent;
+			z-index: 1;
+			transition: border-color 0.5s ease;
+		}
+			*/
+		
+		/*
+		.finished-button::before {
+			content: '';
+			position: absolute;
+			left: -10px;
+			width: 0;
+			height: 0;
+			border-left: 8px solid var(--arrowColor);
+			border-top: 20px solid transparent;
+			border-bottom: 20px solid transparent;
+			z-index: 1;
+			transition: border-color 0.5s ease;
+		}
+			*/
+		
+		/* Selected state arrow dividers 
+		.discuss-button.selected::after {
+			border-left-color: var(--arrowColorSelected);
+		}
+		
+		.vote-button.selected::after {
+			border-left-color: var(--arrowColorSelected);
+		}
+		
+		.vote-button.selected::before {
+			border-right-color: var(--arrowColorSelected);
+		}
+		
+		.finished-button.selected::before {
+			border-right-color: var(--arrowColorSelected);
+		}
+			*/
+
+		/*
+		.disabled {
+			a { color: lightgray !important; }
+			.counter-badge {
+				color: lightgray !important;
+			}
+		}
+		.disabled.selected {
+			a {
+				opacity: 0.8;
+				color: lightgray !important; 
+			}
+			.counter-badge {
+				opacity: 0.8;
+				color: var(--primary) !important;
+				background: lightgray !important;
+			}
+		}
+			*/
+	}
+
 
 }	
 

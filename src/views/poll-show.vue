@@ -12,7 +12,7 @@
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
 			<div v-html="$t('cannotFindPoll', {pollId: pollId})" />
-			<button type="button" class="btn btn-primary float-end" @click="goToPolls()">
+			<button type="button" class="btn btn-primary float-end" @click="$root.gotoPolls">
 				{{ $t("Back") }}
 			</button>
 		</div>
@@ -173,7 +173,7 @@ export default {
 	},
 	watch: {
 		pollId: function(/*val*/) {
-			this.loadPoll()  // necessary when navigating from /poll/:id1 to another /poll/:id2
+			this.loadPoll()  // necessary when navigating from one poll to another
 		},
 	},
 	created() {
@@ -190,7 +190,7 @@ export default {
 	},
 	mounted() {
 		this.$store.setHeaderTitle(this.pageTitleLoc)
-		this.$store.setHeaderBackLink("/polls")   // Back is go to list of polls. (Do NOT use "BACK". User could come from propsoal-add!)
+		this.$store.setHeaderBackLink({ name: "polls" })   // Back is go to list of polls. (Do NOT use "BACK". User could come from propsoal-add!)
 		this.$root.scrollToTop()  // the polls list stays. But one poll is always shown from the top
 	},
 	methods: {
@@ -213,18 +213,13 @@ export default {
 					this.showError = true
 				})
 		},
-
-		goToPolls() {
-			this.$router.push({name: "polls"})
-		},
-
 		
 		clickAddProposal() {
-			this.$router.push("/polls/" + this.poll.id + "/add")
+			this.$router.push({name: "addProposal", params: {pollId: this.poll.id}})
 		},
 
 		clickCastVote() {
-			this.$router.push("/polls/" + this.poll.id + "/castVote")
+			this.$router.push({name: "castVote", params: {pollId: this.poll.id} })
 		},
 
 		clickStartVote() {
