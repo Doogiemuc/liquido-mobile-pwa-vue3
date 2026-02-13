@@ -73,6 +73,10 @@ html, body {
   padding-right: 10px;
 }
 
+#app #appContent.with-bottom-navbar {
+  padding-bottom: 110px;  /* Account for fixed navbar (100px) + spacing */
+}
+
 /** LIQUIDO - beautifull brand mark */
 .liquido:after {
 	content: "LIQUIDO";

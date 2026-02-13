@@ -10,14 +10,19 @@ import { reactive } from 'vue'
 export const store = reactive({
   
 	headerTitle: undefined,
-	headerBackLink: undefined,
+	headerBackTarget: undefined,
 
   setHeaderTitle(newTitle) {
     this.headerTitle = newTitle
   },
 
-	setHeaderBackLink(newBackLink) {
-		this.headerBackLink = newBackLink
+	/**
+	 * Sets the target page for the back link at the left side of the header
+	 * You MUST set this to a vue-router object!
+	 * @param {Object} target  vue-router target e.g. {"name": "teams"}
+	 */
+	setHeaderBackTarget(target) {
+		this.headerBackTarget = target
 	},
 
 })

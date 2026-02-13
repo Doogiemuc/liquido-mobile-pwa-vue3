@@ -82,10 +82,10 @@ export default {
 	},
 	mounted() {
 		this.$store.setHeaderTitle(this.$t("newPoll"))
-		// we normally go back to polls page, except when headerBackLinkg was already set from welcome-chat.vue
-		console.log("poll-create mounted, headerBackLink:", this.$store.headerBackLink)
-		if (!this.$store.headerBackLink) {
-			this.$store.setHeaderBackLink({name: "polls"}) 
+		// we normally go back to polls page, except when headerBackTarget was already set from welcome-chat.vue
+		console.log("poll-create mounted, headerBackTarget:", this.$store.headerBackTarget)
+		if (!this.$store.headerBackTarget) {
+			this.$store.setHeaderBackTarget({name: "polls"}) 
 		}
 		this.$root.scrollToTop()
 	},

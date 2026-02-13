@@ -179,7 +179,7 @@ export default {
 	created() {
 		api.getPollById(this.pollId, true).then(poll => this.poll = poll)
 		this.$store.setHeaderTitle(this.$t("addProposal"))
-		this.$store.setHeaderBackLink({name: "showPoll", params: {pollId: this.pollId} })
+		this.$store.setHeaderBackTarget({name: "showPoll", params: {pollId: this.pollId} })
 	},
 	mounted() {
 		this.$root.scrollToTop()		

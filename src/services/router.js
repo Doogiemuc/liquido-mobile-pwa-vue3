@@ -5,7 +5,7 @@ import welcomeChat from "@/views/welcome-chat.vue"
 //TODO: load these as dynamic dependencies (only on demand later)
 //      https://router.vuejs.org/guide/advanced/lazy-loading.html
 //import teamHome from "@/views/team-home.vue"
-import pollsPage from "@/views/polls.vue"
+//import pollsPage from "@/views/polls.vue"
 import showPoll from "@/views/poll-show.vue"
 import { store }  from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
@@ -238,7 +238,7 @@ router.beforeEach(async (routeTo, routeFrom) => {
 	if (routeFrom.path !== routeTo.path) {
 		//console.log("===== Router: Clear header")
 		store.setHeaderTitle(undefined)
-		store.setHeaderBackLink(undefined)
+		store.setHeaderBackTarget(undefined)
 	}
 	
 	return tryToAuthenticate().then(() => {

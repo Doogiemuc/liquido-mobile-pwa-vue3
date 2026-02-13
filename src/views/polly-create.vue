@@ -132,7 +132,7 @@ export default defineComponent({
 	},
 	mounted() {
 		this.$store.setHeaderTitle(this.pollyHeaderTitle)
-		this.$store.setHeaderBackLink({ name: "polls" })
+		this.$store.setHeaderBackTarget({ name: "polls" })
 		this.$root.scrollToTop()
 		document.getElementById("pollTitle")?.focus()
 		

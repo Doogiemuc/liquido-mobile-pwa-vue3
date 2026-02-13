@@ -2,7 +2,7 @@
 	<header id="liquidoHeader" :class="headerClass">
 
 		<div class="header-left" @click="clickLeft">
-			<i v-if="headerBackLink" class="fas fa-angle-left" />
+			<i v-if="headerBackTarget" class="fas fa-angle-left" />
 		</div>
 		<div class="header-center" @click="clickHeaderCenter">
 			<div class="liquido-claim">
@@ -46,8 +46,8 @@ export default {
 	},
 
 	computed: {
-		headerBackLink() {
-			return this.$store.headerBackLink
+		headerBackTarget() {
+			return this.$store.headerBackTarget
 		},
 		headerTitle() {
 			return this.$store.headerTitle
@@ -101,8 +101,11 @@ export default {
 		},
 
 		clickLeft() {
-			if (this.$store.headerBackLink === "BACK") this.$router.go(-1)
-			else if (this.$store.headerBackLink) this.$router.push(this.$store.headerBackLink)
+			if (this.$store.headerBackTarget === "BACK") {
+				console.log("router: going BACK")
+				this.$router.go(-1)
+			}
+			else if (this.$store.headerBackTarget) this.$router.push(this.$store.headerBackTarget)
 		},
 		
 		clickHeaderCenter() {

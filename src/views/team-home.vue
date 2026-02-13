@@ -10,7 +10,7 @@
 			</div>
 		</div>
 
-		<button id="gotoPollsButton" class="btn btn-primary btn-lg w-100 mb-5" @click="$root.gotoPolls">
+		<button id="gotoPollsButton" class="btn btn-primary btn-lg w-100 mb-5" @click="gotoPolls">
 			{{ $t("gotoPolls") }}
 			<i class="fas fa-angle-double-right" />
 		</button>
@@ -164,8 +164,7 @@ export default {
 	},
 	mounted() {
 		this.$store.setHeaderTitle(this.team ? this.team.teamName : this.$t('team'))
-		this.$store.setHeaderBackLink(null)
-
+		this.$store.setHeaderBackTarget(null)
 		this.$root.scrollToTop()
 
 		let QRcodeOpts = {
@@ -189,6 +188,9 @@ export default {
 	},
 
 	methods: {
+		gotoPolls() {
+			this.$router.push({ name: "polls" })
+		},
 
 		/**
 		 * Register a new WebAuthn authenticator device.
@@ -213,6 +215,28 @@ export default {
 		clickLogout() {
 			api.logout()
 			this.$router.push({ name: "login" })  //TODO: Forward to a polite "byebye" page.
+		},
+
+		async shareLink() {
+			if (navigator.share) {
+				try {
+					await navigator.share({
+						title: "LIQUIDO Einladung",
+						text: this.$t('inviteNewMembers'),
+						url: this.inviteLinkURL,
+					});
+				} catch (error) {
+					console.error('Error sharing', error);
+				}
+			} else {
+				// Fallback for browsers that don't support Web Share API
+				try {
+					await navigator.clipboard.writeText(this.inviteLinkURL);
+					this.$root.showSuccess('Invitation link copied to clipboard!');
+				} catch (err) {
+					console.error('Failed to copy: ', err);
+				}
+			}
 		}
 	},
 }

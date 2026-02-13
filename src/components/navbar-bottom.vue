@@ -1,6 +1,6 @@
 <template>
 	<nav id="navbar">
-		<a href="#" class="team-button" aria-label="Team" @click="$root.gotoTeam">
+		<a href="" class="team-button" aria-label="Team" @click.prevent="$root.gotoTeam">
 			<div class="nav-bar-icon">
 				<i class="fas fa-users"></i>
 			</div>
@@ -35,7 +35,7 @@
 				</a>
 			</div>
 		</div>
-		<a href="#" aria-label="Info" class="info-button" @click="gotoInfo">
+		<a href="" aria-label="Info" class="info-button" @click.prevent="gotoInfo">
 			<div class="nav-bar-icon">
 				<i class="fas fa-info"></i>
 			</div>

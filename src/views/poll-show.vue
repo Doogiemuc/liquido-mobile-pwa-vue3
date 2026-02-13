@@ -190,7 +190,7 @@ export default {
 	},
 	mounted() {
 		this.$store.setHeaderTitle(this.pageTitleLoc)
-		this.$store.setHeaderBackLink({ name: "polls" })   // Back is go to list of polls. (Do NOT use "BACK". User could come from propsoal-add!)
+		this.$store.setHeaderBackTarget({ name: "polls" })   // Back is go to list of polls. (Do NOT use "BACK". User could come from propsoal-add!)
 		this.$root.scrollToTop()  // the polls list stays. But one poll is always shown from the top
 	},
 	methods: {

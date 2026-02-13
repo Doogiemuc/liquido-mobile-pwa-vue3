@@ -16,10 +16,10 @@
 		</popup-modal>
 		<router-view v-slot="{ Component }">
 			<transition :name="transitionName">
-				<component :is="Component" id="appContent" class="router-view container-lg"/>
+				<component :is="Component" id="appContent" class="router-view container-lg" :class="{'with-bottom-navbar': showBottomNavbar}"/>
 			</transition>
 		</router-view>
-		<navbar-bottom v-model="pollStatusFilter"></navbar-bottom>
+		<navbar-bottom v-if="showBottomNavbar" v-model="pollStatusFilter"></navbar-bottom>
 		<mobile-debug-log v-if="showDebugLog" ref="mobileDebugLogRef"></mobile-debug-log>
 	</div>
 </template>
@@ -84,6 +84,9 @@ export default {
 	computed: {
 		showDebugLog() {
 			return process.env.NODE_ENV !== 'production'
+		},
+		showBottomNavbar() {
+			return this.$route.name === "polls"
 		}
 	},
 	// watch the `$route` to determine the transition to use

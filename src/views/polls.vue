@@ -68,19 +68,19 @@
 
 		</div>
 		
-		<div v-if="pollStatusFilter === 'ELABORATION'" class="liquido-info">
+		<div v-if="$root.pollStatusFilter === 'ELABORATION'" class="liquido-info">
 			<p v-if="hasPollInElaboration" v-html="$t('pollsInElaborationInfo')" />
 			<p v-else v-html="$t('noPollsInElaboration')" />
 			<p v-if="!hasPollInElaboration && hasPollInVoting" v-html="$t('butPollInVoting')" />
 		</div>
 
-		<div v-if="pollStatusFilter === 'VOTING'" class="liquido-info">
+		<div v-if="$root.pollStatusFilter === 'VOTING'" class="liquido-info">
 			<p v-if="hasPollInVoting" v-html="$t('pollsInVotingInfo')" />
 			<p v-else v-html="$t('noPollsInVoting')" />
 			<p v-if="!hasPollInVoting && hasPollInElaboration" v-html="$t('butProposalsInDiscussion')" />
 		</div>
 
-		<div v-if="pollStatusFilter === 'FINISHED'" class="liquido-info">
+		<div v-if="$root.pollStatusFilter === 'FINISHED'" class="liquido-info">
 			<p v-if="hasFinishedPoll" v-html="$t('finishedPollsInfo')" />
 			<p v-else v-html="$t('noFinishedPolls')" />
 			<p v-if="!hasFinishedPoll && hasPollInVoting" v-html="$t('butPollInVoting')" />
@@ -100,6 +100,7 @@
 				<i class="fas fa-shield-alt" /> {{ $t("createPoll") }} <i class="fas fa-angle-double-right" />
 			</button>
 		</div>
+
 	</div>
 </template>
 
@@ -110,7 +111,6 @@
  * But it's getting better and better everytime! :-)
  */
 
-import navbarBottom from "@/components/navbar-bottom.vue"
 import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
 import dayjs from "dayjs"
@@ -155,20 +155,19 @@ export default {
 		},
 	},
 	name: "PollsList",
-	components: { navbarBottom },
+	components: { },
 	data() {
 		return {
 			loading: true,
 			showSearch: false,
 			searchQuery: "",
 			forceRefreshComputed: 0,
-			pollStatusFilter: undefined
 		}
 	},
 
 	computed: {
 		pageTitleLoc() {
-			switch (this.pollStatusFilter) {
+			switch (this.$root.pollStatusFilter) {
 				case api.POLL_STATUS.ELABORATION:
 					return this.$t("pollsInElaboration")
 				case api.POLL_STATUS.VOTING:
@@ -199,7 +198,7 @@ export default {
 			let polls = api.getCachedPolls()
 			return polls
 				.filter((poll) => {
-					if (this.pollStatusFilter && poll.status !== this.pollStatusFilter) return false
+					if (this.$root.pollStatusFilter && poll.status !== this.$root.pollStatusFilter) return false
 					return this.matchesSearch(poll)
 				})
 				.sort((p1,p2) => {
@@ -223,9 +222,6 @@ export default {
 	},
 	
 	created() {
-		this.$store.setHeaderTitle(this.pageTitleLoc)
-		this.$store.setHeaderBackLink("/team")
-
 		// When one or all polls change, the reflect the changes in the UI.
 		EventBus.on(EventBus.Event.POLL_LOADED, () => this.pollsChanged())
 		EventBus.on(EventBus.Event.POLLS_LOADED, () => this.pollsChanged())  // event param "polls" is not used here
@@ -237,14 +233,10 @@ export default {
 	
 	mounted() {
 		this.$store.setHeaderTitle(this.pageTitleLoc)
-		this.$store.setHeaderBackLink({name: "team"})
+		this.$store.setHeaderBackTarget({name: "team"})
 	},
 	
 	methods: {
-
-		handleNavbarFilterchange(newFilter) {
-			this.pollStatusFilter = newFilter
-		},
 
 		toggleSearch() {
 			this.showSearch = !this.showSearch
@@ -305,7 +297,6 @@ export default {
 		},
 
 		goToPoll(pollId) {
-			//TODO: need better transition, that doesn't jump up and down because of scrolling position.
 			this.$router.push( {name: "showPoll", params: { pollId: pollId } })
 		},
 
@@ -332,7 +323,7 @@ export default {
 		clearSearchAndFilter() {
 			console.log("Clear Search and PollFilter")
 			this.searchQuery = undefined
-			this.pollStatusFilter = undefined
+			this.$root.pollStatusFilter = undefined
 		},
 
 		// Transition Height - is ... again ... complex
