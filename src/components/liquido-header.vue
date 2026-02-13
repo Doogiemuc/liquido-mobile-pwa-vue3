@@ -24,10 +24,11 @@ import EventBus from "@/services/event-bus.js"
 import config from "config"
 
 /** 
- * After this many pixels the header title will scroll.
- * This should roughly equal to the empty padding+margin above the title font.
+ * When the page is scrolled up this number of pixels, then the LIQUIDO claim
+ * will scroll up out of view and the title will appear in the header.
+ * This should roughly equal to the empty padding+margin above the title on the page.
  */
-const scrollAfterPx = 50
+const scrollAfterPx = 55
 
 export default {
 	name: "LiquidoHeader",
@@ -124,11 +125,13 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style>
 
+/*
 .liquidoMockHeader {
-	/* background-color: darkred !important; */
+	background-color: darkred !important;
 }
+	*/
 
 #liquidoHeader {
 	display: flex;
@@ -136,21 +139,22 @@ export default {
 	left: 0;
 	top: 0;
 	width: 100%;
-	/*height: var(--header-height);*/
+	height: var(--header-height);
 	color: var(--header-color);
 	flex-direction: row;
 	justify-content: space-between;
 	z-index: 999;
 	transition: height 0.5s;
 	background-color: var(--header-bg);
-	//opacity: 0.95;   // does not look good with iOS Safari header
 	padding: 0.5rem 0;
-	/*box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3); /* horizontal, vertical, blur, color */
+	/* box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3); /* horizontal, vertical, blur, color */
   z-index: 9999; /* make sure the header is on top of everything */
   
 	
-	// when user scrolls, then scroll LIQUIDO claim out towards the top
-	// and let the center-title appear from the bottom
+	/**
+	 * When user scrolls, then scroll LIQUIDO claim out towards the top
+	 *and let the center-title appear from the bottom
+	 */
 	&.transition-header {
 		.liquido-claim {
 			top: -1.5rem !important;
@@ -161,7 +165,6 @@ export default {
 			padding: 0;
 			margin: 0;
 			h1 {
-				/*font-family: 'Libre Baskerville', serif;*/
 				margin: 0;
 				padding: 0;
 			}
@@ -175,7 +178,7 @@ export default {
 		text-align: center;
 		justify-content: center;
 		font-size: 25px;
-		flex: 0 0 var(--header-height);  // square touch area around icon
+		flex: 0 0 var(--header-height);  /* square touch area around icon */
 		width: var(--header-height);
 	}
 	.header-back-link {
@@ -209,7 +212,6 @@ export default {
 			transition: top 0.5s;
 			h2 { 
 				margin: 0;
-				//font-size: 1rem; 
 			}
 		}
 	}

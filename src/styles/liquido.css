@@ -21,6 +21,7 @@
 	--header-color: #2e8dff;     /* Header TEXT color */
   --header-bg: #f3f4f6;        /* Nice color by stitch.withgoogle.com #429cf3; */
   
+	--navbar-bottom-height: 80px;
 	--liquido-border-radius: 20px;   /* also used navbar-arrows and for poll cards */
 
   /* Welcome Chat */
@@ -39,8 +40,7 @@
   --admin-info-background: #217DAA;
 }
 
-/** Ensure html and body fill the viewport without overflow
- * This prevents iOS Safari from showing its UI on PWA pages with minimal content */
+/** Ensure html and body fill the viewport without overflow  */
 html, body {
 	height: 100%;
 	width: 100%;
@@ -51,30 +51,32 @@ html, body {
 
 /* The outermost VUE app element */
 #app {
-  margin: 0 auto;
+  background-color: var(--app-background);
+	margin: 0 auto;
   position: relative;
   height: 100%;
   width: 100%;
   max-width: var(--app-max-width);
-  overflow-x: hidden;
-  overflow-y: auto;
-  background-color: var(--app-background);
-  /* Reserve space for scrollbar to prevent navbar jumping when scrollbar appears/disappears */
+	/* only scroll up and down, and always show scrollbar at the right. */
+  overflow-x: hidden;   
+  overflow-y: auto;  
   scrollbar-gutter: stable;
+}
+
+/** #rootApp fills whole screen. Even when appContent would be smaller */
+#rootApp {
+	min-height: 100%;
+	height: 100%;
 }
 
 /** This is the scrolling part of the page */
 #app #appContent {
   background-color: var(--app-background);
-  min-height: 100%;  /* Always fill viewport, even with minimal content */
-	padding-top: var(--header-height);  /* padding so that page content can bee seen under liquido-header */
-  /*padding-bottom: 110px;  /* Account for fixed navbar (100px) + spacing */
+  min-height: 100%;  														/* Always fill viewport height, even with minimal content */
+	padding-top: var(--header-height);  					/* padding so that page content can bee seen under liquido-header */
+  padding-bottom: var(--navbar-bottom-height);  /* Account for fixed navbar at the bottom */
   padding-left: 10px;
   padding-right: 10px;
-}
-
-#app #appContent.with-bottom-navbar {
-  padding-bottom: 110px;  /* Account for fixed navbar (100px) + spacing */
 }
 
 /** LIQUIDO - beautifull brand mark */
@@ -89,8 +91,7 @@ html, body {
 	transition: all 0.5s ease-in-out;
 }
 
-/* Fade transtition (used in lists) */
-/* //TODO: not gloabl!! */
+/* Fade transtition (used in Polly and List of polls) */
 .fade-enter,
 .fade-leave-to {
 	opacity: 0;

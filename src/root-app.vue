@@ -83,7 +83,7 @@ export default {
 	},
 	computed: {
 		showDebugLog() {
-			return process.env.NODE_ENV !== 'production'
+			return false // process.env.NODE_ENV !== 'production'
 		},
 		showBottomNavbar() {
 			return this.$route.name === "polls"
@@ -102,6 +102,7 @@ export default {
 				if (fromOrder > toOrder) { this.transitionName = "slide-right"}
 			}
 			
+			/*
 			let app = document.getElementById("app")
 			if (from.name === "polls") {
 				//console.log("Saving scroll pos of " + from.name + " = " + app.scrollTop)
@@ -113,6 +114,7 @@ export default {
 			} else {
 				// this.scrollToTop()   // this has a nasty UI bug, because it scrolls to the top of the page before the transition animation is finished
 			}
+			*/
 		},
 	},
 
@@ -124,8 +126,6 @@ export default {
 	
 		this.$refs["mobileDebugLogRef"]?.info(config.LIQUIDO_API_URL)
 		this.$refs["mobileDebugLogRef"]?.info(config)
-
-		
 
 		// Check if we can reach the liquido backend		
 		api.pingApi()

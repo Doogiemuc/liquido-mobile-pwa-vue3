@@ -170,7 +170,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 
 #navbar {
 	--arrowColor: white;  /* TEXT color */
@@ -188,7 +188,7 @@ export default {
 	align-items: start;
 	
 	/*box-sizing: border-box;*/
-	height: 100px;
+	height: var(--navbar-bottom-height);
 	margin: 0;
 	padding: 10px 10px 0 10px;
 	border-top: 1px solid lightgray;
