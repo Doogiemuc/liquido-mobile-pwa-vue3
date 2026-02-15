@@ -11,8 +11,11 @@
 			&nbsp;{{ $t('Loading') }}
 		</div>
 
+		<div class="alert liquido-info my-4">
+			<p>{{ $t('dragInfo') }}</p>
+		</div>
 
-		<div v-else class="cast-vote-container">
+		<div v-if="!loading" class="cast-vote-container">
 			<div class="">
 				<div v-for="(prop, index) in poll.proposals" :key="prop.id" class="proposal-index-number">
 					{{ index + 1 }}.
@@ -49,8 +52,8 @@
 						<i class="fas fa-bars"></i>
 					</div>
 				</div>
-
 			</draggable>
+
 		</div>
 
 
@@ -109,7 +112,7 @@ export default {
 			},
 			de: {
 				castVoteTitle: "Abstimmen",
-				castVoteInfoBox: "Schiebe deinen Favoriten ganz nach oben. Ordne alle anderen Vorschläge gemäß deiner persönlichen Reihenfolge darunter an.",
+				dragInfo: "Sortiere die Vorschläge per Drag & Drop. Schiebe deinen Favoriten ganz nach oben.",
 				castVoteFooterInfo:
 					"In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> Vorschlag, sondern sortiere " +
 					"<em>alle</em> Vorschläge nach deiner Präferenz.",
@@ -359,11 +362,12 @@ export default {
 		justify-content: center;
 		margin-bottom: var(--polly-proposal-margin-bottom);
 		padding: 0 5px;
+		/*
 		border-left: 1px dotted grey;
 		border-top: 1px dotted grey;
 		border-bottom: 1px dotted grey;
-		border-top-left-radius: var(--liquido-border-radius);
-		border-bottom-left-radius: var(--liquido-border-radius);
+		border-radius: 0.25rem;
+		/*border-bottom-left-radius: var(--liquido-border-radius);*/
 	}
 	
 	.draggable {
@@ -384,7 +388,6 @@ export default {
 	.law-panel {   
 		height: var(--polly-proposal-height);
 		overflow: hidden;
-		padding: 5px;
 		margin-bottom: var(--polly-proposal-margin-bottom);
 		cursor: grab;
 		
@@ -406,6 +409,7 @@ export default {
 			--proposal_icon_size: 32px;
 			color: white;
 			background-color: var(--proposal-icon-bg);
+			margin: 0 0.5rem;
 			border-radius: 50%;
 			border: none;
 			text-align: center;

@@ -33,8 +33,9 @@
   --proposal-icon-bg: #429cf3;
 
 	/* Info text in .alert on --app-background */
-  --liquido-info-color: #666;
-  --liquido-info-background: transparent;
+  --liquido-info-color: #4e5b70;
+	--liquido-info-border-color: #dbeafe;
+  --liquido-info-background: #eff6ff;
   
 	--admin-info-text-color: white;
   --admin-info-background: #2e8dff;
@@ -152,19 +153,34 @@ html, body {
 #app h6 { font-size: 1rem; }
 
 /*
-  .alert {
-		// Had Smaller than bootstrap's default. Don't be afraid of space. Keep default
-    //padding: 0.5rem;
-  }
-	*/	
+.alert {
+	// Had Smaller than bootstrap's default. Don't be afraid of space. Keep default
+	//padding: 0.5rem;
+}
+*/	
 
 .liquido-info {
-  padding: 0.5rem;
+	position: relative;
+  font-size: 0.8rem;
   color: var(--liquido-info-color);
   background-color: var(--liquido-info-background);
 	border: none;
-  /*border: 1px solid var(--liquido-info-color);*/
-  border-radius: 0.375rem;
+  border: 1px solid var(--liquido-info-border-color);
+	z-index: 1;
+	overflow: hidden;
+}
+
+.liquido-info::before {
+	content: "\f05a";
+	font: var(--fa-font-solid);
+	color: var(--primary);
+	position: absolute;
+	right: -5%;
+	top: -5%;
+	font-size: 4rem;        /* large background presence */
+  opacity: 0.2;           /* subtle */
+  pointer-events: none;   /* ignore mouse interaction */
+  z-index: 0;
 }
 
 .liquido-info p:last-child {
@@ -185,16 +201,13 @@ html, body {
 .alert-admin::after {
   content: "\f3ed";
   font: var(--fa-font-solid);
-
   position: absolute;
   right: 5%;
   top: 30%;
   transform: rotate(10deg) translateY(-50%);
-
   font-size: 12rem;        /* large background presence */
   opacity: 0.2;           /* subtle */
   pointer-events: none;   /* ignore mouse interaction */
-
   z-index: 0;
 }
 
