@@ -165,7 +165,7 @@ Example "poll" object with its properties:
  * Initialize default values of poll if not yet set
  * My dear VUE: tell my how to do this otherwise! :-)
  */
-console.log("Polly.vue init poll", JSON.stringify(poll, null, 2))
+//console.log("Polly.vue init poll", JSON.stringify(poll, null, 2))
 
 if (!poll.status) poll.status = POLL_STATUS.NEW
 if (!poll.numVoters) poll.numVoters = 0

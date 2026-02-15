@@ -575,11 +575,14 @@ export default {
 	 * Start the welcome chat bot
 	 */
 	mounted() {
+		/*
+		//TODO: What to do when user is already logged in? Greet him. IMPORTANT: User might want to create yet another team or join another team!
+		// BUG: This breaks design overview!!!
 		if (api.isAuthenticated()) {
-			//TODO: Check if user is already logged in. If so, then welcome him. User may want to join yet another existing team.
 			this.$root.gotoTeam()
 			return
 		}
+		*/
 
     this.startChatAnimation()
 

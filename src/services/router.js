@@ -18,9 +18,9 @@ const routes = [
 	{
 		path: "/",
 		name: "index",
-		// Will forward anonymous to /welcome 
-		// With valid JWT to /team
-		// and with expired JWT to /login
+		// Will forward anonymous to welcome page
+		// With valid JWT to "team"
+		// and with expired JWT to login
 	},
 	{
 		path: "/login",
@@ -232,7 +232,7 @@ async function tryToAuthenticate() {
  * https://next.router.vuejs.org/guide/advanced/navigation-guards.html#navigation-guards
  */
 router.beforeEach(async (routeTo, routeFrom) => {
-	//log.debug("beforeEach ENTER", routeFrom.path, "=>", routeTo.path)
+	log.debug("beforeEach ENTER", routeFrom.path, "=>", routeTo.path)
 	
 	// Clear header title. Page may set it later when it is mounted.
 	if (routeFrom.path !== routeTo.path) {
@@ -241,9 +241,11 @@ router.beforeEach(async (routeTo, routeFrom) => {
 		store.setHeaderBackTarget(undefined)
 	}
 	
+	
 	return tryToAuthenticate().then(() => {
 		log.debug("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
 		if (routeTo.path === "/" || routeTo.path === "/index.html") {
+			console.log("================== authenticated CALL TO INDEX => FORWARDING TO TEAM")
 			return {name: "team"}  
 		} else {
 			return true // allow authenticated navigation
@@ -258,6 +260,7 @@ router.beforeEach(async (routeTo, routeFrom) => {
 			return {name: "login"}
 		}
 	})
+		
 })
 
 export default router

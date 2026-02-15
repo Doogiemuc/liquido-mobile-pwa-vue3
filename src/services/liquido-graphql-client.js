@@ -172,7 +172,7 @@ const graphQlQueryMOCK = function(query, variables) {
 			}
 		)
 	} else if (query.includes("polls")) {
-		console.log("MOCK: all polls")
+		console.log("MOCK: query all polls")
 		return Promise.resolve(
 			{
 				"data": {
@@ -184,7 +184,7 @@ const graphQlQueryMOCK = function(query, variables) {
 		const match = query.match(/poll\(pollId:(\d+)\)/);
 		if (match && match[1]) {
 			const pollId = parseInt(match[1], 10);
-			console.log("MOCK: poll(id="+pollId+")")
+			console.log("MOCK: query poll(id="+pollId+")")
 			const poll = teamUserJwtMock.team.polls.find(p => p.id === pollId);
 			return Promise.resolve(
 				{
