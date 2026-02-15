@@ -1,5 +1,5 @@
 <template>
-	<nav id="navbar">
+	<nav id="pollsNavbar">
 		<a href="" class="team-button" aria-label="Team" @click.prevent="$root.gotoTeam">
 			<div class="nav-bar-icon">
 				<i class="fas fa-users"></i>
@@ -172,7 +172,7 @@ export default {
 
 <style>
 
-#navbar {
+#pollsNavbar {
 	--arrowColor: white;  /* TEXT color */
 	--arrowBgColor: var(--primary);
 	--arrowGapColor: white;
@@ -180,17 +180,15 @@ export default {
 	--arrowHeight: 60px;
 	--arrowGap: -15px;  /* negative margin, higher values = smaller gap */
 
-	position: sticky;
+	position: fixed;
 	left: 0;
 	right: 0;
 	bottom: 0;
 	display: flex;
-	align-items: start;
 	
-	/*box-sizing: border-box;*/
 	height: var(--navbar-bottom-height);
 	margin: 0;
-	padding: 10px 10px 0 10px;
+	padding: 10px;
 	border-top: 1px solid lightgray;
 
 	z-index: 999;

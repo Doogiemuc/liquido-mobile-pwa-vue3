@@ -101,6 +101,8 @@
 			</button>
 		</div>
 
+		<navbar-bottom v-model="pollStatusFilter"></navbar-bottom>
+
 	</div>
 </template>
 
@@ -113,6 +115,7 @@
 
 import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
+import navbarBottom from "@/components/navbar-bottom.vue"
 import dayjs from "dayjs"
 
 const pollStatusOrder = {
@@ -155,19 +158,20 @@ export default {
 		},
 	},
 	name: "PollsList",
-	components: { },
+	components: { navbarBottom },
 	data() {
 		return {
 			loading: true,
 			showSearch: false,
 			searchQuery: "",
+			pollStatusFilter: api.POLL_STATUS.ALL_POLLS,
 			forceRefreshComputed: 0,
 		}
 	},
 
 	computed: {
 		pageTitleLoc() {
-			switch (this.$root.pollStatusFilter) {
+			switch (this.pollStatusFilter) {
 				case api.POLL_STATUS.ELABORATION:
 					return this.$t("pollsInElaboration")
 				case api.POLL_STATUS.VOTING:
@@ -198,7 +202,7 @@ export default {
 			let polls = api.getCachedPolls()
 			return polls
 				.filter((poll) => {
-					if (this.$root.pollStatusFilter && poll.status !== this.$root.pollStatusFilter) return false
+					if (this.pollStatusFilter && poll.status !== this.pollStatusFilter) return false
 					return this.matchesSearch(poll)
 				})
 				.sort((p1,p2) => {
@@ -323,7 +327,7 @@ export default {
 		clearSearchAndFilter() {
 			console.log("Clear Search and PollFilter")
 			this.searchQuery = undefined
-			this.$root.pollStatusFilter = undefined
+			this.pollStatusFilter = undefined
 		},
 
 		// Transition Height - is ... again ... complex

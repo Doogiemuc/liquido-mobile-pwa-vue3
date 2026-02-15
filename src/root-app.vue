@@ -16,10 +16,9 @@
 		</popup-modal>
 		<router-view v-slot="{ Component }">
 			<transition :name="transitionName">
-				<component :is="Component" id="appContent" class="router-view container-lg" :class="{'with-bottom-navbar': showBottomNavbar}"/>
+				<component :is="Component" id="appContent" class="router-view container-lg" />
 			</transition>
 		</router-view>
-		<navbar-bottom v-if="showBottomNavbar" v-model="pollStatusFilter"></navbar-bottom>
 		<mobile-debug-log v-if="showDebugLog" ref="mobileDebugLogRef"></mobile-debug-log>
 	</div>
 </template>
@@ -37,7 +36,6 @@ import popupModal from "@/components/popup-modal.vue"
 import mobileDebugLog from "@/components/mobile-debug-log.vue"
 import api from "@/services/liquido-graphql-client.js"
 import EventBus from "@/services/event-bus.js"
-import navbarBottom from "@/components/navbar-bottom.vue"
 import config from "config"
 
 
@@ -66,12 +64,11 @@ let pollsScrollPos = undefined
 export default {
 	name: "LiquidoApp",
 	// Remark: vue-i18n is configured in main.js! Do not overwrite it here by setting the i18n: property
-	components: { liquidoHeader, popupModal, navbarBottom, mobileDebugLog },
+	components: { liquidoHeader, popupModal, mobileDebugLog },
 	data() { 
 		// These data attributes are reactive and available in EVERY sub-component as this.$root.<attributeName>
 		return {
 			transitionName: "", 	// CSS sliding transition between page components
-			pollStatusFilter: api.POLL_STATUS.ALL_POLLS,
 			// Global popup-modal
 			modalType: "success",
 			modalTitle: "",
@@ -84,9 +81,6 @@ export default {
 	computed: {
 		showDebugLog() {
 			return false // process.env.NODE_ENV !== 'production'
-		},
-		showBottomNavbar() {
-			return this.$route.name === "polls"
 		}
 	},
 	// watch the `$route` to determine the transition to use

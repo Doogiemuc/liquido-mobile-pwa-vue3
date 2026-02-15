@@ -17,9 +17,9 @@
 	--primary: #2e8dff;
   --secondary: #bbb;
   
-  --header-height: 3rem;
+  --header-height: 4rem;
 	--header-color: #2e8dff;     /* Header TEXT color */
-  --header-bg: #f3f4f6;        /* Nice color by stitch.withgoogle.com #429cf3; */
+  --header-bg: white;        /* Nice color by stitch.withgoogle.com #429cf3; */
   
 	--navbar-bottom-height: 80px;
 	--liquido-border-radius: 20px;   /* also used navbar-arrows and for poll cards */

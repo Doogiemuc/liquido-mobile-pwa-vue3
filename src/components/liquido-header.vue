@@ -1,6 +1,5 @@
 <template>
 	<header id="liquidoHeader" :class="headerClass">
-
 		<div class="header-left" @click="clickLeft">
 			<i v-if="headerBackTarget" class="fas fa-angle-left" />
 		</div>
@@ -150,7 +149,6 @@ export default {
 	/* box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3); /* horizontal, vertical, blur, color */
   z-index: 9999; /* make sure the header is on top of everything */
   
-	
 	/**
 	 * When user scrolls, then scroll LIQUIDO claim out towards the top
 	 *and let the center-title appear from the bottom
@@ -178,8 +176,8 @@ export default {
 		text-align: center;
 		justify-content: center;
 		font-size: 25px;
-		flex: 0 0 var(--header-height);  /* square touch area around icon */
-		width: var(--header-height);
+		/*flex: 0 0 var(--header-height);  /* touch area around icon */
+		min-width: 50px;
 	}
 	.header-back-link {
 		display: flex;

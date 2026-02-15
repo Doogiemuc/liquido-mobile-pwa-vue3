@@ -1,17 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import welcomeChat from "@/views/welcome-chat.vue"
-//import loginPage from "@/views/login-page.vue"
-
-//TODO: load these as dynamic dependencies (only on demand later)
-//      https://router.vuejs.org/guide/advanced/lazy-loading.html
-//import teamHome from "@/views/team-home.vue"
-//import pollsPage from "@/views/polls.vue"
 import showPoll from "@/views/poll-show.vue"
 import { store }  from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
 import config from "config"
 import log from 'loglevel'
-import { route } from 'fontawesome'
 if (process.env.NODE_ENV === "development") log.enableAll()
 
 const routes = [
