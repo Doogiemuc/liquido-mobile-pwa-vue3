@@ -354,6 +354,7 @@ export default {
 			if (result === true) {
 				this.state = STATE.VALID;
 			} else if (result === false && (previouState !== STATE.INIT || force)) {
+				console.log("Seeting to invalid", previouState, force)
 				this.state = STATE.INVALID;
 			} else {
 				this.state = STATE.INIT;

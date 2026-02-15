@@ -85,18 +85,13 @@ export default defineComponent({
 			}
 		}
 	},
-	setup(props) {
-		return {
-			initialPoll: props.poll
-		}
-	},
 	props: {
-		poll: { type: Object, required: false, default: undefined },
+		initialPoll: { type: Object, required: false, default: undefined },
 	},
 	components: { liquidoInput, polly },
 	data() {
 		return {
-			poll: this.poll || {
+			poll: {
 				title: "Dummy Title for Testing",
 				proposals: [
 					{ id: Date.now(), title: "Some Title" },

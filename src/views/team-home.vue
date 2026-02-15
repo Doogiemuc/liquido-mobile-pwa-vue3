@@ -182,7 +182,7 @@ export default {
 				console.warn("Cannot create QR code", err)
 			} else {
 				let img = document.getElementById("qrCodeImg")
-				img.src = url
+				if (img) img.src = url
 			}
 		})
 	},

@@ -2,6 +2,8 @@
 	<div>
 		<h1 id="design-page" class="page-title">LIQUIDO Design Overview</h1>
  
+		<p class="text-center" v-if="currentUser">You are logged in as {{ currentUser.email }}</p>
+
 		<div class="overview">
 			<section v-for="page in pages" :key="page.name" class="overview-section">
 				<h3 class="ms-3">{{ page.name }}</h3>
@@ -15,7 +17,8 @@
 </template>
 
 <script setup>
-import { onMounted, useTemplateRef } from 'vue'
+import { computed, onMounted, useTemplateRef } from 'vue'
+import api from "@/services/liquido-graphql-client.js"
 
 import config from "config"
 import loginPage from "@/views/login-page.vue"
@@ -46,7 +49,7 @@ const pages = [
 	{ name: 'Add a proposal', component: proposalAdd, mockProps: { pollId: firstPollId } },
 	{ name: 'Cast a vote', component: castVote, mockProps: { pollId: pollInVotingId } },
 	{ name: 'Forgot password', component: forgotPassword },
-	{ name: 'Polly', component: pollyCreate, mockProps: { poll: pollInVoting } },
+	{ name: 'Polly', component: pollyCreate /*, mockProps: { initialPoll: pollInVoting } */ },
   // We cannot easily test our root popupModal
 	// And it's static backdrop would cover everything :-(
 	//  { name: 'Liquido Modal Popup', component: popupModal, mockProops: { id: "designOverviewMockModal" } },
@@ -66,6 +69,8 @@ onMounted(() => {
 	)
 	*/
 })
+
+const currentUser = computed(() => api.getCachedUser())
 
 </script>
 

@@ -19,20 +19,6 @@ import * as bootstrap from 'bootstrap'
 import config from "config"
 import liquidoInput from './liquido-input.vue'
 
-// TODO: Not yet implemented:  Types of polls
-// "CHOOSE_ONE": Each voter has one vote that he can give to exactly one proposal.
-// "CHOOSE_ANY": Each voter can select one or many proposals
-// "SORT":       Each voter sorts the proposals/nominations into their preferred order, from top to bottom.
-// "DOT_VOTING": Each voter has a number of "dots" that he can distribute over the proposals. One proposal can receive more than one "dot".
-/*
-const POLL_TYPE = {
-	CHOOSE_ONE: 1,
-	CHOOSE_ANY: 2,
-	SORT: 3,        //  <== for now only this mode is implemented since all other modes are subsets of this
-	DOT_VOTING: 4
-}
-*/
-
 const globalTranslations = {
 	"en": {
 		"Save": "Save",
@@ -67,7 +53,7 @@ const messages = {
     "AddProposalPlaceholder": "Weiteren Vorschlag hinzufügen",
     "PollyTitlePlaceholder": "Polly Titel",
     "PollyTitleEmptyFeedback": "Bitte gib einen Titel ein (mindestens {minLength} Zeichen).",
-		"PollyTitleInvalidFeedback": "Titel ist zu kurz, mindestens {minLength} Zeichen.",
+		"PollyTitleInvalidFeedback": "Bitte mindestens {minLength} Zeichen.",
 		"StartPollInfo": "Ich schicke dir zwei Links: Einen privaten Admin-Link nur für dich. Und einen öffentlchen Link für deine Freunden, mit dem sie abstimmen können.",
     "StartPoll": "Abstimmung starten",
     "FinishPoll": "Abstimmung beenden",
@@ -109,6 +95,21 @@ function loc(key, params = {}) {
 	});
 }
 
+// ============================================================
+
+// TODO: Not yet implemented:  Types of polls
+// "CHOOSE_ONE": Each voter has one vote that he can give to exactly one proposal.
+// "CHOOSE_ANY": Each voter can select one or many proposals
+// "SORT":       Each voter sorts the proposals/nominations into their preferred order, from top to bottom.
+// "DOT_VOTING": Each voter has a number of "dots" that he can distribute over the proposals. One proposal can receive more than one "dot".
+/*
+const POLL_TYPE = {
+	CHOOSE_ONE: 1,
+	CHOOSE_ANY: 2,
+	SORT: 3,        //  <== for now only this mode is implemented since all other modes are subsets of this
+	DOT_VOTING: 4
+}
+*/
 
 /* Status flow of a poll */
 const POLL_STATUS = {
@@ -119,73 +120,65 @@ const POLL_STATUS = {
 	FINISHED: "FINISHED"
 }
 
+// ============================================================
+
+/** Optional initialPoll property that can be passed. Wll be mereded with default's for required fields. */
 const props = defineProps({
-	/* We just simply accept one large poll JSON object as input. This makes updating it really easy. */
-	poll: {
-		type: Object,
-		required: true
-	}
+  initialPoll: {
+    type: Object,
+    required: false,
+    default: () => ({})
+  }
 })
 
-// The prop is the initial value. Here we copy that to a local proxy that can change.
-// https://vuejs.org/guide/components/props.html#one-way-data-flow
-// TODO: use provide-inject instead: https://vuejs.org/guide/components/provide-inject.html#app-level-provide
-//console.log("props", JSON.stringify(props, null, 2))
-const poll = reactive(props.poll);
-
-
-/*
-Example "poll" object with its properties:
-
-		{
-			"title": "What shall we do tonight?",
-			"proposals": [   // Proposals have an sorted order in this array!
-				{
-					"id": 4711   // any arbitrary ID
-					"title": "Go to Rave",
-				},
-				{
-					"id": 4712
-					"title": "Go a nice restaurant and do some dinner",
-				},
-				{
-					"id": 4713
-					"title": "Cinema is nice",
-				}
-			],
-			"status": "VOTING",
-			"alreadyVoted": false  // Has the current user already casted a vote in this poll
-			"numVoters": 0,        // How many persons have casted their vote in this poll.
-		}
-
-*/
-
-
-/**
- * Initialize default values of poll if not yet set
- * My dear VUE: tell my how to do this otherwise! :-)
- */
-//console.log("Polly.vue init poll", JSON.stringify(poll, null, 2))
-
-if (!poll.status) poll.status = POLL_STATUS.NEW
-if (!poll.numVoters) poll.numVoters = 0
-if (!poll.proposals) poll.proposals = [
-	{
-		id: Date.now(),
-		title: "",
-	},
-	{
-		id: Date.now() + 17,
-		title: "",
-	}
-]
-// default values for each proposal
-for (let i = 0; i < poll.proposals.length; i++) {
-	const prop = poll.proposals[i]
-	if (!prop.id) prop.id = Date.now() + i   // random unique ID
-	if (!prop.title) prop.title = ""
-	// if (!prop.votes) prop.votes = 0  // only needed for other poll types
+function createEmptyProposal(offset = 0) {
+  return {
+    id: Date.now() + offset,
+    title: ""
+  }
 }
+
+function createDefaultPoll() {
+  return {
+    title: "",
+    status: POLL_STATUS.NEW,
+    proposals: [
+      createEmptyProposal(1),
+      createEmptyProposal(2)
+    ],
+    alreadyVoted: false,
+    numVoters: 0
+  }
+}
+
+function normalizePoll(input = {}) {
+  const base = createDefaultPoll()
+
+  const merged = {
+    ...base,
+    ...input,
+  }
+
+  if (!Array.isArray(input.proposals) || input.proposals.length === 0) {
+    merged.proposals = base.proposals
+  } else {
+    merged.proposals = input.proposals.map((p, i) => ({
+      id: p.id ?? Date.now() + i,
+      title: p.title ?? ""
+    }))
+
+    while (merged.proposals.length < 2) {
+      merged.proposals.push(createEmptyProposal(merged.proposals.length))
+    }
+  }
+
+  return merged
+}
+
+/** This is the local VUE reactive object that we work with */
+const poll = reactive(
+  normalizePoll(structuredClone(props.initialPoll))
+)
 
 // IF  Poll is new 
 // AND last element has a title
