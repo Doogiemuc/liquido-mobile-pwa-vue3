@@ -98,8 +98,9 @@ const currentUser = computed(() => api.getCachedUser())
 	height: 812px;
 	min-height: 812px;
 	max-height: 812px;
-  border: 1px solid #ccc;
+  border: 1px solid #333;
 	border-radius: 15px;
+	border-width: 5px;
 	overflow-x: hidden;
 	overflow-y: auto;
 	background-color: var(--app-background);
