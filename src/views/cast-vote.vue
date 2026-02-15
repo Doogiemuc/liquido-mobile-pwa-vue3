@@ -1,66 +1,58 @@
 <template>
 	<div>
-		<h2 id="cast-vote-page" class="page-title">
-			<i class="fas fa-person-booth" />
-			&nbsp;{{ $t("castVoteTitle") }}
-		</h2>
+		<div class="cast-vote-title">
+			<h2>{{ poll ? poll.title : "" }}</h2>
+		</div>
 
-		<div id="castVoteCard" class="card ballot-card mb-5">
-			<h3 class="card-header poll-title">
-				{{ poll ? poll.title : "" }}
-			</h3>
-			<div class="card-body">
-				<div v-if="loading" class="draggable">
-					<div class="spinner-border" role="status">
-						<span class="visually-hidden">{{ $t('Loading') }}</span>
-					</div>
-					&nbsp;{{ $t('Loading') }}
-				</div>
-
-				<draggable v-else id="myDraggable" v-model="proposalsInBallot" class="draggable" item-key="id"
-					:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
-					:can-scroll-x="false">
-
-					<div v-for="law in proposalsInBallot" :id="law.id" class="card law-panel d-flex flex-row align-items-center user-select-none">
-						<div class="law-icon">
-							<i class="fas fa-fw" :class="'fa-' + law.icon" />
-						</div>
-						<div class="d-flex flex-column text-truncate ms-1">
-							<h4 class="law-title">
-								{{ law.title }}
-							</h4>
-							<div class="law-subtitle">
-								<div :class="{ supported: law.supportedByCurrentUser }" class="d-inline">
-									<i :class="{
-											far: !law.supportedByCurrentUser,
-											fas: law.supportedByCurrentUser,
-										}"
-										class="fa-thumbs-up"
-									></i>
-									&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
-								</div>
-								<i class="far fa-user ms-2"></i>&nbsp;{{ law.createdBy.name }}
-							</div>
-						</div>
-					
-						<div class="drag-handle">
-							<i class="fas fa-grip-vertical"></i>
-						</div>
-					</div>
-
-				</draggable>
+		<div v-if="loading" class="draggable">
+			<div class="spinner-border" role="status">
+				<span class="visually-hidden">{{ $t('Loading') }}</span>
 			</div>
+			&nbsp;{{ $t('Loading') }}
 		</div>
 
-		<div v-if="canCastVote" class="text-center mb-5">
-			<button id="castVoteButton" type="button" class="btn btn-primary btn-lg w-100" :disabled="loading || castVoteLoading" @click="clickCastVote()">
-				<div v-if="castVoteLoading" class="spinner-border" role="status">
-					<span class="visually-hidden">{{ $t("Loading") }}</span>	
+
+		<div v-else class="cast-vote-container">
+			<div class="">
+				<div v-for="(prop, index) in poll.proposals" :key="prop.id" class="proposal-index-number">
+					{{ index + 1 }}.
 				</div>
-				<i v-if="!castVoteLoading" class="fas fa-vote-yea"></i>
-				{{ isUpdatableBallot ? $t("updateBallotButton") : $t("castVoteButton") }}
-			</button>
+			</div>
+			
+			<draggable id="myDraggable" v-model="proposalsInBallot" class="draggable" item-key="id"
+				:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
+				:can-scroll-x="false">
+
+				<div v-for="law in proposalsInBallot" :id="law.id" class="card shadow-sm law-panel d-flex flex-row align-items-center user-select-none">
+					<div class="law-icon">
+						<i class="fas fa-fw" :class="'fa-' + law.icon" />
+					</div>
+					<div class="d-flex flex-column text-truncate ms-1">
+						<h4 class="law-title">
+							{{ law.title }}
+						</h4>
+						<div class="law-subtitle">
+							<div :class="{ supported: law.supportedByCurrentUser }" class="d-inline">
+								<i :class="{
+										far: !law.supportedByCurrentUser,
+										fas: law.supportedByCurrentUser,
+									}"
+									class="fa-thumbs-up"
+								></i>
+								&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
+							</div>
+							<i class="far fa-user ms-2"></i>&nbsp;{{ law.createdBy.name }}
+						</div>
+					</div>
+				
+					<div class="drag-handle">
+						<i class="fas fa-bars"></i>
+					</div>
+				</div>
+
+			</draggable>
 		</div>
+
 
 		<div v-if="isUpdatableBallot" id="isUpdateableBallotInfo" class="alert liquido-info">
 			<i class="fas fa-info-circle float-end" />
@@ -82,12 +74,18 @@
 			</p>
 		</div>
 
-
-
-		<div class="alert liquido-info">
-			<p v-html="$t('castVoteInfo')"></p>
+		<div class="cast-vote-footer">
+			<p v-html="$t('castVoteFooterInfo')"></p>
+			<div v-if="canCastVote" class="text-center">
+				<button id="castVoteButton" type="button" class="btn btn-primary btn-lg w-100" :disabled="loading || castVoteLoading" @click="clickCastVote()">
+					<div v-if="castVoteLoading" class="spinner-border" role="status">
+						<span class="visually-hidden">{{ $t("Loading") }}</span>	
+					</div>
+					<i v-if="!castVoteLoading" class="fas fa-vote-yea"></i>
+					{{ isUpdatableBallot ? $t("updateBallotButton") : $t("castVoteButton") }}
+				</button>
+			</div>		
 		</div>
-
 	</div>
 </template>
 
@@ -111,14 +109,14 @@ export default {
 			},
 			de: {
 				castVoteTitle: "Abstimmen",
-				castVoteInfo:
-					"<p>In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> der obigen Vorschläg, sondern du sortierst " +
-					"<em>alle</em> Vorschläge nach deiner Präferenz.</p>" +
-					"<p>Schiebe deinen Favoriten ganz nach oben. Ordne alle anderen Vorschläge gemäß deiner persönlichen Reihenfolge darunter an.</p>",
+				castVoteInfoBox: "Schiebe deinen Favoriten ganz nach oben. Ordne alle anderen Vorschläge gemäß deiner persönlichen Reihenfolge darunter an.",
+				castVoteFooterInfo:
+					"In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> Vorschlag, sondern sortiere " +
+					"<em>alle</em> Vorschläge nach deiner Präferenz.",
 				voteCountedNTimes: "Deine Stimme als Proxy wurde {voteCount} mal gezählt.",
 				yourBallot: "Dein Stimmzettel:",
 				updateBallotButton: "Eigene Stimme aktualisieren",
-				castVoteButton: "Diese Stimme abgeben",
+				castVoteButton: "Diese Stimme jetzt abgeben",
 				voteCastedSuccessfully: "Deine Stimme wurde erfolgreich gezählt.",
 				voteUpdatedSuccessfully: "Deine Stimme wurde erfolgreich aktualisiert.",
 				voteCastError: "Es gab leider einen technischen Fehler beim Abgeben deiner Stimme. Bitte versuche es später noch einmal.",
@@ -334,82 +332,127 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style>
 
+.cast-vote-title {
+	width: 100%;
+	background-color: var(--header-bg);
+	padding: 1rem;
+	border-bottom: 1px solid var(--secondary);
+	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); /* horizontal, vertical, blur, color */
+}
 
-#castVoteCard {
+.cast-vote-container {	
+	margin-top: 1rem;
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+
+	--polly-proposal-height: 4rem;
+	--polly-proposal-margin-bottom: 0.5rem;
+	
+	.proposal-index-number {
+		color: var(--secondary);
+		height: var(--polly-proposal-height);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: var(--polly-proposal-margin-bottom);
+		padding: 0 5px;
+		border-left: 1px dotted grey;
+		border-top: 1px dotted grey;
+		border-bottom: 1px dotted grey;
+		border-top-left-radius: var(--liquido-border-radius);
+		border-bottom-left-radius: var(--liquido-border-radius);
+	}
 	
 	.draggable {
-
+		flex-grow: 1;
 		.sortable-ghost {
 			opacity: 0.1;
 		}
-
 		.sortable-chosen {
 			z-index: 999;
 			-webkit-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
 			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
-			//transform: translate(3px, 3px);
+			/*transform: translate(3px, 3px);*/
+		}
+	}
+
+
+	/* keep this similar to poll-panel.vue */
+	.law-panel {   
+		height: var(--polly-proposal-height);
+		overflow: hidden;
+		padding: 5px;
+		margin-bottom: var(--polly-proposal-margin-bottom);
+		cursor: grab;
+		
+		.law-title {
+			color: var(--primary);
+			margin-bottom: 0.4rem;
+			padding: 0;
+			font-size: 0.8rem !important;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.law-subtitle {
+			font-size: 10px;
+			color: #bbb;
+			margin-bottom: 5px;
+		}
+		.law-icon {
+			--proposal_icon_size: 32px;
+			color: white;
+			background-color: var(--proposal-icon-bg);
+			border-radius: 50%;
+			border: none;
+			text-align: center;
+			line-height: var(--proposal_icon_size);
+			min-width: var(--proposal_icon_size);
+			max-width: var(--proposal_icon_size);
+			width: var(--proposal_icon_size);
+			min-height: var(--proposal_icon_size);
+			max-height: var(--proposal_icon_size);
+			height: var(--proposal_icon_size);
+
 		}
 
+		.law-description {
+			font-size: 12px;
+			overflow: hidden;
+		}
+
+		.supported {
+			color: green;
+		}
+
+		.drag-handle {
+			position: absolute;
+			right: 10px;
+			top: 50%;
+			transform: translateY(-50%);
+			opacity: 0.5;
+		}
 	}
 }
 
-$proposal_icon_size: 32px;
+.cast-vote-footer {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	padding: 1rem 1rem 2rem 1rem;
+	background-color: var(--header-bg);
+	border-top: 1px solid var(--secondary);
+	text-align: center;
+	box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.1); /* horizontal, vertical, blur, color */
 
-// keep this similar to poll-panel.vue
-.law-panel {   
-	height: 4rem;
-	overflow: hidden;
-	padding: 5px;
-	margin-bottom: 1rem;
-	cursor: grab;
-	
-	.law-title {
-		color: var(--primary);
-		margin-bottom: 3px;
-		padding: 0;
-		font-size: 14px;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-	.law-subtitle {
-		font-size: 10px;
-		color: #bbb;
-		margin-bottom: 5px;
-	}
-	.law-icon {
-		color: white;
-		background-color: var(--proposal-icon-bg);
-		border-radius: 50%;
-		border: none;
-		text-align: center;
-		//font-size: 1.2em;
-		line-height: $proposal_icon_size;
-		min-width: $proposal_icon_size;
-		max-width: $proposal_icon_size;
-		width: $proposal_icon_size;
-		min-height: $proposal_icon_size;
-		max-height: $proposal_icon_size;
-		height: $proposal_icon_size;
-
-	}
-
-	.law-description {
-		font-size: 12px;
-		overflow: hidden;
-	}
-
-	.supported {
-		color: green;
-	}
-
-	.drag-handle {
-		position: absolute;
-		right: 5px;
-		bottom: 0px;
-		opacity: 0.5;
+	p {
+		font-size: 0.8rem;
+		color: var(--secondary);
+		line-height: 1.2;
 	}
 }
 

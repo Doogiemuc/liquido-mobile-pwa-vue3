@@ -14,9 +14,9 @@
   --app-max-width: 1000px;
 	--app-background: #f3f4f6;  /* also nice, abit darker: #e3e7f0; */
 
-	--primary: #2e8dff;
-  --secondary: #bbb;
-  
+	--primary: #2e8dff;				/* Primary, e.g. buttons */
+  --secondary: #bbb;					/* Secondary text */
+
   --header-height: 4rem;
 	--header-color: #2e8dff;     /* Header TEXT color */
   --header-bg: white;        /* Nice color by stitch.withgoogle.com #429cf3; */
