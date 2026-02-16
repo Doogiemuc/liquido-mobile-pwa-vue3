@@ -1,6 +1,5 @@
 <template>
 	<div id="rootApp">
-		<liquido-header ref="liquido-header"></liquido-header>
 		<popup-modal
 			id="rootPopupModal"
 			ref="rootPopupModal"

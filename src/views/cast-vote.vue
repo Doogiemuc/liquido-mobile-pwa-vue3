@@ -1,8 +1,12 @@
 <template>
 	<div>
-		<div class="cast-vote-title">
-			<h2>{{ poll ? poll.title : "" }}</h2>
-		</div>
+		<liquido-header ref="liquido-header">
+			<template #header-row-two>
+				<div class="cast-vote-title">
+					<h2>{{ poll ? poll.title : "" }}</h2>
+				</div>
+			</template>
+		</liquido-header>
 
 		<div v-if="loading" class="draggable">
 			<div class="spinner-border" role="status">
@@ -11,7 +15,7 @@
 			&nbsp;{{ $t('Loading') }}
 		</div>
 
-		<div class="alert liquido-info my-4">
+		<div class="alert liquido-info my-4 mx-3">
 			<p>{{ $t('dragInfo') }}</p>
 		</div>
 
@@ -26,7 +30,7 @@
 				:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
 				:can-scroll-x="false">
 
-				<div v-for="law in proposalsInBallot" :id="law.id" class="card shadow-sm law-panel d-flex flex-row align-items-center user-select-none">
+				<div v-for="law in proposalsInBallot" :key="law.id" class="card shadow-sm law-panel d-flex flex-row align-items-center user-select-none">
 					<div class="law-icon">
 						<i class="fas fa-fw" :class="'fa-' + law.icon" />
 					</div>
@@ -77,7 +81,7 @@
 			</p>
 		</div>
 
-		<div class="cast-vote-footer">
+		<div ref="castVoteFooter" class="cast-vote-footer">
 			<p v-html="$t('castVoteFooterInfo')"></p>
 			<div v-if="canCastVote" class="text-center">
 				<button id="castVoteButton" type="button" class="btn btn-primary btn-lg w-100" :disabled="loading || castVoteLoading" @click="clickCastVote()">
@@ -93,13 +97,11 @@
 </template>
 
 <script>
-import config from "config"
+//import config from "config"
 import api from "@/services/liquido-graphql-client.js"
 import { VueDraggableNext } from 'vue-draggable-next'
+import liquidoHeader from "@/components/liquido-header.vue";
 import log from "loglevel"
-//import dayjs from "dayjs"
-//import localizedFormat from 'dayjs/plugin/localizedFormat'
-//dayjs.extend(localizedFormat)
 
 export default {
 	i18n: {
@@ -132,7 +134,7 @@ export default {
 			},
 		},
 	},
-	components: { draggable: VueDraggableNext },
+	components: { draggable: VueDraggableNext, liquidoHeader },
 	props: {
 		// the cast-vote page only receives the pollId and reloads the poll from the backend
 		pollId: { type: String, required: true },
@@ -148,6 +150,7 @@ export default {
 			castVoteLoading: false,
 			isFirstVote: true,		// used for showing the correct confirmation message
 			ballotIsVerified: false,
+			castVoteFooterResizeObserver: null,
 		}
 	},
 	computed: {
@@ -274,8 +277,22 @@ export default {
 
 	mounted() {
 		this.$root.scrollToTop()
+		this.updateCastVoteFooterHeight()
+		this.castVoteFooterResizeObserver = new ResizeObserver(() => this.updateCastVoteFooterHeight())
+		if (this.$refs.castVoteFooter) this.castVoteFooterResizeObserver.observe(this.$refs.castVoteFooter)
+	},
+
+	beforeUnmount() {
+		if (this.castVoteFooterResizeObserver) {
+			this.castVoteFooterResizeObserver.disconnect()
+			this.castVoteFooterResizeObserver = null
+		}
 	},
 	methods: {
+		updateCastVoteFooterHeight() {
+			if (!this.$refs.castVoteFooter) return
+			document.documentElement.style.setProperty("--navbar-bottom-height", `${this.$refs.castVoteFooter.offsetHeight}px`)
+		},
 		/** Collapse the descriptions of all proposals in the ballot (not used) */
 		toggleBallotCollapse() {
 			this.$refs["proposalsInBallot"].forEach(pollPanel => {
@@ -338,11 +355,7 @@ export default {
 <style>
 
 .cast-vote-title {
-	width: 100%;
-	background-color: var(--header-bg);
-	padding: 1rem;
-	border-bottom: 1px solid var(--secondary);
-	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); /* horizontal, vertical, blur, color */
+	color: black;
 }
 
 .cast-vote-container {	
@@ -444,14 +457,20 @@ export default {
 
 .cast-vote-footer {
 	position: fixed;
-	bottom: 0;
 	left: 0;
 	right: 0;
-	padding: 1rem 1rem 2rem 1rem;
+	bottom: 0;
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding: 1rem;
 	background-color: var(--header-bg);
 	border-top: 1px solid var(--secondary);
 	text-align: center;
 	box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.1); /* horizontal, vertical, blur, color */
+	z-index: 999;
 
 	p {
 		font-size: 0.8rem;

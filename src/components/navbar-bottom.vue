@@ -186,7 +186,6 @@ export default {
 	bottom: 0;
 	display: flex;
 	
-	height: var(--navbar-bottom-height);
 	margin: 0;
 	padding: 10px;
 	border-top: 1px solid lightgray;
@@ -241,7 +240,6 @@ export default {
 		color: var(--arrowColor);
 		background-color: var(--arrowGapColor);
 		transition: background-color 0.5s;
-		/*box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* horizontal, vertical, blur, color */
 		overflow: hidden;
 		
 		display: flex;

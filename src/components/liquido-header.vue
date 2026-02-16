@@ -1,19 +1,24 @@
 <template>
 	<header id="liquidoHeader" :class="headerClass">
-		<div class="header-left" @click="clickLeft">
-			<i v-if="headerBackTarget" class="fas fa-angle-left" />
-		</div>
-		<div class="header-center" @click="clickHeaderCenter">
-			<div class="liquido-claim">
-				<i class="fas fa-university" />&nbsp;
-				<span class="liquido" />
+		<div class="header-top-row">
+			<div class="header-left" @click="clickLeft">
+				<i v-if="headerBackTarget" class="fas fa-angle-left" />
 			</div>
-			<div class="center-title">
-				<h1>{{ headerTitle }}</h1>
+			<div class="header-center" @click="clickHeaderCenter">
+				<div class="liquido-claim">
+					<i class="fas fa-university" />&nbsp;
+					<span class="liquido" />
+				</div>
+				<div class="center-title">
+					<h1>{{ headerTitle }}</h1>
+				</div>
+			</div>
+			<div class="header-right" @click="clickRight">
+				<!-- i class="fas fa-bars" /-->
 			</div>
 		</div>
-		<div class="header-right" @click="clickRight">
-			<!-- i class="fas fa-bars" /-->
+		<div class="header-row-two">
+			<slot name="header-row-two" />
 		</div>
 	</header>
 </template>
@@ -35,7 +40,8 @@ export default {
 	data() {
 		return {
 			showMenu: false,
-			isSticky: false
+			isSticky: false,
+			headerResizeObserver: null
 		}
 	},
 	
@@ -43,6 +49,9 @@ export default {
 		// Add a scroll listener to dynamically fade the header text up and down when user scrolls
 		document.getElementById("app").addEventListener("scroll", this.stickyHeader)
 		this.stickyHeader()
+		this.updateHeaderHeight()
+		this.headerResizeObserver = new ResizeObserver(() => this.updateHeaderHeight())
+		this.headerResizeObserver.observe(this.$el)
 	},
 
 	computed: {
@@ -60,9 +69,17 @@ export default {
 
 	beforeUnmount() {
 		document.getElementById("app").removeEventListener("scroll", this.stickyHeader)
+		if (this.headerResizeObserver) {
+			this.headerResizeObserver.disconnect()
+			this.headerResizeObserver = null
+		}
 	},
 
 	methods: {
+		updateHeaderHeight() {
+			if (!this.$el) return
+			document.documentElement.style.setProperty("--header-height", `${this.$el.offsetHeight}px`)
+		},
 		/**
 		 * This is called on scroll of the main "app" element.
 		 * When the main "app" is scrolled upwards for more then a given amount of pixels
@@ -134,84 +151,92 @@ export default {
 
 #liquidoHeader {
 	display: flex;
+	flex-direction: column;
 	position: fixed;
 	left: 0;
 	top: 0;
 	width: 100%;
-	height: var(--header-height);
+	/*height: var(--header-height); */
 	color: var(--header-color);
-	flex-direction: row;
-	justify-content: space-between;
-	z-index: 999;
-	transition: height 0.5s;
 	background-color: var(--header-bg);
-	padding: 0.5rem 0;
-	/* box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3); /* horizontal, vertical, blur, color */
-  z-index: 9999; /* make sure the header is on top of everything */
-  
-	/**
-	 * When user scrolls, then scroll LIQUIDO claim out towards the top
-	 *and let the center-title appear from the bottom
-	 */
-	&.transition-header {
-		.liquido-claim {
-			top: -1.5rem !important;
-		}
-		.center-title {
-			top: 50% !important;
-			transform: translate(-50%, -50%) !important;
-			padding: 0;
-			margin: 0;
-			h1 {
-				margin: 0;
-				padding: 0;
-			}
-		}
-	}
+	z-index: 9999; /* make sure the header is on top of everything */
+	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); /* horizontal, vertical, blur, color */
 	
-	.header-left, .header-right {
-		color: var(--header-color);
+	.header-top-row {
 		display: flex;
-		align-items: center;
-		text-align: center;
-		justify-content: center;
-		font-size: 25px;
-		/*flex: 0 0 var(--header-height);  /* touch area around icon */
-		min-width: 50px;
-	}
-	.header-back-link {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		text-align: center;
-		color: white;
-		cursor: pointer;
-		width: var(--header-height);
-		height: 100%;
-	}
-	.header-center {
-		flex-grow: 1;	
-		text-align: center;
-		position: relative;
-		overflow: hidden;
-		.liquido-claim {
-			position: relative;
-			top: 50%;
-			transform: translateY(-50%);
-			transition: top 0.5s;
-			font-size: 1.5rem;
-		}
-		.center-title {
-			position: absolute;
-			top: 150%;
-			left: 50%;
-			width: 100%;
-			transform: translateX(-50%);
-			transition: top 0.5s;
-			h2 { 
+		flex-direction: row;
+		justify-content: space-between;	
+		padding: 0.5rem 0;
+		
+		/**
+		* When user scrolls, then scroll LIQUIDO claim out towards the top
+		*and let the center-title appear from the bottom
+		*/
+		&.transition-header {
+			.liquido-claim {
+				top: -1.5rem !important;
+			}
+			.center-title {
+				top: 50% !important;
+				transform: translate(-50%, -50%) !important;
+				padding: 0;
 				margin: 0;
+				h1 {
+					margin: 0;
+					padding: 0;
+				}
 			}
 		}
+		
+		.header-left, .header-right {
+			color: var(--header-color);
+			display: flex;
+			align-items: center;
+			text-align: center;
+			justify-content: center;
+			font-size: 25px;
+			/*flex: 0 0 var(--header-height);  /* touch area around icon */
+			min-width: 50px;
+		}
+		.header-back-link {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
+			color: white;
+			cursor: pointer;
+			width: var(--header-height);
+			height: 100%;
+		}
+		.header-center {
+			flex-grow: 1;	
+			text-align: center;
+			position: relative;
+			overflow: hidden;
+			.liquido-claim {
+				position: relative;
+				top: 50%;
+				transform: translateY(-50%);
+				transition: top 0.5s;
+				font-size: 1.5rem;
+			}
+			.center-title {
+				position: absolute;
+				top: 150%;
+				left: 50%;
+				width: 100%;
+				transform: translateX(-50%);
+				transition: top 0.5s;
+				h2 { 
+					margin: 0;
+				}
+			}
+		}
+	}
+
+	.header-row-two {
+		padding: 0.5rem 1rem;
+		text-align: center;
 	}
 	
 }

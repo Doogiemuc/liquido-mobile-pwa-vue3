@@ -24,4 +24,21 @@ export default {
 	inviteLinkPrefix: "http://app.liquido.vote/welcome?inviteCode=",
 	//TODO: adminMustConfirmNewMembers: ...
 
+	// Dummy data for mocked login. Must be same as mockdata/teamUserJwt.json
+	devLogin: {
+		teamName: "DevLogin Team",
+		token: "XXXXX_DevLoginToken",
+		member: {
+			name: "DevLogin Member",
+			email: "membr47113@liquido.vote",
+			mobilephone: "01515551754552747221",
+
+		},
+		admin: {
+			name: "TestAdmin 4711",
+			email: "testadmin4711@liquido.vote",
+			mobileephone: "01515554711"
+		}
+	}
+
 }
