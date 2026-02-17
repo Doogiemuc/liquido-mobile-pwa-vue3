@@ -1,5 +1,6 @@
 <template>
 	<div>
+		<liquido-header ref="liquido-header"></liquido-header>
 		<h1 id="team-home" class="page-title">
 			{{ team.teamName }}
 		</h1>
@@ -27,7 +28,6 @@
 			</div>
 		</div>
 
-		<!-- TODO: make it configurable who can invite more team members. Only the admin? -->
 		<div id="teamInfo" class="card">
 			<h3 class="card-header text-center">
 				{{ $t("inviteNewMembers") }}
@@ -90,6 +90,7 @@
 <script>
 import config from "config"
 import QRCode from "qrcode"
+import liquidoHeader from "@/components/liquido-header.vue"
 import liquidoInput from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
 import webauthnService from '@/services/webauthn-service.js'
@@ -128,7 +129,7 @@ export default {
 			},
 		},
 	},
-	components: { liquidoInput },
+	components: { liquidoInput, liquidoHeader },
 	data() {
 		return {
 			team: {},

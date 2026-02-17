@@ -872,7 +872,7 @@ let graphQlApi = {
 
 	/** poll status constants (trying to have one central definition for the whole client here) */
 	POLL_STATUS: {
-		ALL_POLLS: undefined,  // <= used in polls.vue & navbar-bottom.vue for filtering
+		ALL_POLLS: undefined,  // <= used in polls.vue & polls-footer.vue for filtering
 		ELABORATION: "ELABORATION",
 		VOTING: "VOTING",
 		FINISHED: "FINISHED"

@@ -1,19 +1,26 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import welcomeChat from "@/views/welcome-chat.vue"
+//import loginPage from "@/views/login-page.vue"
+
+//TODO: load these as dynamic dependencies (only on demand later)
+//      https://router.vuejs.org/guide/advanced/lazy-loading.html
+//import teamHome from "@/views/team-home.vue"
+import pollsPage from "@/views/polls.vue"
 import showPoll from "@/views/poll-show.vue"
 import { store }  from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
 import config from "config"
 import log from 'loglevel'
+import { route } from 'fontawesome'
 if (process.env.NODE_ENV === "development") log.enableAll()
 
 const routes = [
 	{
 		path: "/",
 		name: "index",
-		// Will forward anonymous to welcome page
-		// With valid JWT to "team"
-		// and with expired JWT to login
+		// Will forward anonymous to /welcome 
+		// With valid JWT to /team
+		// and with expired JWT to /login
 	},
 	{
 		path: "/login",
@@ -141,22 +148,15 @@ if (process.env.NODE_ENV === "development") {
 }
 
 const router = createRouter({
-	// https://router.vuejs.org/guide/essentials/history-mode.html#HTML5-Mode
+	// https://router.vuejs.org/guide/essentials/history-mode
 	// The history mode withouth hash "#" needs a special web-server configuration in PROD.
 	// Its advantage is that it provides clean SEO conform URLs, e.g. /liquido-mobile/login
   history: createWebHistory(config.BASE_URL),  // createWebHashHistory(config.BASE_URL),
 
-	/*
-	//TODO: https://router.vuejs.org/guide/advanced/scroll-behavior.html
-	scrollBehavior(to, from, savedPosition) {
-		if (savedPosition) {
-			log.debug("Returning to saved scroll position", savedPosition)
-			return savedPosition
-		} else {
-			return { x: 0, y: 0 }
-		}
-	},
-	*/
+	// Disable scroll behavior to prevent history.state warnings
+	// Scroll position is managed in root-app.vue watch.$route instead
+	scrollBehavior: () => false,
+	
 	routes,
 })
 
@@ -225,7 +225,7 @@ async function tryToAuthenticate() {
  * https://next.router.vuejs.org/guide/advanced/navigation-guards.html#navigation-guards
  */
 router.beforeEach(async (routeTo, routeFrom) => {
-	log.debug("beforeEach ENTER", routeFrom.path, "=>", routeTo.path)
+	//log.debug("beforeEach ENTER", routeFrom.path, "=>", routeTo.path)
 	
 	// Clear header title. Page may set it later when it is mounted.
 	if (routeFrom.path !== routeTo.path) {
@@ -234,11 +234,9 @@ router.beforeEach(async (routeTo, routeFrom) => {
 		store.setHeaderBackTarget(undefined)
 	}
 	
-	
 	return tryToAuthenticate().then(() => {
 		log.debug("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
 		if (routeTo.path === "/" || routeTo.path === "/index.html") {
-			console.log("================== authenticated CALL TO INDEX => FORWARDING TO TEAM")
 			return {name: "team"}  
 		} else {
 			return true // allow authenticated navigation
@@ -253,7 +251,6 @@ router.beforeEach(async (routeTo, routeFrom) => {
 			return {name: "login"}
 		}
 	})
-		
 })
 
 export default router

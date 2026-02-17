@@ -74,8 +74,8 @@ const globalTranslations = {
 		allPolls: "Alle Abstimmungen",
 		YourPolls: "Eure Abstimmungen",
 		pollTitle: "Titel der Abstimmung",
-		pollInElaboration: "Abstimmung zur Debatte",   // Oder einfacher: Neue Abstimmung? Aber das elaborierte Fremdwort "Debatte" macht den Eindruck den wir wollen.
-		pollsInElaboration: "Abstimmungen zur Debatte",
+		pollInElaboration: "Neue Abstimmung",   // Im großen LIQUIDO: "Abstimmung zur Debatte"m denn das elaborierte Fremdwort "Debatte" macht den Eindruck den wir wollen.
+		pollsInElaboration: "Neue Abstimmungen",
 		pollInVoting: "Laufende Abstimmung",
 		pollsInVoting: "Laufende Abstimmungen",
 		finishedPoll: "Abgeschl. Abstimmung",   // Muss abkürzen, weil Titel der poll-show page sonst zu lang auf schmalen Phones

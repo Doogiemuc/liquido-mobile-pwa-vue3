@@ -102,7 +102,7 @@
 			</button>
 		</div>
 
-		<navbar-bottom v-model="pollStatusFilter"></navbar-bottom>
+		<polls-footer v-model="pollStatusFilter"></polls-footer>
 
 	</div>
 </template>
@@ -116,9 +116,10 @@
 
 import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
-import navbarBottom from "@/components/navbar-bottom.vue"
+import pollsFooter from "@/components/polls-footer.vue"
 import liquidoHeader from "@/components/liquido-header.vue"
 import dayjs from "dayjs"
+import LiquidoFooter from "../components/liquido-footer.vue"
 
 const pollStatusOrder = {
 	ELABORATION: 0,
@@ -160,7 +161,7 @@ export default {
 		},
 	},
 	name: "PollsList",
-	components: { liquidoHeader, navbarBottom },
+	components: { liquidoHeader, pollsFooter },
 	data() {
 		return {
 			loading: true,

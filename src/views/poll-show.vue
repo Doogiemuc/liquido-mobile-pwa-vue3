@@ -1,5 +1,6 @@
 <template>
 	<div>
+		<liquido-header ref="liquido-header"></liquido-header>
 		<h1 id="poll-show" class="page-title">
 			{{ this.pageTitleLoc }}
 		</h1>
@@ -17,21 +18,22 @@
 			</button>
 		</div>
 
+		<div class="alert liquido-info">
+			<p v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" v-html="$t('pollInElaborationInfo')" />
+			<p v-if="poll.status === 'VOTING' && !poll.usersBallot" v-html="$t('votingPhaseInfo')" />
+			<p v-if="poll.status === 'VOTING' &&  poll.usersBallot" v-html="$t('alreadyVotedInfo')" />
+			<p v-if="poll.status === 'FINISHED'" id="finishedPollInfo">
+				{{ $t('finishedPollInfo', {
+					winnerTitle: poll.winner ? poll.winner.title : "",
+					numBallots: poll.numBallots,
+				}) }}
+			</p>
+		</div>
+
 		<liquido-footer>
 			<template #info>
-				<div class="">
-					<p v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" v-html="$t('pollInElaborationInfo')" />
-					<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && userAlreadyHasProposal" v-html="$t('alreadyAddedProposal')" />
-					<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && !userAlreadyHasProposal" v-html="$t('canAddProposal')" />
-					<p v-if="poll.status === 'VOTING' && !poll.usersBallot" v-html="$t('votingPhaseInfo')" />
-					<p v-if="poll.status === 'VOTING' &&  poll.usersBallot" v-html="$t('alreadyVotedInfo')" />
-					<p v-if="poll.status === 'FINISHED'" id="finishedPollInfo">
-							{{ $t('finishedPollInfo', {
-								winnerTitle: poll.winner ? poll.winner.title : "",
-								numBallots: poll.numBallots,
-							}) }}
-						</p>
-				</div>
+				<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && !userAlreadyHasProposal" v-html="$t('canAddProposal')" />	
+				<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && userAlreadyHasProposal" v-html="$t('alreadyAddedProposal')" />
 			</template>
 			<template #primary>
 				<button v-if="poll.status === 'VOTING' && !poll.usersBallot" id="goToCastVoteButton" type="button" class="btn btn-lg w-100 btn-primary" @click="clickCastVote()">
@@ -77,6 +79,7 @@
 
 <script>
 import pollPanel from "@/components/poll-panel.vue"
+import liquidoHeader from "@/components/liquido-header.vue"
 import liquidoFooter from "@/components/liquido-footer.vue"
 // import polly from '@/components/polly.vue'
 import EventBus from "@/services/event-bus.js"
@@ -91,11 +94,11 @@ export default {
 				cannotFindPoll: "<h4>Fehler</h4><hr/><p>Diese Abstimmung konnte nicht gefunden werden.</p>",
 				pollInElaborationInfo: 
 					"<p>Diese Abstimmung wird gerade noch debatiert.</p>" +
-					"<p>Wenn euer Admin die Wahl startet, kannst du anonym deine Stimme abgeben.</p>",
+					"<p>Sobald euer Admin die Wahl startet, kannst du hier dann anonym deine Stimme abgeben.</p>",
 				canAddProposal: 
-					"Du kannst in dieser Abstimmung jetzt deinen eigenen Vorschlag hinzufügen.",
+					"Du kannst einen eigenen Vorschlag zu dieser Abstimmung hinzufügen.",
 				alreadyAddedProposal: 
-					"Du hast bereits einen Vorschlag in dieser Abstimmung hinzugefügt.",
+					"Du hast deinen Vorschlag bereits zu dieser Abstimmung hinzugefügt.",
 				addProposal: "Vorschlag hinzufügen",
 				startVotingPhaseInfo: 
 					"Hallo Admin! Möchstest du die Wahlphase für diese Abstimmung starten? Dann sind die Wahlvorschläge fixiert und dein Team kann abstimmen.",
@@ -115,7 +118,7 @@ export default {
 			},
 		},
 	},
-	components: { pollPanel, liquidoFooter },
+	components: { pollPanel, liquidoHeader, liquidoFooter },
 	props: {
 		// Allow number or string that contains an integer. Url parameter is passed as String, 
 		// but $router.push({name: "pollShow", params: {pollId: 4711 }}) can be passed as number. We'll accept both
