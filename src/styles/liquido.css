@@ -29,7 +29,12 @@
   --chat-right-bg: #fff;
   --liquido-input-bg: #afc2fa;
 
-	/* Proposals in a poll */
+	/* Icons per poll status */
+	--elaboration-bg: #e9d47f;
+	--voting-bg: #2e8dff;  /* primary */
+	--finished-bg: #198754;
+
+	/* Icon for a proposal */
   --proposal-icon-bg: #429cf3;
 
 	/* Info text in .alert on --app-background */

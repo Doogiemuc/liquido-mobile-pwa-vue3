@@ -1,12 +1,9 @@
 <template>
 	<div>
 		<liquido-header ref="liquido-header"></liquido-header>
-		<div id="pollsPage" class="d-flex justify-content-between align-items-center">
-			<div>&nbsp;</div>
-			<h1 class="page-title flex-grow-1">
-				{{ pageTitleLoc }}
-			</h1>
-		</div>
+		<h1 class="page-title">
+			{{ pageTitleLoc }}
+		</h1>
 
 		<div v-if="loading" class="my-3">
 			<div class="spinner-border spinner-border-sm" role="status">{{ $t('Loading') }}</div>
@@ -25,7 +22,7 @@
 				<div v-for="poll in filteredPolls" :key="poll.id" class="poll-card-wrapper">
 					<div class="poll-card card border-0" @click="goToPoll(poll.id)">
 						<div class="card-body d-flex flex-nowrap align-items-center">
-							<div class="flex-grow-0">
+							<!-- div class="flex-grow-0">
 								<div v-if="poll.status === 'ELABORATION'" class="poll-icon-elaboration">
 									<i class="far fa-comments" />
 								</div>
@@ -35,21 +32,27 @@
 								<div v-if="poll.status === 'FINISHED'" class="poll-icon-finished">
 									<i class="fas fa-check-circle" />
 								</div>
-
-							</div>
+							</div -->
 							<div class="flex-grow-1">
+								<div class="poll-eyebrow">
+									<span v-if="poll.status === 'ELABORATION'" class="badge rounded-pill elaboration-pill">{{ $t('New') }}</span>
+									<span v-if="poll.status === 'VOTING'" class="badge rounded-pill voting-pill">{{ $t('InVoting') }}</span>
+									<span v-if="poll.status === 'FINISHED'" class="badge rounded-pill finished-pill">{{ $t('Finished') }}</span>
+									<span class="poll-created-date">{{ formatDate(poll.createdAt) }}</span>
+								</div>
 								<h2 class="poll-title">{{ poll.title }}</h2>
 								<div class="poll-footer">
-									<div v-if="poll.status === 'VOTING'">
-										<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
-										<i class="far fa-calendar-alt"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}
-									</div>
-									<div v-else-if="poll.status === 'FINISHED'">
-										<i class="far fa-check-circle"></i>&nbsp;{{ $t('finished') }}
-									</div>
-									<div v-else>
+									<div v-if="poll.status=== 'ELABORATION'">
 										<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
 									</div>
+									<div v-if="poll.status === 'VOTING'">
+										<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
+									</div>
+									<div v-if="poll.status === 'FINISHED'">
+										<i class="fas fa-check-circle"></i>&nbsp;{{ $t('finished') }}
+									</div>
+									
+									<div v-if="poll.status === 'VOTING'"><i class="far fa-clock"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}</div>
 								</div>
 							</div>
 							<div class="flex-grow-0">
@@ -119,7 +122,9 @@ import api from "@/services/liquido-graphql-client"
 import pollsFooter from "@/components/polls-footer.vue"
 import liquidoHeader from "@/components/liquido-header.vue"
 import dayjs from "dayjs"
-import LiquidoFooter from "../components/liquido-footer.vue"
+import localizedFormat from 'dayjs/plugin/localizedFormat'
+dayjs.extend(localizedFormat)
+
 
 const pollStatusOrder = {
 	ELABORATION: 0,
@@ -143,7 +148,7 @@ export default {
 					"<p>Sobald euer Admin eine Wahl startet, kannst du sicher und anonym deine Stimme abgeben.</p>",
 				pollsInVotingInfo: "Diesen Abstimmungen laufen jetzt gerade. Wähle eine und gib deine Stimme ab.",
 				finishedPollsInfo: "Diese Abstimmungen sind beendet.",
-				finished: "abgeschlossen",
+				New: "Neu",    		// Neue Abstimmung "elaboratin", "debattiert", ...
 				noPollYet: "Euer Admin hat bisher noch keine Abstimmung erstellt.",
 				noPollsMatchSearch: "",
 				noPollsInElaboration: "Aktuell gibt es gerade keine Abstimmungen mit Wahlvorschläge die noch diskutiert werden können.",
@@ -244,6 +249,9 @@ export default {
 	},
 	
 	methods: {
+		formatDate(dateVal) {
+			return dayjs(dateVal).format("L")
+		},
 
 		toggleSearch() {
 			this.showSearch = !this.showSearch
@@ -254,7 +262,7 @@ export default {
 			if (!poll) return undefined
 			switch (poll.status) {
 				case "ELABORATION":
-					return "far fa-comments"   // or fa-poll?
+					return "far fa-lightbulb"   // or fa-poll? or comments
 				case "VOTING":
 					return "fas fa-person-booth"
 				case "FINISHED":
@@ -386,13 +394,31 @@ export default {
 	height: 100% !important;  /* bootstrap .card sets a height that we need to overwrite */
 	border-radius: var(--liquido-border-radius);
 
-	.card-body {
-		padding: 0 10px;
+	.card-body{
+		padding: 0 0.5rem;
 	}
-	
+
+	.poll-eyebrow {
+		font-size: 80%;
+	}
+
+	.elaboration-pill {
+		background-color: var(--elaboration-bg);
+	}
+	.voting-pill {
+		background-color: var(--voting-bg);
+	}
+	.finished-pill {
+		background-color: var(--finished-bg);
+	}
+
+	.poll-created-date {
+			float: right;
+			color: var(--secondary);	
+	}
+
 	.poll-icon-elaboration, .poll-icon-voting {
 		color: white;
-		background-color: var(--proposal-icon-bg);
 		border-radius: 50%;
 		text-align: center;
 		font-size: var(--iconSize) * 0.5;
@@ -407,32 +433,34 @@ export default {
 	}
 
 	.poll-icon-elaboration {
-		background-color: lightgray;
+		background-color: var(--elaboration-bg);
+	}
+
+	.poll-icon-voting {
+		background-color: var(--voting-bg);
 	}
 
 	.poll-icon-finished {
 		font-size: var(--iconSize);
-		color: var(--primary);
-		filter: brightness(50%);
+		color: var(--finished-bg);
 		margin: 0 10px 0 0;
 	}
 
 	.poll-title {
 		color: black;    /* poll-titles are black, proposal titles are --primary! */
 		font-size: 1.2rem !important;  /* a bit smaller than normal h2 */
+		margin: 0.5rem 0;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;  /* max 2 lines */
 		-webkit-box-orient: vertical;
 		overflow: hidden;
-		
 	}
 
 	.poll-footer {
+		display: flex;
+		gap: 1rem;
 		font-size: 80%;
-		color: #bbb;
-		i:not(:first-child) {
-			margin-left: 10px;
-		}
+		color: var(--secondary)
 	}
 }
 

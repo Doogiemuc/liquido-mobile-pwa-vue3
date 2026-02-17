@@ -70,6 +70,7 @@ const globalTranslations = {
 		Law: "Regel",   // Gesetz? ... vielleicht irgendwann mal wenn die LIQUIDO Liquid Democracy Revolution erfolgreich war :-)
 		Laws: "Regeln",
 
+	
 		newPoll: "Neue Abstimmung",
 		allPolls: "Alle Abstimmungen",
 		YourPolls: "Eure Abstimmungen",
@@ -81,9 +82,11 @@ const globalTranslations = {
 		finishedPoll: "Abgeschl. Abstimmung",   // Muss abkürzen, weil Titel der poll-show page sonst zu lang auf schmalen Phones
 		finishedPolls: "Abgeschl. Abstimmungen",
 
-		Elaboration: "Diskussion",	
+
+		New: "Neu",									// Neue Abstimmung
+		Elaboration: "Diskussion",	// Abstimmung die gerade debatiert wird. (Nur für großes LIQUIDO)
 		InVoting: "Wahl läuft", 		// Abstimmung im Status "die Wahl läuft gerade"
-		Finished: "Abgeschlossen",
+		Finished: "Abgeschlossen", // "Beendet" ?
 
 		NetworkOffline: "Du bist offline. Bitte schalte dein WLAN ein.",
 		BackendNotReachable: "Ich kann den LIQUIDO Server gerade nicht erreichen. Bitte versuche es später noch einmal.",

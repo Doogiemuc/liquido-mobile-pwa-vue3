@@ -5,16 +5,22 @@
 			{{ team.teamName }}
 		</h1>
 
-		<div id="team-home-user-welcome" class="card mb-3">
-			<div class="card-body">
-				<span v-html="$t('introYourTeam', { name: currentUserName })"></span>
-			</div>
+		<div class="alert liquido-info">
+			<span v-html="$t('introYourTeam', { name: currentUserName })"></span>
+		</div>
+
+		<div class="pollsInVotingShortcut">
+			<h3>{{ $t('pollsInVoting') }}</h3>
+			
+	 
 		</div>
 
 		<button id="gotoPollsButton" class="btn btn-primary btn-lg w-100 mb-5" @click="gotoPolls">
 			{{ $t("gotoPolls") }}
 			<i class="fas fa-angle-double-right" />
 		</button>
+
+
 
 		<div id="memberCards" class="row row-cols-3 g-2 mb-3">
 			<div class="col" v-for="member in team.members" :key="member.user.id">

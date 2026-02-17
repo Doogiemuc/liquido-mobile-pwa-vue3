@@ -8,10 +8,10 @@
 			<div id="pollsInDiscussionArrow" :class="discussButtonClass" class="discuss-button">
 				<a href="" aria-label="Polls to discuss" @click.prevent="clickPollsInDiscussion">
 					<div class="arrow-icon">
-						<i class="fas fa-comments"></i>
+						<i class="fas fa-lightbulb"></i>
 						<span class="counter-badge">{{ pollsInElaboration.length }}</span>
 					</div>
-					<div class="icon-title">{{ $t("discuss") }}</div>
+					<div class="arrow-title">{{ $t("New") }}</div>
 				</a>
 			</div>
 			<div id="pollsInVotingArrow" :class="voteButtonClass" class="vote-button">
@@ -20,7 +20,7 @@
 						<i class="fas fa-person-booth"></i>
 						<span class="counter-badge">{{ pollsInVoting.length }}</span>
 					</div>
-					<div class="icon-title">{{ $t("vote") }}</div>
+					<div class="arrow-title">{{ $t("InVoting") }}</div>
 				</a>
 			</div>
 			<div id="finishedPollsArrow" :class="finishedButtonClass" class="finished-button">
@@ -29,7 +29,7 @@
 						<i class="fas fa-check-circle"></i>
 						<span class="counter-badge">{{ pollsFinished.length }}</span>
 					</div>
-					<div class="icon-title">{{ $t("finished") }}</div>
+					<div class="arrow-title">{{ $t("FinishedAbbr") }}</div>
 				</a>
 			</div>
 		</div>
@@ -47,20 +47,12 @@ export default {
 	name: "LiquidoFooter",
 	i18n: {
 		messages: {
-			de: {
-				team: "Team",
-				discuss: "Neu",      	// Verben oder Nomen? "debattieren" oder "Debatte".  Or einfach "Neu"
-				vote: "Abstimmung",
-				finished: "Beendet",   	// abgeschlossen? final? fertig? entschieden? beendet?
-				info: "Info"
-			},
 			en: {
-				team: "Team",
-				discuss: "Discuss",  			// or debate?
-				vote: "Vote",
-				finished: "Finished",
-				info: "Info"
-			}
+				FinishedAbbr: "Finished"
+			},
+			de: {
+				FinishedAbbr: "Abgeschl."
+			},
 		}
 	},
 	props: {
@@ -167,7 +159,6 @@ export default {
 </script>
 
 <style>
-
 #pollsNavbar {
 	--arrowColor: white;  /* TEXT color */
 	--arrowBgColor: var(--primary);
@@ -191,16 +182,10 @@ export default {
 	z-index: 999;
 	/*will-change: transform;*/
 
-	.arrow-icon {
-		position: relative;
-		display: inline-block;	
-	}
-
 	.counter-badge {
 		position: absolute;
 		text-align: center;
-		top: -3px;
-		left: 1.1em;
+		top: 0;
 		color: var(--primary);
 		background-color: var(--arrowColor);
 		border: 1px solid rgba(47, 141, 255, 0.5);
@@ -216,6 +201,7 @@ export default {
 		font-size: 10px;
 		text-decoration: none;
 		line-height: 1.0;
+		margin-top: 0.5rem;
 	}
 
 	.team-button, .search-button {	
@@ -228,9 +214,6 @@ export default {
 		color: var(--primary);
 		padding: 1.2rem 1rem 0.8rem 1rem;  /*UI glitch: needs a bit more padding at the top to visually look centers */
 		text-decoration: none;
-		.icon-title {
-			margin-top: 0.5rem;
-		}
 	}
 
 	#navbar-arrows {
@@ -251,18 +234,22 @@ export default {
 		
 		.discuss-button, .vote-button, .finished-button {
 			min-width: 30px;
-			flex: 1; /* Allows them to grow/shrink equally */
-			/* flex-basis: 33%; each takes 1/3 of the width */
+			flex-grow: 1;
+			position: relative;
+			opacity: 1.0;  /* will be dimmed when deselected */
 
-			opacity: 1.0;  /* will be set to 1.0 when .selected */
+			font-size: 1.5rem;
 			color: var(--arrowColor);
 			background-color: var(--arrowBgColor);
 			
-			position: relative;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			text-align: center;
+			.arrow-icon {
+				position: relative;
+				display: inline-block;	
+			}
+
+			.arrow-title {
+				font-size: 10px;
+			}
 
 			a {
 				color: var(--arrowColor);
@@ -290,41 +277,23 @@ export default {
 
 
 		.discuss-button {
-			/*
-			position: absolute;
-			top: 0;
-			left: 0;
-			bottom: 0;
-			right: calc(100% * 2/3);
-			*/
+			flex-basis: 22%;
 			border-top-left-radius: var(--border-radius);
 			border-bottom-left-radius: var(--border-radius);
+			/* Arrow shape using clip-path */
 			clip-path: polygon(0 0, calc(100% - var(--arrowWidth)) 0, 100% 50%, calc(100% - var(--arrowWidth)) 100%, 0 100%, 0% 50%);
 			z-index: 2;
 			margin-right: var(--arrowGap);
 		}
 
 		.vote-button {
-			/*
-			position: absolute;
-			top: 0;
-			left: 33%;
-			bottom: 0;
-			right: 33%;
-			*/
+			flex-basis: 36%;
 			z-index: 3;
-			/* Arrow shape using clip-path */
 			clip-path: polygon(0 0, calc(100% - var(--arrowWidth)) 0, 100% 50%, calc(100% - var(--arrowWidth)) 100%, 0 100%, var(--arrowWidth) 50%);
 		}
 
 		.finished-button {
-			/*
-			position: absolute;
-			top: 0;
-			left: 66%;
-			bottom: 0;
-			right: 0;
-			*/
+			flex-basis: 22%;
 			z-index: 4;
 			border-top-right-radius: var(--border-radius);
 			border-bottom-right-radius: var(--border-radius);
