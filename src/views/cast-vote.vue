@@ -15,12 +15,12 @@
 			&nbsp;{{ $t('Loading') }}
 		</div>
 
-		<div class="alert liquido-info my-4 mx-3">
+		<div class="alert liquido-info cast-vote-info-top">
 			<p>{{ $t('dragInfo') }}</p>
 		</div>
 
 		<div v-if="!loading" class="cast-vote-container">
-			<div class="">
+			<div class="index-number-container">
 				<div v-for="(prop, index) in poll.proposals" :key="prop.id" class="proposal-index-number">
 					{{ index + 1 }}.
 				</div>
@@ -34,7 +34,7 @@
 					<div class="law-icon">
 						<i class="fas fa-fw" :class="'fa-' + law.icon" />
 					</div>
-					<div class="d-flex flex-column text-truncate ms-1">
+					<div class="d-flex flex-column text-truncate">
 						<h4 class="law-title">
 							{{ law.title }}
 						</h4>
@@ -81,18 +81,22 @@
 			</p>
 		</div>
 
-		<div ref="castVoteFooter" class="cast-vote-footer">
-			<p v-html="$t('castVoteFooterInfo')"></p>
-			<div v-if="canCastVote" class="text-center">
-				<button id="castVoteButton" type="button" class="btn btn-primary btn-lg w-100" :disabled="loading || castVoteLoading" @click="clickCastVote()">
+		<liquido-footer>
+			<template #info>
+				<div class="cast-vote-footer-info">
+					<p v-html="$t('castVoteFooterInfo')"></p>
+				</div>
+			</template>
+			<template #primary>
+				<button v-if="canCastVote" id="castVoteButton" type="button" class="btn btn-primary btn-lg w-100" :disabled="loading || castVoteLoading" @click="clickCastVote()">
 					<div v-if="castVoteLoading" class="spinner-border" role="status">
 						<span class="visually-hidden">{{ $t("Loading") }}</span>	
 					</div>
 					<i v-if="!castVoteLoading" class="fas fa-vote-yea"></i>
 					{{ isUpdatableBallot ? $t("updateBallotButton") : $t("castVoteButton") }}
 				</button>
-			</div>		
-		</div>
+			</template>
+		</liquido-footer>
 	</div>
 </template>
 
@@ -101,6 +105,7 @@
 import api from "@/services/liquido-graphql-client.js"
 import { VueDraggableNext } from 'vue-draggable-next'
 import liquidoHeader from "@/components/liquido-header.vue";
+import liquidoFooter from "@/components/liquido-footer.vue";
 import log from "loglevel"
 
 export default {
@@ -121,7 +126,7 @@ export default {
 				voteCountedNTimes: "Deine Stimme als Proxy wurde {voteCount} mal gezählt.",
 				yourBallot: "Dein Stimmzettel:",
 				updateBallotButton: "Eigene Stimme aktualisieren",
-				castVoteButton: "Diese Stimme jetzt abgeben",
+				castVoteButton: "Diese Stimme abgeben",
 				voteCastedSuccessfully: "Deine Stimme wurde erfolgreich gezählt.",
 				voteUpdatedSuccessfully: "Deine Stimme wurde erfolgreich aktualisiert.",
 				voteCastError: "Es gab leider einen technischen Fehler beim Abgeben deiner Stimme. Bitte versuche es später noch einmal.",
@@ -134,7 +139,7 @@ export default {
 			},
 		},
 	},
-	components: { draggable: VueDraggableNext, liquidoHeader },
+	components: { draggable: VueDraggableNext, liquidoHeader, liquidoFooter },
 	props: {
 		// the cast-vote page only receives the pollId and reloads the poll from the backend
 		pollId: { type: String, required: true },
@@ -150,7 +155,6 @@ export default {
 			castVoteLoading: false,
 			isFirstVote: true,		// used for showing the correct confirmation message
 			ballotIsVerified: false,
-			castVoteFooterResizeObserver: null,
 		}
 	},
 	computed: {
@@ -277,22 +281,8 @@ export default {
 
 	mounted() {
 		this.$root.scrollToTop()
-		this.updateCastVoteFooterHeight()
-		this.castVoteFooterResizeObserver = new ResizeObserver(() => this.updateCastVoteFooterHeight())
-		if (this.$refs.castVoteFooter) this.castVoteFooterResizeObserver.observe(this.$refs.castVoteFooter)
-	},
-
-	beforeUnmount() {
-		if (this.castVoteFooterResizeObserver) {
-			this.castVoteFooterResizeObserver.disconnect()
-			this.castVoteFooterResizeObserver = null
-		}
 	},
 	methods: {
-		updateCastVoteFooterHeight() {
-			if (!this.$refs.castVoteFooter) return
-			document.documentElement.style.setProperty("--navbar-bottom-height", `${this.$refs.castVoteFooter.offsetHeight}px`)
-		},
 		/** Collapse the descriptions of all proposals in the ballot (not used) */
 		toggleBallotCollapse() {
 			this.$refs["proposalsInBallot"].forEach(pollPanel => {
@@ -354,8 +344,16 @@ export default {
 
 <style>
 
+.header-row-two {
+	padding: 0.5rem 1rem;
+	text-align: center;
+}
 .cast-vote-title {
 	color: black;
+}
+
+.cast-vote-info-top {
+	margin: 1rem;
 }
 
 .cast-vote-container {	
@@ -363,10 +361,15 @@ export default {
 	display: flex;
 	flex-direction: row;
 	width: 100%;
+	padding-right: 0.5rem;
 
 	--polly-proposal-height: 4rem;
 	--polly-proposal-margin-bottom: 0.5rem;
 	
+	.index-number-container {
+		width: 1rem;  /* same as cast-vote-info-top */
+	}
+
 	.proposal-index-number {
 		color: var(--secondary);
 		height: var(--polly-proposal-height);
@@ -422,7 +425,7 @@ export default {
 			--proposal_icon_size: 32px;
 			color: white;
 			background-color: var(--proposal-icon-bg);
-			margin: 0 0.5rem;
+			margin: 0 0.75rem;
 			border-radius: 50%;
 			border: none;
 			text-align: center;
@@ -450,32 +453,8 @@ export default {
 			right: 10px;
 			top: 50%;
 			transform: translateY(-50%);
-			opacity: 0.5;
+			opacity: 0.3;
 		}
-	}
-}
-
-.cast-vote-footer {
-	position: fixed;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	flex-grow: 1;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	padding: 1rem;
-	background-color: var(--header-bg);
-	border-top: 1px solid var(--secondary);
-	text-align: center;
-	box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.1); /* horizontal, vertical, blur, color */
-	z-index: 999;
-
-	p {
-		font-size: 0.8rem;
-		color: var(--secondary);
-		line-height: 1.2;
 	}
 }
 

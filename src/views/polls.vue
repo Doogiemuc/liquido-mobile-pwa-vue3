@@ -1,5 +1,6 @@
 <template>
 	<div>
+		<liquido-header ref="liquido-header"></liquido-header>
 		<div id="pollsPage" class="d-flex justify-content-between align-items-center">
 			<div>&nbsp;</div>
 			<h1 class="page-title flex-grow-1">
@@ -116,6 +117,7 @@
 import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
 import navbarBottom from "@/components/navbar-bottom.vue"
+import liquidoHeader from "@/components/liquido-header.vue"
 import dayjs from "dayjs"
 
 const pollStatusOrder = {
@@ -158,7 +160,7 @@ export default {
 		},
 	},
 	name: "PollsList",
-	components: { navbarBottom },
+	components: { liquidoHeader, navbarBottom },
 	data() {
 		return {
 			loading: true,

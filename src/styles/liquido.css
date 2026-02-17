@@ -22,7 +22,7 @@
   --header-bg: white;        /* Nice color by stitch.withgoogle.com #429cf3; */
   
 	--navbar-bottom-height: 80px;
-	--liquido-border-radius: 20px;   /* also used navbar-arrows and for poll cards */
+	--liquido-border-radius: 20px;   /* Used for navbar-arrows and for poll cards */
 
   /* Welcome Chat */
   --chat-left-bg: #dbeafe; /* light blue by stich google,   that was a darker one #aacfff; */
@@ -161,11 +161,12 @@ html, body {
 
 .liquido-info {
 	position: relative;
+	padding: 0.5rem; /* Bootstrap padding has 1.rem */
   font-size: 0.8rem;
   color: var(--liquido-info-color);
   background-color: var(--liquido-info-background);
-	border: none;
   border: 1px solid var(--liquido-info-border-color);
+	border-radius: var(--bs-border-radius);
 	z-index: 1;
 	overflow: hidden;
 }

@@ -17,42 +17,41 @@
 			</button>
 		</div>
 
-		<!-- Text info -->
-		<div class="liquido-info">
-			<p v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" v-html="$t('pollInElaborationInfo')" />
-			<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && userAlreadyHasProposal" v-html="$t('alreadyAddedProposal')" />
-			<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && !userAlreadyHasProposal" v-html="$t('canAddProposal')" />
-			<p v-if="poll.status === 'VOTING' && !poll.usersBallot" v-html="$t('votingPhaseInfo')" />
-			<p v-if="poll.status === 'VOTING' &&  poll.usersBallot" v-html="$t('alreadyVotedInfo')" />
-			<p v-if="poll.status === 'FINISHED'" id="finishedPollInfo">
-					{{ $t('finishedPollInfo', {
-						winnerTitle: poll.winner ? poll.winner.title : "",
-						numBallots: poll.numBallots,
-					}) }}
-				</p>
-		</div>
+		<liquido-footer>
+			<template #info>
+				<div class="">
+					<p v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" v-html="$t('pollInElaborationInfo')" />
+					<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && userAlreadyHasProposal" v-html="$t('alreadyAddedProposal')" />
+					<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && !userAlreadyHasProposal" v-html="$t('canAddProposal')" />
+					<p v-if="poll.status === 'VOTING' && !poll.usersBallot" v-html="$t('votingPhaseInfo')" />
+					<p v-if="poll.status === 'VOTING' &&  poll.usersBallot" v-html="$t('alreadyVotedInfo')" />
+					<p v-if="poll.status === 'FINISHED'" id="finishedPollInfo">
+							{{ $t('finishedPollInfo', {
+								winnerTitle: poll.winner ? poll.winner.title : "",
+								numBallots: poll.numBallots,
+							}) }}
+						</p>
+				</div>
+			</template>
+			<template #primary>
+				<button v-if="poll.status === 'VOTING' && !poll.usersBallot" id="goToCastVoteButton" type="button" class="btn btn-lg w-100 btn-primary" @click="clickCastVote()">
+					<i class="fas fa-person-booth" />
+					{{ $t("goToCastVote") }}
+					<i class="fas fa-angle-double-right" />
+				</button>
 
-		<!-- Action button -->
-		<div class="d-flex justify-content-end mt-3">
-		
-			<button v-if="poll.status === 'VOTING' && !poll.usersBallot" id="goToCastVoteButton" type="button" class="btn btn-lg w-100 btn-primary" @click="clickCastVote()">
-				<i class="fas fa-person-booth" />
-				{{ $t("goToCastVote") }}
-				<i class="fas fa-angle-double-right" />
-			</button>
-
-			<button v-else-if="poll.status === 'VOTING' && poll.usersBallot" type="button" class="btn btn-primary" @click="clickCastVote()">
-				<i class="fas fa-person-booth" />
-				{{ $t("editOwnVote") }}
-				<i class="fas fa-angle-double-right" />
-			</button>
+				<button v-else-if="poll.status === 'VOTING' && poll.usersBallot" type="button" class="btn btn-primary" @click="clickCastVote()">
+					<i class="fas fa-person-booth" />
+					{{ $t("editOwnVote") }}
+					<i class="fas fa-angle-double-right" />
+				</button>
 	
-			<button v-else-if="showAddProposal" id="addProposalButton" type="button" class="btn btn-primary" @click="clickAddProposal()">
-				{{ $t("addProposal") }}
-				<i class="fas fa-angle-double-right" />
-			</button>
-		
-		</div>
+				<button v-else-if="showAddProposal" id="addProposalButton" type="button" class="btn btn-primary" @click="clickAddProposal()">
+					{{ $t("addProposal") }}
+					<i class="fas fa-angle-double-right" />
+				</button>
+			</template>
+		</liquido-footer>
 
 		<!-- Admin only functions -->
 
@@ -78,6 +77,7 @@
 
 <script>
 import pollPanel from "@/components/poll-panel.vue"
+import liquidoFooter from "@/components/liquido-footer.vue"
 // import polly from '@/components/polly.vue'
 import EventBus from "@/services/event-bus.js"
 import api from "@/services/liquido-graphql-client.js"
@@ -104,7 +104,7 @@ export default {
 				finishVotingPhase: "Wahlphase schließen",
 				votingPhaseStartedSuccessfully: "Die Wahlphase dieser Abstimmung ist jetzt gestartet.",
 				votingPhaseInfo: "Die Wahlphase dieser Abstimmung läuft gerade.",
-				goToCastVote: "Stimme abgeben",
+				goToCastVote: "Zur Abstimmung",
 				editOwnVote: "Stimmzettel ändern",
 				alreadyVotedInfo:
 					"<p>Du hast in dieser Abstimmung bereits eine Stimme abgegeben.</p><p>So lange die Wahlphase dieser Abstimmung noch läuft, "+
@@ -115,7 +115,7 @@ export default {
 			},
 		},
 	},
-	components: { pollPanel },
+	components: { pollPanel, liquidoFooter },
 	props: {
 		// Allow number or string that contains an integer. Url parameter is passed as String, 
 		// but $router.push({name: "pollShow", params: {pollId: 4711 }}) can be passed as number. We'll accept both

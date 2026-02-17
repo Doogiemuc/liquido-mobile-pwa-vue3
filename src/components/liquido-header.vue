@@ -150,44 +150,44 @@ export default {
 	*/
 
 #liquidoHeader {
-	display: flex;
-	flex-direction: column;
 	position: fixed;
 	left: 0;
 	top: 0;
+	display: flex;
+	flex-direction: column;
 	width: 100%;
-	/*height: var(--header-height); */
+	/*height: var(--header-height); Height is dynamically read via Observers */
 	color: var(--header-color);
 	background-color: var(--header-bg);
 	z-index: 9999; /* make sure the header is on top of everything */
 	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); /* horizontal, vertical, blur, color */
 	
+	/**
+		* When user scrolls, then scroll LIQUIDO claim out towards the top
+		*and let the center-title appear from the bottom
+		*/
+	&.transition-header {
+		.liquido-claim {
+			top: -1.5rem !important;
+		}
+		.center-title {
+			top: 50% !important;
+			transform: translate(-50%, -50%) !important;
+			padding: 0;
+			margin: 0;
+			h1 {
+				margin: 0;
+				padding: 0;
+			}
+		}
+	}
+
 	.header-top-row {
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;	
 		padding: 0.5rem 0;
-		
-		/**
-		* When user scrolls, then scroll LIQUIDO claim out towards the top
-		*and let the center-title appear from the bottom
-		*/
-		&.transition-header {
-			.liquido-claim {
-				top: -1.5rem !important;
-			}
-			.center-title {
-				top: 50% !important;
-				transform: translate(-50%, -50%) !important;
-				padding: 0;
-				margin: 0;
-				h1 {
-					margin: 0;
-					padding: 0;
-				}
-			}
-		}
-		
+				
 		.header-left, .header-right {
 			color: var(--header-color);
 			display: flex;
@@ -232,11 +232,6 @@ export default {
 				}
 			}
 		}
-	}
-
-	.header-row-two {
-		padding: 0.5rem 1rem;
-		text-align: center;
 	}
 	
 }
