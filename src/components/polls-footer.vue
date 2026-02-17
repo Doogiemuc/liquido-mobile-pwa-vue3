@@ -6,7 +6,7 @@
 		</a>
 		<div id="navbar-arrows">
 			<div id="pollsInDiscussionArrow" :class="discussButtonClass" class="discuss-button">
-				<a href="" aria-label="Polls to discuss" @click.prevent="clickPollsInDiscussion()">
+				<a href="" aria-label="Polls to discuss" @click.prevent="clickPollsInDiscussion">
 					<div class="arrow-icon">
 						<i class="fas fa-comments"></i>
 						<span class="counter-badge">{{ pollsInElaboration.length }}</span>
@@ -15,7 +15,7 @@
 				</a>
 			</div>
 			<div id="pollsInVotingArrow" :class="voteButtonClass" class="vote-button">
-				<a href="" aria-label="Polls in voting" @click.prevent="clickPollsInVoting()">
+				<a href="" aria-label="Polls in voting" @click.prevent="clickPollsInVoting">
 					<div class="arrow-icon">
 						<i class="fas fa-person-booth"></i>
 						<span class="counter-badge">{{ pollsInVoting.length }}</span>
@@ -24,7 +24,7 @@
 				</a>
 			</div>
 			<div id="finishedPollsArrow" :class="finishedButtonClass" class="finished-button">
-				<a href="" aria-label="Finished polls" @click.prevent="clickFinishedPolls()">
+				<a href="" aria-label="Finished polls" @click.prevent="clickFinishedPolls">
 					<div class="arrow-icon">
 						<i class="fas fa-check-circle"></i>
 						<span class="counter-badge">{{ pollsFinished.length }}</span>
@@ -33,9 +33,9 @@
 				</a>
 			</div>
 		</div>
-		<a href="" aria-label="Info" class="info-button" @click.prevent="gotoInfo">
-			<i class="fas fa-info"></i>
-			<div class="icon-title">{{ $t("info") }}</div>
+		<a href="" aria-label="Info" class="search-button" @click.prevent="clickSearch">
+			<i class="fas fa-search"></i>
+			<div class="icon-title">{{ $t("Search") }}</div>
 		</a>
 	</nav>
 </template>
@@ -218,7 +218,7 @@ export default {
 		line-height: 1.0;
 	}
 
-	.team-button, .info-button {	
+	.team-button, .search-button {	
 		display: flex;
 		flex-direction: column;
 		align-items: center;
