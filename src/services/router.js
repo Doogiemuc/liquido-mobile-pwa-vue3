@@ -101,7 +101,7 @@ const routes = [
 	},
 	{	
 		path: "/resetPassword",
-		name: "forgotPassword",
+		name: "resetPassword",
 		component: () => import("@/views/forgot-password.vue"),
 		// Optional query parameters: emailInputVal, resetPasswordToken
 		meta: {
