@@ -9,11 +9,55 @@
 			<span v-html="$t('introYourTeam', { name: currentUserName })"></span>
 		</div>
 
-		<div class="pollsInVotingShortcut">
+		<div v-if="pollsInVoting.length > 0">
 			<h3>{{ $t('pollsInVoting') }}</h3>
+			<div class="polls-in-voting-container" ref="pollsInVotingContainer" @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd">
+				<div v-for="poll in pollsInVoting" :key="poll.id" class="poll-card-wrapper">
+					<div class="poll-card card shadow-sm" @click="$root.gotoPoll(poll.id)">
+						<div class="card-body d-flex flex-nowrap align-items-center">
+							<!-- div class="flex-grow-0">
+								<div v-if="poll.status === 'ELABORATION'" class="poll-icon-elaboration">
+									<i class="far fa-comments" />
+								</div>
+								<div v-if="poll.status === 'VOTING'" class="poll-icon-voting">
+									<i class="fas fa-person-booth" />
+								</div>
+								<div v-if="poll.status === 'FINISHED'" class="poll-icon-finished">
+									<i class="fas fa-check-circle" />
+								</div>
+							</div -->
+							<div class="flex-grow-1">
+								<div class="poll-eyebrow">
+									<span v-if="poll.status === 'ELABORATION'" class="badge rounded-pill elaboration-pill">{{ $t('New') }}</span>
+									<span v-if="poll.status === 'VOTING'" class="badge rounded-pill voting-pill">{{ $t('InVoting') }}</span>
+									<span v-if="poll.status === 'FINISHED'" class="badge rounded-pill finished-pill">{{ $t('Finished') }}</span>
+								<span class="poll-created-date">{{ $d(new Date(poll.createdAt), 'shortDate') }}</span>
+								</div>
+								<h2 class="poll-title">{{ poll.title }}</h2>
+								<div class="poll-footer">
+									<div v-if="poll.status=== 'ELABORATION'">
+										<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
+									</div>
+									<div v-if="poll.status === 'VOTING'">
+										<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
+									</div>
+									<div v-if="poll.status === 'FINISHED'">
+										<i class="fas fa-check-circle"></i>&nbsp;{{ $t('finished') }}
+									</div>
+									
+									<div v-if="poll.status === 'VOTING'"><i class="far fa-clock"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}</div>
+								</div>
+							</div>
+							<div class="flex-grow-0">
+								<i class="fas fa-angle-right text-primary"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 			
-	 
 		</div>
+		
 
 		<button id="gotoPollsButton" class="btn btn-primary btn-lg w-100 mb-5" @click="gotoPolls">
 			{{ $t("gotoPolls") }}
@@ -21,7 +65,7 @@
 		</button>
 
 
-
+		<h3>{{ $t('TeamMembers') }}</h3>
 		<div id="memberCards" class="row row-cols-3 g-2 mb-3">
 			<div class="col" v-for="member in team.members" :key="member.user.id">
 				<div class="card h-100">
@@ -109,15 +153,20 @@ export default {
 			en: {
 				introYourTeam: "",
 				teamAdmin: "Team admin | Team Admin | Team Admins",
-				teamMembers: "Team members",
+				TeamMembers: "Team members",
 			},
 			de: {
 				introYourTeam: "Hallo {name} !<br/>Willkommen in deinem Team.",
 				introForOneAdmin:
 					"Du bist der Admin dieses Teams. Nur du kannst neue Abstimmungen erstellen.",
-				teamMembers: "Teammitglieder",
+				
+				pollsInVotingInfo: "In diesem Abstimmungen kannst du jetzt deine Stimme abgeben.",
+				votes: "0 Stimmen | 1 Stimme | {n} Stimmen",
+				daysLeft: "Wahl Abgeschlossen | ein Tag noch | noch {n} Tage",
+
+				TeamMembers: "Teammitglieder",
 				teamAdmins: "Team Admin | Team Admin | Team Admins",
-				gotoPolls: "Zu euren Abstimmungen",
+				gotoPolls: "Alle eure Abstimmungen",
 				inviteNewMembers: "Teammitglieder einladen",
 				inviteLink: "Einladungscode:&nbsp;<b>{ inviteCode }</b>",
 				qrCode: "QR Code scannen:",
@@ -134,13 +183,23 @@ export default {
 				logout: "Logout"
 			},
 		},
+		datetimeFormats: {
+			en: {
+				shortDate: { year: 'numeric', month: '2-digit', day: '2-digit' },
+			},
+			de: {
+				shortDate: { year: 'numeric', month: '2-digit', day: '2-digit' },
+			},
+		},
 	},
 	components: { liquidoInput, liquidoHeader },
 	data() {
 		return {
 			team: {},
 			statusMessage: undefined,
-			passkeyLabel: undefined
+			passkeyLabel: undefined,
+			touchStartX: 0,
+			touchEndX: 0,
 		}
 	},
 	computed: {
@@ -158,6 +217,9 @@ export default {
 		userHasWebauthn() {
 			let cachedUser = api.getCachedUser()
 			return cachedUser?.hasWebauthn
+		},
+		pollsInVoting() {
+			return api.getCachedPolls().filter(p => p.status === "VOTING")
 		},
 		teamHasPolls() {
 			return api.getCachedPolls().length > 0
@@ -195,6 +257,21 @@ export default {
 	},
 
 	methods: {
+		/** 
+		 * How many days are left for voting?
+		 * Always return at least "1" day, until poll is in VOTING.
+		 */
+		daysLeft(poll) {
+			if (poll.votingEndAt && poll.status === "VOTING") {
+				let end = new Date(poll.votingEndAt)
+				let now = new Date()
+				let diff = Math.ceil((end - now) / (1000 * 60 * 60 * 24))
+				return diff > 0 ? diff : 1
+			} else {
+				return 0
+			}
+		},
+
 		gotoPolls() {
 			this.$router.push({ name: "polls" })
 		},
@@ -244,12 +321,71 @@ export default {
 					console.error('Failed to copy: ', err);
 				}
 			}
+		},
+
+		handleTouchStart(e) {
+			this.touchStartX = e.changedTouches[0].screenX
+		},
+
+		handleTouchMove(e) {
+			// Allow natural scrolling on touch devices
+		},
+
+		handleTouchEnd(e) {
+			this.touchEndX = e.changedTouches[0].screenX
+			const scrollContainer = this.$refs.pollsInVotingContainer
+			if (!scrollContainer) return
+
+			const threshold = 50 // minimum drag distance to scroll
+			const diff = this.touchStartX - this.touchEndX
+
+			if (Math.abs(diff) > threshold) {
+				const scrollAmount = 300
+				if (diff > 0) {
+					// Swiped left, scroll right
+					scrollContainer.scrollLeft += scrollAmount
+				} else {
+					// Swiped right, scroll left
+					scrollContainer.scrollLeft -= scrollAmount
+				}
+			}
 		}
 	},
 }
 </script>
 
 <style>
+
+.secondary-text {
+	color: var(--secondary);
+	font-size: 0.8rem;
+}	
+
+.polls-in-voting-container {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	margin: 1rem 0;
+	gap: 1rem;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scroll-behavior: smooth;
+	/* Hide scrollbar for Chrome, Safari and Opera */
+	-ms-overflow-style: none;  /* IE and Edge */
+	scrollbar-width: none;  /* Firefox */
+	touch-action: pan-x;
+	padding-right: 1rem;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.polls-in-voting-container::-webkit-scrollbar {
+	display: none;
+}
+
+.poll-card-wrapper {
+	min-width: 90%;
+	flex-shrink: 0;
+}
 
 .admin-shield {
 	color: var(--primary);

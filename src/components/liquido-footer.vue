@@ -114,7 +114,6 @@ export default {
 	button {
 		flex-grow: 1;
 		width: 100%;
-		margin-bottom: 0.2rem; /* UI glitch: looks better aligned like this */
 	}
 }
 
@@ -126,7 +125,7 @@ export default {
 	color: var(--primary);
 	font-size: 1.5rem;
 	text-decoration: none;
-	padding: 0.5rem 1rem;  
+	padding: 0.8rem 1rem 0.2rem 1rem;  /* UI glitch: need a bit more space at the bottom */
 	height: 100%;
 	text-decoration: none;
 	transition: background-color 0.2s;

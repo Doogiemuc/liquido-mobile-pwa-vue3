@@ -1,74 +1,38 @@
 {
 	"team": {
-		"id": 601,
+		"id": 101,
 		"teamName": "testTeam4711",
-		"inviteCode": "SHFV4Vm2",
+		"inviteCode": "aAn0d5c7",
 		"members": [
 			{
 				"role": "MEMBER",
-				"joinedAt": "2025-08-07T09:45:47.539642",
+				"joinedAt": "2026-02-04T20:54:19.802334",
 				"user": {
-					"id": 655,
-					"name": "Member 1754552747221",
-					"email": "membr47113@liquido.vote",
-					"mobilephone": "01515551754552747221",
+					"id": 1210,
+					"name": "afasdfasdfasdf",
+					"email": "sfsdfergf@sdafd.de",
+					"mobilephone": null,
 					"picture": "Avatar1.png",
 					"website": null
 				}
 			},
 			{
 				"role": "MEMBER",
-				"joinedAt": "2025-08-07T09:45:48.238379",
+				"joinedAt": "2025-12-25T19:12:59.770863",
 				"user": {
-					"id": 657,
-					"name": "Member 1754552747921",
-					"email": "testmember4711@liquido.vote",
-					"mobilephone": "01515551754552747921",
-					"picture": "Avatar1.png",
-					"website": null
-				}
-			},
-			{
-				"role": "MEMBER",
-				"joinedAt": "2025-08-07T09:45:46.474699",
-				"user": {
-					"id": 652,
-					"name": "Member 1754552746137",
-					"email": "membr47110@liquido.vote",
-					"mobilephone": "01515551754552746137",
-					"picture": "Avatar1.png",
-					"website": null
-				}
-			},
-			{
-				"role": "MEMBER",
-				"joinedAt": "2025-08-07T09:45:47.187655",
-				"user": {
-					"id": 654,
-					"name": "Member 1754552746868",
+					"id": 307,
+					"name": "Member 1766686379459",
 					"email": "membr47112@liquido.vote",
-					"mobilephone": "01515551754552746868",
-					"picture": "Avatar1.png",
-					"website": null
-				}
-			},
-			{
-				"role": "MEMBER",
-				"joinedAt": "2025-08-07T09:45:47.890889",
-				"user": {
-					"id": 656,
-					"name": "Member 1754552747571",
-					"email": "membr47114@liquido.vote",
-					"mobilephone": "01515551754552747571",
+					"mobilephone": "01515551766686379459",
 					"picture": "Avatar1.png",
 					"website": null
 				}
 			},
 			{
 				"role": "ADMIN",
-				"joinedAt": "2025-08-07T09:45:45.863104",
+				"joinedAt": "2025-12-25T19:12:58.735685",
 				"user": {
-					"id": 651,
+					"id": 304,
 					"name": "TestAdmin 4711",
 					"email": "testadmin4711@liquido.vote",
 					"mobilephone": "01515554711",
@@ -78,12 +42,228 @@
 			},
 			{
 				"role": "MEMBER",
-				"joinedAt": "2025-08-07T09:45:46.830874",
+				"joinedAt": "2025-12-25T19:12:59.087315",
 				"user": {
-					"id": 653,
-					"name": "Member 1754552746510",
+					"id": 305,
+					"name": "Member 1766686378769",
+					"email": "membr47110@liquido.vote",
+					"mobilephone": "01515551766686378769",
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2026-02-04T21:06:36.34841",
+				"user": {
+					"id": 1213,
+					"name": "asfdasdf",
+					"email": "asdfadfs@sadfds.de",
+					"mobilephone": null,
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2026-02-04T20:21:12.182776",
+				"user": {
+					"id": 1205,
+					"name": "asdfasdfasdfasdf",
+					"email": "adsfadsf@sadfd.de",
+					"mobilephone": null,
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2026-02-04T20:48:47.227931",
+				"user": {
+					"id": 1209,
+					"name": "asdfasdfadsf",
+					"email": "dfasdfsad@dfd.de",
+					"mobilephone": null,
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2026-02-04T20:28:07.861547",
+				"user": {
+					"id": 1206,
+					"name": "afdasfdasfasdf",
+					"email": "dasfgadgf@asdfd.de",
+					"mobilephone": null,
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2025-12-25T19:13:00.115154",
+				"user": {
+					"id": 308,
+					"name": "Member 1766686379802",
+					"email": "membr47113@liquido.vote",
+					"mobilephone": "01515551766686379802",
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2026-02-04T22:19:10.560178",
+				"user": {
+					"id": 1219,
+					"name": "Chkjgfghh",
+					"email": "fjjhgcc@ggg.fgh",
+					"mobilephone": null,
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2026-02-04T20:56:02.103746",
+				"user": {
+					"id": 1211,
+					"name": "asdfasfdasf",
+					"email": "dflasdjkf@asfdsf.de",
+					"mobilephone": null,
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2026-02-04T21:45:30.540697",
+				"user": {
+					"id": 1217,
+					"name": "dfsdafafadsfsda",
+					"email": "sfasdfl@asdf.de",
+					"mobilephone": null,
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2026-02-04T20:16:47.260685",
+				"user": {
+					"id": 1203,
+					"name": "dfvafdadbafdb",
+					"email": "asdgadg@liquido.vote",
+					"mobilephone": null,
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2025-12-25T19:13:00.456602",
+				"user": {
+					"id": 309,
+					"name": "Member 1766686380145",
+					"email": "membr47114@liquido.vote",
+					"mobilephone": "01515551766686380145",
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2025-12-25T19:12:59.43222",
+				"user": {
+					"id": 306,
+					"name": "Member 1766686379121",
 					"email": "membr47111@liquido.vote",
-					"mobilephone": "01515551754552746510",
+					"mobilephone": "01515551766686379121",
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2026-02-04T21:11:14.647531",
+				"user": {
+					"id": 1215,
+					"name": "dfadsfasdfasfd",
+					"email": "sdfasdf@asdfds.de",
+					"mobilephone": null,
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2026-02-04T20:14:23.370866",
+				"user": {
+					"id": 1202,
+					"name": "asdfadfvaervw",
+					"email": "dsafadf@lliquido.vote",
+					"mobilephone": null,
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2026-02-04T21:01:21.457211",
+				"user": {
+					"id": 1212,
+					"name": "fasfasdfasdf",
+					"email": "asdfadf@asfd.de",
+					"mobilephone": null,
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2025-12-25T19:13:00.793396",
+				"user": {
+					"id": 310,
+					"name": "Member 1766686380481",
+					"email": "testmember4711@liquido.vote",
+					"mobilephone": "01515551766686380481",
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2026-02-04T20:18:41.439926",
+				"user": {
+					"id": 1204,
+					"name": "sadfasdfasdf",
+					"email": "dsfgadfg@asdfdsa.de",
+					"mobilephone": null,
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2026-02-04T20:11:46.11678",
+				"user": {
+					"id": 1201,
+					"name": "asffasdfasdfasdf",
+					"email": "jointeamtestuser@liquido.vote",
+					"mobilephone": null,
+					"picture": "Avatar1.png",
+					"website": null
+				}
+			},
+			{
+				"role": "MEMBER",
+				"joinedAt": "2026-02-04T21:08:57.953897",
+				"user": {
+					"id": 1214,
+					"name": "dsfadsfasdfdfs",
+					"email": "adfadf@asdfd.de",
+					"mobilephone": null,
 					"picture": "Avatar1.png",
 					"website": null
 				}
@@ -91,126 +271,46 @@
 		],
 		"polls": [
 			{
-				"id": 1603,
-				"title": "Mocked Poll A",
-				"status": "ELABORATION",
-				"votingStartAt": null,
-				"votingEndAt": null,
+				"id": 307,
+				"title": "Poll1 to test voting in two polls",
+				"status": "VOTING",
+				"createdAt": "2025-12-25T19:13:02.588356",
+				"updatedAt": "2025-12-25T19:13:02.588392",
+				"votingStartAt": "2025-12-25T19:13:02.726609",
+				"votingEndAt": "2026-01-01T00:00:00",
 				"proposals": [
 					{
-						"id": 1557,
-						"title": "Erster gemockter Vorschlag",
-						"description": "Wunderschöner gemockter Poll den es in Wahrheit so gar nicht gibt.",
-						"icon": "baseball-ball",
-						"status": "ELABORATION",
-						"createdAt": "2025-08-07T14:11:14.412195",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 651,
-							"name": "TestAdmin 4711",
-							"email": "testadmin4711@liquido.vote",
-							"mobilephone": "01515554711",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					},
-					{
-						"id": 1556,
-						"title": "ZWEITER MOCK VORSCHLAG",
-						"description": "Und dieser hier is auch nur lokal und kommt gar nicht aus der Datenbank. Ist das nicht schön!",
-						"icon": "headset",
-						"status": "ELABORATION",
-						"createdAt": "2025-08-07T14:11:04.059278",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 651,
-							"name": "TestAdmin 4711",
-							"email": "testadmin4711@liquido.vote",
-							"mobilephone": "01515554711",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					},
-					{
-						"id": 1555,
-						"title": "Drittes schönes Proposal. Weil's grad so scheng is mochma hier a bissal längeren title",
-						"description": "So jetzt hab ich aber bald keine Lust mehr hier lange Text zu schreiben. Also so viel sollte schon reichen um endlich mal die drei Zeilen Description auszufüllen und das overflow in meinem UI zu testen. Aber wir machen das ja alles nur aus Spaß. Ach so das hier ehinten kann man dann gar nicht mehr lesen, oder?",
-						"icon": "arrow-alt-circle-right",
-						"status": "ELABORATION",
-						"createdAt": "2025-08-07T14:10:42.692066",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 651,
-							"name": "TestAdmin 4711",
-							"email": "testadmin4711@liquido.vote",
-							"mobilephone": "01515554711",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					}
-				],
-				"winner": null
-			},
-			{
-				"id": 1551,
-				"title": "TestPoll 4711_1 4711",
-				"status": "ELABORATION",
-				"votingStartAt": null,
-				"votingEndAt": null,
-				"proposals": [
-					{
-						"id": 1503,
-						"title": "Test Proposal 2_4711Lorem ipsum dolor si",
-						"description": "Proposal 2_4711 from TestDataCreator. Lorem ipsum dolor ",
-						"icon": "grin-squint-tears",
-						"status": "ELABORATION",
-						"createdAt": "2025-08-07T09:45:48.592417",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 653,
-							"name": "Member 1754552746510",
-							"email": "membr47111@liquido.vote",
-							"mobilephone": "01515551754552746510",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					},
-					{
-						"id": 1501,
-						"title": "Test Proposal 0_4711Lorem ipsum dolor si",
-						"description": "Proposal 0_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea",
-						"icon": "grin",
-						"status": "ELABORATION",
-						"createdAt": "2025-08-07T09:45:48.418792",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 651,
-							"name": "TestAdmin 4711",
-							"email": "testadmin4711@liquido.vote",
-							"mobilephone": "01515554711",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					},
-					{
-						"id": 1502,
+						"id": 326,
 						"title": "Test Proposal 1_4711Lorem ipsum dolor si",
-						"description": "Proposal 1_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam",
-						"icon": "hat-wizard",
-						"status": "ELABORATION",
-						"createdAt": "2025-08-07T09:45:48.500586",
-						"numSupporters": 1,
+						"description": "Proposal 1_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gube",
+						"icon": "hand-holding-heart",
+						"status": "VOTING",
+						"createdAt": "2025-12-25T19:13:02.705896",
+						"numSupporters": 0,
 						"likedByCurrentUser": false,
 						"createdBy": {
-							"id": 655,
-							"name": "Member 1754552747221",
-							"email": "membr47113@liquido.vote",
-							"mobilephone": "01515551754552747221",
+							"id": 310,
+							"name": "Member 1766686380481",
+							"email": "testmember4711@liquido.vote",
+							"mobilephone": "01515551766686380481",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 325,
+						"title": "Test Proposal 0_4711Lorem ipsum dolor si",
+						"description": "Proposal 0_4711 from TestDataCreator. Lorem ipsum dolor sit a",
+						"icon": "hands-helping",
+						"status": "VOTING",
+						"createdAt": "2025-12-25T19:13:02.649736",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 309,
+							"name": "Member 1766686380145",
+							"email": "membr47114@liquido.vote",
+							"mobilephone": "01515551766686380145",
 							"picture": "Avatar1.png",
 							"website": null
 						}
@@ -219,197 +319,201 @@
 				"winner": null
 			},
 			{
-				"id": 1555,
+				"id": 306,
 				"title": "TestPoll 4711 finished",
 				"status": "FINISHED",
-				"votingStartAt": "2025-08-07T09:45:49.963352",
-				"votingEndAt": "2025-08-07T09:45:50.181404",
+				"createdAt": "2025-12-25T19:13:01.933469",
+				"updatedAt": "2025-12-25T19:13:01.933519",
+				"votingStartAt": "2025-12-25T19:13:02.295643",
+				"votingEndAt": "2025-12-25T19:13:02.484501",
 				"proposals": [
 					{
-						"id": 1520,
-						"title": "Test Proposal 4_4711Lorem ipsum dolor si",
-						"description": "Proposal 4_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur s",
-						"icon": "hand-holding",
-						"status": "LOST",
-						"createdAt": "2025-08-07T09:45:49.940122",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 654,
-							"name": "Member 1754552746868",
-							"email": "membr47112@liquido.vote",
-							"mobilephone": "01515551754552746868",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					},
-					{
-						"id": 1519,
-						"title": "Test Proposal 3_4711Lorem ipsum dolor si",
-						"description": "Proposal 3_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, se",
-						"icon": "grin-hearts",
-						"status": "LOST",
-						"createdAt": "2025-08-07T09:45:49.881072",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 656,
-							"name": "Member 1754552747571",
-							"email": "membr47114@liquido.vote",
-							"mobilephone": "01515551754552747571",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					},
-					{
-						"id": 1517,
-						"title": "Test Proposal 1_4711Lorem ipsum dolor si",
-						"description": "Proposal 1_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo do",
-						"icon": "hdd",
-						"status": "LAW",
-						"createdAt": "2025-08-07T09:45:49.758028",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 655,
-							"name": "Member 1754552747221",
-							"email": "membr47113@liquido.vote",
-							"mobilephone": "01515551754552747221",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					},
-					{
-						"id": 1518,
-						"title": "Test Proposal 2_4711Lorem ipsum dolor si",
-						"description": "Proposal 2_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing eli",
-						"icon": "hdd",
-						"status": "LOST",
-						"createdAt": "2025-08-07T09:45:49.819391",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 653,
-							"name": "Member 1754552746510",
-							"email": "membr47111@liquido.vote",
-							"mobilephone": "01515551754552746510",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					},
-					{
-						"id": 1516,
+						"id": 320,
 						"title": "Test Proposal 0_4711Lorem ipsum dolor si",
-						"description": "Proposal 0_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed",
-						"icon": "hand-holding-heart",
+						"description": "Proposal 0_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor",
+						"icon": "hat-wizard",
 						"status": "LOST",
-						"createdAt": "2025-08-07T09:45:49.690358",
+						"createdAt": "2025-12-25T19:13:01.993847",
 						"numSupporters": 0,
 						"likedByCurrentUser": false,
 						"createdBy": {
-							"id": 651,
+							"id": 304,
 							"name": "TestAdmin 4711",
 							"email": "testadmin4711@liquido.vote",
 							"mobilephone": "01515554711",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 322,
+						"title": "Test Proposal 2_4711Lorem ipsum dolor si",
+						"description": "Proposal 2_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo",
+						"icon": "hand-holding-heart",
+						"status": "LOST",
+						"createdAt": "2025-12-25T19:13:02.105174",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 308,
+							"name": "Member 1766686379802",
+							"email": "membr47113@liquido.vote",
+							"mobilephone": "01515551766686379802",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 324,
+						"title": "Test Proposal 4_4711Lorem ipsum dolor si",
+						"description": "Proposal 4_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam volup",
+						"icon": "hanukiah",
+						"status": "LAW",
+						"createdAt": "2025-12-25T19:13:02.276094",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 310,
+							"name": "Member 1766686380481",
+							"email": "testmember4711@liquido.vote",
+							"mobilephone": "01515551766686380481",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 323,
+						"title": "Test Proposal 3_4711Lorem ipsum dolor si",
+						"description": "Proposal 3_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea r",
+						"icon": "grip-vertical",
+						"status": "LOST",
+						"createdAt": "2025-12-25T19:13:02.223244",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 309,
+							"name": "Member 1766686380145",
+							"email": "membr47114@liquido.vote",
+							"mobilephone": "01515551766686380145",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 321,
+						"title": "Test Proposal 1_4711Lorem ipsum dolor si",
+						"description": "Proposal 1_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanct",
+						"icon": "hand-point-down",
+						"status": "LOST",
+						"createdAt": "2025-12-25T19:13:02.045788",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 305,
+							"name": "Member 1766686378769",
+							"email": "membr47110@liquido.vote",
+							"mobilephone": "01515551766686378769",
 							"picture": "Avatar1.png",
 							"website": null
 						}
 					}
 				],
 				"winner": {
-					"id": 1517,
-					"title": "Test Proposal 1_4711Lorem ipsum dolor si",
-					"description": "Proposal 1_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo do",
-					"icon": "hdd",
+					"id": 324,
+					"title": "Test Proposal 4_4711Lorem ipsum dolor si",
+					"description": "Proposal 4_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam volup",
+					"icon": "hanukiah",
 					"status": "LAW",
-					"createdAt": "2025-08-07T09:45:49.758028",
+					"createdAt": "2025-12-25T19:13:02.276094",
 					"numSupporters": 0,
 					"likedByCurrentUser": false,
 					"createdBy": {
-						"id": 655,
-						"name": "Member 1754552747221",
-						"email": "membr47113@liquido.vote",
-						"mobilephone": "01515551754552747221",
+						"id": 310,
+						"name": "Member 1766686380481",
+						"email": "testmember4711@liquido.vote",
+						"mobilephone": "01515551766686380481",
 						"picture": "Avatar1.png",
 						"website": null
 					}
 				}
 			},
 			{
-				"id": 1552,
-				"title": "TestPoll 4711_2 4711",
+				"id": 304,
+				"title": "TestPoll 4711_4 4711 with a very long title just for testing",
 				"status": "ELABORATION",
+				"createdAt": "2025-12-25T19:13:01.345548",
+				"updatedAt": "2025-12-25T19:13:01.345577",
 				"votingStartAt": null,
 				"votingEndAt": null,
 				"proposals": [
 					{
-						"id": 1506,
-						"title": "Test Proposal 2_4711Lorem ipsum dolor si",
-						"description": "Proposal 2_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sa",
-						"icon": "grin-squint-tears",
-						"status": "ELABORATION",
-						"createdAt": "2025-08-07T09:45:48.877903",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 653,
-							"name": "Member 1754552746510",
-							"email": "membr47111@liquido.vote",
-							"mobilephone": "01515551754552746510",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					},
-					{
-						"id": 1505,
-						"title": "Test Proposal 1_4711Lorem ipsum dolor si",
-						"description": "Proposal 1_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, se",
-						"icon": "hand-holding-heart",
-						"status": "ELABORATION",
-						"createdAt": "2025-08-07T09:45:48.801206",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 655,
-							"name": "Member 1754552747221",
-							"email": "membr47113@liquido.vote",
-							"mobilephone": "01515551754552747221",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					},
-					{
-						"id": 1507,
+						"id": 315,
 						"title": "Test Proposal 3_4711Lorem ipsum dolor si",
-						"description": "Proposal 3_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, se",
-						"icon": "hat-wizard",
-						"status": "ELABORATION",
-						"createdAt": "2025-08-07T09:45:48.962151",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 656,
-							"name": "Member 1754552747571",
-							"email": "membr47114@liquido.vote",
-							"mobilephone": "01515551754552747571",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					},
-					{
-						"id": 1504,
-						"title": "Test Proposal 0_4711Lorem ipsum dolor si",
-						"description": "Proposal 0_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est L",
+						"description": "Proposal 3_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua",
 						"icon": "hand-paper",
 						"status": "ELABORATION",
-						"createdAt": "2025-08-07T09:45:48.725535",
+						"createdAt": "2025-12-25T19:13:01.593241",
 						"numSupporters": 0,
 						"likedByCurrentUser": false,
 						"createdBy": {
-							"id": 651,
+							"id": 309,
+							"name": "Member 1766686380145",
+							"email": "membr47114@liquido.vote",
+							"mobilephone": "01515551766686380145",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 312,
+						"title": "Test Proposal 0_4711Lorem ipsum dolor si",
+						"description": "Proposal 0_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dol",
+						"icon": "grimace",
+						"status": "ELABORATION",
+						"createdAt": "2025-12-25T19:13:01.410915",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 304,
 							"name": "TestAdmin 4711",
 							"email": "testadmin4711@liquido.vote",
 							"mobilephone": "01515554711",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 313,
+						"title": "Test Proposal 1_4711Lorem ipsum dolor si",
+						"description": "Proposal 1_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea reb",
+						"icon": "hand-point-up",
+						"status": "ELABORATION",
+						"createdAt": "2025-12-25T19:13:01.469164",
+						"numSupporters": 1,
+						"likedByCurrentUser": true,
+						"createdBy": {
+							"id": 305,
+							"name": "Member 1766686378769",
+							"email": "membr47110@liquido.vote",
+							"mobilephone": "01515551766686378769",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 314,
+						"title": "Test Proposal 2_4711Lorem ipsum dolor si",
+						"description": "Proposal 2_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam ",
+						"icon": "grin",
+						"status": "ELABORATION",
+						"createdAt": "2025-12-25T19:13:01.534829",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 308,
+							"name": "Member 1766686379802",
+							"email": "membr47113@liquido.vote",
+							"mobilephone": "01515551766686379802",
 							"picture": "Avatar1.png",
 							"website": null
 						}
@@ -418,59 +522,43 @@
 				"winner": null
 			},
 			{
-				"id": 1553,
-				"title": "TestPoll 4711_4 4711 with a very long title just for testing and even more text which is far to much to display anywhere ",
+				"id": 303,
+				"title": "TestPoll 4711_2 4711",
 				"status": "ELABORATION",
+				"createdAt": "2025-12-25T19:13:01.057169",
+				"updatedAt": "2025-12-25T19:13:01.05721",
 				"votingStartAt": null,
 				"votingEndAt": null,
 				"proposals": [
 					{
-						"id": 1509,
+						"id": 309,
 						"title": "Test Proposal 1_4711Lorem ipsum dolor si",
-						"description": "Proposal 1_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At ",
-						"icon": "hand-rock",
+						"description": "Proposal 1_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidun",
+						"icon": "hand-peace",
 						"status": "ELABORATION",
-						"createdAt": "2025-08-07T09:45:49.13114",
+						"createdAt": "2025-12-25T19:13:01.184606",
 						"numSupporters": 0,
 						"likedByCurrentUser": false,
 						"createdBy": {
-							"id": 655,
-							"name": "Member 1754552747221",
-							"email": "membr47113@liquido.vote",
-							"mobilephone": "01515551754552747221",
+							"id": 305,
+							"name": "Member 1766686378769",
+							"email": "membr47110@liquido.vote",
+							"mobilephone": "01515551766686378769",
 							"picture": "Avatar1.png",
 							"website": null
 						}
 					},
 					{
-						"id": 1511,
-						"title": "Test Proposal 3_4711Lorem ipsum dolor si",
-						"description": "Proposal 3_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo do",
-						"icon": "grin-beam",
-						"status": "ELABORATION",
-						"createdAt": "2025-08-07T09:45:49.255536",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 656,
-							"name": "Member 1754552747571",
-							"email": "membr47114@liquido.vote",
-							"mobilephone": "01515551754552747571",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					},
-					{
-						"id": 1508,
+						"id": 308,
 						"title": "Test Proposal 0_4711Lorem ipsum dolor si",
-						"description": "Proposal 0_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, s",
-						"icon": "grin-beam",
+						"description": "Proposal 0_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor",
+						"icon": "grin-tears",
 						"status": "ELABORATION",
-						"createdAt": "2025-08-07T09:45:49.064081",
-						"numSupporters": 1,
+						"createdAt": "2025-12-25T19:13:01.119475",
+						"numSupporters": 0,
 						"likedByCurrentUser": false,
 						"createdBy": {
-							"id": 651,
+							"id": 304,
 							"name": "TestAdmin 4711",
 							"email": "testadmin4711@liquido.vote",
 							"mobilephone": "01515554711",
@@ -479,19 +567,37 @@
 						}
 					},
 					{
-						"id": 1510,
+						"id": 310,
 						"title": "Test Proposal 2_4711Lorem ipsum dolor si",
-						"description": "Proposal 2_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo do",
-						"icon": "grin-tongue-wink",
+						"description": "Proposal 2_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor inv",
+						"icon": "hand-scissors",
 						"status": "ELABORATION",
-						"createdAt": "2025-08-07T09:45:49.198898",
+						"createdAt": "2025-12-25T19:13:01.24477",
 						"numSupporters": 0,
 						"likedByCurrentUser": false,
 						"createdBy": {
-							"id": 653,
-							"name": "Member 1754552746510",
-							"email": "membr47111@liquido.vote",
-							"mobilephone": "01515551754552746510",
+							"id": 308,
+							"name": "Member 1766686379802",
+							"email": "membr47113@liquido.vote",
+							"mobilephone": "01515551766686379802",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 311,
+						"title": "Test Proposal 3_4711Lorem ipsum dolor si",
+						"description": "Proposal 3_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita k",
+						"icon": "hat-wizard",
+						"status": "ELABORATION",
+						"createdAt": "2025-12-25T19:13:01.310337",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 309,
+							"name": "Member 1766686380145",
+							"email": "membr47114@liquido.vote",
+							"mobilephone": "01515551766686380145",
 							"picture": "Avatar1.png",
 							"website": null
 						}
@@ -500,23 +606,43 @@
 				"winner": null
 			},
 			{
-				"id": 1554,
-				"title": "TestPoll 4711 in voting",
-				"status": "VOTING",
-				"votingStartAt": "2025-08-07T09:45:49.602383",
-				"votingEndAt": "2025-08-14T00:00:00",
+				"id": 302,
+				"title": "TestPoll 4711_1 4711",
+				"status": "ELABORATION",
+				"createdAt": "2025-12-25T19:13:00.837939",
+				"updatedAt": "2025-12-25T19:13:00.837973",
+				"votingStartAt": null,
+				"votingEndAt": null,
 				"proposals": [
 					{
-						"id": 1512,
-						"title": "Test Proposal 0_4711Lorem ipsum dolor si",
-						"description": "Proposal 0_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore e",
-						"icon": "hat-wizard",
-						"status": "VOTING",
-						"createdAt": "2025-08-07T09:45:49.380823",
+						"id": 306,
+						"title": "Test Proposal 1_4711Lorem ipsum dolor si",
+						"description": "Proposal 1_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut",
+						"icon": "hand-holding-usd",
+						"status": "ELABORATION",
+						"createdAt": "2025-12-25T19:13:00.966447",
 						"numSupporters": 0,
 						"likedByCurrentUser": false,
 						"createdBy": {
-							"id": 651,
+							"id": 305,
+							"name": "Member 1766686378769",
+							"email": "membr47110@liquido.vote",
+							"mobilephone": "01515551766686378769",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 305,
+						"title": "Test Proposal 0_4711Lorem ipsum dolor si",
+						"description": "Proposal 0_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, se",
+						"icon": "hand-lizard",
+						"status": "ELABORATION",
+						"createdAt": "2025-12-25T19:13:00.901959",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 304,
 							"name": "TestAdmin 4711",
 							"email": "testadmin4711@liquido.vote",
 							"mobilephone": "01515554711",
@@ -525,55 +651,199 @@
 						}
 					},
 					{
-						"id": 1515,
-						"title": "Test Proposal 3_4711Lorem ipsum dolor si",
-						"description": "Proposal 3_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore mag",
-						"icon": "grin-stars",
-						"status": "VOTING",
-						"createdAt": "2025-08-07T09:45:49.576709",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 656,
-							"name": "Member 1754552747571",
-							"email": "membr47114@liquido.vote",
-							"mobilephone": "01515551754552747571",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					},
-					{
-						"id": 1513,
-						"title": "Test Proposal 1_4711Lorem ipsum dolor si",
-						"description": "Proposal 1_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et ",
-						"icon": "hand-point-down",
-						"status": "VOTING",
-						"createdAt": "2025-08-07T09:45:49.440192",
-						"numSupporters": 0,
-						"likedByCurrentUser": false,
-						"createdBy": {
-							"id": 655,
-							"name": "Member 1754552747221",
-							"email": "membr47113@liquido.vote",
-							"mobilephone": "01515551754552747221",
-							"picture": "Avatar1.png",
-							"website": null
-						}
-					},
-					{
-						"id": 1514,
+						"id": 307,
 						"title": "Test Proposal 2_4711Lorem ipsum dolor si",
-						"description": "Proposal 2_4711 from TestDataCreator. Lorem ipsu",
-						"icon": "grin-wink",
-						"status": "VOTING",
-						"createdAt": "2025-08-07T09:45:49.506021",
+						"description": "Proposal 2_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At v",
+						"icon": "hand-point-left",
+						"status": "ELABORATION",
+						"createdAt": "2025-12-25T19:13:01.02731",
 						"numSupporters": 0,
 						"likedByCurrentUser": false,
 						"createdBy": {
-							"id": 653,
-							"name": "Member 1754552746510",
-							"email": "membr47111@liquido.vote",
-							"mobilephone": "01515551754552746510",
+							"id": 308,
+							"name": "Member 1766686379802",
+							"email": "membr47113@liquido.vote",
+							"mobilephone": "01515551766686379802",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					}
+				],
+				"winner": null
+			},
+			{
+				"id": 305,
+				"title": "TestPoll 4711 in voting",
+				"status": "VOTING",
+				"createdAt": "2025-12-25T19:13:01.647137",
+				"updatedAt": "2025-12-25T19:13:01.647159",
+				"votingStartAt": "2025-12-25T19:13:01.895225",
+				"votingEndAt": "2026-01-01T00:00:00",
+				"proposals": [
+					{
+						"id": 316,
+						"title": "Test Proposal 0_4711Lorem ipsum dolor si",
+						"description": "Proposal 0_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eir",
+						"icon": "grin-beam",
+						"status": "VOTING",
+						"createdAt": "2025-12-25T19:13:01.705122",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 304,
+							"name": "TestAdmin 4711",
+							"email": "testadmin4711@liquido.vote",
+							"mobilephone": "01515554711",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 318,
+						"title": "Test Proposal 2_4711Lorem ipsum dolor si",
+						"description": "Proposal 2_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet cli",
+						"icon": "grin-tongue",
+						"status": "VOTING",
+						"createdAt": "2025-12-25T19:13:01.817938",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 308,
+							"name": "Member 1766686379802",
+							"email": "membr47113@liquido.vote",
+							"mobilephone": "01515551766686379802",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 319,
+						"title": "Test Proposal 3_4711Lorem ipsum dolor si",
+						"description": "Proposal 3_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ip",
+						"icon": "grin-tongue-squint",
+						"status": "VOTING",
+						"createdAt": "2025-12-25T19:13:01.870897",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 309,
+							"name": "Member 1766686380145",
+							"email": "membr47114@liquido.vote",
+							"mobilephone": "01515551766686380145",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 317,
+						"title": "Test Proposal 1_4711Lorem ipsum dolor si",
+						"description": "Proposal 1_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam non",
+						"icon": "hand-point-up",
+						"status": "VOTING",
+						"createdAt": "2025-12-25T19:13:01.762196",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 305,
+							"name": "Member 1766686378769",
+							"email": "membr47110@liquido.vote",
+							"mobilephone": "01515551766686378769",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					}
+				],
+				"winner": null
+			},
+			{
+				"id": 308,
+				"title": "Poll2 to test voting in two polls",
+				"status": "VOTING",
+				"createdAt": "2025-12-25T19:13:02.750132",
+				"updatedAt": "2025-12-25T19:13:02.750159",
+				"votingStartAt": "2025-12-25T19:13:02.912392",
+				"votingEndAt": "2026-01-01T00:00:00",
+				"proposals": [
+					{
+						"id": 327,
+						"title": "Test Proposal 0_4711Lorem ipsum dolor si",
+						"description": "Proposal 0_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit a",
+						"icon": "hands-helping",
+						"status": "VOTING",
+						"createdAt": "2025-12-25T19:13:02.827854",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 309,
+							"name": "Member 1766686380145",
+							"email": "membr47114@liquido.vote",
+							"mobilephone": "01515551766686380145",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 328,
+						"title": "Test Proposal 1_4711Lorem ipsum dolor si",
+						"description": "Proposal 1_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos e",
+						"icon": "hands-helping",
+						"status": "VOTING",
+						"createdAt": "2025-12-25T19:13:02.889506",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 310,
+							"name": "Member 1766686380481",
+							"email": "testmember4711@liquido.vote",
+							"mobilephone": "01515551766686380481",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					}
+				],
+				"winner": null
+			},
+			{
+				"id": 309,
+				"title": "Poll to test vote of proxy",
+				"status": "VOTING",
+				"createdAt": "2025-12-25T19:13:03.135835",
+				"updatedAt": "2025-12-25T19:13:03.135854",
+				"votingStartAt": "2025-12-25T19:13:03.270512",
+				"votingEndAt": "2026-01-01T00:00:00",
+				"proposals": [
+					{
+						"id": 330,
+						"title": "Test Proposal 1_4711Lorem ipsum dolor si",
+						"description": "Proposal 1_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed dia",
+						"icon": "grin-alt",
+						"status": "VOTING",
+						"createdAt": "2025-12-25T19:13:03.253389",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 309,
+							"name": "Member 1766686380145",
+							"email": "membr47114@liquido.vote",
+							"mobilephone": "01515551766686380145",
+							"picture": "Avatar1.png",
+							"website": null
+						}
+					},
+					{
+						"id": 329,
+						"title": "Test Proposal 0_4711Lorem ipsum dolor si",
+						"description": "Proposal 0_4711 from TestDataCreator. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanct",
+						"icon": "grin-hearts",
+						"status": "VOTING",
+						"createdAt": "2025-12-25T19:13:03.195448",
+						"numSupporters": 0,
+						"likedByCurrentUser": false,
+						"createdBy": {
+							"id": 304,
+							"name": "TestAdmin 4711",
+							"email": "testadmin4711@liquido.vote",
+							"mobilephone": "01515554711",
 							"picture": "Avatar1.png",
 							"website": null
 						}
@@ -584,12 +854,13 @@
 		]
 	},
 	"user": {
-		"id": 657,
-		"name": "Member 1754552747921",
-		"email": "testmember4711@liquido.vote",
-		"mobilephone": "01515551754552747921",
+		"id": 304,
+		"name": "TestAdmin 4711",
+		"email": "testadmin4711@liquido.vote",
+		"mobilephone": "01515554711",
 		"picture": "Avatar1.png",
-		"website": null
+		"website": null,
+		"hasWebauthn": false
 	},
-	"jwt": "eyJraWQiOiJzZWNyZXRLZXkiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0bWVtYmVyNDcxMUBsaXF1aWRvLnZvdGUiLCJpc3MiOiJodHRwczovL3d3dy5MSVFVSURPLnZvdGUiLCJncm91cHMiOlsiTElRVUlET19VU0VSIl0sInRlYW1JZCI6IjYwMSIsImlhdCI6MTc2MDAzNDIyNiwiZXhwIjoxNzYwMDM3ODI2LCJqdGkiOiJhOTdhOTI5ZS1jMjEwLTQ2MGMtYmEwMC04MDcyNjZhNjFkM2IifQ.uwjR98gylRCu-7nCJKmQINHn4FxdlKg36Ft3t_o1W9I"
+	"jwt": "eyJraWQiOiJsaXF1aWRvX2tleSIsInR5cCI6IkpXVCIsImFsZyI6IkhTMjU2In0.eyJzdWIiOiJ0ZXN0YWRtaW40NzExQGxpcXVpZG8udm90ZSIsImlzcyI6Imh0dHBzOi8vbGlxdWlkby52b3RlIiwiZ3JvdXBzIjpbIkxJUVVJRE9fQURNSU4iLCJMSVFVSURPX1VTRVIiXSwidGVhbUlkIjoiMTAxIiwiaWF0IjoxNzcxNDQwNDM0LCJleHAiOjE3NzE0NDQwMzQsImp0aSI6ImEwZDhkNDEyLThjOTAtNGEwZS1hZmRjLTIzNTgxMDllMGE2YSJ9.8Le7Qwbx9lmNM1ZSuYyAk1_NbBZT1JqUQK3k8loiKC8"
 }

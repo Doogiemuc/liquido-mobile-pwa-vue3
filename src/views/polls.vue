@@ -20,7 +20,7 @@
 
 			<transition-group name="poll-list" id="poll-list" tag="div">
 				<div v-for="poll in filteredPolls" :key="poll.id" class="poll-card-wrapper">
-					<div class="poll-card card border-0" @click="goToPoll(poll.id)">
+					<div class="poll-card card shadow-sm" @click="goToPoll(poll.id)">
 						<div class="card-body d-flex flex-nowrap align-items-center">
 							<!-- div class="flex-grow-0">
 								<div v-if="poll.status === 'ELABORATION'" class="poll-icon-elaboration">
@@ -174,6 +174,8 @@ export default {
 			searchQuery: "",
 			pollStatusFilter: api.POLL_STATUS.ALL_POLLS,
 			forceRefreshComputed: 0,
+			touchStartX: 0,
+			touchEndX: 0,
 		}
 	},
 
@@ -395,7 +397,7 @@ export default {
 	border-radius: var(--liquido-border-radius);
 
 	.card-body{
-		padding: 0 0.5rem;
+		padding: 0 1rem;
 	}
 
 	.poll-eyebrow {

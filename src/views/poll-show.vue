@@ -42,13 +42,13 @@
 					<i class="fas fa-angle-double-right" />
 				</button>
 
-				<button v-else-if="poll.status === 'VOTING' && poll.usersBallot" type="button" class="btn btn-primary" @click="clickCastVote()">
+				<button v-else-if="poll.status === 'VOTING' && poll.usersBallot" type="button" class="btn btn-primary btn-lg" @click="clickCastVote()">
 					<i class="fas fa-person-booth" />
 					{{ $t("editOwnVote") }}
 					<i class="fas fa-angle-double-right" />
 				</button>
 	
-				<button v-else-if="showAddProposal" id="addProposalButton" type="button" class="btn btn-primary" @click="clickAddProposal()">
+				<button v-else-if="showAddProposal" id="addProposalButton" type="button" class="btn btn-primary btn-lg" @click="clickAddProposal()">
 					{{ $t("addProposal") }}
 					<i class="fas fa-angle-double-right" />
 				</button>
