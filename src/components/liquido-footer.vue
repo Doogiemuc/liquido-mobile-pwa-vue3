@@ -1,6 +1,6 @@
 <template>
 	<footer ref="footer" class="liquido-footer">
-		<div class="liquido-footer-info">
+		<div v-if="infoText" class="liquido-footer-info">
 			<slot name="info">
 				<span v-if="infoText !== undefined">{{ infoText }}</span>
 			</slot>

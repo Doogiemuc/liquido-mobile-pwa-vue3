@@ -1,5 +1,6 @@
 <template>
 	<div>
+		<liquido-header ref="liquido-header"></liquido-header>
 		<h1 id="poll-create" class="page-title">
 			{{ $t("newPoll") }}
 		</h1>
@@ -43,6 +44,7 @@
 <script>
 import config from "config"
 import liquidoInput from "@/components/liquido-input.vue"
+import liquidoHeader from "@/components/liquido-header.vue"
 import api from "@/services/liquido-graphql-client.js"
 import log from "loglevel"
 
@@ -66,7 +68,7 @@ export default {
 		},
 	},
 	name: "CreatePollPage",
-	components: { liquidoInput },
+	components: { liquidoInput, liquidoHeader },
 	data() {
 		return {
 			pollTitle: "",

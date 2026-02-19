@@ -1,5 +1,6 @@
 <template>
 	<div>
+		<liquido-header ref="liquido-header"></liquido-header>
 		<h1 id="forgot-password-page" class="page-title">{{ pageTitle }}</h1>
 
 		<!-- Step1: Request password reset -->
@@ -98,6 +99,7 @@
 
 <script>
 import liquidoInput, { STATE } from "@/components/liquido-input.vue"
+import liquidoHeader from "@/components/liquido-header.vue"
 import api from "@/services/liquido-graphql-client.js"
 import config from "config"
 
@@ -134,7 +136,7 @@ export default {
       }
     }
   },
-	components: { liquidoInput },
+	components: { liquidoInput, liquidoHeader },
 	data() {
 		return {
 			pageTitle: this.$t("ForgotPassword"),

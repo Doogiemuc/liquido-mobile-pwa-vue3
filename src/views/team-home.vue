@@ -57,13 +57,7 @@
 			</div>
 			
 		</div>
-		
-
-		<button id="gotoPollsButton" class="btn btn-primary btn-lg w-100 mb-5" @click="gotoPolls">
-			{{ $t("gotoPolls") }}
-			<i class="fas fa-angle-double-right" />
-		</button>
-
+	
 
 		<h3>{{ $t('TeamMembers') }}</h3>
 		<div id="memberCards" class="row row-cols-3 g-2 mb-3">
@@ -134,6 +128,15 @@
 				{{ $t("logout") }}</button>
 		</div>
 
+		<liquido-footer>
+			<template #primary>
+				<button id="gotoPollsButton" type="button" class="btn btn-lg w-100 btn-primary" @click="$root.gotoPolls">
+					{{ $t("gotoPolls") }}
+					<i class="fas fa-angle-double-right" />
+				</button>
+			</template>
+		</liquido-footer>
+
 	</div>
 </template>
 
@@ -141,6 +144,7 @@
 import config from "config"
 import QRCode from "qrcode"
 import liquidoHeader from "@/components/liquido-header.vue"
+import liquidoFooter from "../components/liquido-footer.vue"
 import liquidoInput from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
 import webauthnService from '@/services/webauthn-service.js'
@@ -192,7 +196,7 @@ export default {
 			},
 		},
 	},
-	components: { liquidoInput, liquidoHeader },
+	components: { liquidoInput, liquidoHeader, liquidoFooter },
 	data() {
 		return {
 			team: {},

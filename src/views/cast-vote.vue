@@ -2,7 +2,7 @@
 	<div>
 		<liquido-header ref="liquido-header">
 			<template #header-row-two>
-				<div class="cast-vote-title">
+				<div class="cast-vote-poll-title">
 					<h2>{{ poll ? poll.title : "" }}</h2>
 				</div>
 			</template>
@@ -344,11 +344,9 @@ export default {
 
 <style>
 
-.header-row-two {
+.cast-vote-poll-title {
 	padding: 0.5rem 1rem;
 	text-align: center;
-}
-.cast-vote-title {
 	color: black;
 }
 

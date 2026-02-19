@@ -1,5 +1,6 @@
 <template>
 	<div>
+		<liquido-header ref="liquido-header"></liquido-header>
 		<h1 id="addProposalTitle" class="page-title">
 			{{ $t("addProposal") }}
 		</h1>
@@ -108,6 +109,7 @@
 
 import pollPanel from "@/components/poll-panel.vue"
 import liquidoInput from "@/components/liquido-input.vue"
+import liquidoHeader from "@/components/liquido-header.vue"
 import api from "@/services/liquido-graphql-client.js"
 import faSolidIconsFree from "@/styles/fontawesome-solid-icons-free.json"  // List of free fontawesome icon names
 
@@ -134,7 +136,7 @@ export default {
 			},
 		},
 	},
-	components: { pollPanel, liquidoInput },
+	components: { pollPanel, liquidoInput, liquidoHeader },
 	props: {
 		pollId: { type: String, required: true },
 	},

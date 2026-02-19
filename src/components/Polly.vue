@@ -18,6 +18,7 @@ import { VueDraggableNext as draggable } from 'vue-draggable-next'
 import * as bootstrap from 'bootstrap'
 import config from "config"
 import liquidoInput from './liquido-input.vue'
+import liquidoHeader from './liquido-header.vue'
 
 const globalTranslations = {
 	"en": {
@@ -379,6 +380,7 @@ function isEmail(s) {
 
 <template>
 	<div class="polly">
+		<liquido-header ref="liquido-header"></liquido-header>
 		<div class="card polly-card position-relative user-select-none">
 			<span v-if="inVoting" @click="shareLinkToPoll" class="fa-stack share-poll-icon" title="Share Poll">
 				<i class="fa-solid fa-circle fa-stack-2x" style="color:var(--proposal-icon-bg)"></i>
