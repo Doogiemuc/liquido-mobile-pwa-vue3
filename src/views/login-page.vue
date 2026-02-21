@@ -1,5 +1,7 @@
 <template>
 	<div>
+		<liquido-header></liquido-header>
+
 		<h1 id="login-page" class="page-title">{{ pageTitle }}</h1>
 
 		<!-- Default Login with email & password  -->
@@ -169,6 +171,7 @@
 <script>
 import config from "config"
 import liquidoInput, { STATE } from "@/components/liquido-input.vue"
+import liquidoHeader from "@/components/liquido-header.vue"
 import api from "@/services/liquido-graphql-client.js"
 import webauthnService from "@/services/webauthn-service.js"
 
@@ -278,7 +281,7 @@ export default {
 			}
 		}
 	},
-	components: { liquidoInput },
+	components: { liquidoInput, liquidoHeader },
 	props: {
 		// These props are set from URL parameters, e.g. when user logs in via the email link
 		email: { type: String, required: false, default: undefined },
