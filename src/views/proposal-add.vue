@@ -111,6 +111,7 @@ import pollPanel from "@/components/poll-panel.vue"
 import liquidoInput from "@/components/liquido-input.vue"
 import liquidoHeader from "@/components/liquido-header.vue"
 import api from "@/services/liquido-graphql-client.js"
+import EventBus from "@/services/event-bus.js"
 import faSolidIconsFree from "@/styles/fontawesome-solid-icons-free.json"  // List of free fontawesome icon names
 
 export default {
@@ -129,7 +130,7 @@ export default {
 				ChooseIcon: "Icon Wählen",
 				noIconsMatchSearch: "Kein passendes Icon gefunden.",
 				noProposalYet: "Dein Vorschlag ist der erste in dieser Abstimmung.",
-				previousProposalsInPoll: "Bisherige Wahlvorschläge in dieser Abstimmung:",
+				previousProposalsInPoll: "Bisherige Vorschläge in dieser Abstimmung:",
 				createdSuccessfully: "Ok, dein Vorschlag wurde zur Abstimmung mit aufgenommen.",
 				proposalAddError: "Es gab einen Fehler beim Hinzufügen deines Vorschlages.",
 				gotoPoll: "Zur Abstimmung",
@@ -184,7 +185,7 @@ export default {
 		this.$store.setHeaderBackTarget({name: "showPoll", params: {pollId: this.pollId} })
 	},
 	mounted() {
-		this.$root.scrollToTop()		
+		this.$root.scrollToTop()
 	},
 	methods: {
 		/** Proposal title must have a minimum length */
@@ -225,10 +226,9 @@ export default {
 		/** Save newly added proposal in backend. */
 		saveProposal() {
 			return api.addProposal(this.poll.id, this.proposal.title, this.proposal.description, this.chosenIcon)
-				.then(() => {
-					this.$root.showSuccess(this.$t('createdSuccessfully'), "", this.$t('gotoPoll')).then(() => {
-						this.gotoPoll()
-					})
+				.then(() => {// Set up one-time listener before showing the modal
+					EventBus.once(EventBus.Event.ROOT_POPUP_CLICK_PRIMARY, this.gotoPoll)
+					this.$root.showSuccess(this.$t('createdSuccessfully'), "", this.$t('gotoPoll'))
 				})
 				.catch(err => {
 					console.error("Cannot add proposal", err)

@@ -5,7 +5,7 @@
 			{{ $t("newPoll") }}
 		</h1>
 
-		<div class="card chat-bubble">
+		<div class="card">
 			<div class="card-body">
 				
 				<liquido-input
@@ -85,7 +85,6 @@ export default {
 	mounted() {
 		this.$store.setHeaderTitle(this.$t("newPoll"))
 		// we normally go back to polls page, except when headerBackTarget was already set from welcome-chat.vue
-		console.log("poll-create mounted, headerBackTarget:", this.$store.headerBackTarget)
 		if (!this.$store.headerBackTarget) {
 			this.$store.setHeaderBackTarget({name: "polls"}) 
 		}

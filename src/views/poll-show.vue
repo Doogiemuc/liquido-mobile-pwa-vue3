@@ -19,7 +19,7 @@
 		</div>
 
 		<div class="alert liquido-info">
-			<p v-if="poll.status === 'ELABORATION' && poll.proposals && poll.proposals.length > 0" v-html="$t('pollInElaborationInfo')" />
+			<p v-if="poll.status === 'ELABORATION'" v-html="$t('pollInElaborationInfo')" />
 			<p v-if="poll.status === 'VOTING' && !poll.usersBallot" v-html="$t('votingPhaseInfo')" />
 			<p v-if="poll.status === 'VOTING' &&  poll.usersBallot" v-html="$t('alreadyVotedInfo')" />
 			<p v-if="poll.status === 'FINISHED'" id="finishedPollInfo">
@@ -93,7 +93,7 @@ export default {
 			de: {
 				cannotFindPoll: "<h4>Fehler</h4><hr/><p>Diese Abstimmung konnte nicht gefunden werden.</p>",
 				pollInElaborationInfo: 
-					"<p>Diese Abstimmung wird gerade noch debatiert.</p>" +
+					"<p>Diese Abstimmung ist neu.</p>" +
 					"<p>Sobald euer Admin die Wahl startet, kannst du hier dann anonym deine Stimme abgeben.</p>",
 				canAddProposal: 
 					"Du kannst einen eigenen Vorschlag zu dieser Abstimmung hinzufügen.",
@@ -101,7 +101,7 @@ export default {
 					"Du hast deinen Vorschlag bereits zu dieser Abstimmung hinzugefügt.",
 				addProposal: "Vorschlag hinzufügen",
 				startVotingPhaseInfo: 
-					"Hallo Admin! Möchstest du die Wahlphase für diese Abstimmung starten? Dann sind die Wahlvorschläge fixiert und dein Team kann abstimmen.",
+					"Hallo Admin! Möchstest du die Wahlphase für diese Abstimmung starten? Dann sind die Vorschläge fixiert und dein Team kann abstimmen.",
 				startVotingPhase: "Wahlphase starten",
 				finishVotingPhaseInfo: "Hallo Admin! Bisher wurden in dieser Abstimmung {numBallots} Stimmen abgegeben.",
 				finishVotingPhase: "Wahlphase schließen",

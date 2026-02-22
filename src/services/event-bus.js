@@ -5,6 +5,9 @@
  * and listeners can subscribe with `EventBus.on(EventBus.Event.LOGIN, function(evt) { ... })
  */
 
+
+//TODO: replace with node buit in https://nodejs.org/en/learn/asynchronous-work/the-nodejs-event-emitter
+
  import Emitter from 'tiny-emitter'
  
  const eventBus = new Emitter()

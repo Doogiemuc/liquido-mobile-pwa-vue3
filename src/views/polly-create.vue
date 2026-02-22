@@ -9,23 +9,26 @@
 			:poll="poll">
 		</polly>
 
-		<div v-if="poll.status === 'NEW'" class="alert text-center" v-html="$t('PollIsNewInfo')"></div>
-		<div v-if="poll.status === 'ELABORATION'" class="alert text-center">
+		<div v-if="poll.status === 'NEW'" class="alert liquido-info" v-html="$t('PollIsNewInfo')"></div>
+		<div v-if="poll.status === 'ELABORATION'" class="alert liquido-info">
 			{{ $t('PollInElaborationInfo') }}
 		</div>
-		<div v-if="poll.status == 'VOTING'" class="alert create-poll-info mt-5">
+		<div v-if="poll.status == 'VOTING'" class="alert liquido-info mt-5">
 			<p v-html="$t('PollInVotingInfo1')"></p>
 			<ol class='fa-ul'>
 				<li><span class='fa-li'><i class='fas fa-person-booth'></i></span> <span v-html="$t('PollInVotingInfo2')"></span></li>
 				<li><span class='fa-li'><i class='fas fa-check-circle'></i></span> {{ $t('PollInVotingInfo3') }}</li>
 			</ol>			
 		</div>
-		<div v-if="poll.status === 'FINISHED'" class="alert text-center">
+		<div v-if="hasAlreadyVoted" class="alert liquido-info mt-3">
+			{{ $t('YouAlreadyVoted') }}
+		</div>
+		<div v-if="poll.status === 'FINISHED'" class="alert liquido-info">
 			{{ $t('PollIsFinishedInfo') }}
 		</div>
 
 		<!-- Extra info for the admin -->
-		<div class="alert alert-admin create-poll-info mt-5">
+		<div class="alert alert-admin mt-5">
 			<p>{{ $t('createPollInfo1') }}</p>
 			<ol class='fa-ul'>
 				<li><span class='fa-li'><i class='fas fa-comments'></i></span> {{ $t('createPollInfo2') }} {{ $t('createPollInfo3') }}</li>
@@ -68,16 +71,18 @@ export default defineComponent({
 				"NewPolly": "Neues Polly",
 				"PollIsNewInfo": "Willkommen bei <span class='liquido'></span>. Ein Polly ist eine einfache, anonyme und sichere Abstimmung. In  Füge hier die Vorschläge hinzu, über die ihr abstimmen wollt.",
 				"PollInElaborationInfo": "Ok bin bereit. Du kannst die Abstimmung jetzt starten.",
+				
 				// This info is for voters and shown when polly is in voting
 				"PollInVotingInfo1": "Willkommen bei <span class='liquido'></span>! Ein Polly ist eine einfache, anonyme und sichere Abstimmung.", 
 				"PollInVotingInfo2": "In <span class='liquido'></span> stimmst du nicht nur für einen Vorschlag, sondern du <b>sortierst alle</b> Vorschläge so wie du es möchtest. Mit deinem Favoriten ganz oben.",
 				"PollInVotingInfo3": "Wenn euer Admin die Abstimmung abschließt, wird der Vorschlag mit der größten Zustimmung durch einen cleveren Algorithmus berechnet.",
-				
+				"YouAlreadyVoted": "Du hast bereits abgestimmt.",	
+
 				// This info is for the admin, and only shown to him.
 				"createPollInfo1": "Du bist der Polly Admin:",
 				"createPollInfo2": "Eine neue Abstimmung wird erst einmal debatiert.",
-				"createPollInfo3": "Du kannst festlegen ob Teammitglieder eigene Wahlvorschläge hinzufügen dürfen.",
-				"createPollInfo4": "Als Admin startest du die Abstimmung. In LIQUIDO stimmt man nicht nur für einen Vorschlag, sondern jeder im Team ordnet alle Vorschläge anonym in seine persönliche Reihenfolge.",
+				"createPollInfo3": "Du kannst festlegen ob Teammitglieder eigene Vorschläge hinzufügen dürfen oder nicht.",
+				"createPollInfo4": "Du, als Admin, startest die Abstimmung. In LIQUIDO stimmt man nicht nur für einen Vorschlag, sondern jeder im Team ordnet alle Vorschläge anonym in seine persönliche Reihenfolge.",
 				"createPollInfo5": "Wenn du die Abstimmung abschliest, wird der Vorschlag mit der größten Zustimmung durch einen cleveren Algorithmus berechnet.",
 				"createPollInfoForKids_NOT_USED_YET": "In LIQUIDO sucht man sich nicht nur einen Vorschlag aus, sondern jeder ordnet alle Vorschläge heimlich so, wie er sie am liebsten hat.",
 				
@@ -118,6 +123,12 @@ export default defineComponent({
 					return this.$t('PollIsFinishedInfo')
 			}
 			return ""
+		},
+		hasAlreadyVoted() {
+			if (!this.poll || this.poll.status !== api.POLL_STATUS.VOTING) return false
+			return api.getMyBallot(poll.poll.id).then(myBallot => {
+				return myBallot !== undefined
+			})
 		}
 	},
 	watch: {
@@ -156,13 +167,15 @@ export default defineComponent({
 
 
 <style>
+
+.alert-admin li {
+	margin-bottom: 1rem;
+}
+
 .cancel-link {
 	font-size: 12px;
 	color: var(--secondary);
 	cursor: pointer;
-}
-.create-poll-info li {
-	margin-bottom: 1rem;
 }
 
 .config-list {

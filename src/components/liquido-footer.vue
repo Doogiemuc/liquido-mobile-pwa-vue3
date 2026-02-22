@@ -114,6 +114,9 @@ export default {
 	button {
 		flex-grow: 1;
 		width: 100%;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
 	}
 }
 

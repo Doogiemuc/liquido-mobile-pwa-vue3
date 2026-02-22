@@ -208,10 +208,10 @@ export default {
 			return this.$refs.rootPopupModal.showInfo(msg, title, primaryButtonText, secondaryButtonText)
 		},
 		rootPopupClickPrimary(id) {
-			EventBus.$emit(EventBus.Events.ROOT_POPUP_CLICK_PRIMARY, id)
+			EventBus.emit(EventBus.Event.ROOT_POPUP_CLICK_PRIMARY, id)
 		},
 		rootPopupClickSecondary(id) {
-			EventBus.$emit(EventBus.Events.ROOT_POPUP_CLICK_SECONDARY, id)
+			EventBus.emit(EventBus.Event.ROOT_POPUP_CLICK_SECONDARY, id)
 		},
 
 		/**

@@ -15,17 +15,6 @@
 				<div v-for="poll in pollsInVoting" :key="poll.id" class="poll-card-wrapper">
 					<div class="poll-card card shadow-sm" @click="$root.gotoPoll(poll.id)">
 						<div class="card-body d-flex flex-nowrap align-items-center">
-							<!-- div class="flex-grow-0">
-								<div v-if="poll.status === 'ELABORATION'" class="poll-icon-elaboration">
-									<i class="far fa-comments" />
-								</div>
-								<div v-if="poll.status === 'VOTING'" class="poll-icon-voting">
-									<i class="fas fa-person-booth" />
-								</div>
-								<div v-if="poll.status === 'FINISHED'" class="poll-icon-finished">
-									<i class="fas fa-check-circle" />
-								</div>
-							</div -->
 							<div class="flex-grow-1">
 								<div class="poll-eyebrow">
 									<span v-if="poll.status === 'ELABORATION'" class="badge rounded-pill elaboration-pill">{{ $t('New') }}</span>

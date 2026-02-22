@@ -173,7 +173,7 @@ export default {
 				welcome: 
 					"<p>Willkommen bei <span class='liquido'></span>, der freien, sicheren und liquiden e-voting App für euer Team.</p>"+
 					"<p>In Liquido wählst du nicht einfach nur einen Vorschlag oder stimmst nur für einen Kandidaten. Stattdessen sortiert jeder im Team "+
-					"Wahlvorschläge nach seiner eigenen Priorität. Liquido berechnet daraus dann mit einem cleveren Algorithmus den Sieger der Wahl.</p>",
+					"Vorschläge nach seiner eigenen Priorität. Liquido berechnet daraus dann mit einem cleveren Algorithmus den Sieger der Wahl.</p>",
 				joinTeamInfo: "Hier kannst du dem Team '{teamName}' beitreten.",
 				whatsYourName: "Darf ich bitte fragen wie du heißt?",
 				yourNickname: "Dein Spitzname",

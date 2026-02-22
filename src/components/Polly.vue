@@ -668,8 +668,6 @@ $polly-proposal-margin-bottom: 20px;
 }
 
 
-
-
 // ========= For VUE.draggable@next ========
 .draggable {
 	.sortable-ghost {

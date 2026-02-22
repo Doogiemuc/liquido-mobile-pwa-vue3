@@ -80,7 +80,11 @@ html, body {
   background-color: var(--app-background);
   min-height: 100%;  														/* Always fill viewport height, even with minimal content */
 	padding-top: var(--header-height);  					/* padding so that page content can bee seen under liquido-header */
-  padding-bottom: var(--navbar-bottom-height);  /* Account for fixed navbar at the bottom */
+  /* 
+	 Account for fixed navbar at the bottom. This CSS variable is dynamically adjusted in liquido-footer.vue!
+	 And we add a bit more space by default.
+	*/
+	padding-bottom: calc(var(--navbar-bottom-height) + 50px);
   padding-left: 10px;
   padding-right: 10px;
 }

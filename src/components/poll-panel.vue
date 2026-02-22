@@ -1,5 +1,5 @@
 <template>
-	<div :id="pollCardId" :pollid="poll.id" :data-poll-status="poll.status" class="card poll-panel border-0 shadow">
+	<div :id="pollCardId" :pollid="poll.id" :data-poll-status="poll.status" class="card poll-panel shadow">
 		<h2 class="card-header">
 			<!-- i class="fas fa-poll" /-->
 			{{ poll ? poll.title : "" }}
@@ -9,7 +9,7 @@
 				{{ $t("noProposalsInPollYet") }}
 			</p>
 		</div>
-		<ul v-else class="list-group list-group-flush mt-1 mb-3">
+		<ul v-else class="list-group list-group-flush">
 			<li v-for="prop in sortedProposals" :key="prop.id" class="list-group-item proposal-list-group-item user-select-none"
 				:class="proposalListGroupItemClasses(prop.id)">
 				<div class="proposal-header d-flex align-items-center">
@@ -77,7 +77,7 @@ export default {
 		messages: {
 			en: {},
 			de: {
-				noProposalsInPollYet: "Diese Abstimmung enthält bisher noch keine Wahlvorschläge oder Kandidat*innen.",
+				noProposalsInPollYet: "Diese Abstimmung hat bisher noch keine Vorschläge bzw. Kandidat*innen.",
 				addProposal: "Vorschlag hinzufügen",
 			},
 		},
@@ -222,7 +222,7 @@ $proposal_icon_size: 2.5rem;
 		height: 160px; // exactly 3 lines of description. MUST set height for collapse transition!
 		overflow: hidden;
 		transition: height 0.5s;
-		border: none;
+		border: none;            /* TODO: or with border???? => I changed this 1001 times :-) */
 
 		&.collapsed-proposal-panel {
 			height: 60px; // just right enough to NOT see the description.
@@ -363,14 +363,5 @@ $proposal_icon_size: 2.5rem;
 		}
 	}
 
-
-
-
-	//BUGFIX for bootstrap: inherit border-radius in list-group-flush wrapper
-	/*
-	.list-group-flush {
-		border-radius: inherit;
-	}
-	*/
 }
 </style>

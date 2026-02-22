@@ -144,17 +144,17 @@ export default {
 			},
 			de: {
 				pollsInElaborationInfo: 
-					"<p>Diese Abstimmungen sind neu und werden gerade noch debatiert. Weitere Wahlvorschläge können noch hinzugefügt werden.</p>" +
+					"<p>Diese Abstimmungen sind neu und werden gerade noch debatiert. Weitere Vorschläge können noch hinzugefügt werden.</p>" +
 					"<p>Sobald euer Admin eine Wahl startet, kannst du sicher und anonym deine Stimme abgeben.</p>",
 				pollsInVotingInfo: "Diesen Abstimmungen laufen jetzt gerade. Wähle eine und gib deine Stimme ab.",
 				finishedPollsInfo: "Diese Abstimmungen sind beendet.",
 				New: "Neu",    		// Neue Abstimmung "elaboratin", "debattiert", ...
 				noPollYet: "Euer Admin hat bisher noch keine Abstimmung erstellt.",
 				noPollsMatchSearch: "",
-				noPollsInElaboration: "Aktuell gibt es gerade keine Abstimmungen mit Wahlvorschläge die noch diskutiert werden können.",
+				noPollsInElaboration: "Aktuell gibt es gerade keine Abstimmungen mit Vorschläge die noch diskutiert werden können.",
 				noPollsInVoting: "Es läuft gerade keine Abstimmungen, in der du deine Stimmen abgegeben könntest.",
 				noFinishedPolls: "In eurem Team gibt es bisher noch keine abgeschlossenen Abstimmungen.",
-				butProposalsInDiscussion: "Es gibt jedoch Abstimmungen in Diskussion. Dort könnt ihr die Wahlvorschlägen diskutieren.",
+				butProposalsInDiscussion: "Es gibt jedoch Abstimmungen in Diskussion. Dort könnt ihr die Vorschlägen diskutieren.",
 				butPollInVoting: "Es gibt jedoch eine <b>laufende Abstimmung</b> in der du deine Stimme abgeben kannst.",
 				onlyAdminCanCreateNewPolls: "Nur du als Admin dieses Teams kannst neue Abstimmungen erstellen. " +
 					"Jedes Teammitglied kann dann seinen Vorschlag zur Abstimmung hinzufügen.",
