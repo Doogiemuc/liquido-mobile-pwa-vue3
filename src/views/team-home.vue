@@ -1,11 +1,15 @@
 <template>
 	<div>
 		<liquido-header ref="liquido-header"></liquido-header>
-		<h1 id="team-home" class="page-title">
+		<h1 
+			id="team-home"
+			:data-teamname="team.teamName"
+			:data-username="currentUserName"
+			class="page-title">
 			{{ team.teamName }}
 		</h1>
 
-		<div class="alert liquido-info">
+		<div id="teamIntro" class="alert liquido-info">
 			<span v-html="$t('introYourTeam', { name: currentUserName })"></span>
 		</div>
 

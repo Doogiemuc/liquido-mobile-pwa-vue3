@@ -1,9 +1,9 @@
 <template>
-	<div id="welcome-chat">
+	<div>
 		<liquido-header></liquido-header>
 
 		<!-- Welcome -->
-		<div id="welcomeBubble" :class="{ 'hide-left': !FLOW.Welcome }" class="card chat-bubble chat-left mt-3">
+		<div id="welcome-chat" :class="{ 'hide-left': !FLOW.Welcome }" class="card chat-bubble chat-left mt-3">
 			<div class="card-body" v-html="$t('welcome')"></div>
 		</div>
 
@@ -286,7 +286,7 @@
 			<div class="card-body">
 				<p v-html="$t('JoinTeamFinished', { teamName: team.teamName })"></p>
 				<button
-					id="gotoTeamButton"
+					id="joinedTeamGoToTeamButton"
 					class="btn btn-primary w-100"
 					type="button"
 					@click="$root.gotoTeam"
@@ -307,7 +307,7 @@
 			</h3>
 			<div class="card-body">
 				<p>{{ $t("ShareLinkInfo") }}</p>
-				<button class="btn btn-primary position-relative w-100" @click="shareLink">
+				<button id="inviteCodeButton" :data-invitecode="team.inviteCode" class="btn btn-primary position-relative w-100" @click="shareLink">
 					<i class="fas fa-external-link-alt position-absolute top-50 start-0 translate-middle ms-3" />
 					{{ $t("shareLink", {teamName: team.teamName, inviteCode: team.inviteCode}) }}
 				</button>
@@ -848,19 +848,14 @@ export default {
 					console.log("SetupPasskeyError", err)
 					
 					// Show root modal with two buttons: Try Again (primary) and Ok Later (secondary)
-					this.$root.$refs.rootPopupModal.showInfo(
-						this.$t('SetupPasskeyInfoTitle'),
+					this.$root.showInfo(
 						this.$t('SetupPasskeyInfoMessage'),
+						this.$t('SetupPasskeyInfoTitle'),
 						this.$t('TryAgain'),
-						this.$t('OkLater')
+						this.$t('OkLater'),
+						() => { this.passkeyTryAgain() },
+						() => { this.passkeyRegisterLater() }
 					)
-					/* Subscribe to click events once(!) */
-					EventBus.once(EventBus.Events.ROOT_POPUP_CLICK_PRIMARY, () => {
-						this.passkeyTryAgain()
-					})
-					EventBus.once(EventBus.Events.ROOT_POPUP_CLICK_SECONDARY, () => {
-						this.passkeyRegisterLater()
-					})
 				})
 		},
 

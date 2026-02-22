@@ -3,8 +3,10 @@
 		<h1 id="design-page" class="page-title">LIQUIDO Design Overview</h1>
  
 		<div class="text-center">
-			<p v-if="currentUser">You are logged in as {{ currentUser.email }}</p>
-			
+			<p v-if="currentUser">
+				You are logged in as {{ currentUser.email }}
+				<a href="#" @click.prevent="logout">Logout</a>
+			</p>
 			<button v-else type="button" class="btn btn-outline-secondary"
 				@click="devLoginAdmin">
 				<i class="fas fa-shield-alt me-2"></i>
@@ -68,6 +70,11 @@ const devLoginAdmin = () => {
 	api.logout()
 	api.devLogin(config.devLogin.admin.email, config.devLogin.teamName, config.devLogin.token)
 		.catch(err => console.error("DevLogin Admin failed!", err))
+}
+
+const logout = () => {
+	api.logout()
+	window.location.reload()
 }
 
 </script>

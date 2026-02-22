@@ -1,12 +1,12 @@
 <template>
 	<div :id="id"
 		class="modal"
-		:class="{ 'inline-mode': inlineMode }"
 		tabindex="-1"
 		data-bs-backdrop="static"
 		data-keyboard="false"
 		aria-labelledby="modalLabel"
 		aria-hidden="true"
+		:data-modaltype="myType"
 	>
 		<div class="modal-dialog" :class="{'modal-dialog-centered': centered}">
 			<div class="modal-content shadow" :class="modalContentClass">
@@ -28,7 +28,7 @@
 						<button v-if="mySecondaryButtonText" id="modalSecondaryButton" type="button" class="btn btn-secondary flex-grow-1" @click="clickSecondary">
 							{{ mySecondaryButtonText }}
 						</button>
-						<button id="modalPrimaryButton" type="button" class="btn btn-primary flex-grow-1" data-bs-dismiss="modal" @click="clickPrimary">
+						<button id="modalPrimaryButton" type="button" class="btn btn-primary flex-grow-1" @click="clickPrimary">
 							{{ myPrimaryButtonText }}
 						</button>
 					</slot>
@@ -80,7 +80,6 @@ export default {
 		contentClass: { type: String, required: false, default: "" },
 		primaryButtonText: { type: String, required: false, default: function() { return OK_text } },
 		secondaryButtonText: { type: String, required: false, default: undefined },
-		inlineMode: { type: Boolean, required: false, default: false },  // if true, modal appears inline within content instead of fixed overlay
 	},
 	emits: ["clickPrimary", "clickSecondary"],
 	data() {
@@ -91,6 +90,9 @@ export default {
 			myType: this.type,
 			myPrimaryButtonText: this.primaryButtonText,
 			mySecondaryButtonText: this.secondaryButtonText,
+			// optional callbacks provided by caller when showing the modal
+			myPrimaryCallback: undefined,
+			mySecondaryCallback: undefined,
 			myModal: undefined  // reference to Bootstrap Modal instanace. Will be set in "mounted()"
 		}
 	},
@@ -137,24 +139,31 @@ export default {
 		 * @param msg {String} message to the user
 		 * @param title {String} title or defaults to "Error"
 		 * @pararm type {ENUM} type of modal: PRIMARY|INFO|SUCCESS|WARN|DANGER|ERROR
+		 * @param primaryButtonText {String} optional text for primary button
+		 * @param secondaryButtonText {String} optional text for secondary button
 		 */
-		showMsgTitle(msg, title, type = MODAL_TYPE.INFO) {
+		showMsgTitle(msg, title, type = MODAL_TYPE.INFO, primaryButtonText = undefined, secondaryButtonText = undefined, primaryCallback = undefined, secondaryCallback = undefined) {
 			this.myMessage = msg
 			this.myTitle = title
 			this.myType = type
+			if (primaryButtonText !== undefined) this.myPrimaryButtonText = primaryButtonText
+			this.mySecondaryButtonText = secondaryButtonText
+			// store callbacks (may be undefined)
+			this.myPrimaryCallback = primaryCallback
+			this.mySecondaryCallback = secondaryCallback
 			this.myModal.show()
 		},
-		showSuccess(msg, title) {
-			this.showMsgTitle(msg, title, MODAL_TYPE.SUCCESS)
+		showSuccess(msg, title, primaryButtonText = undefined, secondaryButtonText = undefined, primaryCallback = undefined, secondaryCallback = undefined) {
+			this.showMsgTitle(msg, title, MODAL_TYPE.SUCCESS, primaryButtonText, secondaryButtonText, primaryCallback, secondaryCallback)
 		},
-		showError(msg, title) {
-			this.showMsgTitle(msg, title, MODAL_TYPE.ERROR)
+		showError(msg, title, primaryButtonText = undefined, secondaryButtonText = undefined, primaryCallback = undefined, secondaryCallback = undefined) {
+			this.showMsgTitle(msg, title, MODAL_TYPE.ERROR, primaryButtonText, secondaryButtonText, primaryCallback, secondaryCallback)
 		},
-		showInfo(msg, title) {
-			this.showMsgTitle(msg, title, MODAL_TYPE.INFO)
+		showInfo(msg, title, primaryButtonText = undefined, secondaryButtonText = undefined, primaryCallback = undefined, secondaryCallback = undefined) {
+			this.showMsgTitle(msg, title, MODAL_TYPE.INFO, primaryButtonText, secondaryButtonText, primaryCallback, secondaryCallback)
 		},
-		showWarning(msg, title) {
-			this.showMsgTitle(msg, title, MODAL_TYPE.WARNING)
+		showWarning(msg, title, primaryButtonText = undefined, secondaryButtonText = undefined, primaryCallback = undefined, secondaryCallback = undefined) {
+			this.showMsgTitle(msg, title, MODAL_TYPE.WARNING, primaryButtonText, secondaryButtonText, primaryCallback, secondaryCallback)
 		},
 		/** Show with message passed via prop or slot */
 		show() {
@@ -170,9 +179,20 @@ export default {
 			this.myModal.toggle()
 		},
 		clickPrimary() {
+			// Call provided callback first (if any)
+			if (typeof this.myPrimaryCallback === 'function') {
+				try { this.myPrimaryCallback() } catch (e) { console.error('popup-modal primary callback error', e) }
+			}
 			this.$emit("clickPrimary", this.id)
+			// If no callback was provided, close the modal by default
+			if (typeof this.myPrimaryCallback !== 'function') {
+				try { this.myModal.hide() } catch (e) { /* ignore */ }
+			}
 		},
 		clickSecondary() {
+			if (typeof this.mySecondaryCallback === 'function') {
+				try { this.mySecondaryCallback() } catch (e) { console.error('popup-modal secondary callback error', e) }
+			}
 			this.$emit("clickSecondary", this.id)
 		}
 
@@ -180,24 +200,11 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
-.modal {
-	&.inline-mode {
-		position: relative !important;
-		display: block !important;
-		background: transparent !important;
-		
-		.modal-dialog {
-			position: relative !important;
-			width: 100% !important;
-			margin: 2rem auto !important;
-		}
-	}
-}
+<style>
 
 .modal-content {
 	.modal-header {
-		border-bottom: none;   // "Less is more in UI-design!"
+		border-bottom: none;   /* "Less is more in UI-design!" */
 		height: 3rem;
 	}
 	.header-icon {
@@ -249,7 +256,6 @@ export default {
 		justify-content: center;
 		border-top: none;
 		.btn {
-			//font-weight: bold;
 			width: 100%;
 			border: none;
 		}

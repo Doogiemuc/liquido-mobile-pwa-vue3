@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<liquido-header ref="liquido-header"></liquido-header>
-		<h1 class="page-title">
+		<h1 id="polls-page" class="page-title">
 			{{ pageTitleLoc }}
 		</h1>
 

@@ -88,41 +88,44 @@ context('Happy Case', () => {
 			expect(fix.adminJWT, "Expected to find a JWT in localStorage!").to.have.length.of.at.least(10)
 		})
 		
+		// ===== Test passkey registration =====
+		// GIVEN the setupPasskeyCard is shown
+		cy.get('#setupPasskeyCard').should('be.visible')
+		
+		//  WHEN test-user tries to register his passkey
+		cy.get('#passkeyInput').should('be.visible').clear().type('My Test Passkey')
+		// AND we intercept the webauthn register request to make it fail    => no need to intercept. Will fail anyway :-)
+		//cy.intercept('POST', '**/webauthn/register', {
+		//	statusCode: 500,
+		//	body: { error: 'Failed intentionally in test' }
+		//})		
+		cy.get('#setupPasskeyButton').should('be.visible').click()
+				
+		// THEN the passkey info modal is shown
+		cy.get('#rootPopupModal').should('be.visible')
+		
+		// WHEN user clicks the secondary button ("Try again later") 
+		cy.get('#modalSecondaryButton').click()
+		
+		// THEN the modal is closed
+		cy.get('#rootPopupModal').should('not.be.visible')
+
+		//  AND passkey label input is disabled
+		cy.get('#passkeyInput').should('be.disabled')
+		
+		// AND the teamQrCode section is visible
+		cy.get('#teamQrCode').should('be.visible')
+
 		// AND there is an invite link with inviteCode
-		cy.get('#inviteLink').invoke("attr", "data-invitecode").then(inviteCode => {   // "data-invitecode" attribute in lowercase!
+		// Here we extract the inviteCode, because we need it later to join this team.
+		cy.get('#inviteCodeButton').invoke("attr", "data-invitecode").then(inviteCode => {   // "data-invitecode" attribute in lowercase!
+			console.log("InviteCode="+inviteCode)
 			expect(inviteCode).to.have.length(config.inviteCodeLength, "InviteCode should have length " + config.inviteCodeLength)
 			fix.inviteCode = inviteCode
 			console.log("New team inviteCode=", fix.inviteCode)
 			cy.log("InviteCode="+fix.inviteCode)
 		})
 
-		// ===== Test passkey registration =====
-		// AND the setupPasskeyCard is shown
-		cy.get('#setupPasskeyCard').should('be.visible')
-		
-		// WHEN user types a passkey label
-		cy.get('#passkeyInput').should('be.visible').clear().type('My Test Passkey')
-		
-		// AND we intercept the webauthn register request to make it fail
-		cy.intercept('POST', '**/webauthn/register', {
-			statusCode: 500,
-			body: { error: 'Failed intentionally in test' }
-		})
-		
-		// AND clicks the setupPasskeyButton
-		cy.get('#setupPasskeyButton').should('be.visible').click()
-		
-		// THEN the info popup modal is shown with error information
-		cy.get('#passkeyModal').should('be.visible')
-		
-		// WHEN user clicks the secondary button (OkLater)
-		cy.get('#passkeyModal .btn-secondary').click()
-		
-		// THEN the modal is closed
-		cy.get('#passkeyModal').should('not.be.visible')
-		
-		// AND the teamQrCode section is visible
-		cy.get('#teamQrCode').should('be.visible')
 	})
 
 	it('[Admin] Returning admin is automatically logged in', function() {
@@ -135,8 +138,9 @@ context('Happy Case', () => {
 		//  AND admin visits the root start page
 		cy.visit("/")
 		// THEN we are automatically forwarded to correct team-home.
-		cy.get("#team-home.page-title").should('contain.text', fix.teamName)
-		cy.get("#team-home-user-welcome").should("contain.text", fix.adminName)
+		cy.get("#team-home")
+			.should("have.attr", "data-teamname", fix.teamName)
+			.should("have.attr", "data-username", fix.adminName)
 
 		// AND his avatar image is loaded successfully
 		cy.get("#memberCards .card img").should('be.visible').and(($img) => {
@@ -171,7 +175,7 @@ context('Happy Case', () => {
 		cy.get('#propTitle').type(fix.proposalTitle)
 		cy.get('#propDescription').type(fix.proposalDescription, { delay: 1 })
 		cy.get('#saveProposalButton').click()
-		cy.get('#proposalSuccessfullyAddedModal #modalPrimaryButton').click()
+		cy.get('#modalPrimaryButton').click()
 		//THEN the poll is shown with that proposal
 		cy.get('#poll-show')
 		cy.get('.proposal-title').should('contain.text', fix.proposalTitle)
@@ -198,14 +202,26 @@ context('Happy Case', () => {
 		cy.get('#inviteCodeInput').type(fix.inviteCode)
 		cy.get('#userEmailInput').type(fix.userEmail)
 		cy.get('#userPasswordInput').type(fix.userPassword)
-
 		cy.get('#joinTeamOkButton').click()
 
-		//THEN team-home is shown
-		cy.get('#joinedTeamBubble').should('contain.text', fix.teamName)
+		// AND trying to register a passkey, after joining a team
+		cy.get('#setupPasskeyCard').should('be.visible')
+		cy.get('#passkeyInput').should('be.visible').clear().type('Join team passkey')
+		cy.get('#setupPasskeyButton').should('be.visible').click()
+		cy.get('#rootPopupModal').should('be.visible')
+		cy.get('#modalSecondaryButton').click()
+		cy.get('#rootPopupModal').should('not.be.visible')
+		cy.get('#passkeyInput').should('be.disabled')		
+
+		//THEN we can go to our team
 		cy.get('#joinedTeamGoToTeamButton').click()
-		cy.get("#team-home.page-title").should('contain.text', fix.teamName)
-		cy.get("#team-home-user-welcome").should("contain.text", fix.userName).and(() => {
+
+		// AND team-home is shown for joined user
+		cy.get("#team-home")
+			.should("have.attr", "data-teamname", fix.teamName)
+			.should("have.attr", "data-username", fix.userName)
+			
+		cy.should(() => {
 			// AND a JWT was put into the browser's localStorage
 			// (Cypress is async and crazy: This should()-block is retried until jwt is there.)
 			fix.userJWT = localStorage.getItem("LIQUIDO_JWT")
@@ -230,8 +246,9 @@ context('Happy Case', () => {
 		cy.visit("/")
 		
 		//THEN correct team-home is shown
-		cy.get('#team-home').should('contain.text', fix.teamName)
-		cy.get("#team-home-user-welcome").should("contain.text", fix.userName)	
+		cy.get("#team-home")
+			.should("have.attr", "data-teamname", fix.teamName)
+			.should("have.attr", "data-username", fix.userName)
 
 		//WHEN navigating to team's polls
 		cy.get('#gotoPollsButton').click()
@@ -261,7 +278,7 @@ context('Happy Case', () => {
 		cy.get("#propTitle").type(fix.proposalTitle2)
 		cy.get("#propDescription").type(fix.proposalDescription2, { delay: 1 })
 		cy.get("#saveProposalButton").click()
-		cy.get('#proposalSuccessfullyAddedModal #modalPrimaryButton').click()
+		cy.get('#modalPrimaryButton').click()
 		
 		//THEN the poll is shown with that proposal
 		cy.get('#poll-show')
@@ -312,7 +329,7 @@ context('Happy Case', () => {
 		cy.get("#startVoteButton").click()
 
 		// THEN sucessModal is shown and poll is in status voting
-		cy.get("#votingPhaseStartedModal #modalPrimaryButton").click()
+		cy.get('#modalPrimaryButton').click()
 		cy.get(".poll-panel[data-poll-status='VOTING']")
 			.should("have.attr", "data-poll-status", "VOTING")  
 	})
@@ -335,9 +352,11 @@ context('Happy Case', () => {
 		// WHEN user casts his vote
 		cy.get("#castVoteButton").click()
 		
-		// THEN success modal is shown
-		cy.get("#castVoteSuccessModal").should("be.visible")
-		cy.get("#castVoteSuccessModal #modalPrimaryButton").click()
+		// THEN success modal is shown with correct type attribute
+		cy.get('#rootPopupModal').should("have.attr", "data-modaltype", "success")
+
+		cy.get('#modalPrimaryButton').click()
+		
 		//  AND user is informed, that he can updated his ballot
 		cy.get("#isUpdateableBallotInfo").should("be.visible")
 

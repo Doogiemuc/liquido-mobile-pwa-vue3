@@ -1,5 +1,10 @@
 # TODOs
 
+
+# Write further Tests
+ * Create a second team when already registered
+ * Switch between own teams
+
 ## Use Case features
  
 ### Registration
@@ -13,10 +18,13 @@
 	 * Apple 
 	 * Authy App
 	 * SMS
- * Settings:
-   * Can team members add their own proposals to a poll?
 
-### Polls
+ * Settings:
+   * Can team members create polls?
+   * Can team members add their own proposals to a poll?
+ 
+
+# Polls
 
  * Three levels of polls:
 	 1. Polly (e.g. for kids): a super intelligent wobbling funny Polly

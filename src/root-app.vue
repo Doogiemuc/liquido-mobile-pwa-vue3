@@ -198,14 +198,14 @@ export default {
 		 * that we reuse everywhere. This method is just a convenience shortcut
 		 * available as this.$root.showError(errMsg, title) in all child components
 		 */
-		showError(errMsg, errTitle, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined) {
-			return this.$refs.rootPopupModal.showError(errMsg, errTitle, primaryButtonText, secondaryButtonText)
+		showError(errMsg, errTitle, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined, primaryCallback = undefined, secondaryCallback = undefined) {
+			return this.$refs.rootPopupModal.showError(errMsg, errTitle, primaryButtonText, secondaryButtonText, primaryCallback, secondaryCallback)
 		},
-		showSuccess(msg, title, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined) {
-			return this.$refs.rootPopupModal.showSuccess(msg, title, primaryButtonText, secondaryButtonText)
+		showSuccess(msg, title, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined, primaryCallback = undefined, secondaryCallback = undefined) {
+			return this.$refs.rootPopupModal.showSuccess(msg, title, primaryButtonText, secondaryButtonText, primaryCallback, secondaryCallback)
 		},
-		showInfo(msg, title, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined) {
-			return this.$refs.rootPopupModal.showInfo(msg, title, primaryButtonText, secondaryButtonText)
+		showInfo(msg, title, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined, primaryCallback = undefined, secondaryCallback = undefined) {
+			return this.$refs.rootPopupModal.showInfo(msg, title, primaryButtonText, secondaryButtonText, primaryCallback, secondaryCallback)
 		},
 		rootPopupClickPrimary(id) {
 			EventBus.emit(EventBus.Event.ROOT_POPUP_CLICK_PRIMARY, id)

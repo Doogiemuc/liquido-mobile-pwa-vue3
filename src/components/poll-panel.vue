@@ -1,6 +1,6 @@
 <template>
 	<div :id="pollCardId" :pollid="poll.id" :data-poll-status="poll.status" class="card poll-panel shadow">
-		<h2 class="card-header">
+		<h2 class="card-header poll-title">
 			<!-- i class="fas fa-poll" /-->
 			{{ poll ? poll.title : "" }}
 		</h2>

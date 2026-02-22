@@ -8,6 +8,8 @@
 			</template>
 		</liquido-header>
 
+		<span id="cast-vote-page" style="display: none;"></span>
+
 		<div v-if="loading" class="draggable">
 			<div class="spinner-border" role="status">
 				<span class="visually-hidden">{{ $t('Loading') }}</span>
@@ -15,7 +17,7 @@
 			&nbsp;{{ $t('Loading') }}
 		</div>
 
-		<div class="alert liquido-info cast-vote-info-top">
+		<div id="castVoteInfo" class="alert liquido-info cast-vote-info-top">
 			<p>{{ $t('dragInfo') }}</p>
 		</div>
 
