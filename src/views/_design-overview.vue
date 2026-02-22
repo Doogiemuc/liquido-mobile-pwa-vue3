@@ -2,7 +2,15 @@
 	<div>
 		<h1 id="design-page" class="page-title">LIQUIDO Design Overview</h1>
  
-		<p class="text-center" v-if="currentUser">You are logged in as {{ currentUser.email }}</p>
+		<div class="text-center">
+			<p v-if="currentUser">You are logged in as {{ currentUser.email }}</p>
+			
+			<button v-else type="button" class="btn btn-outline-secondary"
+				@click="devLoginAdmin">
+				<i class="fas fa-shield-alt me-2"></i>
+				<span class="flex-grow-1 text-center">DevLogin as Admin</span>
+			</button>
+		</div>
 
 		<div class="overview">
 			<section v-for="page in pages" :key="page.name" class="overview-section">
@@ -19,15 +27,18 @@
 <script setup>
 import { computed, onMounted, useTemplateRef } from 'vue'
 import api from "@/services/liquido-graphql-client.js"
-
 import config from "config"
-import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
+//import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
 
-const firstPollId = new String(teamUserJwtMock.team.polls[0].id)
-const newPollId = new String(teamUserJwtMock.team.polls.find(poll => poll.status === "ELABORATION").id)
-//const pollInVoting = teamUserJwtMock.team.polls.find(poll => poll.status === "VOTING")
-const pollInVotingId = new String(teamUserJwtMock.team.polls.find(poll => poll.status === "VOTING").id)
-
+const polls = api.getCachedPolls()
+let firstPollId = 55555
+let newPollId = 66666
+let pollInVotingId = 77777
+if (polls && polls.length > 0) {
+	firstPollId = polls[0].id
+	newPollId = polls.find(poll => poll.status === "ELABORATION").id
+	pollInVotingId = polls.find(poll => poll.status === "VOTING").id
+}
 
 const pages = [
 	{ name: 'Login', route: '/login' },
@@ -50,6 +61,14 @@ onMounted(() => {
 })
 
 const currentUser = computed(() => api.getCachedUser())
+
+/** Quickly login as an admin user. This is available as a button in the mobile UI when in DEV env.  */
+const devLoginAdmin = () => {
+	if (process.env.NODE_ENV !== "development" && process.env.NODE_ENV !== "test") return
+	api.logout()
+	api.devLogin(config.devLogin.admin.email, config.devLogin.teamName, config.devLogin.token)
+		.catch(err => console.error("DevLogin Admin failed!", err))
+}
 
 </script>
 

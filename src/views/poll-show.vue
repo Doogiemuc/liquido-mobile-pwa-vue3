@@ -18,7 +18,7 @@
 			</button>
 		</div>
 
-		<div class="alert liquido-info">
+		<div v-if="!showError" class="alert liquido-info">
 			<p v-if="poll.status === 'ELABORATION'" v-html="$t('pollInElaborationInfo')" />
 			<p v-if="poll.status === 'VOTING' && !poll.usersBallot" v-html="$t('votingPhaseInfo')" />
 			<p v-if="poll.status === 'VOTING' &&  poll.usersBallot" v-html="$t('alreadyVotedInfo')" />
@@ -106,7 +106,7 @@ export default {
 				finishVotingPhaseInfo: "Hallo Admin! Bisher wurden in dieser Abstimmung {numBallots} Stimmen abgegeben.",
 				finishVotingPhase: "Wahlphase schließen",
 				votingPhaseStartedSuccessfully: "Die Wahlphase dieser Abstimmung ist jetzt gestartet.",
-				votingPhaseInfo: "Die Wahlphase dieser Abstimmung läuft gerade.",
+				votingPhaseInfo: "Die Wahlphase dieser Abstimmung läuft gerade. Du kannst jetzt deine Stimme abgeben.",
 				goToCastVote: "Zur Abstimmung",
 				editOwnVote: "Stimmzettel ändern",
 				alreadyVotedInfo:

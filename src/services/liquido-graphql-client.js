@@ -900,6 +900,8 @@ if (config.mockBackend) {
 	console.warn("======== MOCK responses are active! Login dummy user =========")
 	//graphQlApi.login(teamUserJwtMock.team, teamUserJwtMock.user, teamUserJwtMock.jwt)
 	
+	//TODO: or do a full login on mock? Or best: let me do that in the design_overview page with a button
+
 	teamCache.put(graphQlApi.TEAM_KEY, teamUserJwtMock.team)
 	teamCache.put(graphQlApi.CURRENT_USER_KEY, teamUserJwtMock.user)
 	teamCache.put(graphQlApi.JWT_KEY, teamUserJwtMock.jwt)
