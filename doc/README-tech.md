@@ -1,6 +1,6 @@
 # LIQUIDO
 
-LIQUIDO - A modern aproach to liquid democracy.
+LIQUIDO - A modern approach to liquid democracy.
 
 http://www.liquido.vote
 
@@ -143,7 +143,7 @@ https://nocksoft.de/tutorials/dyndns-fuer-ipv6-server-hinter-fritzbox-konfigurie
 ### MongoDB Atlas & GraphQL
 
 For some time in 2024 I played around with MongoDB. Very nice noSQL Db. Their functions also look interesting. 
-This would be a completely different aproach of implementing a backend.
+This would be a completely different approach of implementing a backend.
 Very nice howto https://www.mongodb.com/developer/products/realm/graphql-easy/
 
 # How to setup vue repo from scratch

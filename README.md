@@ -1,6 +1,6 @@
 # LIQUIDO
 
-A modern aproach to Liquid Democracy. In LIQUDIO you don't vote for just one proposal or candidate. 
+A modern approach to Liquid Democracy. In LIQUDIO you don't vote for just one proposal or candidate. 
 Instead you sort the proposals in your personally preferred order.
 A very clever algorithm then calculates the winner from all voter's preferences.
 
