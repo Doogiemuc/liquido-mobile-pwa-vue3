@@ -10,7 +10,7 @@
 		</div>
 
 		<!-- Search -->
-		<div v-if="showSearch" id="searchWrapper" class="search-wrapper">
+		<div id="searchWrapper" class="search-wrapper" :class="showSearchClass">
 			<input id="searchInput" class="form-control border-0" v-model="searchQuery" type="text" :placeholder="$t('Search')">
 			<i v-if="searchQuery !== ''" class="fas fa-times search-icon" @click="clearSearchAndFilter"></i>
 		</div>
@@ -105,7 +105,7 @@
 			</button>
 		</div>
 
-		<polls-footer v-model="pollStatusFilter"></polls-footer>
+		<polls-footer v-model="pollStatusFilter" @search-clicked="toggleSearch"></polls-footer>
 
 	</div>
 </template>
@@ -174,8 +174,6 @@ export default {
 			searchQuery: "",
 			pollStatusFilter: api.POLL_STATUS.ALL_POLLS,
 			forceRefreshComputed: 0,
-			touchStartX: 0,
-			touchEndX: 0,
 		}
 	},
 
@@ -221,6 +219,9 @@ export default {
 				})    
 				
 		},
+		showSearchClass() {
+			return this.showSearch ? "" : "search-hidden"
+		},
 		searchResultIsEmpty() {
 			return this.allPolls.length > 0 && this.filteredPolls.length === 0 /* && this.searchQuery && this.searchQuery.trim().length > 0 */
 		},
@@ -248,6 +249,9 @@ export default {
 	mounted() {
 		this.$store.setHeaderTitle(this.pageTitleLoc)
 		this.$store.setHeaderBackTarget({name: "team"})
+		this.searchQuery = undefined
+		this.pollStatusFilter = undefined
+		this.showSearch = false
 	},
 	
 	methods: {
@@ -256,6 +260,7 @@ export default {
 		},
 
 		toggleSearch() {
+			this.searchQuery = undefined
 			this.showSearch = !this.showSearch
 		},
 
@@ -467,16 +472,27 @@ export default {
 }
 
 .search-wrapper {
-	margin: 0px 40px 30px 40px;
+	margin: 0 2rem 2rem 2rem;
 	position: relative;
+	max-height: 4rem;
+	opacity: 1;
+	transition: all 0.4s ease;
 	overflow: hidden;
+	
 	.search-icon {
 		color: var(--primary);
 		position: absolute;
 		top: 50%;
 		right: 0.5em;
 		transform: translateY(-50%);
+		cursor: pointer;
 	}
+}
+
+.search-hidden {
+	max-height: 0;
+	opacity: 0;
+	margin: 0 2rem;
 }
 
 #emptySearchResultInfo {

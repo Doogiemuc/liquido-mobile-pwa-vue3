@@ -158,41 +158,6 @@ export default {
 			this.$router.push({name: "team"})
 		},
 
-
-		/*
-		// This was a quick idea to have a VERY SIMPLE localization in one method. Because I was mad at vue-i18n
-		// But to provide it centrally here in root-app this would actually need to be a VUE plugin.
-    // TODO: Each component would need to register these in their mounted() method => own vuw plugin => ok this is what vue-i18n is :-( Never reinvent the wheel!
-		 * Unbelievablly clever localization function. Supports:
-		 * fallback to another language, global translations, and parameter replacement.
-		 * @param key The key to be localized
-		 * @param params An object with parameters to replace in the localized string
-		 
-		loc(key, params = {}) {
-			const lang = "de"  // TODO: navigator.language.startsWith("en") ? "en" : "de";
-			const fallbackLang = "en"
-			let message;
-
-			if (messages[lang] && messages[lang][key]) {
-				message = messages[lang][key];
-			} else if (fallbackLang && messages[fallbackLang] && messages[fallbackLang][key]) {
-				message = messages[fallbackLang][key];
-			} else if (globalTranslations[lang] && globalTranslations[lang][key]) {
-				message = globalTranslations[lang][key];
-			} else if (fallbackLang && globalTranslations[fallbackLang] && globalTranslations[fallbackLang][key]) {
-				message = globalTranslations[fallbackLang][key];
-			} else {
-				console.warn("Missing translation for key '" + key + "'");
-				return key;
-			}
-			//TODO: Sanitize HTML here?
-			// replace {variable} with values from params
-			return message.replace(/\{(\w+)\}/g, (match, placeholder) => {
-				return params.hasOwnProperty(placeholder) ? params[placeholder] : match;
-			})
-		},
-		*/
-
 		/** 
 		 * We have one beautiful error/success modal 
 		 * that we reuse everywhere. This method is just a convenience shortcut

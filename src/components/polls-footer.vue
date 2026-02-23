@@ -58,7 +58,7 @@ export default {
 	props: {
 		modelValue: { type: String, required: false, default: api.POLL_STATUS.ALL_POLLS },
 	},
-	emits: ['update:modelValue'],
+	emits: ['update:modelValue', 'search-clicked'],
 	data() {
 		return {
 			selectedFilter: this.modelValue,
@@ -113,6 +113,10 @@ export default {
 	},
 	methods: {
 
+		clickSearch() {
+			this.$emit('search-clicked')
+		},
+
 		/**
 		 * Behaviour of the three buttons in the navbar
 		 * 
@@ -148,10 +152,6 @@ export default {
 			} else {
 				this.selectedFilter = api.POLL_STATUS.FINISHED
 			}
-		},
-
-		goToInfo() {
-			this.$router.push({name: "info"}) // TODO
 		},
 
 	},

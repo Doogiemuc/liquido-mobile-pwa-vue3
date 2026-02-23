@@ -1,5 +1,4 @@
 import { reactive } from 'vue'
-//import EventBus from "@/services/event-bus"
 
 /**
  * This is a very simple "state management store" for storing the current pages title.
