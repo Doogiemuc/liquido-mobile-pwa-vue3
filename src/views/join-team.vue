@@ -376,7 +376,7 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style>
 
 #joinOrCreateButtons {
 	width: 100%;

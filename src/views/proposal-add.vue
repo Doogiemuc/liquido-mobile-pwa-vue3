@@ -249,7 +249,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style>
 
 
 .invalid-feedback {
@@ -296,9 +296,4 @@ export default {
 	margin-left: 0.5rem;
 }
 
-.cancel-link {
-	font-size: 1rem;
-	color: lightgrey;  //TODO: check contrast to background
-	cursor: pointer;
-}
 </style>

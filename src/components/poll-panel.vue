@@ -174,29 +174,25 @@ export default {
 </script>
 
 
-<style lang="scss" scoped>
+<style>
 
 /* size of proposal image */
-$proposal_icon_size: 2.5rem;
+
 
 .poll-panel {
+	--proposal_icon_size: 2.5rem;
 
 	.card-header {
 		border-bottom: none;
 		background-color: white;
 	}
-	/*
-	.card-body {
-		padding-top: 0; // proposal-list-group-item  handles vertical padding  => keep this. Don't touch! ..........
-	}
-	*/
 
 	.poll-title-icon {
-		font-size: $proposal_icon_size;
+		font-size: var(--proposal_icon_size);
 	}
 
 	.goto-poll-icon {
-		line-height: 1.2; // same as .card-header > h3
+		line-height: 1.2; /* same as .card-header > h3 */
 		float: right;
 	}
 
@@ -217,21 +213,19 @@ $proposal_icon_size: 2.5rem;
 	}
 
 
-	// list of proposals in poll
+	/* list of proposals in poll */
 	.proposal-list-group-item {
-		height: 160px; // exactly 3 lines of description. MUST set height for collapse transition!
+		height: 160px; /* exactly 3 lines of description. MUST set height for collapse transition! */
 		overflow: hidden;
 		transition: height 0.5s;
-		border: none;            /* TODO: or with border???? => I changed this 1001 times :-) */
+		border: none;            /* TODO: or with border/divider between proposals in a poll???? => I changed this 1001 times :-) */
 
 		&.collapsed-proposal-panel {
-			height: 60px; // just right enough to NOT see the description.
+			height: 60px; /* just right enough to NOT see the description. */
 			.proposal-description {
 				display: none
 			}
-			.proposal-separator {
-				margin: 10px 0;
-			}
+			
 		}
 		.proposal-header {
 			margin-bottom: 6px;
@@ -247,7 +241,7 @@ $proposal_icon_size: 2.5rem;
 
 		.proposal-title {
 			color: var(--primary);
-			font-size: 1rem !important; // a bit smaller then normal h4 for longer titles
+			font-size: 1rem !important; /* a bit smaller then normal h4 for longer titles */
 			margin: 0;
 			padding: 0;
 			white-space: nowrap;
@@ -259,7 +253,7 @@ $proposal_icon_size: 2.5rem;
 			font-size: 0.8rem;
 			overflow: hidden;
 			line-height: 20px;
-			height: 60px; // exactly enough for 4 lines of text
+			height: 60px; /* exactly enough for 4 lines of text */
 		}
 
 		.proposal-subtitle {
@@ -314,25 +308,20 @@ $proposal_icon_size: 2.5rem;
 			border-radius: 50%;
 			border: none;
 			text-align: center;
-			font-size: $proposal_icon_size * 0.6;
-			line-height: $proposal_icon_size;
-			min-width: $proposal_icon_size;
-			max-width: $proposal_icon_size;
-			width: $proposal_icon_size;
-			min-height: $proposal_icon_size;
-			max-height: $proposal_icon_size;
-			height: $proposal_icon_size;
+			font-size: var(--proposal_icon_size) * 0.6;
+			line-height: var(--proposal_icon_size);
+			min-width: var(--proposal_icon_size);
+			max-width: var(--proposal_icon_size);
+			width: var(--proposal_icon_size);
+			min-height: var(--proposal_icon_size);
+			max-height: var(--proposal_icon_size);
+			height: var(--proposal_icon_size);
 		}
-
-
-
 	}
 
-	// sepearator between proposals when poll-panel is expanded
-	//.proposal-list-group-item:not(:last-child):not(.collapsed-proposal-panel)
+	/* sepearator between proposals when poll-panel is expanded */
 	.proposal-separator {
-		//transition: all 0.5s;		
-		border-top: 1px solid lightgrey;//  rgba(128,128,128, 0.5);
+		border-top: 1px solid lightgrey;
 		width: 50%;
 		margin: 1rem 0;
 	}

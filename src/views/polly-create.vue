@@ -172,12 +172,6 @@ export default defineComponent({
 	margin-bottom: 1rem;
 }
 
-.cancel-link {
-	font-size: 12px;
-	color: var(--secondary);
-	cursor: pointer;
-}
-
 .config-list {
 	margin: 0;
   padding-left: 1.2em;

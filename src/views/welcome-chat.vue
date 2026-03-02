@@ -570,7 +570,7 @@ export default {
 				}).catch(err => {
 					console.warn("Cannot find team for invite code", this.inviteCodeQueryParam)		
 				})
-		} else if (!!this.inviteCodeQueryParam) {
+		} else if (this.inviteCodeQueryParam) {
 			console.warn("Got inviteCode in URL with invalid syntax.")
 		}
 	},

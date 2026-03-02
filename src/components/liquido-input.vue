@@ -364,10 +364,10 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style>
 .liquido-input {
 	position: relative;
-	padding-top: 12px;  // need some space for the label
+	padding-top: 12px;  /* need some space for the label */
 
 	input::placeholder {
 		color: lightgrey
@@ -415,7 +415,7 @@ export default {
 	}
 
 	.invalid-feedback-placeholder {
-		// same as bootstraps invalid-feedback
+		/* same as bootstraps invalid-feedback */
 		width: 100%;
   	margin-top: 0.25rem;
   	font-size: 0.875em;

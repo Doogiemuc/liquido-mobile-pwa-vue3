@@ -489,7 +489,7 @@ function isEmail(s) {
 		<!-- Bootstrap Modal: Ask user for their email -->
 		<div class="modal fade" id="askEmailModal" data-bs-backdrop="static" tabindex="-1"
 			aria-labelledby="askEmailModalLabel" aria-hidden="true">
-			<div class="modal-dialog">
+			<div class="modal-dialog modal-dialog-centered">
 				<div class="modal-content">
 					<div class="modal-header bg-secondary-subtle">
 						<h4 class="modal-title" id="askEmailModalLabel">{{ loc('StartPoll') }}</h4>
@@ -516,15 +516,14 @@ function isEmail(s) {
 	</div>
 </template>
 
-<style lang="scss">
-// A bootstrap card for creating a poll
-
-$arrow-size: 10px;
-$proposal-bg: #e6f0ff;
-$polly-proposal-height: 40px;
-$polly-proposal-margin-bottom: 20px;
+<style>
 
 .polly-card {
+	--arrow-size: 10px;
+	--proposal-bg: #e6f0ff;
+	--polly-proposal-height: 40px;
+	--polly-proposal-margin-bottom: 20px;
+
 	max-width: 1024px;
 
 	.share-poll-icon {
@@ -533,7 +532,6 @@ $polly-proposal-margin-bottom: 20px;
 		position: absolute;
 		top: -0.4rem;
 		right: -0.4rem;
-		//font-size: 1.25rem;
 
 		&:hover {
 			color: var(--primary);
@@ -564,13 +562,13 @@ $polly-proposal-margin-bottom: 20px;
 
 	.pos-top-middle {
 		position: absolute;
-		top: -$arrow-size;
+		top: calc(-1*var(--arrow-size));
 		left: 50%
 	}
 
 	.pos-bottom-middle-down {
 		position: absolute;
-		bottom: -$arrow-size;
+		bottom: calc(-1*var(--arrow-size));
 		left: 50%;
 		transform: rotate(180deg);
 	}
@@ -578,9 +576,9 @@ $polly-proposal-margin-bottom: 20px;
 	.arrow-up {
 		width: 0;
 		height: 0;
-		border-left: $arrow-size solid transparent;
-		border-right: $arrow-size solid transparent;
-		border-bottom: $arrow-size solid $proposal-bg;
+		border-left: var(--arrow-size) solid transparent;
+		border-right: var(--arrow-size) solid transparent;
+		border-bottom: var(--arrow-size) solid var(--proposal-bg);
 	}
 
 	// no borders
@@ -605,10 +603,11 @@ $polly-proposal-margin-bottom: 20px;
 		top: 0;
 	}
 
-
-	// ======== Proposals List =============
-	// Each proposal has a fixed height and a margin-bottom.
-	// This is important for the VUE list transition to work properly.
+	/**
+	 * ======== Proposals List =============
+	 * Each proposal has a fixed height and a margin-bottom.
+	 * This is important for the VUE list transition to work properly
+	 */
 
 	.readonly-proposal {
 		background-color: var(--bs-secondary-bg);
@@ -617,41 +616,41 @@ $polly-proposal-margin-bottom: 20px;
 		text-overflow: ellipsis;
 	}
 
-	// Wrapper around the proposals list
+	/* Wrapper around the proposals list */
 	.polly-proposals-wrapper {
 		position: relative;
 		padding: 0;
 		margin: 0;
 		list-style-type: none;
-		min-width: 0; // must set to keep flexbox from growing too wide
+		min-width: 0; /* must set to keep flexbox from growing too wide */
 		flex-grow: 1;
 	}
 
-	// Each proposal. This is used for all views. (editable, sortable, read-only)
+	/* Each proposal. This is used for all views. (editable, sortable, read-only) */
 	.polly-proposal {
 		position: relative;
-		height: $polly-proposal-height;
+		height: var(--polly-proposal-height);
 		display: flex;
 		align-items: center;
-		//BUGFIX: Every polly-proposal has this margin at the bottom. Also the last one! But cannot remove it, otherwise the drag-fallback also would have this margin and the view jumps a bit up and down.
-		margin-bottom: $polly-proposal-margin-bottom;
+		/* BUGFIX: Every polly-proposal has this margin at the bottom. Also the last one! But cannot remove it, otherwise the drag-fallback also would have this margin and the view jumps a bit up and down. */
+		margin-bottom: var(--polly-proposal-margin-bottom);
 	}
 
 	.polly-proposal-input::placeholder {
 		color: lightgrey;
 	}
 
-	// The index number at the left side of the sortable proposals. (These are fixed and don't move.)
+	/* The index number at the left side of the sortable proposals. (These are fixed and don't move.) */
 	.proposal-index-number {
-		height: $polly-proposal-height;
+		height: var(--polly-proposal-height);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		margin-bottom: $polly-proposal-margin-bottom;
+		margin-bottom: var(--polly-proposal-margin-bottom);
 	}
 
 	.sortable-proposal {
-		background-color: $proposal-bg;
+		background-color: var(--proposal-bg);
 	}
 
 	.sortable-proposal-title {
@@ -668,7 +667,7 @@ $polly-proposal-margin-bottom: 20px;
 }
 
 
-// ========= For VUE.draggable@next ========
+/* ========= For VUE.draggable@next ======== */
 .draggable {
 	.sortable-ghost {
 		opacity: 0.1;
@@ -678,11 +677,10 @@ $polly-proposal-margin-bottom: 20px;
 		z-index: 999;
 		-webkit-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
 		box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
-		//transform: translate(3px, 3px);
 	}
 }
 
-//===== small utility classes =======
+/* ===== small utility classes ======= */
 .cursor-move {
 	cursor: move;
 }
@@ -700,10 +698,6 @@ $polly-proposal-margin-bottom: 20px;
 
 .thx-for-voting-show {
 	opacity: 1;
-}
-
-#askEmailModal .modal-dialog {
-	margin-top: 5rem;  // space for liquido-header
 }
 
 </style>

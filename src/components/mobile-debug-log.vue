@@ -311,7 +311,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style>
 	.mobile-debug-log {
 		z-index: 10000;
 		display: flex;
@@ -324,7 +324,6 @@ export default {
 		transition: height 0.5s ease-in-out;
 		box-shadow: 0px -3px 5px rgba(0,0,0,0.5);
 		font-size: 12px;
-		//font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 		font-family: monospace;
 
 		.mobile-debug-icon {
@@ -417,7 +416,7 @@ export default {
 			}
 		}
 
-		// format of columns
+		/* format of columns */
 		.timestamp {
 			text-align: right;
 			overflow-x: hidden;
@@ -430,7 +429,6 @@ export default {
 
 	.mobile-debug-log.collapsed {
 		height: 0;
-		//top: 100%;
 		box-shadow: none;
 		.mobile-debug-icon {
 			bottom: 0;
@@ -439,8 +437,6 @@ export default {
 
 	.line-break {
 		white-space: normal;
-		//padding-left: 1em;
-    //text-indent: -1em;
 	}
 
 	/* Allow no-wrap behavior, but do NOT hide overflow at the td level.
