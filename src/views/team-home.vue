@@ -379,9 +379,89 @@ export default {
 	display: none;
 }
 
+/********** //TODO: extract an own component for a poll-card!  This duplicates what's in poll.vue! */
 .poll-card-wrapper {
-	min-width: 90%;
-	flex-shrink: 0;
+	height: 7rem;
+	margin-bottom: 10px;
+	overflow: hidden;
+	transition: all 0.5s;
+}
+
+.poll-card {
+	--iconSize: 40px;
+	
+	cursor: pointer;
+	height: 100% !important;  /* bootstrap .card sets a height that we need to overwrite */
+	border-radius: var(--liquido-border-radius);
+
+	.card-body{
+		padding: 0 1rem;
+	}
+
+	.poll-eyebrow {
+		font-size: 80%;
+	}
+
+	.elaboration-pill {
+		background-color: var(--elaboration-bg);
+	}
+	.voting-pill {
+		background-color: var(--voting-bg);
+	}
+	.finished-pill {
+		background-color: var(--finished-bg);
+	}
+
+	.poll-created-date {
+			float: right;
+			color: var(--secondary);	
+	}
+
+	.poll-icon-elaboration, .poll-icon-voting {
+		color: white;
+		border-radius: 50%;
+		text-align: center;
+		font-size: var(--iconSize) * 0.5;
+		line-height: var(--iconSize);
+		min-width: var(--iconSize);
+		max-width: var(--iconSize);
+		width: var(--iconSize);
+		min-height: var(--iconSize);
+		max-height: var(--iconSize);
+		height: var(--iconSize);
+		margin: 0 10px 0 0;
+	}
+
+	.poll-icon-elaboration {
+		background-color: var(--elaboration-bg);
+	}
+
+	.poll-icon-voting {
+		background-color: var(--voting-bg);
+	}
+
+	.poll-icon-finished {
+		font-size: var(--iconSize);
+		color: var(--finished-bg);
+		margin: 0 10px 0 0;
+	}
+
+	.poll-title {
+		color: black;    /* poll-titles are black, proposal titles are --primary! */
+		font-size: 1.2rem !important;  /* a bit smaller than normal h2 */
+		margin: 0.5rem 0;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;  /* max 2 lines */
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.poll-footer {
+		display: flex;
+		gap: 1rem;
+		font-size: 80%;
+		color: var(--secondary)
+	}
 }
 
 .admin-shield {
