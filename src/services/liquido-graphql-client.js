@@ -530,11 +530,14 @@ let graphQlApi = {
 	/* ================== WebAuthn REST client ==================== */
 
 	/**
-	 * Check if a user with the given email has registered WebAuthn authenticators.
+	 * Check if that email is a registered user, ie. that email is known
+	 * in the backend database.
+	 * Will also return if that user has WebAuthn authenticators.
 	 * This is used in the login flow to determine if we should show the "Login with WebAuthn" button.
-	 * No authentication required for this endpoint.
+	 * This method calls a special REST endpoint. No login is required to call this endpoint.
+	 * 
 	 * @param {String} email The user's email address
-	 * @return { webauthn: boolean }
+	 * @return {Object } { email: "<registered_email>", webauthn: true }  or 404 if email is not registered
 	 */
 	async checkLoginEmail(email) {
 		if (!email) throw new Error("Email is required to check WebAuthn availability")
@@ -897,15 +900,54 @@ let graphQlApi = {
 }
 
 if (config.mockBackend) {
-	console.warn("======== MOCK responses are active! Login dummy user =========")
-	//graphQlApi.login(teamUserJwtMock.team, teamUserJwtMock.user, teamUserJwtMock.jwt)
+	console.warn("==================================")
+	console.warn("======== MOCK is active! =========")
+	console.warn("==================================")
 	
-	//TODO: or do a full login on mock? Or best: let me do that in the design_overview page with a button
+	//TODO: When backend is mocked, do not login a user by default. Instead allow devLogin. Also via URL, e.g. for design-overview
 
 	teamCache.put(graphQlApi.TEAM_KEY, teamUserJwtMock.team)
 	teamCache.put(graphQlApi.CURRENT_USER_KEY, teamUserJwtMock.user)
 	teamCache.put(graphQlApi.JWT_KEY, teamUserJwtMock.jwt)
 	graphQlApi.putPollsIntoCache(teamUserJwtMock.team.polls)
+	//better: graphQlApi.login(teamUserJwtMock.team, teamUserJwtMock.user, teamUserJwtMock.jwt)
+
+	axios.interceptors.request.use(config => {
+		if (config.url.includes('/liquido/v2/webauthn/check-login-email')) {
+			const email = config.params.email
+			const member = teamUserJwtMock.team.members.find(m => m.user.email === email)
+			if (member) {
+				console.log("MOCK: /check-login-email for " + email + " -> existing user")
+				// Assign a custom adapter to the request configuration
+				config.adapter = (config) => {
+					return Promise.resolve({
+						data: { email: email, webauthn: false },
+						status: 200,
+						statusText: 'OK',
+						headers: { 'Content-Type': 'application/json' },
+						config: config,
+						request: {}
+					});
+				};
+			} else {
+				console.log("MOCK: /check-login-email for " + email + " -> email not registered")
+				config.adapter = (config) => {
+					return Promise.reject({
+						isAxiosError: true,
+						response: {
+							data: { msg: 'Email not registered' },
+							status: 404,
+							statusText: 'Not Found',
+							headers: { 'Content-Type': 'application/json' },
+							config: config,
+							request: {}
+						},
+					});
+				};
+			}
+		}
+		return config;
+	});
 	
 }
 

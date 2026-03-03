@@ -20,7 +20,7 @@
 					tabindex="1" />
 
 				<!-- Password input field (shown when email is validated) -->
-				<div v-if="emailIsValid" class="password-field-animation">
+				<div v-if="emailExistsInBE" class="password-field-animation">
 					<!-- WebAuthn button - shown only if WebAuthn IS available -->
 					<button v-if="webAuthnAvailable" id="loginWithWebAuthnButton" type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center mt-3 mb-3"
 						:disabled="loginWithWebAuthnButtonDisabled" @click="loginWithWebAuthn" tabindex="2">
@@ -45,7 +45,7 @@
 					{{ loginErrorMessage }}
 				</div>
 
-				<div v-if="emailIsValid" class="password-field-animation">
+				<div v-if="emailExistsInBE" class="password-field-animation">
 
 					<div class="horizontal-line">
 						<span>
@@ -101,7 +101,7 @@
 		</div>
 
 		<!-- Password forgotten Link -->
-		<div v-if="emailIsValid" class="forgot-password-link my-3">
+		<div v-if="emailExistsInBE" class="forgot-password-link my-3">
 			<router-link id="forgotPasswordLink" :to="{ name: 'forgotPassword' }">{{ $t('ForgotPassword') }}</router-link>
 		</div>
 
@@ -300,7 +300,7 @@ export default {
 			loginErrorMessageId: undefined, // this is used for testing
 
 			// WebAuthn login
-			emailIsValid: false,						// Email has been checked in the backend and is valid
+			emailExistsInBE: false,						// Email has been checked in the backend and is valid
 			webAuthnAvailable: false,				// Whether the email has a registered WebAuthn credential
 			webAuthnCheckInProgress: false, // Prevent multiple concurrent checks
 			webAuthnLoginInProgress: false,	// Prevent multiple concurrent login attempts
@@ -328,7 +328,7 @@ export default {
 			return process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
 		},
 		loginButtonText() {
-			if (this.emailIsValid) {	
+			if (this.emailExistsInBE) {	
 				return this.$t("LoginWithPassword")
 			} else {
 				return this.$t("Continue")
@@ -401,7 +401,7 @@ export default {
 					this.loginErrorMessage = this.$t("loginFailed")
 					this.loginErrorMessageId = ERROR.PASSWORD_LOGIN_FAILED
 					this.passwordInputVal = ""
-					//this.emailIsValid = false // let the password input field stay visible
+					//this.emailExistsInBE = false // let the password input field stay visible
 				})
 		},
 
@@ -418,7 +418,7 @@ export default {
 				this.passwordInputVal = undefined
 				this.checkEmailForLogin()
 			} else {
-				this.emailIsValid = false
+				this.emailExistsInBE = false
 				this.loginErrorMessage = null
 				this.loginErrorMessageId = undefined
 			}
@@ -430,20 +430,20 @@ export default {
 		 * Called when loginEmailInput field is blurred or the Enter key is pressed.
 		 */
 		checkEmailForLogin() {
-			console.log("checkEmailForLogin", this.emailIsValid, this.emailInputState)
+			console.log("checkEmailForLogin emailExistsInBE="+this.emailExistsInBE+ ", emailInputState="+this.emailInputState)
 			// Only check if emailInputField is valid and not already checking and only check once or one given emailInputValue
-			if (this.emailIsValid || this.emailInputState !== STATE.VALID || this.webAuthnCheckInProgress) {
+			if (this.emailExistsInBE || this.emailInputState !== STATE.VALID || this.webAuthnCheckInProgress) {
 				return
 			}
 			this.webAuthnCheckInProgress = true
 			this.webAuthnAvailable = false
-			this.emailIsValid = false
+			this.emailExistsInBE = false
 			this.loginErrorMessage = null
 			this.loginErrorMessageId = undefined
 
 			api.checkLoginEmail(this.emailInputVal)
 				.then(response => {
-					this.emailIsValid = true
+					this.emailExistsInBE = true
 					this.webAuthnAvailable = response.webauthn === true
 					console.debug("WebAuthn available for email:", this.webAuthnAvailable)
 					this.focusPasswordInput()
@@ -458,7 +458,7 @@ export default {
 						console.warn("Could not check WebAuthn availability", err)
 					}
 					this.webAuthnAvailable = false
-					this.emailIsValid = false
+					this.emailExistsInBE = false
 				})
 				.finally(() => {
 					this.webAuthnCheckInProgress = false
