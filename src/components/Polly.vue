@@ -581,7 +581,6 @@ function isEmail(s) {
 		border-bottom: var(--arrow-size) solid var(--proposal-bg);
 	}
 
-	// no borders
 	.card-header {
 		border-bottom: none;
 		background-color: white;

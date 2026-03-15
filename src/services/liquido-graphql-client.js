@@ -541,7 +541,7 @@ let graphQlApi = {
 	 */
 	async checkLoginEmail(email) {
 		if (!email) throw new Error("Email is required to check WebAuthn availability")
-		return axios.get('/liquido/v2/webauthn/check-login-email', {
+		return axios.get('/webauthn/check-login-email', {
 			params: { email: email }
 		}).then(res => res.data)
 	},
@@ -555,10 +555,10 @@ let graphQlApi = {
 		// quarkus-security-webauthn would provide it's own endpoint: /q/webauthn/register-options-challenge?username=testuser
 		// But we use our own custom implementation, adapted to liquido authentication scheme via JWT.
 		return axios.get(
-			'/liquido/v2/webauthn/register-options-challenge',
+			'/webauthn/register-options-challenge',
 			{ withCredentials: true }  // required!
 		).then(res => { 
-				console.log("GET /liquido/v2/webauthn/register-options-challenge", res.data)
+				console.log("GET /webauthn/register-options-challenge", res.data)
 				return res.data
 			})
 	},
@@ -573,14 +573,14 @@ let graphQlApi = {
 	async submitWebAuthnRegistration(credentialResponse, authenticatorLabel) {
 		return axios({
 			method: 'POST',
-			url: '/liquido/v2/webauthn/register',
+			url: '/webauthn/register',
 			params: {
 				label: authenticatorLabel  // Yes POST requests may have URL query parameters!
 			},
 			data: credentialResponse,
 			withCredentials: true  // required. Sends cookie that was set in GET /register-options-challenge back to server
 		}).then(res => {
-			console.log("POST /liquido/v2/webauthn/register SUCCESSFULLY registered new authenticator", res.data)
+			console.log("POST /webauthn/register SUCCESSFULLY registered new authenticator", res.data)
 			return res.data
 		})
 	},
@@ -593,7 +593,7 @@ let graphQlApi = {
 	 */
 	async getWebAuthnLoginChallenge(email, password) {
 		if (!email) throw new Error("Need email for getting WebAuthn login-options-challenge")
-		return axios.get('/liquido/v2/webauthn/login-options-challenge', { 
+		return axios.get('/webauthn/login-options-challenge', { 
 			params: { email: email, password: password },
 			withCredentials: true  // required!
 		}).then(res => res.data)
@@ -606,7 +606,7 @@ let graphQlApi = {
 	async submitWebAuthnLogin(credentialResponse) {
 		return axios({
 			method: 'POST',
-			url: '/liquido/v2/webauthn/login',
+			url: '/webauthn/login',
 			data: credentialResponse,
 			withCredentials: true
 		}).then(res => res.data)
@@ -913,7 +913,7 @@ if (config.mockBackend) {
 	//better: graphQlApi.login(teamUserJwtMock.team, teamUserJwtMock.user, teamUserJwtMock.jwt)
 
 	axios.interceptors.request.use(config => {
-		if (config.url.includes('/liquido/v2/webauthn/check-login-email')) {
+		if (config.url.includes('/webauthn/check-login-email')) {
 			const email = config.params.email
 			const member = teamUserJwtMock.team.members.find(m => m.user.email === email)
 			if (member) {

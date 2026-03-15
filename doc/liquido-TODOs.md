@@ -1,5 +1,10 @@
 # TODOs
 
+# Database for FREEEEEE
+
+ * https://supabase.com/
+ 
+
 
 # Write further Tests
  * Create a second team when already registered
