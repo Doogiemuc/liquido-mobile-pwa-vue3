@@ -88,8 +88,6 @@ const globalTranslations = {
 		InVoting: "Wahl läuft", 		// Abstimmung im Status "die Wahl läuft gerade"
 		Finished: "Abgeschlossen", // "Beendet" ?
 
-		NetworkOffline: "Du bist offline. Bitte schalte dein WLAN ein.",
-		BackendNotReachable: "Ich kann den LIQUIDO Server gerade nicht erreichen. Bitte versuche es später noch einmal.",
 	},
 }
 

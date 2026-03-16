@@ -61,6 +61,18 @@ let pollsScrollPos = undefined
 
 /** Liquido Root App */
 export default {
+	i18n: {
+		messages: {
+			en: {
+			},
+			de: {
+				// We carefully distinguish between these two cases!
+				NetworkOffline: "Du bist offline. Bitte schalte dein WLAN ein.",
+				BackendNotReachable: "Ich kann den LIQUIDO Server gerade nicht erreichen. Bitte versuche es später noch einmal.",
+				DEV_OpenGraphQL: "DEV HINT: Open /graphql/schema.graphql"
+			}
+		},
+	},
 	name: "LiquidoApp",
 	// Remark: vue-i18n is configured in main.js! Do not overwrite it here by setting the i18n: property
 	components: { liquidoHeader, popupModal, mobileDebugLog },
@@ -137,7 +149,11 @@ export default {
 						//document.location.href = config.LIQUIDO_API_URL + '/graphql/schema.graphql'
 					}
 					console.error("Cannot reach backend at "+config.LIQUIDO_API_URL, res)
-					this.showWarning(this.$t("BackendNotReachable")+"at <pre>"+config.LIQUIDO_API_URL+"</pre>");
+					let msg = this.$t("BackendNotReachable")
+					if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
+						msg += this.$t("BackendNotReachable")
+					}
+					this.showWarning();
 				}
 			})
 	
@@ -165,6 +181,9 @@ export default {
 		 */
 		showError(errMsg, errTitle, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined, primaryCallback = undefined, secondaryCallback = undefined) {
 			return this.$refs.rootPopupModal.showError(errMsg, errTitle, primaryButtonText, secondaryButtonText, primaryCallback, secondaryCallback)
+		},
+		showWarning(msg, title, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined, primaryCallback = undefined, secondaryCallback = undefined) {
+			return this.$refs.rootPopupModal.showWarning(msg, title, primaryButtonText, secondaryButtonText, primaryCallback, secondaryCallback)
 		},
 		showSuccess(msg, title, primaryButtonText = this.$t('Ok'), secondaryButtonText = undefined, primaryCallback = undefined, secondaryCallback = undefined) {
 			return this.$refs.rootPopupModal.showSuccess(msg, title, primaryButtonText, secondaryButtonText, primaryCallback, secondaryCallback)
