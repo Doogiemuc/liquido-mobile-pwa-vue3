@@ -45,9 +45,13 @@
 ## Code cleanup, security, ...
  
  * Timeout for backend requests
- * Move Navbar bottom to polls.vue page and ONLY there!  <= IMPORTANT QUICK FIX!   and add TESTS!
+
+
+## Bigger technical lifts
+
  * Capacitorjs.com A cross platform native runtime for web apps.
  * split liquido-graphql-client.js  into authentication, cache-service and pure backend HTTP client
+
 
 ## Smaller fixes
 
@@ -57,6 +61,8 @@
 
 # DONE - Implemented Features 
 
+ * May 2026 - A lot of reworks how Navbar works. Now have it on each individual page
+ * March 2026 - Design View with an overview of all mobile pages
  * Dez 2025 - Keepass with WebAuthN - puh that was a big lift
  * Oct 2025 - Local MOCK for backend
  * Aug 2025 - Remove bootstrap-vue-3  use plain bootstrap (mainly only b-card and b-button)

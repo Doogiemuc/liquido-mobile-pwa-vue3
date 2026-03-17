@@ -12,9 +12,6 @@
 					<i class="fas fa-envelope fa-3x" style="color: var(--primary)"></i>
 				</div>
 
-				<p>{{ debugMsg }}</p>
-				<p>{{ emailInputState }}</p>
-
 				<liquido-input 
 					id="loginEmailInput"
 					type="email"
@@ -22,15 +19,14 @@
 					v-model="emailInputVal"
 					@update:state="emailInputState = $event"
 					@keyup="emailInputKeyUp"
-  				@blur="checkEmailForLogin"
+  				@blur="scheduleEmailCheck"
 					:required=true 
 					:placeholder="$t('emailPlaceholder')"
 					:invalid-feedback="$t('emailInvalid')"
 					:feedback-placeholder="false"
 					tabindex="1" />
 
-				<!-- Password input field (shown when email is validated) -->
-				<div v-if="emailExistsInBE" class="password-field-animation">
+				<div>
 					<!-- WebAuthn button - shown only if WebAuthn IS available -->
 					<button 
 						v-if="webAuthnAvailable" 
@@ -45,32 +41,34 @@
 						<span class="flex-grow-1 text-center">{{ $t("LoginWithPasskey") }}</span>
 					</button>
 
+					<!-- Password input field -->
 					<liquido-input 
 						id="loginPasswordInput"
 						v-model="passwordInputVal"
-						@update:state="passwordInputState = $evnet"
-						@keyup.enter="loginWithEmailPassword"
+						@update:state="passwordInputState = $event"
+						@keypress.enter="loginWithEmailPassword"
 						class="mt-2"
 						type="password"
 						:minLength=10
 						:required=true
 						:placeholder="$t('passwordPlaceholder')"
 						:invalid-feedback="$t('passwordInputIsInvalid')"
-						:feedback-placeholder="false" @keypress.enter="loginWithEmailPassword" tabindex="3" />
+						:feedback-placeholder="false"  
+						tabindex="3" />
 				</div>
 
 				<button id="loginWithEmailPasswordButton" type="button"
 					class="btn btn-primary w-100 text-center position-relative mt-3" :disabled="loginWithEmailPasswordButtonDisabled"
 					@click="loginWithEmailPassword">
 					<i class="fa-solid fa-sign-in-alt position-absolute top-50 start-0 translate-middle ms-3"></i>
-					<span class="text-center">{{ loginButtonText }}</span>
+					<span class="text-center">{{ $t("Login") }}</span>
 				</button>	
 
 				<div v-if="loginErrorMessage" id="loginErrorMessage" class="alert alert-danger mt-3" :data-loginErrorMessageId="loginErrorMessageId">
 					{{ loginErrorMessage }}
 				</div>
 
-				<div v-if="emailExistsInBE" class="password-field-animation">
+				<div :class="['password-field-animation', { 'is-hidden': !showLoginExtras }]">
 
 					<div class="horizontal-line">
 						<span>
@@ -126,7 +124,7 @@
 		</div>
 
 		<!-- Password forgotten Link -->
-		<div v-if="emailExistsInBE" class="forgot-password-link my-3">
+		<div :class="['forgot-password-link', 'my-3', { 'is-hidden': !showLoginExtras }]">
 			<router-link id="forgotPasswordLink" :to="{ name: 'forgotPassword' }">{{ $t('ForgotPassword') }}</router-link>
 		</div>
 
@@ -316,7 +314,7 @@ export default {
 		return {
 			pageTitle: this.$t("Login"),
 
-			debugMsg: "debug",
+			debugMsg: "debugMsg",
 
 			// Login via email & password
 			emailInputVal: "",
@@ -355,13 +353,6 @@ export default {
 		showDevLogin() {
 			return process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
 		},
-		loginButtonText() {
-			if (this.emailExistsInBE) {	
-				return this.$t("LoginWithPassword")
-			} else {
-				return this.$t("Continue")
-			}
-		},
 		loginWithEmailPasswordButtonDisabled() {
 			return this.emailInputState !== STATE.VALID || this.passwordInputState !== STATE.VALID
 		},
@@ -371,32 +362,32 @@ export default {
 		requestTokenButtonDisabled() {
 			return this.mobilephoneInputState !== STATE.VALID || this.waitUntilNextRequestSecs > 0
 		},
-		adminEmail() {
-			return config.devLogin.admin.email
+		showLoginExtras() {
+			return this.emailInputState === STATE.VALID && !!this.emailInputVal
 		},
 		graphQlSchmeaURL() {
 			return config.LIQUIDO_API_URL + '/graphql/schema.graphql'
 		}
 	},
-		watch: {
-			emailInputVal() {
-				if (this.emailInputState === STATE.VALID) {
-					this.scheduleEmailCheck()
-				} else {
-					this.cancelEmailCheck()
-				}
-			},
-			emailInputState(newVal) {
-				if (newVal === STATE.VALID) {
-					this.scheduleEmailCheck()
-				} else {
-					this.cancelEmailCheck()
-				}
-			},
-			/** UX: When last character of auth token is entered and token is valid, then immideately try to login with it. No extra click necessary. */
-			authTokenInputState: function (newVal) {
-				if (newVal === true) {
-					this.loginWithAuthToken()
+	watch: {
+		emailInputVal() {
+			if (this.emailInputState === STATE.VALID) {
+				this.scheduleEmailCheck()
+			} else {
+				this.cancelEmailCheck()
+			}
+		},
+		emailInputState(newVal) {
+			if (newVal === STATE.VALID) {
+				this.scheduleEmailCheck()
+			} else {
+				this.cancelEmailCheck()
+			}
+		},
+		/** UX: When last character of auth token is entered and token is valid, then immideately try to login with it. No extra click necessary. */
+		authTokenInputState: function (newVal) {
+			if (newVal === true) {
+				this.loginWithAuthToken()
 			}
 		}
 	},
@@ -422,8 +413,10 @@ export default {
 			this.cancelEmailCheck()
 			this.emailCheckDebounceId = setTimeout(() => {
 				this.emailCheckDebounceId = null
-				this.checkEmailForLogin()
-			}, 400)
+				if (this.emailInputState === STATE.VALID) {
+					this.checkEmailForLogin()
+				}
+			}, 1000)
 		},
 
 		cancelEmailCheck() {
@@ -438,16 +431,16 @@ export default {
 		focusPasswordInput() {
 			this.$root.$nextTick(() => {
 				let passwordInputElem = document.getElementById("loginPasswordInput")
-				console.log("passwordInputElem", passwordInputElem)
 				passwordInputElem?.focus()
 			})
 		},
 
 		/**
-		 * Offer email & password input as a fallback, when webauthn is not available or not setup yet.
+		 * When user filled out email and password and pressed return or clicked the button, then log him hin.
 		 */
 		loginWithEmailPassword() {
 			console.log("loginWithEmailPassword")
+			this.debugMsg = "loginWithEmailPassword called"
 			this.loginErrorMessage = null
 			api.loginWithEmailPassword(this.emailInputVal, this.passwordInputVal)
 				.then(() => {
@@ -458,7 +451,6 @@ export default {
 					this.loginErrorMessage = this.$t("loginFailed")
 					this.loginErrorMessageId = ERROR.PASSWORD_LOGIN_FAILED
 					this.passwordInputVal = ""
-					//this.emailExistsInBE = false // let the password input field stay visible
 				})
 		},
 
@@ -473,7 +465,7 @@ export default {
 		emailInputKeyUp(event) {
 			if (event.key === "Enter") {
 				this.passwordInputVal = undefined
-				this.checkEmailForLogin()
+				this.scheduleEmailCheck()
 			} else {
 				this.emailExistsInBE = false
 				this.loginErrorMessage = null
@@ -488,7 +480,7 @@ export default {
 		 */
 		checkEmailForLogin() {
 			const requestedEmail = this.emailInputVal
-			this.debugMsg = "checkEmailForLogin " + this.emailInputVal
+			//this.debugMsg = "checkEmailForLogin " + this.emailInputVal
 			console.log("checkEmailForLogin emailExistsInBE="+this.emailExistsInBE+ ", emailInputState="+this.emailInputState)
 			// Only check if emailInputField is valid and not already checking
 			if (this.emailInputState !== STATE.VALID || this.webAuthnCheckInProgress) {
@@ -506,7 +498,7 @@ export default {
 					}
 					this.emailExistsInBE = true
 					this.webAuthnAvailable = response.webauthn === true
-					this.debugMsg = "checkEmailForLogin" + this.emailInputVal + " exists in BE"
+					// this.debugMsg = "checkEmailForLogin" + this.emailInputVal + " exists in BE"
 					console.debug("WebAuthn available for email:", this.webAuthnAvailable)
 					this.focusPasswordInput()
 				})
@@ -843,6 +835,10 @@ export default {
 
 .password-field-animation {
 	animation: growAndFadeIn 0.4s ease-out;
+}
+
+.is-hidden {
+	display: none !important;
 }
 
 .button-outline-liquido {
