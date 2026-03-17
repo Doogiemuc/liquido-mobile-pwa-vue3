@@ -2,10 +2,31 @@
 
 This document describes how to test the newly added WebAuthn client flow in the LIQUIDO PWA.
 
-# Prerequisites
+# Prerequisites - Frontend
+
+ - Frontend and backend are hosted via HTTPS with valid TLS certificates.
+ - config.<env>.js  has correct LIQUIDO_API_URL, eg. "https://macbookpro.fritz.box:8443",
+
+# Prerequisites - Backend
+
+The relying-party.id (rpId) in `application.properties` must match the domain of the frontend and backend! and also be in the list of allowed origins.
+Origins must be listed with schmea, FQDN and port. 
+And CORS must also be configured
+
+````
+# Quarkus WebAuthn configuration    
+quarkus.webauthn.relying-party.name=LIQUIDO
+quarkus.webauthn.relying-party.id=macbookpro.fritz.box
+quarkus.webauthn.origins=https://macbookpro.fritz.box:3001,https://liquido.dynv6.net
+
+# CORS
+quarkus.http.cors.enabled=true
+quarkus.http.cors.origins=/.*/
+````
+
+# Prerequisites - Browser on Device
 
  - A browser and device that supports WebAuthn (iOS Safari with Face ID, Chrome on Android with fingerprint, or desktop with platform authenticators).
- - Backend WebAuthn endpoints available at `/q/webauthn/register/options`, `/q/webauthn/register/verify`, `/q/webauthn/authenticate/options`, `/q/webauthn/authenticate/verify` (the backend is already configured).
 
 # Manual test steps
 

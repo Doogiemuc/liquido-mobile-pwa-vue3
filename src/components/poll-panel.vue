@@ -215,7 +215,7 @@ export default {
 
 	/* list of proposals in poll */
 	.proposal-list-group-item {
-		height: 160px; /* exactly 3 lines of description. MUST set height for collapse transition! */
+		height: 150px; /* MUST set height for collapse transition! */
 		overflow: hidden;
 		transition: height 0.5s;
 		border: none;            /* TODO: or with border/divider between proposals in a poll???? => I changed this 1001 times :-) */
@@ -250,10 +250,10 @@ export default {
 		}
 
 		.proposal-description {
-			font-size: 0.8rem;
+			font-size: 1rem;
 			overflow: hidden;
 			line-height: 20px;
-			height: 60px; /* exactly enough for 4 lines of text */
+			height: 60px;    /* exactly enough for 4 lines of text */
 		}
 
 		.proposal-subtitle {

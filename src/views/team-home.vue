@@ -15,9 +15,9 @@
 
 		<div v-if="pollsInVoting.length > 0">
 			<h3>{{ $t('pollsInVoting') }}</h3>
-			<div class="polls-in-voting-container" ref="pollsInVotingContainer" @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd">
-				<div v-for="poll in pollsInVoting" :key="poll.id" class="poll-card-wrapper">
-					<div class="poll-card card shadow-sm" @click="$root.gotoPoll(poll.id)">
+			<div class="polls-in-voting-container" ref="pollsInVotingContainer" >
+				<div v-for="poll in pollsInVoting" :key="poll.id" class="poll-card-wrapper user-select-none">
+					<div class="poll-card card" @click="$root.gotoPoll(poll.id)">
 						<div class="card-body d-flex flex-nowrap align-items-center">
 							<div class="flex-grow-1">
 								<div class="poll-eyebrow">
@@ -365,7 +365,7 @@ export default {
 	margin: 1rem 0;
 	gap: 1rem;
 	overflow-x: auto;
-	overflow-y: hidden;
+	
 	scroll-behavior: smooth;
 	/* Hide scrollbar for Chrome, Safari and Opera */
 	-ms-overflow-style: none;  /* IE and Edge */
@@ -381,10 +381,10 @@ export default {
 
 /********** //TODO: extract an own component for a poll-card!  This duplicates what's in poll.vue! */
 .poll-card-wrapper {
+	min-width: 80%;
 	height: 7rem;
 	margin-bottom: 10px;
-	overflow: hidden;
-	transition: all 0.5s;
+	/*transition: all 0.5s;*/
 }
 
 .poll-card {
@@ -393,6 +393,7 @@ export default {
 	cursor: pointer;
 	height: 100% !important;  /* bootstrap .card sets a height that we need to overwrite */
 	border-radius: var(--liquido-border-radius);
+	box-shadow: 0.1rem 0.1rem 0.25rem rgba(32, 32, 32, 0.2);
 
 	.card-body{
 		padding: 0 1rem;
