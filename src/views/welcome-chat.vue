@@ -579,12 +579,11 @@ export default {
 	 */
 	mounted() {
 		/*
-		//TODO: What to do when user is already logged in? Greet him. IMPORTANT: User might want to create yet another team or join another team!
-		// BUG: This breaks design overview!!!
-		if (api.isAuthenticated()) {
-			this.$root.gotoTeam()
-			return
-		}
+		//TODO: When user is already registered, then
+		 Greet him with his username.
+		 Offer to login into his existing team.
+		 Or let him choose to create or join another team.
+		 ====> this is a quite different flow.  => Seperate page???
 		*/
 
     this.startChatAnimation()
@@ -905,8 +904,7 @@ export default {
 
 		/**
 		 * For debugging the design:
-		 * set everything to enabled and shown
-		 * and fill in dummy values where possible
+		 * show all bubbles and fill in dummy data 
 		 */
 		_debugDesignMode() {
 			this.user = {
