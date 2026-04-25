@@ -48,6 +48,11 @@ const routes = [
 		props: true,  // teamId, teamName, teamLogoUrl
 	},
 	{
+		path: "/userhome",
+		name: "userhome",
+		component: () => import("@/views/user-home.vue"),
+	},
+	{
 		path: "/polly/create",
 		name: "createPolly",
 		component: () => import("@/views/polly-create.vue"),

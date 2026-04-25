@@ -13,8 +13,13 @@
 					<h1>{{ headerTitle }}</h1>
 				</div>
 			</div>
-			<div class="header-right" @click="clickRight">
-				<!-- i class="fas fa-bars" /-->
+			<div class="header-right">
+				<slot
+					name="header-right"
+					:click-right="clickRight"
+					:toggle-menu="toggleMenu"
+					:show-menu="showMenu"
+				/>
 			</div>
 		</div>
 		<div class="header-row-two">

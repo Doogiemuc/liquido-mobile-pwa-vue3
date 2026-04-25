@@ -149,11 +149,7 @@ export default {
 						//document.location.href = config.LIQUIDO_API_URL + '/graphql/schema.graphql'
 					}
 					console.error("Cannot reach backend at "+config.LIQUIDO_API_URL, res)
-					let msg = this.$t("BackendNotReachable")
-					if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
-						msg += this.$t("BackendNotReachable")
-					}
-					this.showWarning();
+					this.showWarning(this.$t("BackendNotReachable"));
 				}
 			})
 	

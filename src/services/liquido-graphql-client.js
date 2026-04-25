@@ -446,9 +446,9 @@ let graphQlApi = {
 	 * @param {String} email email of a registered user
 	 * @returns Promise.resolve(), when email was sent successfully
 	 */
-	requestEmailToken(email) {
+	requestEmailLoginLink(email) {
 		if (!email) throw new Error("Need email to log in!")
-		let graphQL = `query { requestEmailToken(email: "${email}") }`
+		let graphQL = `query { requestEmailLoginLink(email: "${email}") }`
 		return graphQlQuery(graphQL)
 	},
 

@@ -1,7 +1,7 @@
 {
 	"team": {
 		"id": 101,
-		"teamName": "testTeam4711",
+		"teamName": "LocalMockTeam",
 		"inviteCode": "aAn0d5c7",
 		"members": [
 			{
@@ -9,8 +9,8 @@
 				"joinedAt": "2026-02-04T20:54:19.802334",
 				"user": {
 					"id": 1210,
-					"name": "afasdfasdfasdf",
-					"email": "sfsdfergf@sdafd.de",
+					"name": "Mock One",
+					"email": "mock1@sdafd.de",
 					"mobilephone": null,
 					"picture": "Avatar1.png",
 					"website": null
@@ -21,8 +21,8 @@
 				"joinedAt": "2025-12-25T19:12:59.770863",
 				"user": {
 					"id": 307,
-					"name": "Member 1766686379459",
-					"email": "membr47112@liquido.vote",
+					"name": "Mock Two",
+					"email": "mock2@liquido.vote",
 					"mobilephone": "01515551766686379459",
 					"picture": "Avatar1.png",
 					"website": null
@@ -33,8 +33,8 @@
 				"joinedAt": "2025-12-25T19:12:58.735685",
 				"user": {
 					"id": 304,
-					"name": "TestAdmin 4711",
-					"email": "testadmin4711@liquido.vote",
+					"name": "Mock Admin1",
+					"email": "mockadmin1@liquido.vote",
 					"mobilephone": "01515554711",
 					"picture": "Avatar1.png",
 					"website": null

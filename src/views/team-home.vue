@@ -1,6 +1,12 @@
 <template>
 	<div>
-		<liquido-header ref="liquido-header"></liquido-header>
+		<liquido-header ref="liquido-header">
+			<template #header-right>
+				<button type="button" class="header-user-button" @click="$router.push({ name: 'userhome' })">
+					<i class="fas fa-user-circle" />
+				</button>
+			</template>
+		</liquido-header>
 		<h1 
 			id="team-home"
 			:data-teamname="team.teamName"
@@ -470,6 +476,19 @@ export default {
 	position: absolute;
 	top: 5px;
 	right: 5px;
+}
+
+.header-user-button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 2.5rem;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font-size: 1.4rem;
+	padding: 0;
 }
 
 #memberCards {	

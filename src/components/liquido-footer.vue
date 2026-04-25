@@ -107,13 +107,18 @@ export default {
 	display: flex;
 	align-items: center;
 	flex-grow: 1;
+	min-width: 0;
 }
 
 .footer-center {
 	flex-grow: 1;
+	flex-shrink: 1;
+	min-width: 0;
 	button {
+		display: block;
 		flex-grow: 1;
 		width: 100%;
+		min-width: 0;
 		white-space: nowrap;
 		text-overflow: ellipsis;
 		overflow: hidden;
@@ -125,6 +130,7 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
+	flex-shrink: 0;
 	color: var(--primary);
 	font-size: 1.5rem;
 	text-decoration: none;

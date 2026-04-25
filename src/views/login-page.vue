@@ -102,16 +102,16 @@
 							<!-- signin via Link sent to Email -->
 							<button type="button"
 								class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
-								@click="startTelegramLogin">
+								@click="requestEmailLoginLink">
 								<i class="fa-regular fa-envelope"></i>
-								<span class="flex-grow-1 text-center">{{ $t("EmailLink") }}</span>
+								<span class="flex-grow-1 text-center">{{ $t("EmailLoginLink") }}</span>
 							</button>
 						</div>
 						<div class="col">
 							<!-- Signin with Authy App -->
 							<button type="button"
 								class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
-								@click="startFacebookLogin">
+								@click="startAuthyLogin">
 								<i class="fa fa-shield-halved"></i>
 								<span class="flex-grow-1 text-center">{{ $t("AuthyApp") }}</span>
 							</button>
@@ -196,6 +196,7 @@ import config from "config"
 import liquidoInput, { STATE } from "@/components/liquido-input.vue"
 import liquidoHeader from "@/components/liquido-header.vue"
 import api from "@/services/liquido-graphql-client.js"
+import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
 import webauthnService from "@/services/webauthn-service.js"
 
 const REQUEST_THROTTLE_SECS = 10
@@ -237,7 +238,7 @@ export default {
 				Facebook: "Facebook",
 				Apple: "Apple",
 				SMS: "SMS",
-				EmailLink: "Email Link",
+				EmailLoginLink: "Email Link",  // Login via Link in email
 
 				// Login via SMS
 				LoginViaSms: "SMS Login",	
@@ -659,7 +660,7 @@ export default {
 		devLoginAdmin() {
 			if (process.env.NODE_ENV !== "development" && process.env.NODE_ENV !== "test") return
 			api.logout()
-			api.devLogin(config.devLogin.admin.email, config.devLogin.teamName, config.devLogin.token).then(() => {
+			api.devLogin(this.getDevLoginUserEmail("ADMIN"), config.devLogin.teamName, config.devLogin.token).then(() => {
 				this.$root.scrollToTop()
 				this.$root.gotoPolls()
 			}).catch(err => console.error("DevLogin Admin failed!", err))
@@ -669,12 +670,28 @@ export default {
 		devLoginMember() {
 			if (process.env.NODE_ENV !== "development" && process.env.NODE_ENV !== "test") return
 			api.logout()
-			api.devLogin(config.devLogin.member.email, config.devLogin.teamName, config.devLogin.token)
+			api.devLogin(this.getDevLoginUserEmail("MEMBER"), config.devLogin.teamName, config.devLogin.token)
 				.then(() => {
 					this.$root.scrollToTop()
 					this.$root.gotoPolls()
 				})
 				.catch(err => console.error("DevLogin Member failed!", err))
+		},
+
+		getDevLoginUserEmail(role) {
+			if (!config.mockBackend) {
+				return role === "ADMIN" ? config.devLogin.admin.email : config.devLogin.member.email
+			}
+
+			const teamMembers = teamUserJwtMock?.team?.members || []
+			const matchingMember = teamMembers.find(member => member.role === role)
+
+			if (matchingMember?.user?.email) {
+				return matchingMember.user.email
+			}
+
+			console.warn(`Cannot find mock ${role} user in teamUserJwt.json. Falling back to config.devLogin.`)
+			return role === "ADMIN" ? config.devLogin.admin.email : config.devLogin.member.email
 		},
 
 
@@ -750,16 +767,12 @@ export default {
 
 
 		/** Send a magic link that the user can login with for the next n hours. */
-		sendMagicLoginLinkMail() {
-			// Email login button might be disabled, when the email is not valid yet.
-			// But the button is never shown as disabled for non logicall beautiful UX/UI reasons. :-)
-			// So we check here if the current value of the liquido-input is actually valid.
-			if (this.emailInputState !== true) return
-			console.log("requestEmailToken")
+		requestEmailLoginLink() {
+			console.log("sendLoginMailWithMagicLink")
 			this.tokenErrorMessage = undefined
 			this.emailErrorMessage = undefined
 			api.logout()  					// delete any previously stored JWT
-			api.requestEmailToken(this.emailInput)
+			api.requestEmailLoginLink(this.emailInputVal)
 				.then(() => {
 					console.log("Email login link sent successfully")
 					this.emailErrorMessage = undefined
@@ -775,7 +788,7 @@ export default {
 						this.emailSentSuccessfully = false
 						this.emailErrorMessage = this.$t("UserWithThatEmailNotFound")
 					} else {
-						console.error("Could not send email link!", err)
+						console.error("Could not send login email with magic link!", err)
 						this.emailSentSuccessfully = false
 						this.emailErrorMessage = this.$t("CouldNotSendEmail")
 					}

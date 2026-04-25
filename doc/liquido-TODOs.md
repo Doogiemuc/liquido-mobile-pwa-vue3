@@ -15,6 +15,7 @@
 ### Registration
 
  * Verify a user's email
+ * Verify phone number
 
 ### Login
 
