@@ -1,12 +1,6 @@
 <template>
 	<div>
-		<liquido-header ref="liquido-header">
-			<template #header-right>
-				<button type="button" class="header-user-button" @click="$router.push({ name: 'userhome' })">
-					<i class="fas fa-user-circle" />
-				</button>
-			</template>
-		</liquido-header>
+		<liquido-header ref="liquido-header"></liquido-header>
 		<h1 
 			id="team-home"
 			:data-teamname="team.teamName"
@@ -128,6 +122,17 @@
 		</div>
 
 		<liquido-footer>
+			<template #left>
+				<button
+					type="button"
+					class="footer-icon-container footer-user-button"
+					aria-label="User"
+					@click="$router.push({ name: 'userhome' })"
+				>
+					<div class="footer-icon"><i class="fas fa-user-circle"></i></div>
+					<div class="footer-icon-title">{{ $t("User") }}</div>
+				</button>
+			</template>
 			<template #primary>
 				<button id="gotoPollsButton" type="button" class="btn btn-lg w-100 btn-primary" @click="$root.gotoPolls">
 					{{ $t("gotoPolls") }}
@@ -157,6 +162,7 @@ export default {
 				introYourTeam: "",
 				teamAdmin: "Team admin | Team Admin | Team Admins",
 				TeamMembers: "Team members",
+				User: "User",
 			},
 			de: {
 				introYourTeam: "Hallo {name} !<br/>Willkommen in deinem Team.",
@@ -168,6 +174,7 @@ export default {
 				daysLeft: "Wahl Abgeschlossen | ein Tag noch | noch {n} Tage",
 
 				TeamMembers: "Teammitglieder",
+				User: "Profil",
 				teamAdmins: "Team Admin | Team Admin | Team Admins",
 				gotoPolls: "Alle eure Abstimmungen",
 				inviteNewMembers: "Teammitglieder einladen",
@@ -478,17 +485,9 @@ export default {
 	right: 5px;
 }
 
-.header-user-button {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 100%;
-	min-height: 2.5rem;
+.footer-user-button {
 	border: 0;
 	background: transparent;
-	color: inherit;
-	font-size: 1.4rem;
-	padding: 0;
 }
 
 #memberCards {	

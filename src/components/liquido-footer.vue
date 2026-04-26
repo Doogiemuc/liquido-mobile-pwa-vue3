@@ -6,10 +6,12 @@
 			</slot>
 		</div>
 		<div class="liquido-footer-actions">
-			<RouterLink to="/team" class="footer-icon-container" aria-label="Team">
-				<div class="footer-icon"><i class="fas fa-users"></i></div>
-				<div class="footer-icon-title">Team</div>
-			</RouterLink>
+			<slot name="left">
+				<RouterLink to="/team" class="footer-icon-container" aria-label="Team">
+					<div class="footer-icon"><i class="fas fa-users"></i></div>
+					<div class="footer-icon-title">Team</div>
+				</RouterLink>
+			</slot>
 			<div class="footer-center">
 				<slot name="primary">
 					<button v-if="primaryText !== undefined" class="btn btn-lg" type="button" :disabled="primaryDisabled"
