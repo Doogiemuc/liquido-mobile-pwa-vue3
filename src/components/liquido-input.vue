@@ -7,7 +7,7 @@
 
 		<input ref="input" :id="id" :name="name" :value="modelValue" :class="validClass" :type="inputType"
 			:placeholder="placeholder" :disabled="disabled" :required="required" :minlength="minLength" :maxlength="maxLength"
-			:pattern="pattern" class="form-control" @input="onInput" @blur="onBlur" @keyup="$emit('keyup', $event)"
+			:pattern="pattern" class="form-control" @focus="onFocus" @input="onInput" @blur="onBlur" @keyup="$emit('keyup', $event)"
 			@change="$emit('change', $event)" />
 
 		<div class="iconRight">
@@ -197,7 +197,8 @@ export default {
 			
 			/** Function that will be used to validate the input value. */
 			internalValidFunc: this.validFunc,
-			showPassword: false
+			showPassword: false,
+			isEditing: false,
 		}
 	},
 
@@ -209,7 +210,7 @@ export default {
 		 */
 		validClass() {
 			return {
-				"is-valid": this.state === STATE.VALID,
+				"is-valid": this.state === STATE.VALID && this.isEditing && !this.disabled,
 				"is-invalid": this.state === STATE.INVALID,  // bootstrap will then show red frame and icon at the right
 				// all other states do not show any pseudo class
 			}
@@ -259,6 +260,10 @@ export default {
 			this.validateField(false, newVal)
 		},
 
+		disabled(isDisabled) {
+			if (isDisabled) this.isEditing = false
+		},
+
 		state() {
 			this.$emit("update:state", this.state)
 		}
@@ -281,11 +286,17 @@ export default {
 
 	methods: {
 
+		onFocus() {
+			if (!this.disabled) this.isEditing = true
+		},
+
 		onInput(evt) {
+			if (!this.disabled) this.isEditing = true
 			this.$emit("update:modelValue", evt.target.value)
 		},
 
 		onBlur(evt) {
+			this.isEditing = false
 			this.validateField(true, evt.target.value)
 			this.$emit("blur", evt)
 		},
@@ -373,7 +384,7 @@ export default {
 		background: white;
 		border-radius: 5px;
 		&.disabled {
-			background-color: #e9ecef;
+			background-color: var(--subtle-bg);
 		}
 	}
 
@@ -404,6 +415,10 @@ export default {
 		width: 100%;
   	margin-top: 0.25rem;
   	font-size: 0.875em;
+	}
+
+	.liquido-input .form-control:disabled {
+		background-color: var(--subtle-bg);
 	}
 
 </style>

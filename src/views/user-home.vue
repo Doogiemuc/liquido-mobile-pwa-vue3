@@ -143,8 +143,8 @@
 
 		<liquido-footer>
 			<template #primary>
-				<button type="button" class="btn btn-lg w-100 btn-primary" @click="$root.gotoPolls">
-					{{ $t("ChangeProfilePicture") }}
+				<button type="button" class="btn btn-lg w-100 btn-primary" @click="$root.gotoTeam">
+					{{ $t("YourTeam") }}
 					<i class="fas fa-angle-double-right" />
 				</button>
 			</template>
@@ -170,7 +170,6 @@ export default {
 				UploadPhoto: "Upload photo",
 				UploadPhotoHint: "Open your photo library, choose an image, and we will save it locally in IndexedDB.",
 				ChoosePicture: "Choose picture",
-				ChangeProfilePicture: "Go to your polls",
 				UserData: "Your data",
 				Username: "Username",
 				EMail: "E-mail",
@@ -178,6 +177,7 @@ export default {
 				Mobilephone: "Mobilephone",
 				Edit: "Edit",
 				Save: "Save",
+				YourTeam: "Your team",
 				SavingPhoto: "Saving photo ...",
 				UsernameRequired: "Please enter a username.",
 				UsernameInvalid: "Please enter a username.",
@@ -195,7 +195,6 @@ export default {
 				UploadPhoto: "Avatar erstellen",
 				UploadPhotoHint: "Wähle ein schönes Foto für deinen Avatar im Team. Es muss nicht unbedingt ein Foto von dir sein, es kann auch irgend ein anderes Icon oder Bild sein.",
 				ChoosePicture: "Bild auswählen",
-				ChangeProfilePicture: "Alle eure Abstimmungen",
 				UserData: "Deine Daten",
 				Username: "Benutzername",
 				EMail: "E-Mail",
@@ -203,6 +202,7 @@ export default {
 				Mobilephone: "Mobiltelefon",
 				Edit: "Bearbeiten",
 				Save: "Speichern",
+				YourTeam: "Dein Team",
 				SavingPhoto: "Speichere Bild ...",
 				UsernameRequired: "Bitte gib einen Benutzernamen ein.",
 				UsernameInvalid: "Bitte gib einen Benutzernamen ein.",
@@ -210,10 +210,10 @@ export default {
 				EmailInvalid: "Bitte gib eine gültige E-Mail-Adresse ein.",
 				WebsiteInvalid: "Bitte gib eine gültige Website-URL ein.",
 				MobilephoneInvalid: "Bitte gib eine gültige Mobiltelefonnummer ein.",
-				UserDataSaved: "Deine Benutzerdaten wurden lokal auf diesem Gerät aktualisiert.",
-				PhotoSavedLocally: "Dein Profilbild wurde lokal auf diesem Gerät gespeichert.",
-				PhotoSaveError: "Dein Profilbild konnte nicht lokal gespeichert werden.",
-				PhotoLoadError: "Dein gespeichertes Profilbild konnte nicht geladen werden.",
+				UserDataSaved: "Ok, deine Daten wurden aktualisiert.",
+				PhotoSavedLocally: "Ok, dein Profilbild wurde gespeichert.",
+				PhotoSaveError: "Ups, sorry. Dein Profilbild konnte gerade nicht gespeichert werden.",
+				PhotoLoadError: "Sorry, dein Profilbild konnte gerade nicht geladen werden.",
 				InvalidImageFile: "Bitte wähle eine Bilddatei aus.",
 			},
 		},
@@ -263,9 +263,9 @@ export default {
 	},
 	async mounted() {
 		this.$store.setHeaderTitle(this.currentUser.name)
-		this.$store.setHeaderBackTarget({ name: "team" })
-		this.$root.scrollToTop()
+		this.$store.setHeaderBackTarget(undefined)
 		await this.loadStoredProfilePicture()
+		this.$root.scrollToTop()
 	},
 	beforeUnmount() {
 		this.revokeProfilePictureUrl()
@@ -442,7 +442,7 @@ export default {
 	border-radius: var(--liquido-border-radius);
 	padding: 2rem 1rem;
 	text-align: center;
-	background-color: #fafbfd;
+	background-color: var(--subtle-bg);
 }
 
 .upload-icon {
@@ -459,7 +459,7 @@ export default {
 .upload-placeholder-text {
 	color: var(--secondary);
 	font-size: 0.95rem;
-	max-width: 18rem;
+	
 	margin: 0 auto;
 }
 

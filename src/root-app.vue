@@ -48,12 +48,13 @@ const page_order = {
 	"welcome": 1,
 	"login": 1,     // welcome and login are on the same level, so they fade instead of sliding sideways
 	"forgotPassword": 2,
-	"team": 3,
-	"polls": 4,
-	"createPoll": 5,
-	"showPoll": 6,
-	"addProposal": 7,
-	"castVote": 8,
+	"userhome": 9,
+	"team": 10,
+	"polls": 11,
+	"createPoll": 12,
+	"showPoll": 13,
+	"addProposal": 14,
+	"castVote": 15,
 }
 
 /** save and restore the up/down scroll position of polls page (that shows the possibly long list of polls)  */

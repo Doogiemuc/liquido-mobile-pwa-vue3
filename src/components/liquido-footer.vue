@@ -110,15 +110,15 @@ export default {
 	align-items: center;
 	flex-grow: 1;
 	min-width: 0;
+	padding: 0.25rem 0;
 }
 
 .footer-center {
-	flex-grow: 1;
-	flex-shrink: 1;
+	flex: 5 1 0;
 	min-width: 0;
 	button {
 		display: block;
-		flex-grow: 1;
+		/*flex-grow: 1;*/
 		width: 100%;
 		min-width: 0;
 		white-space: nowrap;
@@ -130,13 +130,14 @@ export default {
 .footer-icon-container {
 	display: flex;
 	flex-direction: column;
+	flex: 1 1 0;
 	align-items: center;
 	justify-content: center;
-	flex-shrink: 0;
 	color: var(--primary);
 	font-size: 1.5rem;
 	text-decoration: none;
-	padding: 0.8rem 1rem 0.2rem 1rem;  /* UI glitch: need a bit more space at the bottom */
+	/* Need a bit of manual padding, so that the footer left and right links look aligned with the center main action button */
+	padding: 0.5rem 0 0.2rem 0rem;  
 	height: 100%;
 	text-decoration: none;
 	transition: background-color 0.2s;
@@ -149,7 +150,7 @@ export default {
 	align-items: center;
 	justify-content: center;
 	text-align: center;
-	font-size: 1.5rem;
+	font-size: 2.0rem;
 	color: var(--primary);
 	height: 100%;
 }
@@ -159,8 +160,10 @@ export default {
 	text-decoration: none;
 }
 
+/*
 .liquido-footer-actions .btn {
 	flex-grow: 1;
 }
+	*/
 
 </style>

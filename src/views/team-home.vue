@@ -123,15 +123,10 @@
 
 		<liquido-footer>
 			<template #left>
-				<button
-					type="button"
-					class="footer-icon-container footer-user-button"
-					aria-label="User"
-					@click="$router.push({ name: 'userhome' })"
-				>
+				<RouterLink to="/userhome" class="footer-icon-container" aria-label="UserHome">
 					<div class="footer-icon"><i class="fas fa-user-circle"></i></div>
-					<div class="footer-icon-title">{{ $t("User") }}</div>
-				</button>
+					<div class="footer-icon-title">{{ $t('User') }}</div>
+				</RouterLink>
 			</template>
 			<template #primary>
 				<button id="gotoPollsButton" type="button" class="btn btn-lg w-100 btn-primary" @click="$root.gotoPolls">
@@ -485,10 +480,6 @@ export default {
 	right: 5px;
 }
 
-.footer-user-button {
-	border: 0;
-	background: transparent;
-}
 
 #memberCards {	
 	.card-body {
