@@ -35,8 +35,8 @@
 		</div>
 
 		<!-- Login button -->
-		<div v-if="showLoginButton" class="login-link">
-			<button class="btn btn-primary btn-sm" @click="goToLogin">{{ $t('Login') }}</button>
+		<div v-if="showLoginButton" class="login-link" @click="goToLogin">
+			<button class="btn btn-primary btn-sm">{{ $t('Login') }}</button>
 		</div>
 
 		<!-- Nice to meet you bubble -->
@@ -1043,6 +1043,8 @@ export default {
 .login-link {
 	z-index: 999;
 	position: fixed;
+	cursor: pointer;
+	padding: 1rem;
 	bottom: 2rem;
 	right: 2rem;
 }
