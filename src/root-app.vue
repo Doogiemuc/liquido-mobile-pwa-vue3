@@ -32,6 +32,7 @@
  */
 import liquidoHeader from "@/components/liquido-header.vue"
 import popupModal from "@/components/popup-modal.vue"
+import log from "loglevel"
 import mobileDebugLog from "@/components/mobile-debug-log.vue"
 import api from "@/services/liquido-graphql-client.js"
 import EventBus from "@/services/event-bus.js"
@@ -90,7 +91,7 @@ export default {
 	},
 	computed: {
 		showDebugLog() {
-			return false // process.env.NODE_ENV !== 'production'
+			return process.env.NODE_ENV !== 'production'
 		}
 	},
 	// watch the `$route` to determine the transition to use
@@ -98,7 +99,7 @@ export default {
 	watch: {
 		$route(to, from) {
 			//console.log("$route change from " + from.name + " to " + to.name)
-			this.transitionName = ""  // default: no transition ("fade" is too much)
+			this.transitionName = "fade"  // default transition: fade between pages
 			const fromOrder = page_order[from.name]
 			const toOrder = page_order[to.name]
 			if (fromOrder && toOrder) {	
@@ -122,16 +123,22 @@ export default {
 		},
 	},
 
+	created() {
+
+	},
+
 	mounted() {
 		// Enable my awesome mobile debug log on mobile devices.
-		// This has some consequences ... be carefull ... you for example loose context.
+		// This has some consequences ... be carefull ... you for example loose context and this conflicts with "loglevel" lib!
 		// All log messages will come from mobile-debug-log.vue
 		//this.$refs["mobileDebugLogRef"]?.redefineConsoleMethods()
+
 	
 		this.$refs["mobileDebugLogRef"]?.info(config.LIQUIDO_API_URL)
-		this.$refs["mobileDebugLogRef"]?.info(config)
-
-		// Check if we can reach the liquido backend		
+		this.$refs["mobileDebugLogRef"]?.debug(config)
+		log.debug("Full LIQUIDO config:\n" + JSON.stringify(config, null, 2))
+		
+		// Check if we can reach the liquido backend
 		api.pingApi()
 			.then(() => {
 				console.log("We are online and backend is reachable at "+config.LIQUIDO_API_URL)
@@ -142,11 +149,6 @@ export default {
 					console.log("Login is expired")
 					if (this.$route.name !== "login") this.$router.push({name: "login"})
 				} else {
-					if (process.env.NODE_ENV == 'development') {
-						//HACK: Must load backend once to accept self signed cert in Firefox
-						//console.log("Quick Hack: trying to load: " + config.LIQUIDO_API_URL + '/graphql/schema.graphql')
-						//document.location.href = config.LIQUIDO_API_URL + '/graphql/schema.graphql'
-					}
 					console.error("Cannot reach backend at "+config.LIQUIDO_API_URL, res)
 					this.showWarning(this.$t("BackendNotReachable"));
 				}
