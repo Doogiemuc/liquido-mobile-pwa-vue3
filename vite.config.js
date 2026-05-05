@@ -20,8 +20,14 @@ export default defineConfig({
 		host: true, // "0.0.0.0",  				// "0.0.0.0" = listen on all adresses, incl. LAN and public adresses
 		port: 3001,
 		strictPort: true,    							// only use this port. Exit if not available
-		allowedHosts: ["localhost", "127.0.0.1", ".fly.dev"],
+		//allowedHosts: ["localhost", "127.0.0.1"],
+		// Works, but you loose the context/filename where the log came from.
+		forwardConsole: {
+			unhandledErrors: true,
+			logLevels: ['debug', 'info', 'log', 'warn', 'error']
+		},
 		
+
 		// Problems with Cross-origin resource sharing (CORS)? 
 		// Either allow all origins in the backend (see application.properties)
 		//   OR
