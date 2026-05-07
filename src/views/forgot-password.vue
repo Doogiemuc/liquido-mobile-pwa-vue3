@@ -172,6 +172,7 @@ export default {
 	},
 	
 	created() {
+		
 		if (this.email && this.resetPasswordToken) {
 			this.$store.setHeaderTitle(this.ForgotPassword)
 			this.pageTitle = this.$t("ResetPassword")
@@ -185,6 +186,8 @@ export default {
 			this.resetPasswordSuccessMessage=null
 			this.resetPasswordErrorMessage=null
 		}
+		this.$store.setHeaderTitle(this.pageTitle)
+		this.$store.setHeaderBackTarget("BACK")
 	},
 	mounted() {
 		this.$root.scrollToTop()

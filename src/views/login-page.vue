@@ -5,7 +5,7 @@
 		<h1 id="login-page" class="page-title">{{ pageTitle }}</h1>
 
 		<!-- Default Login with email & password  -->
-		<div class="card" id="loginCard">
+		<div class="card loginCard" id="loginCard">
 			<div class="card-body">
 
 				<div class="text-center mb-3">
@@ -68,7 +68,7 @@
 					{{ loginErrorMessage }}
 				</div>
 
-				<div :class="['password-field-animation', { 'is-hidden': !showLoginExtras }]">
+				<div id="loginExtras">
 
 					<div class="horizontal-line">
 						<span>
@@ -81,7 +81,7 @@
 							<!-- Signin with SMS -->
 							<button type="button"
 								class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
-								@click="showSmsLoginCard = true">
+								@click="$router.push({ name: 'loginSms' })">
 								<i class="fa-solid fa-comment-sms"></i>
 								<span class="flex-grow-1 text-center">{{ $t("SMS") }}</span>
 							</button>
@@ -124,51 +124,13 @@
 		</div>
 
 		<!-- Password forgotten Link -->
-		<div :class="['forgot-password-link', 'my-3', { 'is-hidden': !showLoginExtras }]">
+		<div class="muted-centered-link my-3">
 			<router-link id="forgotPasswordLink" :to="{ name: 'forgotPassword' }">{{ $t('ForgotPassword') }}</router-link>
 		</div>
 
-		<!-- Login via SMS -->
-		<div v-if="showSmsLoginCard" class="card border-0 shadow-sm mb-4">
-			<div class="card-header">
-				{{ $t("LoginViaSms") }}
-			</div>
-			<div class="card-body">
-				<p>{{ $t('LoginViaSmsInfo') }}</p>
-				<liquido-input id="mobilephoneInput" v-model="mobilephone" v-model:state="mobilephoneInputState"
-					type="mobilephone" class="mb-3" :label="$t('YourMobilephone')" :placeholder="$t('MobilephonePlacehoder')"
-					:invalid-feedback="$t('MobilephoneInvalid')" />
-				<div class="text-end">
-					<button id="requestTokenButton" :disabled="requestTokenButtonDisabled" class="btn btn-primary"
-						@click="requestAuthToken">
-						<div v-if="waitUntilNextRequestSecs > 0">
-							{{ $t('TokenSent') }}&nbsp;<div class="spinner-border spinner-border-sm" role="status"></div>
-						</div>
-						<div v-else>
-							{{ $t('RequestTokenButton') }}
-						</div>
-					</button>
-				</div>
-
-				<liquido-input id="authTokenInput" v-model="twillioAuthToken" v-model:state="authTokenInputState" type="text"
-					placeholder="123456" class="mb-3" :label="$t('AuthTokenLabel')"
-					:invalid-feedback="$t('authTokenInputInvalid')" :disabled="!tokenSentSuccessfully" :minLength=6 :maxLength=6
-					:required="true" :show-counter="true">
-				</liquido-input>
-
-				<div v-if="tokenSentSuccessfully && !tokenErrorMessage" id="tokenSuccessMessage"
-					class="alert alert-success mt-3">
-					{{ $t("AuthtokenSentSuccessfully") }}
-				</div>
-				<div v-if="tokenErrorMessage" id="tokenErrorMessage" class="alert alert-danger mt-3">
-					{{ tokenErrorMessage }}
-				</div>
-			</div>
-		</div>
-
 		<!-- Register as a new user -->
-		<div class="forgot-password-link my-3">
-			<router-link id="forgotPasswordLink" :to="{ name: 'welcome' }">{{ $t('Register') }}</router-link>
+		<div class="muted-centered-link my-3">
+			<router-link id="registerLink" :to="{ name: 'welcome' }">{{ $t('Register') }}</router-link>
 		</div>
 
 		<div v-if="showDevLogin" class="d-flex flex-column px-3" style="margin-top: 8rem;">
@@ -198,8 +160,6 @@ import liquidoHeader from "@/components/liquido-header.vue"
 import api from "@/services/liquido-graphql-client.js"
 import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
 import webauthnService from "@/services/webauthn-service.js"
-
-const REQUEST_THROTTLE_SECS = 10
 
 /** 
  * All possible error cases, used in automated tests.
@@ -240,21 +200,6 @@ export default {
 				SMS: "SMS",
 				EmailLoginLink: "Email Link",  // Login via Link in email
 
-				// Login via SMS
-				LoginViaSms: "SMS Login",	
-				LoginViaSmsInfo: "Ich schicke dir einen Zahlencode auf dein Handy. Mit diesem kannst du dich dann hier einloggen.",
-				YourMobilephone: "Deine Handynummer",
-				MobilephonePlacehoder: "0151 123456",
-				MobilephoneInvalid: "Keine gültige Handynummer",
-				RequestTokenButton: "Login-Token anfordern",
-				TokenSent: "SMS verschickt ...",
-				AuthTokenLabel: "Login-Token aus SMS",
-				authTokenInputInvalid: "Der Login-Token hat genau sechs Ziffern.",
-				MobilephoneNotFound: "Tut mir leid, ich kenne diese Telefonnummer in LIQUIDO nicht. Bitte <a href='/'>registriere dich zuerst.</a>",
-				TokenInvalid: "Der eingegebene Login-Token wurde nicht akzeptiert. Hast du dich vielleicht einfach nur vertippt? Bitte versuche es noch einmal.",
-				AuthtokenSentSuccessfully: "Ok, die SMS wurde verschickt. Bitte gib den Login-Token aus der SMS ein.",
-				RequestAuthTokenError: "Login-Token konnte nicht angefordert werden. Bitte versuche es noch einmal.",
-
 				// Google Login
 				GoogleLoginCurrentlyNotAvailable: "Der Google Login ist leider gerade nicht verfügbar.",
 				GoogleLoginFailed: "Google-Login fehlgeschlagen.",
@@ -288,8 +233,6 @@ export default {
 				Google: "Google",
 				Email: "Email",
 				Telegram: "Telegram",
-				LoginViaSms: "SMS Login",
-				LoginViaSmsInfo: "I will send you a numeric code via SMS which you can use to login.",
 				ForgotPassword: "Forgot password?",
 				Register: "Register",
 				DevLoginAdmin: "devLogin: Admin",
@@ -337,16 +280,6 @@ export default {
 			emailErrorMessage: undefined,
 			emailCode: undefined,
 
-			// Login via SMS
-			showSmsLoginCard: false,
-			mobilephone: "",
-			twillioAuthToken: undefined,		// twilio authToken from SMS 
-			mobilephoneInputState: STATE.INIT,    // synced states from liquido-inputs
-			authTokenInputState: STATE.INIT,      // synced states from liquido-inputs
-			waitUntilNextRequestSecs: 0,    // Throttling: Only allow request auth token once every few seconds
-			tokenSentSuccessfully: false,  	// token request returned success from backend. SMS should have been sent successfully
-			tokenErrorMessage: undefined,   // we show different error messages, depending on error code from backend
-
 			//TODO: count failed login attempts and then offer additional help
 		}
 	},
@@ -360,11 +293,8 @@ export default {
 		loginWithWebAuthnButtonDisabled() {
 			return !this.webAuthnAvailable || this.webAuthnLoginInProgress || this.emailInputState !== STATE.VALID
 		},
-		requestTokenButtonDisabled() {
-			return this.mobilephoneInputState !== STATE.VALID || this.waitUntilNextRequestSecs > 0
-		},
 		showLoginExtras() {
-			return this.emailInputState === STATE.VALID && !!this.emailInputVal
+			return true // this.emailInputState === STATE.VALID && !!this.emailInputVal
 		},
 		graphQlSchmeaURL() {
 			return config.LIQUIDO_API_URL + '/graphql/schema.graphql'
@@ -385,12 +315,6 @@ export default {
 				this.cancelEmailCheck()
 			}
 		},
-		/** UX: When last character of auth token is entered and token is valid, then immideately try to login with it. No extra click necessary. */
-		authTokenInputState: function (newVal) {
-			if (newVal === true) {
-				this.loginWithAuthToken()
-			}
-		}
 	},
 	created() {
 		this.$store.setHeaderTitle(this.pageTitle)
@@ -695,74 +619,6 @@ export default {
 		},
 
 
-		// =============== login via Twillio (SMS) authToken ==================
-
-		/** 
-		 * Request a on time token for authentication. 
-		 * Be nice to our backend API. We only allow this request once every n seconds.
-		 */
-		requestAuthToken() {
-			if (this.waitUntilNextRequestSecs > 0) return
-			this.waitUntilNextRequestSecs = REQUEST_THROTTLE_SECS
-
-			let requestThrottler = setInterval(() => {
-				if (this.waitUntilNextRequestSecs > 0) {
-					this.waitUntilNextRequestSecs--
-				} else {
-					clearInterval(requestThrottler)
-					this.waitUntilNextRequestSecs = 0
-				}
-			}, 1000);
-
-			api.logout()
-			this.twillioAuthToken = undefined
-			this.tokenErrorMessage = undefined
-			this.emailErrorMessage = undefined
-			// WHEN testUser loggs in, THEN also send devLoginToken, so that backend fakes the request and will not call Twilio.
-			let devLoginToken = this.mobilephone === config.devLogin.admin.mobilephone ? config.devLogin.token : undefined
-			console.debug("requestAuthToken for", this.mobilephone, devLoginToken)
-
-			api.requestAuthToken(this.mobilephone, devLoginToken)
-				.then(res => {
-					console.debug("Auth token requested successfull.", res)
-					this.tokenSentSuccessfully = true
-					this.tokenErrorMessage = undefined
-				})
-				.catch(err => {
-					if (err.response &&
-						err.response.data &&
-						err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_MOBILE_NOT_FOUND) {
-						this.waitUntilNextRequestSecs = 0
-						this.tokenSentSuccessfully = false
-						this.tokenErrorMessage = this.$t("MobilephoneNotFound")
-					} else {
-						console.error("Cannot requestAuthToken", err)
-						this.waitUntilNextRequestSecs = 1
-						this.tokenSentSuccessfully = false
-						this.tokenErrorMessage = this.$t("RequestAuthTokenError")
-					}
-				})
-		},
-
-		/**
-		 * Login with the autoToken that the user has received and
-		 * that he has manually entered. (2FA)
-		 */
-		loginWithAuthToken() {
-			this.tokenErrorMessage = undefined
-			api.loginWithAuthToken(this.mobilephone, this.twillioAuthToken)
-				.then(() => {
-					this.$root.gotoTeam()
-				})
-				.catch(err => {
-					// Show a human readable error message
-					console.error("Entered auth token is not valid", err)
-					this.tokenErrorMessage = this.$t("TokenInvalid")
-				})
-		},
-
-
-
 		// =============== login via E-Mail magic link ==================
 
 
@@ -823,7 +679,7 @@ export default {
 </script>
 
 <style>
-#loginCard {
+.loginCard {
 	margin-left: 1rem;
 	margin-right: 1rem;
 
@@ -873,10 +729,8 @@ export default {
 	padding: 0 1rem;
 }
 
-.forgot-password-link {
+.muted-centered-link {
 	text-align: center;
-	font-size: 0.8rem;
-
 	a {
 		color: gray !important;
 	}

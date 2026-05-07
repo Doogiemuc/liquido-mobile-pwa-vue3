@@ -47,6 +47,7 @@ const page_order = {
 	"index": 0,
 	"welcome": 1,
 	"login": 1,     // welcome and login are on the same level, so they fade instead of sliding sideways
+	"loginSms": 2,
 	"forgotPassword": 2,
 	"userhome": 9,
 	"team": 10,
@@ -56,9 +57,6 @@ const page_order = {
 	"addProposal": 14,
 	"castVote": 15,
 }
-
-/** save and restore the up/down scroll position of polls page (that shows the possibly long list of polls)  */
-let pollsScrollPos = undefined
 
 /** Liquido Root App */
 export default {

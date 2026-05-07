@@ -96,6 +96,14 @@ const routes = [
 			public: true
 		}
 	},
+	{
+		path: "/login-via-sms",
+		name: "loginSms",
+		component: () => import("@/views/login-via-sms.vue"),
+		meta: {
+			public: true
+		}
+	},
 	{	
 		path: "/resetPassword",
 		name: "resetPassword",
