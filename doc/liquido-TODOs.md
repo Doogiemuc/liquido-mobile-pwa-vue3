@@ -21,9 +21,9 @@
 
  * Finally finalize the final login flow :-) Login via
    * Google - DONE
-	 * Apple 
+	 * [Login with Apple](https://developer.apple.com/documentation/signinwithapple/configuring-your-webpage-for-sign-in-with-apple)
 	 * Authy App
-	 * SMS
+	 * SMS - work in progress
 
  * Settings:
    * Can team members create polls?

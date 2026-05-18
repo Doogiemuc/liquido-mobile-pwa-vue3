@@ -24,15 +24,16 @@
 					:feedback-placehoder=true
 					:invalid-feedback="$t('emailInvalid')"/>
 
-				<div id="requestPasswordResetErrorMessage" class="alert alert-danger" v-if="requestPasswordResetErrorMessage">
+				<div id="requestPasswordResetErrorMessage" class="alert alert-danger mt-3" v-if="requestPasswordResetErrorMessage">
 					{{ requestPasswordResetErrorMessage }}
 				</div>
 
-				<div id="requestPasswordResetSuccessMessage" class="alert alert-success" v-if="requestPasswordResetSuccessMessage">
+				<div id="requestPasswordResetSuccessMessage" class="alert alert-success mt-3" v-if="requestPasswordResetSuccessMessage">
 					{{ requestPasswordResetSuccessMessage }}
 				</div>	
 
 				<button id="requestPasswordResetButton" type="button" class="btn btn-primary my-3 w-100" 
+					v-if="!requestPasswordResetSuccessMessage"
 					@click="requestPasswordReset"
 					:disabled="requestPasswordResetButtonDisabled">
 					{{ $t('SendMail') }}
@@ -162,11 +163,11 @@ export default {
 	},
 	computed: {
 		requestPasswordResetButtonDisabled() {
-			return this.emailInputState !== STATE.VALID || this.resetPasswordSuccessMessage !== null
+			return this.emailInputState !== STATE.VALID || this.requestPasswordResetSuccessMessage !== null
 		},
 
 		resetPasswordButtonDisabled() {
-			return this.newPasswordInput1State !== STATE.VALID || this.newPasswordInput2State !== STATE.VALID
+			return this.newPasswordInput1State !== STATE.VALID || this.newPasswordInput2State !== STATE.VALID || this.resetPasswordSuccessMessage !== null
 		},
 
 	},

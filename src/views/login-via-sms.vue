@@ -14,6 +14,7 @@
 					id="mobilephoneInput"
 					v-model="mobilephone"
 					v-model:state="mobilephoneInputState"
+					@keyup="mobilephoneInputKeyUp"
 					type="mobilephone"
 					class="mb-3"
 					:label="$t('YourMobilephone')"
@@ -24,11 +25,11 @@
 					<button
 						id="requestTokenButton"
 						:disabled="requestTokenButtonDisabled"
-						class="btn btn-primary"
+						class="btn btn-primary w-100"
 						@click="requestAuthToken"
 					>
 						<div v-if="waitUntilNextRequestSecs > 0">
-							{{ $t('TokenSent') }}&nbsp;<div class="spinner-border spinner-border-sm" role="status"></div>
+							{{ $t('TokenSent') }}
 						</div>
 						<div v-else>
 							{{ $t('RequestTokenButton') }}
@@ -39,8 +40,7 @@
 				<div v-if="tokenSentSuccessfully && !tokenErrorMessage" id="tokenSuccessMessage" class="alert alert-success mt-3">
 					{{ $t("AuthtokenSentSuccessfully") }}
 				</div>
-				<div v-if="tokenErrorMessage" id="tokenErrorMessage" class="alert alert-danger mt-3">
-					{{ tokenErrorMessage }}
+				<div v-if="tokenErrorMessage" id="tokenErrorMessage" class="alert alert-danger mt-3" v-html="tokenErrorMessage">
 				</div>
 
 				<div v-if="tokenSentSuccessfully" class="password-field-animation mt-3">
@@ -103,7 +103,7 @@ export default {
 				AuthTokenLabel: "Login-Token aus SMS",
 				authTokenInputInvalid: "Der Login-Token hat genau sechs Ziffern.",
 				MobilephoneNotFound: "Tut mir leid, ich kenne diese Telefonnummer in LIQUIDO nicht. Bitte <a href='/'>registriere dich zuerst.</a>",
-				TokenInvalid: "Der eingegebene Login-Token wurde nicht akzeptiert. Hast du dich vielleicht einfach nur vertippt? Bitte versuche es noch einmal.",
+				TokenInvalid: "Der eingegebene Login-Token ist nicht gültig. Hast du dich vielleicht einfach nur vertippt? Bitte versuche es noch einmal.",
 				AuthtokenSentSuccessfully: "Ok, die SMS wurde verschickt. Bitte gib den Login-Token aus der SMS ein.",
 				RequestAuthTokenError: "Login-Token konnte nicht angefordert werden. Bitte versuche es noch einmal.",
 				BackToLogin: "Zuruck zum Login"
@@ -156,6 +156,12 @@ export default {
 		this.$root.scrollToTop()
 	},
 	methods: {
+		mobilephoneInputKeyUp(event) {
+			if (event && event.key === "Enter") {
+				this.requestAuthToken()
+			}
+		},
+
 		requestAuthToken() {
 			if (this.waitUntilNextRequestSecs > 0) return
 			this.waitUntilNextRequestSecs = REQUEST_THROTTLE_SECS

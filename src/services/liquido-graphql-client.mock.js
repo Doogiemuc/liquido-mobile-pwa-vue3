@@ -1,9 +1,8 @@
 import axios from "axios"
 import { get, isValidString, set } from "@kubric/litedash"
+import config from "config"
 import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
 import LiquidoExceptionCodes from "@/services/LiquidoExceptionCodes.js"
-
-const MOCK_SMS_TOKEN = "123456"
 
 const deepClone = val => JSON.parse(JSON.stringify(val))
 const nowIso = () => new Date().toISOString()
@@ -165,7 +164,7 @@ const queryHandlers = {
 		if (!member) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_MOBILE_NOT_FOUND, "Unknown mobilephone")
 		}
-		set(mockState, `issuedAuthTokensByMobile.${mobilephone}`, MOCK_SMS_TOKEN)
+		set(mockState, `issuedAuthTokensByMobile.${mobilephone}`, config.devLogin.mockSmsToken)
 		return true
 	},
 	loginWithAuthToken: query => {

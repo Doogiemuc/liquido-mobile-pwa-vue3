@@ -28,6 +28,7 @@ export default {
 	devLogin: {
 		teamName: "DevLogin Team",
 		token: "XXXXX_DevLoginToken",
+		mockSmsToken: "123456",
 		member: {
 			name: "DevLogin Member",
 			email: "membr47113@liquido.vote",
