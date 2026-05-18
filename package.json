@@ -17,6 +17,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@kubric/litedash": "^1.0.0",
     "@simplewebauthn/browser": "^13.2.2",
     "@vitejs/plugin-vue": "^6.0.1",
     "axios": "^1.6.2",
