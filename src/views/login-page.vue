@@ -6,23 +6,24 @@
 
 		<!-- Default Login with email & password  -->
 		<div class="card loginCard" id="loginCard">
+		<div class="card login-page-card" id="loginCard">
 			<div class="card-body">
 
 				<div class="text-center mb-3">
 					<i class="fas fa-envelope fa-3x" style="color: var(--primary)"></i>
 				</div>
 
-				<liquido-input 
-					id="loginEmailInput"
-					type="email"
-					ref="emailInput"
-					v-model="emailInputVal"
-					@update:state="emailInputState = $event"
-					@keyup="emailInputKeyUp"
-  				@blur="scheduleEmailCheck"
+					<liquido-input 
+						id="loginEmailInput"
+						type="email"
+						autocomplete="username"
+						ref="emailInput"
+						v-model="emailInputVal"
+						@update:state="emailInputState = $event"
+						:validFunc="loginEmailValidFunc"
 					:required=true 
 					:placeholder="$t('emailPlaceholder')"
-					:invalid-feedback="$t('emailInvalid')"
+						:invalid-feedback="emailInputInvalidFeedback"
 					:feedback-placeholder="false"
 					tabindex="1" />
 
@@ -42,9 +43,10 @@
 					</button>
 
 					<!-- Password input field -->
-					<liquido-input 
-						id="loginPasswordInput"
-						v-model="passwordInputVal"
+						<liquido-input 
+							id="loginPasswordInput"
+							autocomplete="current-password"
+							v-model="passwordInputVal"
 						@update:state="passwordInputState = $event"
 						@keypress.enter="loginWithEmailPassword"
 						class="mt-2"
@@ -56,6 +58,9 @@
 						:feedback-placeholder="false"  
 						tabindex="3" />
 				</div>
+
+				{{ "email input state = " + emailInputState }} <br>
+				{{ "password input state = " + passwordInputState }}		
 
 				<button id="loginWithEmailPasswordButton" type="button"
 					class="btn btn-primary w-100 text-center position-relative mt-3" :disabled="loginWithEmailPasswordButtonDisabled"
@@ -123,14 +128,52 @@
 			</div>
 		</div>
 
+		<!-- Login via SMS -->
+		<div v-if="showSmsLoginCard" class="card login-page-card mb-4">
+			<div class="card-header">
+				{{ $t("LoginViaSms") }}
+			</div>
+			<div class="card-body">
+				<p>{{ $t('LoginViaSmsInfo') }}</p>
+				<liquido-input id="mobilephoneInput" v-model="mobilephone" v-model:state="mobilephoneInputState"
+					type="mobilephone" class="mb-3" :label="$t('YourMobilephone')" :placeholder="$t('MobilephonePlacehoder')"
+					:invalid-feedback="$t('MobilephoneInvalid')" />
+				<div class="text-end">
+					<button id="requestTokenButton" :disabled="requestTokenButtonDisabled" class="btn btn-primary"
+						@click="requestAuthToken">
+						<div v-if="waitUntilNextRequestSecs > 0">
+							{{ $t('TokenSent') }}&nbsp;<div class="spinner-border spinner-border-sm" role="status"></div>
+						</div>
+						<div v-else>
+							{{ $t('RequestTokenButton') }}
+						</div>
+					</button>
+				</div>
+
+				<liquido-input id="authTokenInput" v-model="twillioAuthToken" v-model:state="authTokenInputState" type="text"
+					placeholder="123456" class="mb-3" :label="$t('AuthTokenLabel')"
+					:invalid-feedback="$t('authTokenInputInvalid')" :disabled="!tokenSentSuccessfully" :minLength=6 :maxLength=6
+					:required="true" :show-counter="true">
+				</liquido-input>
+
+				<div v-if="tokenSentSuccessfully && !tokenErrorMessage" id="tokenSuccessMessage"
+					class="alert alert-success mt-3">
+					{{ $t("AuthtokenSentSuccessfully") }}
+				</div>
+				<div v-if="tokenErrorMessage" id="tokenErrorMessage" class="alert alert-danger mt-3">
+					{{ tokenErrorMessage }}
+				</div>
+			</div>
+		</div>
+
 		<!-- Password forgotten Link -->
-		<div class="muted-centered-link my-3">
+		<div class="forgot-password-link my-3">
 			<router-link id="forgotPasswordLink" :to="{ name: 'forgotPassword' }">{{ $t('ForgotPassword') }}</router-link>
 		</div>
 
 		<!-- Register as a new user -->
-		<div class="muted-centered-link my-3">
-			<router-link id="registerLink" :to="{ name: 'welcome' }">{{ $t('Register') }}</router-link>
+		<div class="register-link my-3">
+			<router-link id="RegisterLink" :to="{ name: 'welcome' }">{{ $t('Register') }}</router-link>
 		</div>
 
 		<div v-if="showDevLogin" class="d-flex flex-column px-3" style="margin-top: 8rem;">
@@ -161,12 +204,15 @@ import api from "@/services/liquido-graphql-client.js"
 import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
 import webauthnService from "@/services/webauthn-service.js"
 
+const REQUEST_THROTTLE_SECS = 10
+const EMAIL_VALIDATION_DEBOUNCE_MS = 500
+const eMailRegEx = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,256}$/
+
 /** 
  * All possible error cases, used in automated tests.
  * (Never ever check for translated texts in automated tests! Instead use data-* attributes.)
  */
 const ERROR = {
-	UNKNOWN_USER_EMAIL: 1,
 	PASSWORD_LOGIN_FAILED: 2,
 	WEB_AUTHN_LOGIN_FAILED: 3,
 	GOOGLE_LOGIN_NOT_AVAILABLE: 4
@@ -183,7 +229,7 @@ export default {
 				passwordPlaceholder: "Passwort",
 				emailInvalid: "Ungültige Email. Vielleicht nur vertippt?",
 				emailEmpty: "Bitte gib deine E-Mail Adresse ein.",
-				emailNotFound: "Ich kenne diese E-Mail nicht.",
+				emailNotFound: "Tut mir leid, ich kenne diese E-Mail nicht.",
 				passwordInputIsInvalid: "Mindestens 10 Zeichen.",
 				passwordInputIsEmpty: "Bitte gib dein Passwort ein.",
 				loginFailed: "Login fehlgeschlagen. Bitte check deine E-Mail und dein Passwort.",
@@ -268,12 +314,14 @@ export default {
 			loginErrorMessage: undefined, 	// error message below email password input
 			loginErrorMessageId: undefined, // this is used for testing
 
+			emailCheck: { status: "INIT" },	// "INIT", "INVALID_SYNTAX", "REGISTERED", "UNKNOWN"
+
 			// WebAuthn login
-			emailExistsInBE: false,						// Email has been checked in the backend and is valid
 			webAuthnAvailable: false,				// Whether the email has a registered WebAuthn credential
-			webAuthnCheckInProgress: false, // Prevent multiple concurrent checks
 			webAuthnLoginInProgress: false,	// Prevent multiple concurrent login attempts
 			emailCheckDebounceId: null,
+
+			emailValidationPendingResolvers: [],
 
 			// Login via E-Mail magic link
 			emailSentSuccessfully: false,
@@ -294,27 +342,35 @@ export default {
 			return !this.webAuthnAvailable || this.webAuthnLoginInProgress || this.emailInputState !== STATE.VALID
 		},
 		showLoginExtras() {
-			return true // this.emailInputState === STATE.VALID && !!this.emailInputVal
+			return this.emailInputState === STATE.VALID && !!this.emailInputVal
+		},
+		emailInputInvalidFeedback() {
+			const status = this.emailCheck.status
+			if (status === "INVALID_SYNTAX") {
+				return this.$t("emailInvalid")
+			}
+			if (status === "UNKNOWN") {
+				return this.$t("emailNotFound")
+			}
+			return this.$t("emailInvalid")
 		},
 		graphQlSchmeaURL() {
 			return config.LIQUIDO_API_URL + '/graphql/schema.graphql'
 		}
 	},
 	watch: {
-		emailInputVal() {
-			if (this.emailInputState === STATE.VALID) {
-				this.scheduleEmailCheck()
-			} else {
-				this.cancelEmailCheck()
+		emailInputVal(newVal, oldVal) {
+			if (newVal !== oldVal) {
+				this.emailCheck = { status: "INIT" }
+				this.webAuthnAvailable = false
 			}
 		},
-		emailInputState(newVal) {
-			if (newVal === STATE.VALID) {
-				this.scheduleEmailCheck()
-			} else {
-				this.cancelEmailCheck()
+		/** UX: When last character of auth token is entered and token is valid, then immideately try to login with it. No extra click necessary. */
+		authTokenInputState: function (newVal) {
+			if (newVal === true) {
+				this.loginWithAuthToken()
 			}
-		},
+		}
 	},
 	created() {
 		this.$store.setHeaderTitle(this.pageTitle)
@@ -325,30 +381,93 @@ export default {
 			this.loginWithEMailToken()
 			return
 		}
-		this.$root.scrollToTop()
 		let emailInputElem = document.getElementById("loginEmailInput")
 		emailInputElem?.focus()
 
 		//TODO: When user is already logged in (JWT from local storage), THEN show a "welcome back" message. User can jump to his team. Or join another team
 		//TODO: Shall I allow to login as a different user?  NO => not in a voting app!
 	},
+	beforeUnmount() {
+		this.cancelEmailCheck(true)
+	},
 	methods: {
-
-		scheduleEmailCheck() {
-			this.cancelEmailCheck()
-			this.emailCheckDebounceId = setTimeout(() => {
-				this.emailCheckDebounceId = null
-				if (this.emailInputState === STATE.VALID) {
-					this.checkEmailForLogin()
-				}
-			}, 1000)
-		},
-
-		cancelEmailCheck() {
+		cancelEmailCheck(resolvePending = false) {
 			if (this.emailCheckDebounceId) {
 				clearTimeout(this.emailCheckDebounceId)
 				this.emailCheckDebounceId = null
 			}
+			if (resolvePending) {
+				this.emailValidationPendingResolvers.forEach(resolve => resolve({ status: "CANCELED" }))
+				this.emailValidationPendingResolvers = []
+			}
+		},
+
+		checkLoginEmailDebounced(email) {
+			this.cancelEmailCheck(true)
+			return new Promise(resolve => {
+				this.emailValidationPendingResolvers.push(resolve)
+				this.emailCheckDebounceId = setTimeout(async () => {
+					this.emailCheckDebounceId = null
+					this.emailValidationPendingResolvers = this.emailValidationPendingResolvers.filter(pendingResolve => pendingResolve !== resolve)
+					try {
+						const result = await api.checkLoginEmail(email)
+						resolve(result)
+					} catch (err) {
+						console.warn("Could not check login email in backend", err)
+						resolve({ status: "ERROR" })
+					}
+				}, EMAIL_VALIDATION_DEBOUNCE_MS)
+			})
+		},
+		/**
+		 * Custom validator function for the email input field.
+		 * 
+		 * Validation flow:
+     *  - Local email syntax check: If the email doesn't match the regex, it immediately returns false.
+     *  - Backend check: Initiate a debounced API call to check if that user is registered in the backend
+		 *  - If the check succeeds and user is registered, then save this.emailCheck = { status: "REGISTERED" }
+		 *  - Else if user is unknown the save this.emailCheck = { status: "UNKNOWN" }
+     *  - Canceled checks return { status: "CANCELED" }
+		 *  - For network errors, this method returns true (conservative fallback, assuming the email might be valid despite an HTTP error).
+		 */
+		async loginEmailValidFunc(email) {
+			// Normalize email: trim and lowercase.
+			const normalizedEmail = (email || "").trim().toLowerCase()
+
+			// IF email does not have valid syntax (regex), then store that and return false for: liquido-input field is not valid.
+			if (!normalizedEmail || !eMailRegEx.test(normalizedEmail)) {
+				this.emailCheck = { status: "INVALID_SYNTAX" }
+				return false
+			}
+
+			// Check if that user is registered with a (debounced) call to the backend.
+			this.emailCheck = { status: "INIT" }
+			this.emailCheck = await this.checkLoginEmailDebounced(normalizedEmail)
+			if (this.emailCheck.status === "CANCELED") {
+				return true
+			}
+
+			// IF user is registered, then store that, focus the password input field and return true.
+			if (this.emailCheck.status === "REGISTERED") {
+				this.webAuthnAvailable = this.emailCheck.webauthn
+				this.focusPasswordInput()
+				return true
+			}
+
+			if (this.emailInputVal !== normalizedEmail) {
+				return true
+			}
+
+			if (this.emailCheck.status === "UNKNOWN") {
+				this.webAuthnAvailable = false
+				return false
+			}
+
+			this.emailCheck = { status: "INIT" }
+			this.webAuthnAvailable = false
+
+			// Conservative fallback: do not hard-fail syntax-valid email on transient backend issues.
+			return true
 		},
 
 		// =============== Simple Login via E-Mail & Password ==================
@@ -380,73 +499,6 @@ export default {
 		},
 
 		// =============== WebAuthn Passwordless Login ==================
-
-		/**
-		 * WHEN user blurs the input field or presses enter, 
-		 * THEN the email adress is validated against the backend.
-		 * ELSE if this is just any other keypress in the email field,
-		 * THEN invalidate the emailInputField
-		 */
-		emailInputKeyUp(event) {
-			if (event.key === "Enter") {
-				this.passwordInputVal = undefined
-				this.scheduleEmailCheck()
-			} else {
-				this.emailExistsInBE = false
-				this.loginErrorMessage = null
-				this.loginErrorMessageId = undefined
-			}
-		},
-
-
-		/**
-		 * Check if the entered email is registered at all and wether it has a WebAuthn authenticator.
-		 * Called when loginEmailInput field is blurred or the Enter key is pressed.
-		 */
-		checkEmailForLogin() {
-			const requestedEmail = this.emailInputVal
-			//this.debugMsg = "checkEmailForLogin " + this.emailInputVal
-			console.log("checkEmailForLogin emailExistsInBE="+this.emailExistsInBE+ ", emailInputState="+this.emailInputState)
-			// Only check if emailInputField is valid and not already checking
-			if (this.emailInputState !== STATE.VALID || this.webAuthnCheckInProgress) {
-				return
-			}
-			this.webAuthnCheckInProgress = true
-			this.webAuthnAvailable = false
-			this.loginErrorMessage = null
-			this.loginErrorMessageId = undefined
-
-			api.checkLoginEmail(requestedEmail)
-				.then(response => {
-					if (this.emailInputVal !== requestedEmail || this.emailInputState !== STATE.VALID) {
-						return
-					}
-					this.emailExistsInBE = true
-					this.webAuthnAvailable = response.webauthn === true
-					// this.debugMsg = "checkEmailForLogin" + this.emailInputVal + " exists in BE"
-					console.debug("WebAuthn available for email:", this.webAuthnAvailable)
-					this.focusPasswordInput()
-				})
-				.catch(err => {
-					if (this.emailInputVal !== requestedEmail) {
-						return
-					}
-					if (err.response && err.response.status === 404) {
-						this.loginErrorMessage = this.$t("emailNotFound")
-						this.loginErrorMessageId = ERROR.UNKNOWN_USER_EMAIL
-					} else {
-						console.warn("Could not check WebAuthn availability", err)
-					}
-					this.webAuthnAvailable = false
-					this.emailExistsInBE = false
-				})
-				.finally(() => {
-					this.webAuthnCheckInProgress = false
-					if (this.emailInputVal !== requestedEmail && this.emailInputState === STATE.VALID) {
-						this.scheduleEmailCheck()
-					}
-				})
-		},
 
 		/**
 		 * Login with WebAuthn authenticator.
@@ -585,7 +637,6 @@ export default {
 			if (process.env.NODE_ENV !== "development" && process.env.NODE_ENV !== "test") return
 			api.logout()
 			api.devLogin(this.getDevLoginUserEmail("ADMIN"), config.devLogin.teamName, config.devLogin.token).then(() => {
-				this.$root.scrollToTop()
 				this.$root.gotoPolls()
 			}).catch(err => console.error("DevLogin Admin failed!", err))
 		},
@@ -596,7 +647,6 @@ export default {
 			api.logout()
 			api.devLogin(this.getDevLoginUserEmail("MEMBER"), config.devLogin.teamName, config.devLogin.token)
 				.then(() => {
-					this.$root.scrollToTop()
 					this.$root.gotoPolls()
 				})
 				.catch(err => console.error("DevLogin Member failed!", err))
@@ -635,7 +685,6 @@ export default {
 					this.emailSentSuccessfully = true
 				})
 				.catch(err => {
-					//this.$root.scrollToBottom()
 					if (err.response &&
 						err.response.data &&
 						err.response.data.liquidoErrorCode === api.err.CANNOT_LOGIN_EMAIL_NOT_FOUND) {
@@ -679,7 +728,8 @@ export default {
 </script>
 
 <style>
-.loginCard {
+
+.login-page-card {
 	margin-left: 1rem;
 	margin-right: 1rem;
 
@@ -729,7 +779,8 @@ export default {
 	padding: 0 1rem;
 }
 
-.muted-centered-link {
+.forgot-password-link,
+.register-link {
 	text-align: center;
 	a {
 		color: gray !important;

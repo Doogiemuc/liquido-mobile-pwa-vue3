@@ -87,6 +87,21 @@ context('Login Test', () => {
 		cy.get("#memberCards").contains(Cypress.env("admin").name)
 	})
 
+	it('Unknown email is shown as invalid inline', function() {
+		cy.intercept("GET", "**/webauthn/check-login-email*", {
+			statusCode: 404,
+			body: {}
+		})
+
+		cy.visit("/login")
+		cy.get("#login-page")
+
+		cy.get("#loginEmailInput").type("unknown-user@example.com").blur()
+
+		cy.get("#loginEmailInput").should("have.class", "is-invalid")
+		cy.get(".invalid-feedback").should("be.visible").and("not.be.empty")
+	})
+
 		
 	
 	it('Forgot password flow', function() {

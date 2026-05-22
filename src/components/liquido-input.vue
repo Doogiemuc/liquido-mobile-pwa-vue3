@@ -7,8 +7,8 @@
 
 		<input ref="input" :id="id" :name="name" :value="modelValue" :class="validClass" :type="inputType"
 			:placeholder="placeholder" :disabled="disabled" :required="required" :minlength="minLength" :maxlength="maxLength"
-			:pattern="pattern" class="form-control" @focus="onFocus" @input="onInput" @blur="onBlur" @keyup="$emit('keyup', $event)"
-			@change="$emit('change', $event)" />
+			:autocomplete="autocomplete" :pattern="pattern" class="form-control" @focus="onFocus" @input="onInput"
+			@blur="onBlur" @keyup="$emit('keyup', $event)" @change="onChange" />
 
 		<div class="iconRight">
 			<slot name="iconRight" />
@@ -56,7 +56,8 @@
 		</div>
 
 		<div v-if="showFeedbackPlaceholder" class="invalid-feedback-placeholder">
-			&nbsp; <!-- This div is only used to reserve space for the invalid feedback text, so that the input field does not jump up and down -->
+			&nbsp;
+			<!-- This div is only used to reserve space for the invalid feedback text, so that the input field does not jump up and down -->
 		</div>
 
 	</div>
@@ -147,6 +148,9 @@ export default {
 		/** Placeholder text shown dimmed inside the input (optional) */
 		placeholder: { type: String, default: undefined },
 
+		/** Native HTML autocomplete hint, e.g. username/current-password/email */
+		autocomplete: { type: String, default: undefined },
+
 		/** Is input currently disabled */
 		disabled: { type: Boolean, default: false },
 
@@ -194,11 +198,12 @@ export default {
 		return {
 			/** Current state of the input field. See state "enum" */
 			state: STATE.INIT,
-			
+
 			/** Function that will be used to validate the input value. */
 			internalValidFunc: this.validFunc,
 			showPassword: false,
 			isEditing: false,
+			validationRunId: 0,
 		}
 	},
 
@@ -210,7 +215,7 @@ export default {
 		 */
 		validClass() {
 			return {
-				"is-valid": this.state === STATE.VALID && this.isEditing && !this.disabled,
+				"is-valid": this.state === STATE.VALID && !this.disabled,
 				"is-invalid": this.state === STATE.INVALID,  // bootstrap will then show red frame and icon at the right
 				// all other states do not show any pseudo class
 			}
@@ -285,32 +290,9 @@ export default {
 	},
 
 	methods: {
-
-		onFocus() {
-			if (!this.disabled) this.isEditing = true
-		},
-
-		onInput(evt) {
-			if (!this.disabled) this.isEditing = true
-			this.$emit("update:modelValue", evt.target.value)
-		},
-
-		onBlur(evt) {
-			this.isEditing = false
-			this.validateField(true, evt.target.value)
-			this.$emit("blur", evt)
-		},
-
-		validateField(force = false, val = this.modelValue) {
-
-			if (this.state === STATE.VALIDATING)
-				return
-
-			const previousState = this.state
-
-			this.state = STATE.VALIDATING
-
-			const result = this.internalValidFunc(val)
+		applyValidationResult(result, previousState, force, runId) {
+			// Ignore stale async validator responses.
+			if (runId !== this.validationRunId) return
 
 			if (result === true) {
 				this.state = STATE.VALID
@@ -324,7 +306,65 @@ export default {
 			else {
 				this.state = STATE.INIT
 			}
+		},
 
+		onFocus() {
+			if (!this.disabled) this.isEditing = true
+		},
+
+		onInput(evt) {
+			if (!this.disabled) this.isEditing = true
+			this.$emit("update:modelValue", evt.target.value)
+		},
+
+		onChange(evt) {
+			if (!this.disabled) this.isEditing = true
+			// Safari/iOS autofill may update on change without firing the expected input sequence.
+			this.$emit("update:modelValue", evt.target.value)
+			this.$emit("change", evt)
+		},
+
+		onBlur(evt) {
+			this.isEditing = false
+			this.validateField(true, evt.target.value)
+			this.$emit("blur", evt)
+		},
+
+		validateField(force = false, val = this.modelValue) {
+			const runId = ++this.validationRunId
+			const previousState = this.state
+			this.state = STATE.VALIDATING
+			let result
+			try {
+				result = this.internalValidFunc(val)
+			} catch (err) {
+				console.warn("liquido-input validateField failed", err)
+				this.applyValidationResult(false, previousState, force, runId)
+				return
+			}
+
+			// Support async custom validators: validFunc may return Promise<boolean>.
+			if (result && typeof result.then === "function") {
+				const VALIDATION_TIMEOUT_MS = 3000
+				result
+					.then(asyncResult => {
+						this.applyValidationResult(asyncResult === true, previousState, force, runId)
+					})
+					.catch(err => {
+						console.warn("liquido-input async validFunc failed", err)
+						this.applyValidationResult(false, previousState, force, runId)
+					})
+				setTimeout(() => {
+					if (runId !== this.validationRunId) return
+					if (this.state === STATE.VALIDATING) {
+						console.warn("liquido-input async validFunc timed out after", VALIDATION_TIMEOUT_MS, "ms")
+						this.applyValidationResult(false, previousState, force, runId)
+					}
+				}, VALIDATION_TIMEOUT_MS)
+				return
+			}
+
+			this.applyValidationResult(result === true, previousState, force, runId)
 		},
 
 		defaultValidFunc(val) {
@@ -368,57 +408,57 @@ export default {
 </script>
 
 <style>
-	.liquido-input {
-		position: relative;
-		padding-top: 12px;
-	}
+.liquido-input {
+	position: relative;
+	padding-top: 12px;
+}
 
-	label {
-		position: absolute;
-		color: grey;
-		font-size: 12px;
-		font-weight: normal;
-		top: 3px;
-		left: 10px;
-		padding: 0 3px;
-		background: white;
-		border-radius: 5px;
-		&.disabled {
-			background-color: var(--subtle-bg);
-		}
-	}
+label {
+	position: absolute;
+	color: grey;
+	font-size: 12px;
+	font-weight: normal;
+	top: 3px;
+	left: 10px;
+	padding: 0 3px;
+	background: white;
+	border-radius: 5px;
 
-	.iconRight {
-		position: absolute;
-		top: 18px;
-		right: 0;
-		user-select: none;
-	}
-
-	.password-toggle {
-		position: absolute;
-		top: 17px;
-		right: 2em;
-		color: lightgrey;
-		user-select: none;
-	}
-
-	.counter {
-		position: absolute;
-		top: 18px;
-		right: 10px;
-		color: grey;
-	}
-
-	.invalid-feedback-placeholder {
-		/* same as bootstraps invalid-feedback */
-		width: 100%;
-  	margin-top: 0.25rem;
-  	font-size: 0.875em;
-	}
-
-	.liquido-input .form-control:disabled {
+	&.disabled {
 		background-color: var(--subtle-bg);
 	}
+}
 
+.iconRight {
+	position: absolute;
+	top: 18px;
+	right: 0;
+	user-select: none;
+}
+
+.password-toggle {
+	position: absolute;
+	top: 17px;
+	right: 2em;
+	color: lightgrey;
+	user-select: none;
+}
+
+.counter {
+	position: absolute;
+	top: 18px;
+	right: 10px;
+	color: grey;
+}
+
+.invalid-feedback-placeholder {
+	/* same as bootstraps invalid-feedback */
+	width: 100%;
+	margin-top: 0.25rem;
+	font-size: 0.875em;
+}
+
+.liquido-input .form-control:disabled {
+	background-color: var(--subtle-bg);
+}
 </style>

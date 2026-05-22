@@ -447,7 +447,7 @@ let graphQlApi = {
 	 * This method calls a special REST endpoint. No login is required to call this endpoint.
 	 * 
 	 * @param {String} email The user's email address
-	 * @return {Object } { email: "<registered_email>", webauthn: true }  or 404 if email is not registered
+	 * @return {Object } { status: "REGISTERED", email: "<registered_email>", webauthn: true }  or { status: "UNKNOWN" } if user is not registered
 	 */
 	async checkLoginEmail(email) {
 		if (!email) throw new Error("Email is required to check WebAuthn availability")
