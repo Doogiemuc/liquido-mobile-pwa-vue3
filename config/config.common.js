@@ -38,7 +38,7 @@ export default {
 		admin: {
 			name: "TestAdmin 4711",
 			email: "testadmin4711@liquido.vote",
-			mobileephone: "01515554711"
+			mobilephone: "01515554711"
 		}
 	}
 

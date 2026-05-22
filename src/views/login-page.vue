@@ -6,7 +6,6 @@
 
 		<!-- Default Login with email & password  -->
 		<div class="card loginCard" id="loginCard">
-		<div class="card login-page-card" id="loginCard">
 			<div class="card-body">
 
 				<div class="text-center mb-3">
