@@ -19,7 +19,7 @@
 		<div v-if="!loading" id="poll-list-wrapper" class="mb-5">
 
 			<transition-group name="poll-list" id="poll-list" tag="div">
-				<div v-for="poll in filteredPolls" :key="poll.id" class="poll-card-wrapper mb-3">
+				<div v-for="poll in filteredPolls" :key="poll.id" class="poll-card-wrapper">
 					<poll-card class="shadow-sm" :poll="poll" @click="goToPoll" />
 				</div>
 
@@ -300,7 +300,8 @@ export default {
 .poll-card-wrapper {
 	height: 7rem;
 	min-width: 80%;
-	min-height: 7rem;
+	/*min-height: 7rem;*/
+	margin-bottom: 1rem;
 	overflow: visible; /* for shadow */
 }
 
@@ -334,16 +335,26 @@ export default {
 
 
 /* Vue list transitions */
-.poll-list-leave-to,
-.poll-list-enter-from {
+/**** NEVER EVER TOUCH THESE!!! Or you'll never be able to repair the transition. This is extremely britle :-) *****/
+.poll-list-enter-active,
+.poll-list-leave-active {
+	transition: all 0.3s ease;
+	overflow: hidden;
+}
+
+/*
+.poll-list-move {
+	transition: transform 0.35s ease;
+}
+*/
+
+.poll-list-enter-from,
+.poll-list-leave-to {
 	opacity: 0;
 	transform: scaleY(0);
-	height: 0;
-	margin: 0;
-	padding: 0;
-}
-.poll-list-enter-active, .poll-list-leave-active .poll-card {
-	opacity: 0.5;
+	height: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
 }
 
 </style>
