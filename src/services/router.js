@@ -16,8 +16,8 @@ const routes = [
 		// and with expired JWT to /login
 	},
 	{
-		path: "/login",
-		name: "login",
+		path: "/login1",
+		name: "login1",
 		component: () => import("@/views/login-page.vue"),
 		props: route => ({
 			email: route.query.email,
@@ -28,8 +28,8 @@ const routes = [
 		}
 	},
 	{
-		path: "/login2",
-		name: "login2",
+		path: "/login",
+		name: "login",
 		component: () => import("@/views/login-page-v2.vue"),
 		props: route => ({
 			email: route.query.email,
