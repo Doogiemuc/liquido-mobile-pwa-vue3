@@ -437,7 +437,7 @@ export const initializeLiquidoGraphQlMock = function(graphQlApi, teamCache) {
 				console.log("MOCK: /check-login-email for " + email + " -> existing user")
 				config.adapter = config => {
 					return Promise.resolve({
-						data: { email: email, webauthn: false },
+						data: { status: "REGISTERED", email: email, webauthn: true },
 						status: 200,
 						statusText: "OK",
 						headers: { "Content-Type": "application/json" },
@@ -448,16 +448,13 @@ export const initializeLiquidoGraphQlMock = function(graphQlApi, teamCache) {
 			} else {
 				console.log("MOCK: /check-login-email for " + email + " -> email not registered")
 				config.adapter = config => {
-					return Promise.reject({
-						isAxiosError: true,
-						response: {
-							data: { msg: "Email not registered" },
-							status: 404,
-							statusText: "Not Found",
-							headers: { "Content-Type": "application/json" },
-							config: config,
-							request: {},
-						},
+					return Promise.resolve({
+						data: { status: "UNKNOWN", email: email, webauthn: false },
+						status: 200,
+						statusText: "OK",
+						headers: { "Content-Type": "application/json" },
+						config: config,
+						request: {},
 					})
 				}
 			}

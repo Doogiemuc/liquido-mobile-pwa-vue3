@@ -20,8 +20,8 @@
 						v-model="emailInputVal"
 						@update:state="emailInputState = $event"
 						:validFunc="loginEmailValidFunc"
-					:required=true 
-					:placeholder="$t('emailPlaceholder')"
+					  :required=true
+					  :placeholder="$t('emailPlaceholder')"
 						:invalid-feedback="emailInputInvalidFeedback"
 					:feedback-placeholder="false"
 					tabindex="1" />
@@ -32,7 +32,7 @@
 						v-if="webAuthnAvailable" 
 						id="loginWithWebAuthnButton" 
 						type="button" 
-						class="btn btn-primary w-100 d-flex align-items-center justify-content-center mt-3 mb-3"
+						class="btn btn-primary w-100 d-flex align-items-center justify-content-center my-3"
 						:disabled="loginWithWebAuthnButtonDisabled" 
 						@click="loginWithWebAuthn" 
 						tabindex="2"
@@ -57,9 +57,6 @@
 						:feedback-placeholder="false"  
 						tabindex="3" />
 				</div>
-
-				{{ "email input state = " + emailInputState }} <br>
-				{{ "password input state = " + passwordInputState }}		
 
 				<button id="loginWithEmailPasswordButton" type="button"
 					class="btn btn-primary w-100 text-center position-relative mt-3" :disabled="loginWithEmailPasswordButtonDisabled"

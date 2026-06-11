@@ -28,6 +28,18 @@ const routes = [
 		}
 	},
 	{
+		path: "/login2",
+		name: "login2",
+		component: () => import("@/views/login-page-v2.vue"),
+		props: route => ({
+			email: route.query.email,
+			emailToken: route.query.emailToken
+		}),
+		meta: {
+			public: true
+		}
+	},
+	{
 		path: "/welcome",
 		name: "welcome",
 		component: welcomeChat,
