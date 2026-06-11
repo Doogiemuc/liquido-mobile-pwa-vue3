@@ -19,47 +19,8 @@
 		<div v-if="!loading" id="poll-list-wrapper" class="mb-5">
 
 			<transition-group name="poll-list" id="poll-list" tag="div">
-				<div v-for="poll in filteredPolls" :key="poll.id" class="poll-card-wrapper">
-					<div class="poll-card card shadow-sm" @click="goToPoll(poll.id)">
-						<div class="card-body d-flex flex-nowrap align-items-center">
-							<!-- div class="flex-grow-0">
-								<div v-if="poll.status === 'ELABORATION'" class="poll-icon-elaboration">
-									<i class="far fa-comments" />
-								</div>
-								<div v-if="poll.status === 'VOTING'" class="poll-icon-voting">
-									<i class="fas fa-person-booth" />
-								</div>
-								<div v-if="poll.status === 'FINISHED'" class="poll-icon-finished">
-									<i class="fas fa-check-circle" />
-								</div>
-							</div -->
-							<div class="flex-grow-1">
-								<div class="poll-eyebrow">
-									<span v-if="poll.status === 'ELABORATION'" class="badge rounded-pill elaboration-pill">{{ $t('New') }}</span>
-									<span v-if="poll.status === 'VOTING'" class="badge rounded-pill voting-pill">{{ $t('InVoting') }}</span>
-									<span v-if="poll.status === 'FINISHED'" class="badge rounded-pill finished-pill">{{ $t('Finished') }}</span>
-									<span class="poll-created-date">{{ formatDate(poll.createdAt) }}</span>
-								</div>
-								<h2 class="poll-title">{{ poll.title }}</h2>
-								<div class="poll-footer">
-									<div v-if="poll.status=== 'ELABORATION'">
-										<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
-									</div>
-									<div v-if="poll.status === 'VOTING'">
-										<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
-									</div>
-									<div v-if="poll.status === 'FINISHED'">
-										<i class="fas fa-check-circle"></i>&nbsp;{{ $t('finished') }}
-									</div>
-									
-									<div v-if="poll.status === 'VOTING'"><i class="far fa-clock"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}</div>
-								</div>
-							</div>
-							<div class="flex-grow-0">
-								<i class="fas fa-angle-right text-primary"></i>
-							</div>
-						</div>
-					</div>
+				<div v-for="poll in filteredPolls" :key="poll.id" class="poll-card-wrapper mb-3">
+					<poll-card class="shadow-sm" :poll="poll" @click="goToPoll" />
 				</div>
 
 			</transition-group>
@@ -121,9 +82,7 @@ import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
 import pollsFooter from "@/components/polls-footer.vue"
 import liquidoHeader from "@/components/liquido-header.vue"
-import dayjs from "dayjs"
-import localizedFormat from 'dayjs/plugin/localizedFormat'
-dayjs.extend(localizedFormat)
+import PollCard from "@/components/poll-card.vue"
 
 
 const pollStatusOrder = {
@@ -166,7 +125,7 @@ export default {
 		},
 	},
 	name: "PollsList",
-	components: { liquidoHeader, pollsFooter },
+	components: { liquidoHeader, pollsFooter, PollCard },
 	data() {
 		return {
 			loading: true,
@@ -255,58 +214,9 @@ export default {
 	},
 	
 	methods: {
-		formatDate(dateVal) {
-			return dayjs(dateVal).format("L")
-		},
-
 		toggleSearch() {
 			this.searchQuery = undefined
 			this.showSearch = !this.showSearch
-		},
-
-		/** Each poll has an icon, depending on its status */
-		iconForPoll(poll) {
-			if (!poll) return undefined
-			switch (poll.status) {
-				case "ELABORATION":
-					return "far fa-lightbulb"   // or fa-poll? or comments
-				case "VOTING":
-					return "fas fa-person-booth"
-				case "FINISHED":
-					return "fas fa-check-circle"
-				default:
-					return "far fa-vote-yea"
-			}
-		},
-		
-		/** And the icons have different colors */
-		pollIconClass(poll) {
-			if (!poll) return undefined
-			switch (poll.status) {
-				case "ELABORATION":
-					return "poll-icon-elaboration"
-				case "VOTING":
-					return "poll-icon-voting"
-				case "FINISHED":
-					return "poll-icon-finished"
-				default:
-					return undefined
-			}
-		},
-
-		/** 
-		 * How many days are left for vorting?
-		 * Always return at least "1" day, until poll is in VOTING.
-		 */
-		daysLeft(poll) {
-			if (poll.votingEndAt && poll.status === "VOTING") {
-				let end = dayjs(poll.votingEndAt)
-				let diff = end.diff(dayjs(), "day")
-				return diff > 0 ? diff : 1
-			} else {
-				return 0
-			}
-
 		},
 
 		/**
@@ -389,86 +299,9 @@ export default {
 /** MUST SET THE height TO A FIXED VALUE, for animating it. */
 .poll-card-wrapper {
 	height: 7rem;
-	margin-bottom: 10px;
-	overflow: hidden;
-	transition: all 0.5s;
-}
-
-.poll-card {
-	--iconSize: 40px;
-	
-	cursor: pointer;
-	height: 100% !important;  /* bootstrap .card sets a height that we need to overwrite */
-	border-radius: var(--liquido-border-radius);
-
-	.card-body{
-		padding: 0 1rem;
-	}
-
-	.poll-eyebrow {
-		font-size: 80%;
-	}
-
-	.elaboration-pill {
-		background-color: var(--elaboration-bg);
-	}
-	.voting-pill {
-		background-color: var(--voting-bg);
-	}
-	.finished-pill {
-		background-color: var(--finished-bg);
-	}
-
-	.poll-created-date {
-			float: right;
-			color: var(--secondary);	
-	}
-
-	.poll-icon-elaboration, .poll-icon-voting {
-		color: white;
-		border-radius: 50%;
-		text-align: center;
-		font-size: var(--iconSize) * 0.5;
-		line-height: var(--iconSize);
-		min-width: var(--iconSize);
-		max-width: var(--iconSize);
-		width: var(--iconSize);
-		min-height: var(--iconSize);
-		max-height: var(--iconSize);
-		height: var(--iconSize);
-		margin: 0 10px 0 0;
-	}
-
-	.poll-icon-elaboration {
-		background-color: var(--elaboration-bg);
-	}
-
-	.poll-icon-voting {
-		background-color: var(--voting-bg);
-	}
-
-	.poll-icon-finished {
-		font-size: var(--iconSize);
-		color: var(--finished-bg);
-		margin: 0 10px 0 0;
-	}
-
-	.poll-title {
-		color: black;    /* poll-titles are black, proposal titles are --primary! */
-		font-size: 1.2rem !important;  /* a bit smaller than normal h2 */
-		margin: 0.5rem 0;
-		display: -webkit-box;
-		-webkit-line-clamp: 2;  /* max 2 lines */
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-
-	.poll-footer {
-		display: flex;
-		gap: 1rem;
-		font-size: 80%;
-		color: var(--secondary)
-	}
+	min-width: 80%;
+	min-height: 7rem;
+	overflow: visible; /* for shadow */
 }
 
 .search-wrapper {

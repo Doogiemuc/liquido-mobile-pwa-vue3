@@ -17,35 +17,12 @@
 			<h3>{{ $t('pollsInVoting') }}</h3>
 			<div class="polls-in-voting-container" ref="pollsInVotingContainer" >
 				<div v-for="poll in pollsInVoting" :key="poll.id" class="poll-card-wrapper user-select-none">
-					<div class="poll-card card" @click="$root.gotoPoll(poll.id)">
-						<div class="card-body d-flex flex-nowrap align-items-center">
-							<div class="flex-grow-1">
-								<div class="poll-eyebrow">
-									<span v-if="poll.status === 'ELABORATION'" class="badge rounded-pill elaboration-pill">{{ $t('New') }}</span>
-									<span v-if="poll.status === 'VOTING'" class="badge rounded-pill voting-pill">{{ $t('InVoting') }}</span>
-									<span v-if="poll.status === 'FINISHED'" class="badge rounded-pill finished-pill">{{ $t('Finished') }}</span>
-								<span class="poll-created-date">{{ $d(new Date(poll.createdAt), 'shortDate') }}</span>
-								</div>
-								<h2 class="poll-title">{{ poll.title }}</h2>
-								<div class="poll-footer">
-									<div v-if="poll.status=== 'ELABORATION'">
-										<i class="far fa-lightbulb"></i>&nbsp;{{ $tc('numProposals', poll.proposals.length ) }}
-									</div>
-									<div v-if="poll.status === 'VOTING'">
-										<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots) }}
-									</div>
-									<div v-if="poll.status === 'FINISHED'">
-										<i class="fas fa-check-circle"></i>&nbsp;{{ $t('finished') }}
-									</div>
-									
-									<div v-if="poll.status === 'VOTING'"><i class="far fa-clock"></i>&nbsp;{{ $tc('daysLeft', daysLeft(poll) ) }}</div>
-								</div>
-							</div>
-							<div class="flex-grow-0">
-								<i class="fas fa-angle-right text-primary"></i>
-							</div>
-						</div>
-					</div>
+					<poll-card
+						class="shadow-sm"
+						:poll="poll"
+						:date-text="$d(new Date(poll.createdAt), 'shortDate')"
+						@click="$root.gotoPoll"
+					/>
 				</div>
 			</div>
 			
@@ -144,7 +121,7 @@ import config from "config"
 import QRCode from "qrcode"
 import liquidoHeader from "@/components/liquido-header.vue"
 import liquidoFooter from "../components/liquido-footer.vue"
-import liquidoInput from "@/components/liquido-input.vue"
+import PollCard from "@/components/poll-card.vue"
 import api from "@/services/liquido-graphql-client.js"
 import webauthnService from '@/services/webauthn-service.js'
 
@@ -197,7 +174,7 @@ export default {
 			},
 		},
 	},
-	components: { liquidoInput, liquidoHeader, liquidoFooter },
+	components: { liquidoHeader, liquidoFooter, PollCard },
 	data() {
 		return {
 			team: {},
@@ -287,7 +264,7 @@ export default {
 		 */
 		async setupPasskey() {
 			if (!this.passkeyLabel) this.passkeyLabel = this.currentUserName + "-Passkey"
-			webauthnService.registerWebauthn(this.passkeyLabel).then(res => {
+			webauthnService.registerWebauthn(this.passkeyLabel).then(() => {
 				api.getCachedUser().hasWebauthn = true
 				console.log("setupPasskey SUCCESSFULL")
 			}).catch(err => {
@@ -332,7 +309,7 @@ export default {
 			this.touchStartX = e.changedTouches[0].screenX
 		},
 
-		handleTouchMove(e) {
+		handleTouchMove() {
 			// Allow natural scrolling on touch devices
 		},
 
@@ -373,13 +350,14 @@ export default {
 	margin: 1rem 0;
 	gap: 1rem;
 	overflow-x: auto;
+	overflow-y: visible;
 	
 	scroll-behavior: smooth;
 	/* Hide scrollbar for Chrome, Safari and Opera */
 	-ms-overflow-style: none;  /* IE and Edge */
 	scrollbar-width: none;  /* Firefox */
 	touch-action: pan-x;
-	padding-right: 1rem;
+	padding: 0.25rem 1rem 0.5rem 0;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -389,88 +367,10 @@ export default {
 
 /********** //TODO: extract an own component for a poll-card!  This duplicates what's in poll.vue! */
 .poll-card-wrapper {
-	min-width: 80%;
 	height: 7rem;
-	margin-bottom: 10px;
-	/*transition: all 0.5s;*/
-}
-
-.poll-card {
-	--iconSize: 40px;
-	
-	cursor: pointer;
-	height: 100% !important;  /* bootstrap .card sets a height that we need to overwrite */
-	border-radius: var(--liquido-border-radius);
-	box-shadow: 0.1rem 0.1rem 0.25rem rgba(32, 32, 32, 0.2);
-
-	.card-body{
-		padding: 0 1rem;
-	}
-
-	.poll-eyebrow {
-		font-size: 80%;
-	}
-
-	.elaboration-pill {
-		background-color: var(--elaboration-bg);
-	}
-	.voting-pill {
-		background-color: var(--voting-bg);
-	}
-	.finished-pill {
-		background-color: var(--finished-bg);
-	}
-
-	.poll-created-date {
-			float: right;
-			color: var(--secondary);	
-	}
-
-	.poll-icon-elaboration, .poll-icon-voting {
-		color: white;
-		border-radius: 50%;
-		text-align: center;
-		font-size: var(--iconSize) * 0.5;
-		line-height: var(--iconSize);
-		min-width: var(--iconSize);
-		max-width: var(--iconSize);
-		width: var(--iconSize);
-		min-height: var(--iconSize);
-		max-height: var(--iconSize);
-		height: var(--iconSize);
-		margin: 0 10px 0 0;
-	}
-
-	.poll-icon-elaboration {
-		background-color: var(--elaboration-bg);
-	}
-
-	.poll-icon-voting {
-		background-color: var(--voting-bg);
-	}
-
-	.poll-icon-finished {
-		font-size: var(--iconSize);
-		color: var(--finished-bg);
-		margin: 0 10px 0 0;
-	}
-
-	.poll-title {
-		color: black;    /* poll-titles are black, proposal titles are --primary! */
-		font-size: 1.2rem !important;  /* a bit smaller than normal h2 */
-		margin: 0.5rem 0;
-		display: -webkit-box;
-		-webkit-line-clamp: 2;  /* max 2 lines */
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-
-	.poll-footer {
-		display: flex;
-		gap: 1rem;
-		font-size: 80%;
-		color: var(--secondary)
-	}
+	min-width: 80%;
+	min-height: 7rem;
+	overflow: visible; /* for shadow */
 }
 
 .admin-shield {
