@@ -354,9 +354,11 @@ function cancelStartPoll() {
 	poll.status = POLL_STATUS.ELABORATION
 }
 
+/*
 function devReopenPoll() {
 	poll.status = POLL_STATUS.ELABORATION
 }
+*/
 
 //TODO: send request to backend.
 function castVote() {
@@ -416,7 +418,7 @@ function isEmail(s) {
 			<!-- read-only view of the poll -->
 			<div v-if="inElaboration || prepareStart || isFinished" class="card-body">
 				<div class="polly-proposals-wrapper">
-					<div v-for="(proposal, index) in poll.proposals" class="polly-proposal">
+					<div v-for="(proposal, index) in poll.proposals" :key="proposal.id" class="polly-proposal">
 						<div v-if="isFinished" class="text-secondary me-2">
 							{{ index + 1 }}.
 						</div>
