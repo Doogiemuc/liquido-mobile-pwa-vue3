@@ -92,7 +92,7 @@ function loc(key, params = {}) {
 	}
 
 	return message.replace(/\{(\w+)\}/g, (match, placeholder) => {
-		return params.hasOwnProperty(placeholder) ? params[placeholder] : match;
+		return Object.prototype.hasOwnProperty.call(params, placeholder) ? params[placeholder] : match;
 	});
 }
 
@@ -439,7 +439,7 @@ function isEmail(s) {
 				<div class="polly-proposals-wrapper">
 					<draggable id="pollyDraggable" v-model="poll.proposals" class="draggable" item-key="id"
 							:swap-threshold="0.5" :delay="40" :animation="500" :can-scroll-x="false">
-						<div v-for="prop in poll.proposals" :id="prop.id" class="form-control polly-proposal sortable-proposal user-select-none">
+						<div v-for="prop in poll.proposals" :key="prop.id" class="form-control polly-proposal sortable-proposal user-select-none">
 							<div class="arrow-up pos-top-middle">&nbsp;</div>
 							<div class="sortable-proposal-title">
 								{{ prop.title }}

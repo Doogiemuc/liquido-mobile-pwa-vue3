@@ -14,14 +14,19 @@ class MockLiquidoError extends Error {
 	}
 }
 
+/**
+ * Creates the initial mock state object.
+ * Clones the seed data from teamUserJwtMock and calculates the next available IDs 
+ * for polls and proposals to ensure unique ID generation during the session.
+ */
 const createState = () => {
 	const seed = deepClone(teamUserJwtMock)
 	const pollIds = (seed.team?.polls || []).map(p => p.id)
 	const proposalIds = (seed.team?.polls || []).flatMap(p => (p.proposals || []).map(pr => pr.id))
 	return {
 		team: seed.team,
-		currentUser: seed.user,
-		jwt: seed.jwt,
+		//currentUser: seed.user,
+		//jwt: seed.jwt,
 		issuedAuthTokensByMobile: {},
 		voterTokensByPollAndUser: {},
 		ballotsByPollAndUser: {},
@@ -30,7 +35,43 @@ const createState = () => {
 	}
 }
 
-let mockState = createState()
+const MOCK_STATE_KEY = "LIQUIDO_MOCK_STATE"
+
+/**
+ * Persists the current mock state to the browser's sessionStorage.
+ * This allows the mock "database" to survive page reloads within the same tab.
+ * @param {Object} state - The mock state object to save.
+ */
+const saveMockState = (state) => {
+	try {
+		if (typeof window !== 'undefined' && window.sessionStorage) {
+			window.sessionStorage.setItem(MOCK_STATE_KEY, JSON.stringify(state))
+		}
+	} catch (e) {
+		console.error("Failed to save mock state to sessionStorage", e)
+	}
+}
+
+/**
+ * Loads the mock state from sessionStorage.
+ * If no saved state is found, it initializes a new state using createState().
+ * @returns {Object} The loaded or newly created mock state.
+ */
+const loadMockState = () => {
+	try {
+		if (typeof window !== 'undefined' && window.sessionStorage) {
+			const saved = window.sessionStorage.getItem(MOCK_STATE_KEY)
+			if (saved) {
+				return JSON.parse(saved)
+			}
+		}
+	} catch (e) {
+		console.error("Failed to load mock state from sessionStorage", e)
+	}
+	return createState()
+}
+
+let mockState = loadMockState()
 let mockRequestInterceptorInstalled = false
 
 const asInt = value => parseInt(value, 10)
@@ -110,12 +151,26 @@ const currentUserOrThrow = () => {
 	return mockState.currentUser
 }
 
-const loginResultFor = user => ({
-	team: deepClone(mockState.team),
-	user: deepClone(user),
-	jwt: mockState.jwt,
-})
+// ================ TODO:  THIS IS NOT FINISHED YET!!!   TODO: Simulate complete login in mock!
+const loginResultFor = email => {
+	const user = findMemberByEmail(email)	
+	if (user) {	
+		rejectLiquido(LiquidoExceptionCodes.UNAUTHORIZED, "Cannot mockLogin email="+email)
+	}
+	
+	//mockState.team   is already set in createState
+	mockState.currentUser = user
+	mockState.jwt = `mock-jwt-${user.id}`
+	saveMockState(mockState)
 
+	return {
+		team: deepClone(mockState.team),
+		user: deepClone(user),
+		jwt: mockState.jwt,
+	}
+}
+
+// TODO: need to do full login instead!
 const setCurrentUser = user => {
 	mockState.currentUser = deepClone(user)
 }
@@ -123,6 +178,10 @@ const setCurrentUser = user => {
 const countVotesForPoll = pollId => Object.keys(mockState.ballotsByPollAndUser)
 	.filter(key => key.startsWith(`${pollId}:`)).length
 
+
+
+
+	
 const queryHandlers = {
 	ping: () => "MOCK responses are active!",
 	team: () => deepClone(mockState.team),
@@ -400,6 +459,7 @@ export const graphQlQueryMock = function(query, variables) {
 			return Promise.reject(`Unhandled mock ${isMutation ? "mutation" : "query"}: ${operation}`)
 		}
 		const payload = handler(query, variables)
+		saveMockState(mockState)
 		if (operation === "myBallot") {
 			return Promise.resolve({ data: { myBallot: payload, ballot: payload } })
 		}
@@ -409,22 +469,41 @@ export const graphQlQueryMock = function(query, variables) {
 	}
 }
 
+/**
+ * Resets the global mockState to its initial default values and 
+ * persists this reset state to sessionStorage.
+ */
 export const resetGraphQlMockState = function() {
 	mockState = createState()
+	saveMockState(mockState)
 }
 
+/**
+ * Initializes the Liquido GraphQL mock environment.
+ * This function restores state from storage, seeds the application's internal 
+ * teamCache if a valid session exists, and installs axios interceptors to 
+ * mock specific REST endpoints (like WebAuthn).
+ */
 export const initializeLiquidoGraphQlMock = function(graphQlApi, teamCache) {
 	console.warn("==================================")
 	console.warn("======== MOCK is active! =========")
 	console.warn("==================================")
-	resetGraphQlMockState()
+	if (typeof window !== 'undefined' && window.sessionStorage && !window.sessionStorage.getItem(MOCK_STATE_KEY)) {
+		resetGraphQlMockState()
+	} else {
+		mockState = loadMockState()
+	}
 
-	//TODO: When backend is mocked, do not login a user by default. Instead allow devLogin. Also via URL, e.g. for design-overview
-	teamCache.put(graphQlApi.TEAM_KEY, mockState.team)
-	teamCache.put(graphQlApi.CURRENT_USER_KEY, mockState.currentUser)
-	teamCache.put(graphQlApi.JWT_KEY, mockState.jwt)
-	graphQlApi.putPollsIntoCache(mockState.team.polls)
-	//better: graphQlApi.login(teamUserJwtMock.team, teamUserJwtMock.user, teamUserJwtMock.jwt)
+	/**
+	 * Only seed the app's internal cache if we have a mock session saved 
+	 * AND there isn't a real JWT in localStorage being handled by the router.
+	 */
+	if (mockState.currentUser && localStorage.getItem(graphQlApi.LIQUIDO_JWT_KEY) === mockState.jwt) {
+		teamCache.put(graphQlApi.TEAM_KEY, mockState.team)
+		teamCache.put(graphQlApi.CURRENT_USER_KEY, mockState.currentUser)
+		teamCache.put(graphQlApi.JWT_KEY, mockState.jwt)
+		graphQlApi.putPollsIntoCache(mockState.team.polls)
+	}
 
 	if (mockRequestInterceptorInstalled) return
 	mockRequestInterceptorInstalled = true
@@ -457,6 +536,19 @@ export const initializeLiquidoGraphQlMock = function(graphQlApi, teamCache) {
 						request: {},
 					})
 				}
+			}
+		} else if (
+			config.url.includes("/webauthn/register-options-challenge") ||
+			config.url.includes("/webauthn/register") ||
+			config.url.includes("/webauthn/login-options-challenge")
+		) {
+			console.log("MOCK: /webauthn mock request to " + config.url + " -> simulating connection error")
+			config.adapter = config => {
+				const error = new Error("Network Error")
+				error.code = "ECONNREFUSED"
+				error.config = config
+				error.request = {}
+				return Promise.reject(error)
 			}
 		}
 		return config

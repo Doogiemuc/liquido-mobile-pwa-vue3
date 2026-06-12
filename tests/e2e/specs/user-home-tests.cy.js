@@ -1,8 +1,16 @@
-context('User Home - Edit User Data', () => {
-	it('user can edit and save user data', function() {
-		cy.visit('/user-home')
+import teamUserJwtMock from "../../../src/mockdata/teamUserJwt.json"
 
-		cy.contains('button', /edit/i).click()
+context('User Home - Edit User Data', () => {
+	beforeEach(() => {
+		localStorage.setItem("LIQUIDO_JWT", teamUserJwtMock.jwt)
+	})
+
+	it('user can edit and save user data', function() {
+		cy.visit('/')
+		cy.get('#team-home') // Wait for login and redirect to complete
+		cy.visit('/userhome')
+
+		cy.get('#editUserDataButton').click()
 
 		const newName = 'Test User'
 		const newEmail = 'test@example.com'
@@ -14,7 +22,7 @@ context('User Home - Edit User Data', () => {
 		cy.get('#userWebsiteInput').clear().type(newWebsite)
 		cy.get('#userMobilephoneInput').clear().type(newMobile)
 
-		cy.contains('button', /save/i).click()
+		cy.get('#saveUserDataButton').click()
 
 		cy.get('#userNameInput').should('be.disabled')
 		cy.get('#userEmailInput').should('be.disabled')

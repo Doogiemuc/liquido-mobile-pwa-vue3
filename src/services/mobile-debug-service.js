@@ -6,6 +6,7 @@
  */
 
 
+/* eslint-disable no-unused-vars */
 function init() {
 	
 	window.onerror = (msg, url, line, col, err) => {

@@ -91,7 +91,7 @@ export default {
 	},
 	computed: {
 		showDebugLog() {
-			return process.env.NODE_ENV !== 'production'
+			return import.meta.env.MODE !== 'production'
 		}
 	},
 	// watch the `$route` to determine the transition to use

@@ -10,7 +10,7 @@ console.log("config.source   = "+config.configSource)
 console.log("LIQUIDO_API_URL = "+config.LIQUIDO_API_URL)
 
 import log from 'loglevel'
-if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
+if (import.meta.env.MODE === "development" || import.meta.env.MODE === "test") {
 	log.enableAll()
 }
 

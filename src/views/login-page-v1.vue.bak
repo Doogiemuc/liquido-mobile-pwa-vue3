@@ -329,7 +329,7 @@ export default {
 	},
 	computed: {
 		showDevLogin() {
-			return process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
+			return import.meta.env.MODE === "development" || import.meta.env.MODE === "test"
 		},
 		loginWithEmailPasswordButtonDisabled() {
 			return this.emailInputState !== STATE.VALID || this.passwordInputState !== STATE.VALID
@@ -630,7 +630,7 @@ export default {
 
 		/** Quickly login as an admin user. This is available as a button in the mobile UI when in DEV env.  */
 		devLoginAdmin() {
-			if (process.env.NODE_ENV !== "development" && process.env.NODE_ENV !== "test") return
+			if (import.meta.env.MODE !== "development" && import.meta.env.MODE !== "test") return
 			api.logout()
 			api.devLogin(this.getDevLoginUserEmail("ADMIN"), config.devLogin.teamName, config.devLogin.token).then(() => {
 				this.$root.gotoPolls()
@@ -639,7 +639,7 @@ export default {
 
 		/** Quickly login as a team member. This is available as a button in the mobile UI when in DEV env.  */
 		devLoginMember() {
-			if (process.env.NODE_ENV !== "development" && process.env.NODE_ENV !== "test") return
+			if (import.meta.env.MODE !== "development" && import.meta.env.MODE !== "test") return
 			api.logout()
 			api.devLogin(this.getDevLoginUserEmail("MEMBER"), config.devLogin.teamName, config.devLogin.token)
 				.then(() => {

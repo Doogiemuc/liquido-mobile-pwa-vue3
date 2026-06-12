@@ -226,13 +226,13 @@ export default {
 
 		/** get display value for entry in col */
 		getColValue(col, entry) {
+			let shortendString = this.toString(entry.message)
 			switch (col.key) {
 				case "timestamp": 
 					return entry.timestamp;
 				case "level": 
 					return this.getLevelName(entry.level)
-				case "message": 
-					let shortendString = this.toString(entry.message)
+				case "message":	
 					if (shortendString.length > this.maxMessageLen) {
 						shortendString = shortendString.substring(0, this.maxMessageLen) + "..."
 					}

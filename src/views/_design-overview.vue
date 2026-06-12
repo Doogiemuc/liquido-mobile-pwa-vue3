@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, useTemplateRef } from 'vue'
+import { computed, onMounted } from 'vue'
 import api from "@/services/liquido-graphql-client.js"
 import config from "config"
 //import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
@@ -69,7 +69,7 @@ const currentUser = computed(() => api.getCachedUser())
 
 /** Quickly login as an admin user. This is available as a button in the mobile UI when in DEV env.  */
 const devLoginAdmin = () => {
-	if (process.env.NODE_ENV !== "development" && process.env.NODE_ENV !== "test") return
+	if (import.meta.env.MODE !== "development" && import.meta.env.MODE !== "test") return
 	api.logout()
 	api.devLogin(config.devLogin.admin.email, config.devLogin.teamName, config.devLogin.token)
 		.catch(err => console.error("DevLogin Admin failed!", err))

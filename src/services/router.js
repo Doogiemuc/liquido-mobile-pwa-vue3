@@ -5,7 +5,7 @@ import config from "config"
 import log from 'loglevel'
 import welcomeChat from "@/views/welcome-chat.vue"
 //import { route } from 'fontawesome'
-if (process.env.NODE_ENV === "development") log.enableAll()
+if (import.meta.env.MODE === "development") log.enableAll()
 
 const routes = [
 	{
@@ -16,21 +16,9 @@ const routes = [
 		// and with expired JWT to /login
 	},
 	{
-		path: "/login1",
-		name: "login1",
-		component: () => import("@/views/login-page.vue"),
-		props: route => ({
-			email: route.query.email,
-			emailToken: route.query.emailToken
-		}),
-		meta: {
-			public: true
-		}
-	},
-	{
 		path: "/login",
 		name: "login",
-		component: () => import("@/views/login-page-v2.vue"),
+		component: () => import("@/views/login-page.vue"),
 		props: route => ({
 			email: route.query.email,
 			emailToken: route.query.emailToken
@@ -140,7 +128,7 @@ const routes = [
 	},
 ]
 
-if (process.env.NODE_ENV === "development") {
+if (import.meta.env.MODE === "development") {
 	routes.push({
 		// Development login that can be used in testing
 		path: "/devLogin",

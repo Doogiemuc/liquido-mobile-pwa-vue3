@@ -50,6 +50,7 @@ context('Happy Case', () => {
 		fix.adminJWT   = undefined
 
 		localStorage.removeItem("LIQUIDO_JWT")  // Make sure no one is logged in at the start
+		sessionStorage.removeItem("LIQUIDO_MOCK_STATE") // Clear mock state
 	})
 
 	beforeEach(() => {
@@ -81,7 +82,7 @@ context('Happy Case', () => {
 
 		//THEN new team is created successfully 
 		cy.get('#welcomeChatErrorModal').should('not.exist')   // no error modal is shown
-		cy.get('#newTeamCreatedBubble').should(($div) => {
+		cy.get('#newTeamCreatedBubble').should(() => {
 			// AND a JWT was put into the browser's localStorage
 			// (Cypress is async and crazy: This should()-block is retried until jwt is there.)
 			fix.adminJWT = localStorage.getItem("LIQUIDO_JWT")
@@ -150,7 +151,7 @@ context('Happy Case', () => {
 	})
 
 	it('[Admin] Create first poll and proposal', function() {
-		assert.isString(fix.adminJWT, "Need adminJWT to create firt poll")
+		assert.isString(fix.adminJWT, "Need adminJWT to create first poll")
 
 		//GIVEN a logged in admin
 		localStorage.setItem("LIQUIDO_JWT", fix.adminJWT)
@@ -318,7 +319,9 @@ context('Happy Case', () => {
 		assert.isString(fix.adminJWT, "Need adminJWT to show team and polls")
 
 		//GIVEN a logged in admin
-		localStorage.setItem("LIQUIDO_JWT", fix.adminJWT)
+		cy.window().then((win) => {
+			win.localStorage.setItem("LIQUIDO_JWT", fix.adminJWT)
+		})
 		cy.visit("/")
 
 		// AND the poll in elaboration that was created before
@@ -371,12 +374,11 @@ context('Happy Case', () => {
 
 		//GIVEN a logged in admin
 		localStorage.setItem("LIQUIDO_JWT", fix.adminJWT)
-		cy.visit("/")
+		cy.visit("/polls")
 		// AND the poll in elaboration that was created before
-		cy.get('#gotoPollsButton').click()
 		cy.contains(".poll-title", fix.pollTitle).click()
 
-		// WHEN admin stars voting phase
+		// WHEN admin finishes the voting phase
 		cy.get("#finishVoteButton").click()
 
 		// THEN poll is FINISHED

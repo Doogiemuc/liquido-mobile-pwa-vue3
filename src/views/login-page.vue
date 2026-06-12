@@ -287,7 +287,7 @@ export default {
 	},
 	computed: {
 		showDevLogin() {
-			return process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
+			return import.meta.env.MODE === "development" || import.meta.env.MODE === "test"
 		},
 		graphQlSchemaURL() {
 			return config.LIQUIDO_API_URL + '/graphql/schema.graphql'
@@ -510,7 +510,7 @@ export default {
 		// =============== Dev Login ==================
 
 		devLoginAdmin() {
-			if (process.env.NODE_ENV !== "development" && process.env.NODE_ENV !== "test") return
+			if (import.meta.env.MODE !== "development" && import.meta.env.MODE !== "test") return
 			api.logout()
 			api.devLogin(this.getDevLoginUserEmail("ADMIN"), config.devLogin.teamName, config.devLogin.token)
 				.then(() => this.$root.gotoPolls())
@@ -518,7 +518,7 @@ export default {
 		},
 
 		devLoginMember() {
-			if (process.env.NODE_ENV !== "development" && process.env.NODE_ENV !== "test") return
+			if (import.meta.env.MODE !== "development" && import.meta.env.MODE !== "test") return
 			api.logout()
 			api.devLogin(this.getDevLoginUserEmail("MEMBER"), config.devLogin.teamName, config.devLogin.token)
 				.then(() => this.$root.gotoPolls())

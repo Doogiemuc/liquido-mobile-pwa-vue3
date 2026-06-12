@@ -114,6 +114,7 @@
 				<div class="d-flex justify-content-end gap-2 mt-3">
 					<button
 						v-if="!isEditingUserData"
+						id="editUserDataButton"
 						type="button"
 						class="btn btn-outline-secondary"
 						@click="startEditingUserData"
@@ -122,6 +123,7 @@
 					</button>
 					<template v-else>
 						<button
+							id="cancelEditingUserDataButton"
 							type="button"
 							class="btn btn-outline-secondary"
 							@click="cancelEditingUserData"
@@ -129,6 +131,7 @@
 							{{ $t("Cancel") }}
 						</button>
 						<button
+							id="saveUserDataButton"
 							type="button"
 							class="btn btn-primary"
 							:disabled="isUserDataSaveDisabled"

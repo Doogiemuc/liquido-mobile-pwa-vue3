@@ -37,8 +37,8 @@ import LiquidoExceptionCodes from "./LiquidoExceptionCodes.js"
 if (!config || !config.LIQUIDO_API_URL) {
 	console.error("liquido-graphql-client: ERROR I have no config!")
 } else {
-	if (process.env.NODE_ENV === "development") {
-		console.log("liquido-graphql-client => " + config.LIQUIDO_API_URL + " in NODE_ENV=" + process.env.NODE_ENV)
+	if (import.meta.env.MODE === "development") {
+		console.log("liquido-graphql-client => " + config.LIQUIDO_API_URL + " in NODE_ENV=" + import.meta.env.MODE)
 	}
 }
 
@@ -279,7 +279,13 @@ let graphQlApi = {
 	 * This is called quite often and needs to be sync and fast!
 	 */
 	isAuthenticated() {
-		return axios.defaults.headers.common["Authorization"] !== undefined && this.getCachedUser() !== undefined
+		const memoryJwt = this.teamCache.getSync(this.JWT_KEY, false)
+		const persistentJwt = localStorage.getItem(this.LIQUIDO_JWT_KEY)
+		
+		return memoryJwt !== undefined && 
+			memoryJwt === persistentJwt &&
+			this.getCachedTeam() !== undefined &&
+			this.getCachedUser() !== undefined
 	},
 
 	/** 
@@ -542,7 +548,7 @@ let graphQlApi = {
 	 * @return login data with team, user and jwt (same as a joinTeam calls)
 	 */
 	async devLogin(email, teamName, devLoginToken) {
-		if (!["development", "test", "int"].includes(process.env.NODE_ENV))
+		if (!["development", "test", "int"].includes(import.meta.env.MODE))
 			return Promise.reject("devLogin is only allowed in NODE_ENV development, test or int")
 		if (!email || !teamName || !devLoginToken) 
 			return Promise.reject("Need email, teamName and devLoginToken!")

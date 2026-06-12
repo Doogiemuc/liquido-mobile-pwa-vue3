@@ -47,7 +47,7 @@
  */
 import { defineComponent } from 'vue'
 //import config from "config"
-import liquidoInput from "@/components/liquido-input.vue"
+//import liquidoInput from "@/components/liquido-input.vue"
 import polly from '@/components/polly.vue'
 import api from "@/services/liquido-graphql-client.js"
 
@@ -93,9 +93,10 @@ export default defineComponent({
 	props: {
 		initialPoll: { type: Object, required: false, default: undefined },
 	},
-	components: { liquidoInput, polly },
+	components: { polly },
 	data() {
 		return {
+			hasAlreadyVoted: false,
 			poll: {
 				title: "Dummy Title for Testing",
 				proposals: [
@@ -124,24 +125,25 @@ export default defineComponent({
 			}
 			return ""
 		},
-		hasAlreadyVoted() {
-			if (!this.poll || this.poll.status !== api.POLL_STATUS.VOTING) return false
-			return api.getMyBallot(poll.poll.id).then(myBallot => {
-				return myBallot !== undefined
-			})
-		}
 	},
 	watch: {
 		pollyHeaderTitle() {
 			this.$store.setHeaderTitle(this.pollyHeaderTitle)
 		}
 	},
+	created() {
+		if (this.initialPoll) {
+			this.poll = this.initialPoll
+		}
+		this.hasAlreadyVoted = api.getMyBallot(this.poll.id).then(myBallot => {
+			return myBallot !== undefined
+		})
+	},
 	mounted() {
 		this.$store.setHeaderTitle(this.pollyHeaderTitle)
 		this.$store.setHeaderBackTarget({ name: "polls" })
 		this.$root.scrollToTop()
 		document.getElementById("pollTitle")?.focus()
-		
 	},
 	methods: {
 		proposalHasTitle(index) {
@@ -153,12 +155,12 @@ export default defineComponent({
 			this.$router.go(-1)
 		},
 		createNewPoll() {
-			return api.createPoll(this.pollTitle)
+			return api.createPoll(this.poll.title)
 				.then(createdPoll => {
 					console.log("New poll created", createdPoll)
 					this.$router.push({name: "showPoll", params: {pollId: createdPoll.id} })
 				})
-				.catch(err => console.warn("Error", err))
+				.catch(err => console.warn("Cannot create new poll", err))
 		},
 	},
 })

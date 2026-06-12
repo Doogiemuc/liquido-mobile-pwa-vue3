@@ -154,11 +154,12 @@ test('ADMIN: cast vote', async function() {
 	let voteOrderIds = t.poll.proposals.map(p => p.id).sort()
 	let voterToken = await getVoterToken("dummySecret")
 	let res = await castVote(t.poll.id, voteOrderIds, voterToken)
+	expect(res.ballot.voteCount).toBeGreaterThanOrEqual(1)
 })
 
 
 function getVoterToken(voterSecret) {
-	return client.getVoterToken("dummySecret").then(voterToken => {
+	return client.getVoterToken(voterSecret).then(voterToken => {
 		//console.log("Got voterToken:", voterToken)
 		expect(voterToken).to.have.lengthOf.at.least(5)
 		return voterToken

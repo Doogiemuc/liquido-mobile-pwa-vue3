@@ -367,7 +367,7 @@ import liquidoInput from "@/components/liquido-input.vue"
 import liquidoHeader from "@/components/liquido-header.vue"
 import api from "@/services/liquido-graphql-client.js"
 import log from 'loglevel'
-import EventBus from "@/services/event-bus.js"
+//import EventBus from "@/services/event-bus.js"
 import webauthnService from "@/services/webauthn-service"
 
 const eMailRegEx = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,64}$/
@@ -496,7 +496,7 @@ export default {
 			},
 
 			// Our polite and nice chat bot logic :-)
-			chatDelayMs: 1000, //window.Cypress || process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test" ? 100 : 1000,
+			chatDelayMs: 1000, //window.Cypress || import.meta.env.MODE === "development" || import.meta.env.MODE === "test" ? 100 : 1000,
 
 			// Semaphore so that the chat animation is only started once. This is for example relevant when the window is reloaded in the browser
 			chatAnimationStarted: false,
@@ -568,7 +568,7 @@ export default {
 					log.debug("Invite code is valid for team", team)
 					this.team = team
 				}).catch(err => {
-					console.warn("Cannot find team for invite code", this.inviteCodeQueryParam)		
+					console.warn("Cannot find team for invite code", this.inviteCodeQueryParam, err)
 				})
 		} else if (this.inviteCodeQueryParam) {
 			console.warn("Got inviteCode in URL with invalid syntax.")
@@ -834,7 +834,7 @@ export default {
 			this.FLOW.SetupPasskeySuccessfull = false
 			if (!this.passkeyLabel) this.passkeyLabel = this.user.name + "-" + this.$t('Passkey')
 			webauthnService.registerWebauthn(this.passkeyLabel)
-				.then(res => {
+				.then(() => {
 					this.$root?.$refs?.mobileDebugLogRef?.info("setupPasskey: SUCCESSFULL")
 					this.FLOW.SetupPasskeySuccessfull = true
 					this.FLOW.RegistrationFinished = true

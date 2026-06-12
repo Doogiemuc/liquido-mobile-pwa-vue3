@@ -43,7 +43,7 @@ context('Login Test', () => {
 		//WHEN anonymously trying to access non existing page
 		cy.visit("/yxcvewtewasdvverg")
 		//THEN not found page (404) is shown
-		cy.get("#NotFoundPage")
+		cy.get("#notFoundCard")
 	})
 
 	// The SMS use case can completely and transparently be tested. 
@@ -75,6 +75,7 @@ context('Login Test', () => {
 
 		//WHEN test user enters his email & password
 		cy.get("#loginEmailInput").type(Cypress.env("admin").email)
+		cy.get("#continueButton").click()
 		let password = Cypress.env("admin").email + Cypress.env("passwordSuffix")
 		cy.get("#loginPasswordInput").type(password)
 		
@@ -87,19 +88,19 @@ context('Login Test', () => {
 		cy.get("#memberCards").contains(Cypress.env("admin").name)
 	})
 
-	it('Unknown email is shown as invalid inline', function() {
+	it('Unknown email shows not found message', function() {
 		cy.intercept("GET", "**/webauthn/check-login-email*", {
-			statusCode: 404,
-			body: {}
+			statusCode: 200,
+			body: { status: "UNKNOWN" }
 		})
 
 		cy.visit("/login")
 		cy.get("#login-page")
 
-		cy.get("#loginEmailInput").type("unknown-user@example.com").blur()
+		cy.get("#loginEmailInput").type("unknown-user@example.com")
+		cy.get("#continueButton").click()
 
-		cy.get("#loginEmailInput").should("have.class", "is-invalid")
-		cy.get(".invalid-feedback").should("be.visible").and("not.be.empty")
+		cy.get("#emailNotFoundMessage").should("be.visible")
 	})
 
 		
@@ -151,6 +152,7 @@ context('Login Test', () => {
 
 		//WHEN test user enters his email & password
 		cy.get("#loginEmailInput").type(Cypress.env("admin").email)
+		cy.get("#continueButton").click()
 		cy.get("#loginPasswordInput").type(newPassword)
 		
 		// AND click login button
