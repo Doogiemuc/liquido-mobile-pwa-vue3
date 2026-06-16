@@ -21,7 +21,7 @@
 						name="username"
 						type="email"
 						class="form-control"
-						:class="{ 'is-invalid': emailInputTouched && !emailInputIsValid }"
+						:class="{ 'is-invalid': !!emailInputVal && emailInputTouched && !emailInputIsValid }"
 						autocomplete="username"
 						inputmode="email"
 						autocapitalize="none"
@@ -37,10 +37,9 @@
 					</div>
 				</div>
 
-				<!-- "Email not found" — between input and button -->
-				<div v-if="emailNotFound" id="emailNotFoundMessage" class="alert alert-warning text-center mt-2 mb-0">
-					<small>{{ $t("emailNotFound") }}
-					<router-link :to="{ name: 'welcome' }">{{ $t("Register") }}</router-link></small>
+				<!-- Error message -->
+				<div v-if="loginErrorMessage" id="loginErrorMessage" class="alert alert-warning text-center mt-0 mb-0" :data-loginErrorMessageId="loginErrorMessageId">
+					<small>{{ loginErrorMessage }}</small>
 				</div>
 
 				<!-- Step 1: Continue button -->
@@ -89,10 +88,7 @@
 
 				</div>
 
-				<!-- Error message -->
-				<div v-if="loginErrorMessage" id="loginErrorMessage" class="alert alert-danger mt-3" :data-loginErrorMessageId="loginErrorMessageId">
-					{{ loginErrorMessage }}
-				</div>
+				
 
 				<!-- Alternative login methods -->
 				<div id="loginExtras">
@@ -279,7 +275,6 @@ export default {
 			passwordInputTouched: false,
 			webAuthnAvailable: false,
 			webAuthnLoginInProgress: false,
-			emailNotFound: false,
 			checking: false,
 			loginErrorMessage: undefined,
 			loginErrorMessageId: undefined,
@@ -304,7 +299,6 @@ export default {
 			if (this.step === 2) {
 				this.step = 1
 				this.webAuthnAvailable = false
-				this.emailNotFound = false
 				this.loginErrorMessage = undefined
 			}
 		}
@@ -377,7 +371,6 @@ export default {
 			this.syncLoginInputs()
 			this.emailInputTouched = true
 			if (!this.emailInputIsValid || this.checking) return
-			this.emailNotFound = false
 			this.loginErrorMessage = null
 			this.checking = true
 			try {
@@ -387,7 +380,8 @@ export default {
 					this.step = 2
 					//this.$nextTick(() => document.getElementById("loginPasswordInput")?.focus())
 				} else {
-					this.emailNotFound = true
+					this.loginErrorMessage = this.$t("emailNotFound")
+					this.loginErrorMessageId = ERROR.EMAIL_NOT_FOUND
 				}
 			} catch {
 				// Network error — still allow login attempt
@@ -401,7 +395,6 @@ export default {
 		backToEmail() {
 			this.step = 1
 			this.webAuthnAvailable = false
-			this.emailNotFound = false
 			this.loginErrorMessage = undefined
 			this.passwordInputVal = ""
 			this.passwordInputTouched = false

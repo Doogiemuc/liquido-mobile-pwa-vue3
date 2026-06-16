@@ -269,35 +269,12 @@ export default {
 		animation-name: bounce-anim-icon;
 		transition-timing-function: linear;
 	}
-	@keyframes bounce-anim-icon {
-		from {
-			transform: scale(1.0, 0.8) translateY(12%);
-			animation-timing-function: linear;
-		}
-		25% {
-			transform: scale(1.0, 1.0) translateY(0); 
-			animation-timing-function: cubic-bezier(0.0, 0.5, 0.5, 1.0);
-		}
-		to  {
-			transform: scale(1.0, 1.0) translateY(-20px);
-			animation-timing-function: cubic-bezier(0.5, 0.0, 1.0, 0.5)
-		}
-	}
-
+	
 	.bounce-anim-shadow {
 		animation-direction: alternate-reverse;
 		animation-duration: 1s;
 		animation-iteration-count: infinite;
 		animation-name: bounce-anim-shadow;
-	}
-	@keyframes bounce-anim-shadow {
-		from {
-			transform: scaleX(1.0);
-		}
-		50%,
-		to  {
-			transform: scaleX(0.8)
-		}
 	}
 
 	&.bg-primary .btn {
@@ -315,6 +292,29 @@ export default {
 
 }
 
+@keyframes bounce-anim-icon {
+	from {
+		transform: scale(1.0, 0.8) translateY(12%);
+		animation-timing-function: linear;
+	}
+	25% {
+		transform: scale(1.0, 1.0) translateY(0); 
+		animation-timing-function: cubic-bezier(0.0, 0.5, 0.5, 1.0);
+	}
+	to  {
+		transform: scale(1.0, 1.0) translateY(-20px);
+		animation-timing-function: cubic-bezier(0.5, 0.0, 1.0, 0.5)
+	}
+}
 
+@keyframes bounce-anim-shadow {
+	from {
+		transform: scaleX(1.0);
+	}
+	50%,
+	to  {
+		transform: scaleX(0.8)
+	}
+}
 
 </style>

@@ -48,7 +48,7 @@
 import { defineComponent } from 'vue'
 //import config from "config"
 //import liquidoInput from "@/components/liquido-input.vue"
-import polly from '@/components/polly.vue'
+import polly from '@/components/polly-vote.vue'
 import api from "@/services/liquido-graphql-client.js"
 
 export default defineComponent({
