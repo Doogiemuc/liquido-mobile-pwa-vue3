@@ -1,10 +1,11 @@
 #!/bin/sh
 
+set -e
+
 # build the project, exit immediately on failure
 npm run build || { echo "Build failed! Deployment aborted."; exit 1; }
 
 echo
-
 echo "Select deployment target:"
 options=("IONOS" "Gismo" "Cancel")
 select opt in "${options[@]}"; do
@@ -17,6 +18,7 @@ select opt in "${options[@]}"; do
         "Gismo")
             echo "\nDeploying LIQUIDO frontend from ./dist/ to /var/www/liquido-frontend on Gismo"
 						echo "Will also delete old asset files."
+						echo
             rsync -avzh --delete-after ./dist/ doogie@gismo:/var/www/liquido-frontend
             break
             ;;
@@ -30,4 +32,5 @@ select opt in "${options[@]}"; do
     esac
 done
 
-echo "Successfully deployed to $opt"
+echo
+echo "Successfully deployed to $opt ✅"
