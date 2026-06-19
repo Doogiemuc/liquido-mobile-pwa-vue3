@@ -21,6 +21,8 @@ coverage
 !/config/config.common.js
 
 # Cypress screenshots & videos from tests
+cypress.config.js
+cypress.config.*.js
 /cypress/videos/
 /cypress/screenshots/
 tests/e2e/screenshots

@@ -92,7 +92,7 @@
 						v-model="inviteCodeInputField"
 						class="mb-3"
 						:label="$t('inviteCode')"
-						placeholder="$t('inviteCodePlaceholder')"
+						:placeholder="$t('inviteCodePlaceholder')"
 						:valid-func="isInviteCodeSyntaxValid"
 						:maxlength="100"
 						:invalid-feedback="$t('inviteCodeInvalid')"

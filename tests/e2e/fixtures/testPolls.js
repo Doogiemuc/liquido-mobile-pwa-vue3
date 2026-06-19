@@ -2,6 +2,10 @@
 // ==========DUMMY DATA FOR TESTING ==========
 //
 
+// This is old code. But maybe a nice idea to create local mock data for frontend standalone development. 
+// For example voterTokens must be created (or updated) with valid expiration dates.
+
+
 // just a dummy to create test data
 let addDays = function (date, days) {
 	let result = new Date(date)

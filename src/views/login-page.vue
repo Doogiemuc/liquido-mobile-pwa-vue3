@@ -8,87 +8,56 @@
 			<form ref="loginForm" class="card-body p-4" autocomplete="on" @submit.prevent="submitLoginForm">
 
 				<div class="text-center mb-3">
-					<i v-if="step === 2 && webAuthnAvailable" class="fa-solid fa-fingerprint fa-3x" style="color: var(--primary)"></i>
+					<i v-if="step === 2 && webAuthnAvailable" class="fa-solid fa-fingerprint fa-3x"
+						style="color: var(--primary)"></i>
 					<i v-else class="fas fa-envelope fa-3x" style="color: var(--primary)"></i>
 				</div>
 
 				<!-- Email input — always visible for iOS autofill -->
 				<div class="mb-3">
-					<input
-						id="loginEmailInput"
-						ref="emailInput"
-						v-model="emailInputVal"
-						name="username"
-						type="email"
-						class="form-control"
-						:class="{ 'is-invalid': !!emailInputVal && emailInputTouched && !emailInputIsValid }"
-						autocomplete="username"
-						inputmode="email"
-						autocapitalize="none"
-						spellcheck="false"
-						:placeholder="$t('emailPlaceholder')"
-						required
-						tabindex="1"
-						@input="onEmailInput"
-						@blur="onEmailBlur"
-						@change="syncLoginInputs" />
-					<div v-if="emailInputTouched && !emailInputIsValid" class="invalid-feedback">
-						{{ $t("emailInvalid") }}
-					</div>
+					<input id="loginEmailInput" ref="emailInput" v-model="emailInputVal" name="username" type="email"
+						class="form-control" :class="{ 'is-invalid': emailError }" autocomplete="username" inputmode="email"
+						autocapitalize="none" spellcheck="false" :placeholder="$t('emailPlaceholder')" required tabindex="1"
+						@input="onEmailInput" @blur="onEmailBlur" @change="syncLoginInputs" />
 				</div>
 
-				<!-- Error message -->
-				<div v-if="loginErrorMessage" id="loginErrorMessage" class="alert alert-warning text-center mt-0 mb-0" :data-loginErrorMessageId="loginErrorMessageId">
-					<small>{{ loginErrorMessage }}</small>
+				<!-- Password input — always visible for iOS autofill -->
+				<div class="mb-3">
+					<input id="loginPasswordInput" ref="passwordInput" v-model="passwordInputVal" name="password"
+						class="form-control" :class="{ 'is-invalid': passwordError }" type="password"
+						autocomplete="current-password" :placeholder="$t('passwordPlaceholder')" tabindex="3"
+						@input="onPasswordInput" @blur="onPasswordBlur" @change="syncLoginInputs" />
 				</div>
+
+				<!-- WebAuthn passkey button — hero action when available -->
+				<button v-if="webAuthnAvailable" id="loginWithWebAuthnButton" type="button"
+					class="btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center mb-3"
+					:disabled="webAuthnLoginInProgress" @click="loginWithWebAuthn" tabindex="2">
+					<i class="fa-solid fa-fingerprint me-2 fa-lg"></i>
+					<span>{{ $t("LoginWithPasskey") }}</span>
+				</button>
 
 				<!-- Step 1: Continue button -->
-				<button
-					v-show="step === 1"
-					id="continueButton"
-					type="submit"
-					class="btn btn-primary w-100 text-center mt-3"
-					:disabled="checking"
-				>
+				<button v-show="step === 1" id="continueButton" type="submit" class="btn btn-primary w-100 text-center mb-3"
+					:disabled="checking">
 					<span v-if="checking" class="spinner-border spinner-border-sm me-2" role="status"></span>
 					{{ $t("Continue") }}
 				</button>
 
-				<!-- Step 2: Credentials (v-show keeps DOM for iOS autofill) -->
-				<div v-show="step === 2">
+				<!-- Step 2: Login button -->
+				<button v-show="step === 2" id="loginWithEmailPasswordButton" type="submit"
+					:class="['btn w-100 text-center position-relative mb-3', webAuthnAvailable ? 'btn-outline-primary' : 'btn-primary']">
+					<i class="fa-solid fa-sign-in-alt position-absolute top-50 start-0 translate-middle ms-3"></i>
+					<span class="text-center">{{ $t("LoginWithPassword") }}</span>
+				</button>
 
-					<!-- Password input -->
-					<div class="mb-3">
-						<input
-							id="loginPasswordInput"
-							ref="passwordInput"
-							v-model="passwordInputVal"
-							name="password"
-							class="form-control"
-							:class="{ 'is-invalid': passwordInputTouched && !passwordInputIsValid }"
-							type="password"
-							autocomplete="current-password"
-							:placeholder="$t('passwordPlaceholder')"
-							tabindex="3"
-							@input="onPasswordInput"
-							@change="syncLoginInputs" />
-						<div v-if="passwordInputTouched && !passwordInputIsValid" class="invalid-feedback">
-							{{ $t("passwordInputIsInvalid") }}
-						</div>
-					</div>
-
-					<button
-						id="loginWithEmailPasswordButton"
-						type="submit"
-						:class="['btn w-100 text-center position-relative', webAuthnAvailable ? 'btn-outline-primary' : 'btn-primary']"
-					>
-						<i class="fa-solid fa-sign-in-alt position-absolute top-50 start-0 translate-middle ms-3"></i>
-						<span class="text-center">{{ $t("LoginWithPassword") }}</span>
-					</button>
-
+				<!-- Error Message (always below active button, reserving visual height) -->
+				<div id="loginErrorMessage" class="alert alert-warning text-center mb-3 login-error-container"
+					:class="{ 'invisible': !loginErrorText }" :data-loginErrorMessageId="loginErrorMessageId">
+					<small>{{ loginErrorText || '&nbsp;' }}</small>
 				</div>
 
-				
+
 
 				<!-- Alternative login methods -->
 				<div id="loginExtras">
@@ -97,30 +66,18 @@
 						<span>{{ $t("orSignInWith") }}</span>
 					</div>
 
-					<!-- WebAuthn passkey button — hero action when available -->
-					<button
-						v-if="webAuthnAvailable"
-						id="loginWithWebAuthnButton"
-						type="button"
-						class="btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center mb-3"
-						:disabled="webAuthnLoginInProgress"
-						@click="loginWithWebAuthn"
-						tabindex="2"
-					>
-						<i class="fa-solid fa-fingerprint me-2 fa-lg"></i>
-						<span>{{ $t("LoginWithPasskey") }}</span>
-					</button>
-
 					<div class="row mb-3">
 						<div class="col">
-							<button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
+							<button type="button"
+								class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
 								@click="requestEmailLoginLink">
 								<i class="fa-regular fa-envelope"></i>
 								<span class="flex-grow-1 text-center">{{ $t("EmailLoginLink") }}</span>
 							</button>
 						</div>
 						<div class="col">
-							<button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
+							<button type="button"
+								class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
 								@click="startGoogleOneTapLogin">
 								<i class="fa-brands fa-google"></i>
 								<span class="flex-grow-1 text-center">{{ $t("Google") }}</span>
@@ -151,7 +108,8 @@
 
 		<!-- Password forgotten Link -->
 		<div class="forgot-password-link my-3">
-			<router-link id="forgotPasswordLink" :to="{ name: 'forgotPassword' }">{{ $t('ForgotPassword') }}</router-link>
+			<router-link id="forgotPasswordLink" :to="{ name: 'forgotPassword' }">{{ $t('ForgotPassword')
+			}}</router-link>
 		</div>
 
 		<!-- Register -->
@@ -207,7 +165,7 @@ export default {
 				passwordPlaceholder: "Passwort",
 				emailInvalid: "Ungültige Email. Vielleicht nur vertippt?",
 				emailNotFound: "Tut mir leid, ich kenne diese E-Mail nicht.",
-				passwordInputIsInvalid: "Mindestens 10 Zeichen.",
+				passwordInputIsInvalid: "Das Passwort muss mindestens 10 Zeichen haben.",
 				loginFailed: "Login fehlgeschlagen. Bitte check deine E-Mail und dein Passwort.",
 				changeEmail: "Andere E-Mail",
 
@@ -238,7 +196,7 @@ export default {
 				passwordPlaceholder: "Password",
 				emailInvalid: "Invalid email. Maybe a typo?",
 				emailNotFound: "I don't know this email.",
-				passwordInputIsInvalid: "At least 10 characters.",
+				passwordInputIsInvalid: "At least 10 characters for password.",
 				loginFailed: "Login failed. Please check your email and password.",
 				changeEmail: "Change email",
 
@@ -278,6 +236,8 @@ export default {
 			checking: false,
 			loginErrorMessage: undefined,
 			loginErrorMessageId: undefined,
+			emailError: null,
+			passwordError: null,
 		}
 	},
 	computed: {
@@ -292,10 +252,14 @@ export default {
 		},
 		passwordInputIsValid() {
 			return (this.passwordInputVal || "").length >= 10
+		},
+		loginErrorText() {
+			return this.emailError || this.passwordError || this.loginErrorMessage || null
 		}
 	},
 	watch: {
 		emailInputVal() {
+			this.clearErrors()
 			if (this.step === 2) {
 				this.step = 1
 				this.webAuthnAvailable = false
@@ -352,52 +316,91 @@ export default {
 			if (this.$refs.passwordInput) this.passwordInputVal = this.$refs.passwordInput.value
 		},
 
+		setLoginError(message, id = undefined) {
+			this.loginErrorMessage = message
+			this.loginErrorMessageId = id
+			if (this.step === 2) {
+				this.passwordError = message
+			} else {
+				this.emailError = message
+			}
+		},
+
+		clearErrors() {
+			this.emailError = null
+			this.passwordError = null
+			this.loginErrorMessage = null
+			this.loginErrorMessageId = null
+		},
+
 		/** only validate the email input field, when it is blurred. Not while typing. */
 		onEmailBlur() {
 			this.emailInputTouched = true
+			const email = (this.emailInputVal || "").trim()
+			if (email && this.emailInputIsValid) {
+				this.emailError = null	
+				this.continueWithEmail()
+			} else {
+				this.emailError = this.$t("emailInvalid")
+			}		
 		},
 
 		onEmailInput() {
-			//this.emailInputTouched = true
 			this.syncLoginInputs()
+			this.clearErrors()
 		},
 
 		onPasswordInput() {
-			this.passwordInputTouched = true
 			this.syncLoginInputs()
+			this.clearErrors()
 		},
 
-		async continueWithEmail() {
+		onPasswordBlur() {
+			this.passwordInputTouched = true
+			const password = (this.passwordInputVal || "").trim()
+			if (password && !this.passwordInputIsValid) {
+				this.passwordError = this.$t("passwordInputIsInvalid")
+			} else {
+				this.passwordError = null
+			}
+		},
+
+		continueWithEmail() {
 			this.syncLoginInputs()
 			this.emailInputTouched = true
-			if (!this.emailInputIsValid || this.checking) return
-			this.loginErrorMessage = null
-			this.checking = true
-			try {
-				const result = await api.checkLoginEmail(this.emailInputVal.trim().toLowerCase())
-				if (result.status === "REGISTERED") {
-					this.webAuthnAvailable = !!result.webauthn
-					this.step = 2
-					//this.$nextTick(() => document.getElementById("loginPasswordInput")?.focus())
-				} else {
-					this.loginErrorMessage = this.$t("emailNotFound")
-					this.loginErrorMessageId = ERROR.EMAIL_NOT_FOUND
-				}
-			} catch {
-				// Network error — still allow login attempt
-				this.step = 2
-				//this.$nextTick(() => document.getElementById("loginPasswordInput")?.focus())
-			} finally {
-				this.checking = false
+			const email = (this.emailInputVal || "").trim()
+			if (!email) return
+			if (!this.emailInputIsValid) {
+				this.emailError = this.$t("emailInvalid")
+				return
 			}
+			this.clearErrors()
+			this.checking = true
+
+			api.checkLoginEmail(email)
+				.then(result => {
+					if (result.status === "REGISTERED") {
+						this.webAuthnAvailable = !!result.webauthn
+						this.step = 2
+					} else {
+						this.setLoginError(this.$t("emailNotFound"), ERROR.EMAIL_NOT_FOUND)
+					}
+				})
+				.catch(() => {
+					// Network error — still allow login attempt
+					this.step = 2
+				})
+				.finally(() => {
+					this.checking = false
+				})
 		},
 
 		backToEmail() {
 			this.step = 1
 			this.webAuthnAvailable = false
-			this.loginErrorMessage = undefined
 			this.passwordInputVal = ""
 			this.passwordInputTouched = false
+			this.clearErrors()
 			this.$nextTick(() => document.getElementById("loginEmailInput")?.focus())
 		},
 
@@ -407,14 +410,20 @@ export default {
 			this.syncLoginInputs()
 			this.emailInputTouched = true
 			this.passwordInputTouched = true
-			if (!this.emailInputIsValid || !this.passwordInputIsValid) return
+			const password = (this.passwordInputVal || "").trim()
+			if (!password) return
+			if (!this.passwordInputIsValid) {
+				this.passwordError = this.$t("passwordInputIsInvalid")
+				return
+			}
+			this.emailError = null
+			this.passwordError = null
 			this.loginErrorMessage = null
 			api.loginWithEmailPassword(this.emailInputVal, this.passwordInputVal)
 				.then(() => this.$root.gotoTeam())
 				.catch(err => {
 					console.warn("Could not login with email & password", err)
-					this.loginErrorMessage = this.$t("loginFailed")
-					this.loginErrorMessageId = ERROR.PASSWORD_LOGIN_FAILED
+					this.setLoginError(this.$t("loginFailed"), ERROR.PASSWORD_LOGIN_FAILED)
 					this.passwordInputVal = ""
 				})
 		},
@@ -424,6 +433,7 @@ export default {
 		async loginWithWebAuthn() {
 			if (!this.webAuthnAvailable || this.webAuthnLoginInProgress) return
 			this.webAuthnLoginInProgress = true
+			this.passwordError = null
 			this.loginErrorMessage = null
 			try {
 				const teamData = await webauthnService.loginWithWebAuthn(this.emailInputVal)
@@ -431,8 +441,7 @@ export default {
 				this.$root.gotoTeam()
 			} catch (err) {
 				console.error("WebAuthn login failed:", err)
-				this.loginErrorMessage = this.$t("WebAuthnLoginFailed")
-				this.loginErrorMessageId = ERROR.WEB_AUTHN_LOGIN_FAILED
+				this.setLoginError(this.$t("WebAuthnLoginFailed"), ERROR.WEB_AUTHN_LOGIN_FAILED)
 			} finally {
 				this.webAuthnLoginInProgress = false
 			}
@@ -441,7 +450,7 @@ export default {
 		// =============== Google One Tap ==================
 
 		startGoogleOneTapLogin() {
-			this.loginErrorMessage = undefined
+			this.clearErrors()
 			if (!document.getElementById("google-script")) {
 				const script = document.createElement("script")
 				script.id = "google-script"
@@ -455,7 +464,7 @@ export default {
 
 		loginWithGoogleOneTap() {
 			if (window.google && window.google.accounts) {
-				this.loginErrorMessage = undefined
+				this.clearErrors()
 				window.google.accounts.id.initialize({
 					client_id: config.googleClientId,
 					callback: this.handleGoogleOneTapResponse,
@@ -465,8 +474,7 @@ export default {
 				})
 				window.google.accounts.id.prompt()
 			} else {
-				this.loginErrorMessage = this.$t("GoogleLoginCurrentlyNotAvailable")
-				this.loginErrorMessageId = ERROR.GOOGLE_LOGIN_NOT_AVAILABLE
+				this.setLoginError(this.$t("GoogleLoginCurrentlyNotAvailable"), ERROR.GOOGLE_LOGIN_NOT_AVAILABLE)
 			}
 		},
 
@@ -475,28 +483,29 @@ export default {
 				api.logout()
 				api.googleOneTapLogin(response.credential)
 					.then(() => this.$root.gotoTeam())
-					.catch(() => { this.loginErrorMessage = this.$t("GoogleLoginFailed") })
+					.catch(() => { this.setLoginError(this.$t("GoogleLoginFailed")) })
 			} else {
-				this.loginErrorMessage = this.$t("GoogleLoginFailed")
+				this.setLoginError(this.$t("GoogleLoginFailed"))
 			}
 		},
 
 		// =============== Email Magic Link ==================
 
 		requestEmailLoginLink() {
-			this.loginErrorMessage = undefined
+			this.clearErrors()
 			api.logout()
 			api.requestEmailLoginLink(this.emailInputVal)
-				.then(() => { this.loginErrorMessage = undefined })
-				.catch(() => { this.loginErrorMessage = this.$t("emailNotFound") })
+				.then(() => { this.clearErrors() })
+				.catch(() => { this.setLoginError(this.$t("emailNotFound")) })
 		},
 
 		loginWithEMailToken() {
+			this.clearErrors()
 			api.loginWithEmailToken(this.email, this.emailToken)
 				.then(() => this.$root.gotoTeam())
 				.catch(err => {
 					console.error("Cannot login with email token", err)
-					this.loginErrorMessage = this.$t("loginFailed")
+					this.setLoginError(this.$t("loginFailed"))
 				})
 		},
 
@@ -518,6 +527,8 @@ export default {
 				.catch(err => console.error("DevLogin Member failed!", err))
 		},
 
+		//TODO: REMOVE THIS!  Have static devLogin.member.email!!!  And configure per env!
+
 		getDevLoginUserEmail(role) {
 			if (!config.mockBackend) {
 				return role === "ADMIN" ? config.devLogin.admin.email : config.devLogin.member.email
@@ -531,7 +542,6 @@ export default {
 </script>
 
 <style>
-
 .horizontal-line {
 	text-align: center;
 	margin-top: 2rem;
@@ -550,9 +560,19 @@ export default {
 .forgot-password-link,
 .register-link {
 	text-align: center;
+
 	a {
 		color: gray !important;
 	}
+}
+
+.login-error-container {
+	height: 3.5rem;
+	padding: 0.25rem 1rem !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
 }
 
 /* Autofill detection: some browsers (iOS/Safari) don't emit input/change when
@@ -564,6 +584,16 @@ input:-webkit-autofill {
 	animation-name: onAutoFillStart;
 	animation-duration: 0.01s;
 }
-@-webkit-keyframes onAutoFillStart { from { } to { } }
-@keyframes onAutoFillStart { from { } to { } }
+
+@-webkit-keyframes onAutoFillStart {
+	from {}
+
+	to {}
+}
+
+@keyframes onAutoFillStart {
+	from {}
+
+	to {}
+}
 </style>

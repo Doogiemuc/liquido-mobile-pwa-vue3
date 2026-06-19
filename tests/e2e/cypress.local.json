@@ -1,9 +1,0 @@
-{
-	"baseUrl": "http://localhost:3001/",
-	"env": {
-		"LIQUIDO_API": "http://localhost:8080/liquido-api",
-		"devLoginToken": "998877"
-	},
-	"viewportWidth": 375,
-	"viewportHeight": 667	
-}

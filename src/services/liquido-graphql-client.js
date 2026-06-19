@@ -445,6 +445,8 @@ let graphQlApi = {
 
 	/* ================== WebAuthn REST client ==================== */
 
+	//TODO:  Move the WebAuthnREST client into webauthn-service.js  But then what about mocking?
+
 	/**
 	 * Check if that email is a registered user, ie. that email is known
 	 * in the backend database.
@@ -457,21 +459,9 @@ let graphQlApi = {
 	 */
 	async checkLoginEmail(email) {
 		if (!email) throw new Error("Email is required to check WebAuthn availability")
-		return axios.get('/webauthn/check-login-email', {
+		return axios.get('/login/check-login-email', {
 			params: { email: email }
-		}).then(res => {
-			const payload = res.data || {}
-			if (payload.status) return payload
-			// Backward compatibility: older responses returned only email + webauthn.
-			if (payload.email) return { status: "REGISTERED", ...payload }
-			return payload
-		})
-			.catch(err => {
-				if (err?.response?.status === 404) {
-					return { status: "UNKNOWN", email: email, webauthn: false }
-				}
-				return Promise.reject(err)
-			})
+		}).then(res => res.data)
 	},
 
 	/**

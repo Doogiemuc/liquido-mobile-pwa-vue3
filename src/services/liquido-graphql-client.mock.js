@@ -509,14 +509,14 @@ export const initializeLiquidoGraphQlMock = function(graphQlApi, teamCache) {
 	mockRequestInterceptorInstalled = true
 
 	axios.interceptors.request.use(config => {
-		if (config.url.includes("/webauthn/check-login-email")) {
+		if (config.url.includes("/login/check-login-email")) {
 			const email = config.params.email
 			const member = mockState.team.members.find(m => m.user.email === email)
 			if (member) {
 				console.log("MOCK: /check-login-email for " + email + " -> existing user")
 				config.adapter = config => {
 					return Promise.resolve({
-						data: { status: "REGISTERED", email: email, webauthn: true },
+						data: { status: "REGISTERED", webauthn: true },
 						status: 200,
 						statusText: "OK",
 						headers: { "Content-Type": "application/json" },
@@ -528,7 +528,7 @@ export const initializeLiquidoGraphQlMock = function(graphQlApi, teamCache) {
 				console.log("MOCK: /check-login-email for " + email + " -> email not registered")
 				config.adapter = config => {
 					return Promise.resolve({
-						data: { status: "UNKNOWN", email: email, webauthn: false },
+						data: { status: "UNKNOWN", webauthn: false },
 						status: 200,
 						statusText: "OK",
 						headers: { "Content-Type": "application/json" },

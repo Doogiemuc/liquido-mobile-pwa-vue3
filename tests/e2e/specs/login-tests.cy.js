@@ -9,9 +9,20 @@
 let now = Date.now() % 10000
 console.log("Running Cypress login-test.js (test_uuid="+now+")", "NODE_ENV="+process.env.NODE_ENV)
 
-
 context('Login Test', () => {
 	
+	/** Check if backend is available at all */
+	before(() => {
+		cy.visit("/login")
+		cy.get("#login-page")
+		cy.get("#rootPopupModal").should("not.be.visible")
+
+		cy.request(Cypress.expose('LIQUIDO_API'))
+			.then(res => {
+				expect(res.status, "Check if backend is available.").to.equal(200)
+			})
+	})
+
 	beforeEach(() => {
 		console.log("===================================================")
 		console.log("    TEST CASE >>>", Cypress.mocha.getRunner().suite.ctx.currentTest.title, "<<<")
@@ -54,7 +65,7 @@ context('Login Test', () => {
 		cy.get("#login-page")
 
 		//WHEN enter mobile phone of test admin user
-		cy.get("#mobilephoneInput").type(Cypress.env("admin").mobilephone)
+		cy.get("#mobilephoneInput").type(Cypress.expose("admin").mobilephone)
 		// AND click request SMS token button
 		cy.get("#requestTokenButton").click()
 
@@ -63,7 +74,7 @@ context('Login Test', () => {
 		cy.get("#tokenErrorMessage").should("not.exist")
 
 		//WHEN enter (mock) SMS authToken
-		cy.get("#authTokenInput").type(Cypress.env("devLoginToken")).type("{enter}")
+		cy.get("#authTokenInput").type(Cypress.expose("devLoginToken")).type("{enter}")
 
 		//THEN user is logged in and teamHome is shown
 		cy.get("#team-home")
@@ -74,10 +85,16 @@ context('Login Test', () => {
 		cy.get("#login-page")
 
 		//WHEN test user enters his email & password
-		cy.get("#loginEmailInput").type(Cypress.env("admin").email)
+		cy.get("#loginEmailInput").type(Cypress.expose("admin").email)
 		cy.get("#continueButton").click()
-		let password = Cypress.env("admin").email + Cypress.env("passwordSuffix")
-		cy.get("#loginPasswordInput").type(password)
+		
+		cy.env(["passwordSuffix"])
+			.then(({ passwordSuffix }) => {
+				return Cypress.expose("admin").email + passwordSuffix
+			})
+			.then(password => {
+				cy.get("#loginPasswordInput").type(password)
+			})
 		
 		// AND click login button
 		cy.get("#loginWithEmailPasswordButton").click()
@@ -85,7 +102,7 @@ context('Login Test', () => {
 		//THEN user is logged in and teamHome is shown
 		cy.get("#team-home")
 		// AND the user is shown in the team
-		cy.get("#memberCards").contains(Cypress.env("admin").name)
+		cy.get("#memberCards").contains(Cypress.expose("admin").name)
 	})
 
 	it('Unknown email shows not found message', function() {
@@ -100,7 +117,7 @@ context('Login Test', () => {
 		cy.get("#loginEmailInput").type("unknown-user@example.com")
 		cy.get("#continueButton").click()
 
-		cy.get("#emailNotFoundMessage").should("be.visible")
+		cy.get("#loginErrorMessage").should("be.visible")
 	})
 
 		
@@ -118,7 +135,7 @@ context('Login Test', () => {
 		cy.get("#forgot-password-page")
 
 		// Enter email and request password reset
-		cy.get("#emailInput").type(Cypress.env("admin").email)
+		cy.get("#emailInput").type(Cypress.expose("admin").email)
 		cy.get("#requestPasswordResetButton").click()
 
 		// Should show success message
@@ -126,13 +143,16 @@ context('Login Test', () => {
 
 		// ========= Step 2: Reset password with token ========
 
-		// Simulate receiving reset token (in real test, fetch from mailtrap or similar)
-		// For this test, we assume a test token and email are available in env
-		cy.visit(`/resetPassword?email=${encodeURIComponent(Cypress.env("admin").email)}&resetPasswordToken=${Cypress.env("testPasswordResetToken")}`)
+		// Simulate receiving the one time token via email 
+		// Here in this test we use a static secret "testPasswordResetToken". Real email could be tested with mailtrap.com
+
+		//TODO: copy implementation with mailtrap from below!
+
+		cy.visit(`/resetPassword?email=${encodeURIComponent(Cypress.expose("admin").email)}&resetPasswordToken=${Cypress.expose("testPasswordResetToken")}`)
 		cy.get("#forgot-password-page")
 
 		// Enter new password twice   (set the same password again, so that the test is repeatable)
-		let newPassword = Cypress.env("admin").email + Cypress.env("passwordSuffix")
+		let newPassword = Cypress.expose("admin").email + Cypress.expose("passwordSuffix")
 		cy.get("#newPasswordInput1").type(newPassword) // first input
 		cy.get("#newPasswordInput2").type(newPassword) // second input
 
@@ -151,7 +171,7 @@ context('Login Test', () => {
 		cy.get("#login-page")
 
 		//WHEN test user enters his email & password
-		cy.get("#loginEmailInput").type(Cypress.env("admin").email)
+		cy.get("#loginEmailInput").type(Cypress.expose("admin").email)
 		cy.get("#continueButton").click()
 		cy.get("#loginPasswordInput").type(newPassword)
 		
@@ -169,7 +189,7 @@ context('Login Test', () => {
 		cy.get("#login-page")
 
 		//WHEN test user enters his email
-		cy.get("#loginEmailInput").type(Cypress.env("admin").email).type("{enter}")
+		cy.get("#loginEmailInput").type(Cypress.expose("admin").email).type("{enter}")
 		// AND click request Email button
 		cy.get("#requestEmailButton").click()
 
@@ -177,26 +197,23 @@ context('Login Test', () => {
 		cy.get("#emailSuccessMessage").should("exist")
 		cy.get("#emailErrorMessage").should("not.exist")
 
-		//Now user clicks on the link in the email
-		//TODO: get login link from eg. mailtrap.io
-
 		// GIVEN the received email message
 		cy.request({
-			url: Cypress.env("mailtrap").messagesUrl,
+			url: Cypress.expose("mailtrap").messagesUrl,
 			headers: {
-				"Api-Token": Cypress.env("mailtrap").apiToken
+				"Api-Token": Cypress.expose("mailtrap").apiToken
 			}
 		}).then(res => {
 			let messages = res.body
 			messages.sort((a,b) => a.created_at < b.created_at)    // sort newest message first
 			//  AND the HTML body of the message
 			cy.request({
-				url: Cypress.env("mailtrap").messagesUrl+"/"+messages[0].id+"/body.html",
+				url: Cypress.expose("mailtrap").messagesUrl+"/"+messages[0].id+"/body.html",
 				headers: {
-					"Api-Token": Cypress.env("mailtrap").apiToken
+					"Api-Token": Cypress.expose("mailtrap").apiToken
 				}
 			}).then(res2 => {
-				// THEN the mail body contains a loginLink
+				// THEN the email body contains a loginLink
 				let messageHtml = res2.body
 				console.log("msaasdfb body", messageHtml)
 				const regex = /<a.*?id='loginLink'.*href='(.*?)'>/;   // LIQUIDO HTML messages use single quotes!
@@ -208,7 +225,10 @@ context('Login Test', () => {
 				assert.isString(loginLink)
 				console.log("LoginLink", loginLink)
 
+				// WHEN user clics on the login link
 				cy.visit(loginLink)
+				
+				// THEN he is logged in
 				cy.get("#team-home")
 			})
 		})
