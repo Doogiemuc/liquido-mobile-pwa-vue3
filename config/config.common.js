@@ -23,6 +23,7 @@ export default {
 	avatarPath: "./img/avatars",
 	inviteLinkPrefix: "http://app.liquido.vote/welcome?inviteCode=",
 	//TODO: adminMustConfirmNewMembers: ...
+	//TODO: voting algorith: absoluteMajority or margin
 
 	// Dummy data for mocked login. Must be same as mockdata/teamUserJwt.json
 	devLogin: {
