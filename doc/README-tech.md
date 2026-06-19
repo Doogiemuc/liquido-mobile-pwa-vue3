@@ -66,8 +66,32 @@ For the TLS connection to the backend you need a certificate. For development we
 
 
 
+# LIQUIDO Login UX Flow
 
-# Social Logins
+## Step 1: Enter email adress
+
+One card with three items. Centered top to bototm:  a login icon. One input field for email. One primary action "Next". Input field and button with same full widtht. 
+
+Error state: When the user clicks the "Next" button then the email is validated. If that email is unknown, ie. no user with that email is known, then an error message is shown below the email input field.
+
+## Step 2: Password
+
+When is validated successfully, then a second input fields for the password appears below the email input field. The button text changes to "Login with Password".
+
+Error state: When login with email & password fails a polite error message is shown: "Email or password invalid. Maybe just a made a typo?"
+
+
+# Alternative ways to login
+
+Below the email and password input there is a separator, a horizontal line with a centered text: "or login with"
+
+And two buttons for "E-Mail Link" and "Google Login"
+
+
+
+
+
+
 
 ## Google Login for LIQUIDO
 
