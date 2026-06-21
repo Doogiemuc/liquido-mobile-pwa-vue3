@@ -1,8 +1,9 @@
 {
   "name": "liquido",
-  "version": "0.103.0",
+  "version": "1.0.0",
   "description": "Liquido - easy, secure & liquid voting",
   "author": "Liquido Team",
+  "homepage": "https://www.liquido.vote",
   "type": "module",
   "scripts": {
     "start": "vite",
