@@ -514,7 +514,7 @@ export default {
 		devLoginAdmin() {
 			if (import.meta.env.MODE !== "development" && import.meta.env.MODE !== "test") return
 			api.logout()
-			api.devLogin(this.getDevLoginUserEmail("ADMIN"), config.devLogin.teamName, config.devLogin.token)
+			api.devLogin(this.getDevLoginUserEmail("ADMIN"), /*teamName*/null , config.devLogin.token)
 				.then(() => this.$root.gotoPolls())
 				.catch(err => console.error("DevLogin Admin failed!", err))
 		},
@@ -522,7 +522,7 @@ export default {
 		devLoginMember() {
 			if (import.meta.env.MODE !== "development" && import.meta.env.MODE !== "test") return
 			api.logout()
-			api.devLogin(this.getDevLoginUserEmail("MEMBER"), config.devLogin.teamName, config.devLogin.token)
+			api.devLogin(this.getDevLoginUserEmail("MEMBER"), /*teamName*/null, config.devLogin.token)
 				.then(() => this.$root.gotoPolls())
 				.catch(err => console.error("DevLogin Member failed!", err))
 		},

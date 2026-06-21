@@ -151,28 +151,35 @@ const currentUserOrThrow = () => {
 	return mockState.currentUser
 }
 
-// ================ TODO:  THIS IS NOT FINISHED YET!!!   TODO: Simulate complete login in mock!
-const loginResultFor = email => {
-	const user = findMemberByEmail(email)	
-	if (user) {	
-		rejectLiquido(LiquidoExceptionCodes.UNAUTHORIZED, "Cannot mockLogin email="+email)
+/**
+ * Central login method for mock backend.
+ * Simulates the complete login logic that happens in the real graphQlApi.login() method.
+ * This sets up the mock state properly so that subsequent API calls work correctly.
+ * 
+ * @param {String} email email of the user to log in
+ * @returns {Object} login result { team, user, jwt } ready to be passed to real graphQlApi.login()
+ * @throws MockLiquidoError if email is not found
+ */
+const loginMock = email => {
+	const member = findMemberByEmail(email)
+	if (!member) {
+		rejectLiquido(LiquidoExceptionCodes.UNAUTHORIZED, "Cannot mockLogin: user email not found: " + email)
 	}
-	
-	//mockState.team   is already set in createState
-	mockState.currentUser = user
+
+	const user = member.user
+
+	// Simulate the cache initialization that happens in graphQlApi.login()
+	mockState.currentUser = deepClone(user)
 	mockState.jwt = `mock-jwt-${user.id}`
 	saveMockState(mockState)
+
+	console.debug("Mock login successful for <" + user.email + "> into team '" + mockState.team.teamName + "'")
 
 	return {
 		team: deepClone(mockState.team),
 		user: deepClone(user),
 		jwt: mockState.jwt,
 	}
-}
-
-// TODO: need to do full login instead!
-const setCurrentUser = user => {
-	mockState.currentUser = deepClone(user)
 }
 
 const countVotesForPoll = pollId => Object.keys(mockState.ballotsByPollAndUser)
@@ -185,7 +192,10 @@ const countVotesForPoll = pollId => Object.keys(mockState.ballotsByPollAndUser)
 const queryHandlers = {
 	ping: () => "MOCK responses are active!",
 	team: () => deepClone(mockState.team),
-	loginWithJwt: () => loginResultFor(currentUserOrThrow()),
+	loginWithJwt: () => {
+		const user = currentUserOrThrow()
+		return loginMock(user.email)
+	},
 	requestEmailLoginLink: query => {
 		const email = argFromQuery(query, "email")
 		if (!findMemberByEmail(email)) {
@@ -195,12 +205,10 @@ const queryHandlers = {
 	},
 	loginWithEmailPassword: query => {
 		const email = argFromQuery(query, "email")
-		const member = findMemberByEmail(email)
-		if (!member) {
+		if (!findMemberByEmail(email)) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_EMAIL_NOT_FOUND, "Unknown email")
 		}
-		setCurrentUser(member.user)
-		return loginResultFor(member.user)
+		return loginMock(email)
 	},
 	requestPasswordReset: query => {
 		const email = argFromQuery(query, "email")
@@ -216,7 +224,10 @@ const queryHandlers = {
 		}
 		return true
 	},
-	googleOneTapLogin: () => loginResultFor(currentUserOrThrow()),
+	googleOneTapLogin: () => {
+		const user = currentUserOrThrow()
+		return loginMock(user.email)
+	},
 	authToken: query => {
 		const mobilephone = argFromQuery(query, "mobilephone")
 		const member = findMemberByMobile(mobilephone)
@@ -236,17 +247,14 @@ const queryHandlers = {
 		if (get(mockState, `issuedAuthTokensByMobile.${mobilephone}`) !== authToken) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_TOKEN_INVALID, "Invalid auth token")
 		}
-		setCurrentUser(member.user)
-		return loginResultFor(member.user)
+		return loginMock(member.user.email)
 	},
 	devLogin: query => {
 		const email = argFromQuery(query, "email")
-		const member = findMemberByEmail(email)
-		if (!member) {
+		if (!findMemberByEmail(email)) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_EMAIL_NOT_FOUND, "Unknown user for devLogin")
 		}
-		setCurrentUser(member.user)
-		return loginResultFor(member.user)
+		return loginMock(email)
 	},
 	polls: () => deepClone(mockState.team.polls || []),
 	poll: query => {
@@ -298,15 +306,17 @@ const mutationHandlers = {
 			picture: admin.picture || "Avatar1.png",
 			website: admin.website || null,
 		}
+		const newTeam = {
+			id: userId,
+			teamName,
+			inviteCode: Math.random().toString(36).slice(2, 10),
+			members: [{ role: "ADMIN", joinedAt: nowIso(), user: adminUser }],
+			polls: [],
+		}
+		// Initialize mockState for the newly created team
 		mockState = {
 			...mockState,
-			team: {
-				id: userId,
-				teamName,
-				inviteCode: Math.random().toString(36).slice(2, 10),
-				members: [{ role: "ADMIN", joinedAt: nowIso(), user: adminUser }],
-				polls: [],
-			},
+			team: newTeam,
 			currentUser: adminUser,
 			jwt: `mock-jwt-${userId}`,
 			issuedAuthTokensByMobile: {},
@@ -315,7 +325,14 @@ const mutationHandlers = {
 			nextPollId: 1,
 			nextProposalId: 1,
 		}
-		return loginResultFor(adminUser)
+		saveMockState(mockState)
+		
+		// Return login result with the newly created team and admin
+		return {
+			team: deepClone(newTeam),
+			user: deepClone(adminUser),
+			jwt: mockState.jwt,
+		}
 	},
 	joinTeam: (query, variables = {}) => {
 		const inviteCode = get(variables, "inviteCode", argFromQuery(query, "inviteCode"))
@@ -328,9 +345,10 @@ const mutationHandlers = {
 		}
 		const existing = findMemberByEmail(memberInput.email)
 		if (existing) {
-			setCurrentUser(existing.user)
-			return loginResultFor(existing.user)
+			// User already exists, just log them in
+			return loginMock(existing.user.email)
 		}
+		// Create new team member
 		const newUser = {
 			id: Date.now(),
 			name: memberInput.name || memberInput.email,
@@ -340,8 +358,9 @@ const mutationHandlers = {
 			website: memberInput.website || null,
 		}
 		mockState.team.members.push({ role: "MEMBER", joinedAt: nowIso(), user: newUser })
-		setCurrentUser(newUser)
-		return loginResultFor(newUser)
+		saveMockState(mockState)
+		// Log in the newly created member
+		return loginMock(newUser.email)
 	},
 	createPoll: query => {
 		const title = argFromQuery(query, "title", "New Mock Poll")

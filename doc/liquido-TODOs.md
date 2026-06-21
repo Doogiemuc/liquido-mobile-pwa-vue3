@@ -1,9 +1,5 @@
 # TODOs
 
-# Database for FREEEEEE
-
- * https://supabase.com/
- 
 
 
 # Write further Tests
@@ -20,24 +16,30 @@
 ### Login
 
  * Finally finalize the final login flow :-) Login via
-   * Google - DONE
+   * Login via Email
+	 * Google - DONE
 	 * [Login with Apple](https://developer.apple.com/documentation/signinwithapple/configuring-your-webpage-for-sign-in-with-apple)
-	 * Authy App
-	 * SMS - work in progress
+	 * Authy App: Need good docu and UX guide.
+	 * SMS - Costs :-(
 
- * Settings:
-   * Can team members create polls?
-   * Can team members add their own proposals to a poll?
- 
+#### Settings
 
-# Polls
+Settings per Team
+ * Can team members invite other team members?
+ * Can team members create polls themselves?
+ * Can team members add their own proposals to a poll?
+ * How to tally a voting? Absolut majoritis or winning margins?
+
+Do I need any setting per poll? Wouldn't know of any yet.
+
+# Three level of polls
 
  * Three levels of polls:
 	 1. Polly (e.g. for kids): a super intelligent wobbling funny Polly
 	 2. Polls (with proposals/options) and Elections (with candidates) and descriptions for each option
-	 3. Full blown proxy voting
+	 3. Full blown liqudid proxy voting with delegations.
 
-## Full blown liquido with ideas that need to get support
+## Full blown LIQUIDO with ideas that need to get support
 
  * Ideas, that become proposals when they have enough supporters
  * Alternative ideas that can be suggested, and then become alternative proposals if they gather enough supporters.
@@ -50,20 +52,29 @@
 
 ## Bigger technical lifts
 
+ * Three levels of polls,  Polly
  * Capacitorjs.com A cross platform native runtime for web apps.
- * split liquido-graphql-client.js  into authentication, cache-service and pure backend HTTP client
+ * split liquido-graphql-client.js  into authentication, cache-service and pure backend HTTP clients
 
+# Deployment
+
+# Database for free
+ * https://supabase.com/
+ 
 
 ## Smaller fixes
 
- * Remove all SCSS: CSS is enough -> performance improvement
  * Scroll to top: Do this with  https://router.vuejs.org/guide/advanced/scroll-behavior.html#Delaying-the-scroll     "scrollBehaviour" in router!!!
  * Test on real devices, eg. with https://www.browserstack.com/    => This does already work on real hardware locally.
 
 # DONE - Implemented Features 
 
+ * June 2026 - lot of improvements with AI: graphql mock, rest interfaces for sending mails
+ * Juni 2026 - looot of work on login page. In the end decided on easy variant. Always show udername and password input field, instead of fancy UX animation, because of iOS autofill.
+ * May 2026 - Remove all SCSS: CSS is enough -> performance improvement
  * May 2026 - A lot of reworks how Navbar works. Now have it on each individual page
- * March 2026 - Design View with an overview of all mobile pages
+ * May 2026 - Introduced UserHome with edit with only on AI prompt!
+ * March 2026 - Really nice Design View Page with an overview of all mobile pages in the app
  * Dez 2025 - Keepass with WebAuthN - puh that was a big lift
  * Oct 2025 - Local MOCK for backend
  * Aug 2025 - Remove bootstrap-vue-3  use plain bootstrap (mainly only b-card and b-button)

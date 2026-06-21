@@ -1,24 +1,35 @@
 <template>
 	<div>
-		<h1 id="design-page" class="page-title">LIQUIDO Design Overview</h1>
+		<h1 id="design-page" class="page-title mt-0">LIQUIDO Design Overview</h1>
  
 		<div class="text-center">
 			<p v-if="currentUser">
-				You are logged in as {{ currentUser.email }}
-				<a href="#" @click.prevent="logout">Logout</a>
+				Logged in as <b>{{ currentUser.email }}</b>
+				<a class="ms-5" href="#" @click.prevent="logout">Logout</a>
 			</p>
-			<button v-else type="button" class="btn btn-outline-secondary"
-				@click="devLoginAdmin">
-				<i class="fas fa-shield-alt me-2"></i>
-				<span class="flex-grow-1 text-center">DevLogin as Admin</span>
-			</button>
+			<div v-else class="button-group">
+				<button type="button" class="btn btn-outline-secondary"
+					@click="devLoginMember">
+					<i class="fas fa-user me-2"></i>
+					<span class="flex-grow-1 text-center">DevLogin Member</span>
+				</button>
+				<button type="button" class="btn btn-outline-secondary"
+					@click="devLoginAdmin">
+					<i class="fas fa-shield-alt me-2"></i>
+					<span class="flex-grow-1 text-center">DevLogin Admin</span>
+				</button>
+			</div>
 		</div>
 
 		<div class="overview">
 			<section v-for="page in pages" :key="page.name" class="overview-section">
 				<h3 class="ms-3">{{ page.name }}</h3>
 				<div class="page-preview-container">
-					<iframe :src="page.route" class="page-iframe"></iframe>
+					<iframe 
+						:ref="el => { if(el && page) iframeElements[page.name] = el }"
+						:src="page.route" 
+						class="page-iframe">
+					</iframe>
 				</div>
 			</section>
 		</div>
@@ -27,10 +38,11 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import api from "@/services/liquido-graphql-client.js"
 import config from "config"
-//import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
+// Expose config to template
+const appConfig = config
 
 const polls = api.getCachedPolls()
 let firstPollId = 55555
@@ -55,11 +67,13 @@ const pages = [
 	{ name: 'Login via SMS', route: '/login-via-sms' },
 	{ name: 'Forgot password', route: '/forgotPassword' },
 	{ name: '404 - not found', route: '/404' },
-
 	{ name: 'Polly', route: '/polly/create' },
 ]
 
 if (!config.mockBackend) console.log("==== Design overview: You might want to set config.mockBackend = true =======")
+
+/** Map to store references to all iframe elements for reloading after login */
+const iframeElements = ref({})
 
 onMounted(() => {
 	// iframes are now self-contained, no additional setup needed
@@ -67,11 +81,36 @@ onMounted(() => {
 
 const currentUser = computed(() => api.getCachedUser())
 
-/** Quickly login as an admin user. This is available as a button in the mobile UI when in DEV env.  */
+/**
+ * Reload all iframes. Used after successful login to refresh all pages with new auth state.
+ */
+const reloadAllIframes = () => {
+	Object.values(iframeElements.value).forEach(iframe => {
+		if (iframe?.contentWindow) {
+			iframe.contentWindow.location.reload()
+		}
+	})
+}
+
+/** Quickly login as a member user. This is available as a button in the design overview when in DEV env.  */
+const devLoginMember = () => {
+	if (import.meta.env.MODE !== "development" && import.meta.env.MODE !== "test") return
+	api.logout()
+	api.devLogin(config.devLogin.member.email, null, config.devLogin.token)
+		.then(() => {
+			reloadAllIframes()
+		})
+		.catch(err => console.error("DevLogin Member failed!", err))
+}
+
+/** Quickly login as an admin user. This is available as a button in the design overview when in DEV env.  */
 const devLoginAdmin = () => {
 	if (import.meta.env.MODE !== "development" && import.meta.env.MODE !== "test") return
 	api.logout()
-	api.devLogin(config.devLogin.admin.email, config.devLogin.teamName, config.devLogin.token)
+	api.devLogin(config.devLogin.admin.email, null, config.devLogin.token)
+		.then(() => {
+			reloadAllIframes()
+		})
 		.catch(err => console.error("DevLogin Admin failed!", err))
 }
 
@@ -93,6 +132,18 @@ const logout = () => {
 	background-color: white !important;
 	width: 100%;
 	max-width: 100%;
+}
+
+.button-group {
+	display: flex;
+	gap: 1rem;
+	justify-content: center;
+	flex-wrap: wrap;
+	margin-bottom: 1rem;
+}
+
+.button-group .btn {
+	min-width: 150px;
 }
 
 .overview {
@@ -120,6 +171,5 @@ const logout = () => {
 	border: none;
 	background-color: white;
 }
-
 
 </style>

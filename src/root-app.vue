@@ -18,7 +18,7 @@
 				<component :is="Component" id="appContent" class="router-view container-lg" />
 			</transition>
 		</router-view>
-		<mobile-debug-log v-if="showDebugLog" ref="mobileDebugLogRef"></mobile-debug-log>
+		<mobile-debug-log v-if="config.showDebugLog" ref="mobileDebugLogRef"></mobile-debug-log>
 	</div>
 </template>
 
@@ -37,7 +37,6 @@ import mobileDebugLog from "@/components/mobile-debug-log.vue"
 import api from "@/services/liquido-graphql-client.js"
 import EventBus from "@/services/event-bus.js"
 import config from "config"
-
 
 /** 
  * Pages will slide from right to left in this order 
@@ -90,9 +89,10 @@ export default {
 		}
 	},
 	computed: {
-		showDebugLog() {
-			return import.meta.env.MODE !== 'production'
-		}
+		// Need to expose the module-level config import to the HTML template
+		config() {
+			return config
+		},
 	},
 	// watch the `$route` to determine the transition to use
 	// https://router.vuejs.org/guide/advanced/transitions.html#per-route-transition
