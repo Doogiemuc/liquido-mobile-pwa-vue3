@@ -3,13 +3,20 @@
 Do I need a tool for managing my own backlog? => No just, this .md file
 
 
+
 # Canaries for public instance
 
  * Let the happy case run against INT every 5 mins.  => From which host?
 
-# Write further Tests
+# [TEST] Write further Tests
  * Create a second team when already registered
  * Switch between own teams
+
+# Technical Dept
+
+ * Detail: Make all components pass the page-title into liquido-header via normal properties
+ * OR Larger refactoring: Go through state store. Make rootApp include the header. (Do I have a header on all pages?)
+               What about side scrolling? 
 
 ## Use Case features
  
@@ -25,7 +32,7 @@ Do I need a tool for managing my own backlog? => No just, this .md file
 	 * Google - DONE
 	 * [Login with Apple](https://developer.apple.com/documentation/signinwithapple/configuring-your-webpage-for-sign-in-with-apple)
 	 * Authy App: Need good docu and UX guide.
-	 * SMS - Costs :-(
+	 * SMS - Not possible due to costs :-(
 
 #### Settings
 

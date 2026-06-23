@@ -11,11 +11,14 @@ import config from "config"
 import PopulatingCache from "populating-cache"
 import EventBus from "@/services/event-bus.js"
 import { graphQlQueryMock, initializeLiquidoGraphQlMock } from "./liquido-graphql-client.mock.js"
-//TODO: log network calls into my mobile debug log. Does that work this way or do I have to load the componant "instance" somehow?
-//import log from "@/components/mobile-debug-log.js"
-
 /** Liquido backend error codes. Must match LiquidoException.java from backend*/
 import LiquidoExceptionCodes from "./LiquidoExceptionCodes.js"
+
+const logNetworkCall = (level, message) => {
+	EventBus.emit(EventBus.Event.MOBILE_DEBUG_LOG, { level, message })
+}
+
+const GRAPHQL = '/graphql'      // ==================== BASE PATH FOR GRAPHQL endpoint  //TODO: should that be in config.common.js ?
 
 /*
   # Architecture design decisions in liquido-graphql-client.js
@@ -46,15 +49,22 @@ if (!config || !config.LIQUIDO_API_URL) {
 axios.defaults.baseURL = config.LIQUIDO_API_URL
 
 /** This will be called for HTTP resopnse status 2xx */
-let onSuccess = (response) => response
+let onSuccess = (response) => {
+	if (response.config.url !== GRAPHQL) logNetworkCall("debug", `${response.config?.method?.toUpperCase()} ${response.config?.url} -> ${response.status}`)
+	return response
+}
 
 /** 
- * This will be called for any other response status
+ * Sophisticated logging of HTTP error messages is crucial!
+ * You have no idea how many times this has saved me! 
+ * This will be called for any response status >=400
+ * 
  * First we check if there is a network error
  * Then we check for severe errors 5xx, and log them.
  * For all others we let the normal flow continue.
  */
 let onError   = (error) => {
+	logNetworkCall("warn", `${error.config?.method?.toUpperCase()} ${error.config?.url} -> ${error.response?.status || error.message}`)
 	if (!error.response) {
 		console.warn("Network error: no response at all")
 	} else 
@@ -79,10 +89,12 @@ let onError   = (error) => {
 	return Promise.reject(error);
 }
 
-/**
- * Sophisticated logging of HTTP error messages is crucial!
- * You have no idea how many times this has saved me!
- */
+
+axios.interceptors.request.use(request => {
+	let message = `${request.method?.toUpperCase()} ${request.url}`
+	if (request.url !== GRAPHQL) logNetworkCall("debug", message)
+	return request
+})
 axios.interceptors.response.use(onSuccess, onError)
 
 /**
@@ -94,11 +106,11 @@ axios.interceptors.response.use(onSuccess, onError)
  * @param {String} graphql GraphQL Query. This is NOT JSON! This is GraphQL syntax!
  * @returns GraphQL result as specified by GraphQL-spec { data: {}, errors: [] }
  */
-const GRAPHQL = '/graphql'      // ==================== BASE PATH FOR GRAPHQL endpoint  //TODO: should that be in config.common.js ?
 const graphQlQuery = function(query, variables) {
 	if (config.mockBackend) {
 		return graphQlQueryMock(query, variables)
 	} else {
+		logNetworkCall("debug", query?.slice(0,40))
 		return axios.post(GRAPHQL, { query: query, variables: variables })
 			.then(res => {
 				if (res.data && res.data.errors && res.data.errors.length > 0) {

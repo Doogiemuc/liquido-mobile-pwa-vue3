@@ -48,6 +48,8 @@
 </template>
 
 <script>
+import EventBus from "@/services/event-bus.js"
+
 /**
  * Vue mobile-debug-log
  * 
@@ -131,7 +133,14 @@ export default {
 		}
 	},
 	created() {
-		
+		this.mobileDebugLogHandler = ({ level = "info", message } = {}) => {
+			let logMethod = this[level] || this.info
+			logMethod.call(this, message)
+		}
+		EventBus.on(EventBus.Event.MOBILE_DEBUG_LOG, this.mobileDebugLogHandler)
+	},
+	beforeUnmount() {
+		EventBus.off(EventBus.Event.MOBILE_DEBUG_LOG, this.mobileDebugLogHandler)
 	},
 	mounted() {
 		this.info("Mobile Debug log started.")

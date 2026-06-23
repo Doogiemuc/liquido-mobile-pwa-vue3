@@ -18,6 +18,7 @@ eventBus.Event = {
 	LOGOUT: "logout",																// Fires after logout is completed.
 	POLLS_LOADED: "polls-loaded",  									// Fires when an array of polls was loaded from backend. Event param is the list of newly loaded polls
 	POLL_LOADED: "poll-loaded",    									// One poll was loaded from the backend. Event param is that one poll
+	MOBILE_DEBUG_LOG: "mobile-debug-log",				// Log entry for the mobile debug log. Event param is { level, message }
 	CLICK_HEADER_CENTER: "click-header-center", 		// click on center area of liquido-header
 	ROOT_POPUP_CLICK_PRIMARY: "root-popup-click-primary",   	// click primary button in root popup modal
 	ROOT_POPUP_CLICK_SECONDARY: "root-popup-click-secondary"	// click secondary button in root popup modal
