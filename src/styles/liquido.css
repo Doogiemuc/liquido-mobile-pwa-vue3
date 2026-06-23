@@ -17,12 +17,13 @@
 	--primary: #2e8dff;				/* Primary, e.g. buttons */
   --secondary: #bbb;					/* Secondary text */
 
-  --header-height: 4rem;
 	--header-color: #2e8dff;     /* Header TEXT color */
   --header-bg: white;        /* Nice color by stitch.withgoogle.com #429cf3; */
   
-	--navbar-bottom-height: 80px;
-	--liquido-border-radius: 20px;   /* Used for navbar-arrows and for poll cards */
+	--liquido-header-height: 3rem;   /* Carefully adjusted when LIQUIDO is added to iOS home screen as a web app */
+	--liquido-footer-height: 80px;
+	
+	--liquido-border-radius: 20px;
 
   /* Welcome Chat */
   --chat-left-bg: #dbeafe; /* light blue by stich google,   that was a darker one #aacfff; */
@@ -47,48 +48,53 @@
   --admin-info-background: #2e8dff;
 }
 
-/** Ensure html and body fill the viewport without overflow  */
-html, body {
+
+/**
+ * ROOT DOM TREE LAYOUT STYLES
+ * These control the viewport hierarchy: html → body → #app → #rootApp → #appContent
+ * Ensure proper scrolling, safe area insets, and full viewport coverage
+ */
+
+/** Viewport roots - give #app a real parent height so it can own scrolling */
+html,
+body {
 	height: 100%;
-	width: 100%;
-	margin: 0;
-	padding: 0;
 	overflow: hidden;
 }
 
-/* The outermost VUE app element */
-#app {
-  background-color: var(--app-background);
-	margin: 0 auto;
-  position: relative;
-  height: 100%;
-  width: 100%;
-  max-width: var(--app-max-width);
-	/* only scroll up and down, and always show scrollbar at the right. */
-  overflow-x: hidden;   
-  overflow-y: auto;  
-  scrollbar-gutter: stable;
-}
-
-/** #rootApp fills whole screen. Even when appContent would be smaller */
+/** Root container - fills entire viewport */
 #rootApp {
-	min-height: 100%;
+	min-height: 100vh;
 	height: 100%;
+	box-sizing: border-box;
 }
 
-/** This is the scrolling part of the page */
-#app #appContent {
-  background-color: var(--app-background);
-  min-height: 100%;  														/* Always fill viewport height, even with minimal content */
-	padding-top: var(--header-height);  					/* padding so that page content can bee seen under liquido-header */
-  /* 
-	 Account for fixed navbar at the bottom. This CSS variable is dynamically adjusted in liquido-footer.vue!
-	 And we add a bit more space by default.
-	*/
-	padding-bottom: calc(var(--navbar-bottom-height) + 50px);
-  padding-left: 10px;
-  padding-right: 10px;
+/** Main app container - handles horizontal layout and content bounds */
+#app {
+	background-color: var(--app-background);
+	margin: 0 auto;
+	position: relative;
+	height: 100%;
+	width: 100%;
+	max-width: var(--app-max-width);
+	box-sizing: border-box;
+	/* Only scroll vertically, show scrollbar in stable gutter */
+	overflow-x: hidden;
+	overflow-y: auto;
+	scrollbar-gutter: stable;
 }
+
+/** Main content area - accounts for fixed header and navbar */
+#app #appContent {
+	background-color: var(--app-background);
+	min-height: 100%;  													/* TODO: 100vh? Always fill viewport height, even with minimal content */
+	padding-top: var(--liquido-header-height);  /* Space behind fixed header */
+	padding-bottom: calc(var(--liquido-footer-height) + 50px);  /* allow scrolling up, so that content is visible behind liquido-footer */
+	padding-left: 10px;
+	padding-right: 10px;
+	box-sizing: border-box;
+}
+
 
 /** LIQUIDO - beautifull brand mark */
 .liquido:after {

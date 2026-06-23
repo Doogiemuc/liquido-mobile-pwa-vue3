@@ -605,7 +605,7 @@ export default {
 			window.setTimeout(() => {
 				this.FLOW.NicknameInput = true
 				this.$nextTick(() => {
-					document.getElementById("userNameInput").focus()
+					document.getElementById("userNameInput")?.focus()
 				})
 			}, this.chatDelayMs*2.5)
 		},

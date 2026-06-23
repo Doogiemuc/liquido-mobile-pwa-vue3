@@ -10,11 +10,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "dev": "vite",
-    "test": "cypress run --e2e",
-		"cypress:open": "cypress open --e2e --browser chrome",
     "test:unit": "vitest",
-    "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
-    "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open --e2e'",
+		"test:e2e": "cypress run --e2e",
+		"cypress:open": "cypress open --e2e --browser chrome",
     "lint": "eslint src --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
     "format": "prettier --write src/"
   },

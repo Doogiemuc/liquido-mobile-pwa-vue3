@@ -6,11 +6,16 @@
 
 		<div class="card loginCard m-3" id="loginCard">
 			<form ref="loginForm" class="card-body p-4" autocomplete="on" @submit.prevent="submitLoginForm">
-
+				
 				<div class="text-center mb-3">
 					<i v-if="step === 2 && webAuthnAvailable" class="fa-solid fa-fingerprint fa-3x"
 						style="color: var(--primary)"></i>
 					<i v-else class="fas fa-envelope fa-3x" style="color: var(--primary)"></i>
+				</div>
+
+				<div class="text-center mb-3">
+					<p>{{ $t('loginWelcomeText1') }}</p>
+					<p>{{ $t('loginWelcomeText2') }}</p>
 				</div>
 
 				<!-- Email input — always visible for iOS autofill -->
@@ -156,6 +161,8 @@ export default {
 	i18n: {
 		messages: {
 			de: {
+				loginWelcomeText1: "Willkommen zurück!",
+				loginWelcomeText2: "Hier kannst du dich bei LIQUIDO einloggen",
 				Continue: "Weiter",
 				LoginWithPassword: "Login mit Passwort",
 				orUsePassword: "oder mit Passwort",

@@ -49,26 +49,10 @@ export default {
 		}
 	},
 	mounted() {
-		this.updateFooterHeight()
-		this.footerResizeObserver = new ResizeObserver(() => this.updateFooterHeight())
-		if (this.$refs.footer) this.footerResizeObserver.observe(this.$refs.footer)
-	},
-	beforeUnmount() {
-		if (this.footerResizeObserver) {
-			this.footerResizeObserver.disconnect()
-			this.footerResizeObserver = null
-		}
+		
 	},
 	methods: {
-		/**
-		 * We track the height of the footer and dynamically set a CSS variable.
-		 * This can then be used to add a padding at the bottom of the appContent, so that the page content
-		 * can scroll up far enough, so that it is not hidden behind the fixed footer.
-		 */
-		updateFooterHeight() {
-			if (!this.$refs.footer) return
-			document.documentElement.style.setProperty("--navbar-bottom-height", `${this.$refs.footer.offsetHeight}px`)
-		},
+	
 	},
 }
 </script>
@@ -84,7 +68,7 @@ export default {
 	flex-direction: column;
 
 	margin: 0;
-	padding: 0;
+	padding: 0 0 env(safe-area-inset-bottom) 0;
 	background: var(--header-bg);
 	border-top: 1px solid var(--secondary);
 	box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.1);

@@ -10,8 +10,8 @@
 
 export default {
 	configSource: "common",
-	BASE_URL: "/",                   				   				// Used for loading JS libs in browser. MUST end with '/'
-	LIQUIDO_API_URL: "https://api.liquido.vote",  		// URI to Backend API. 
+	BASE_URL: "/",                   				// Used for loading JS libs in browser. MUST end with '/'
+	LIQUIDO_API_URL: undefined,  						// MUST set this in your env config
 	showDebugLog: false,
 	mockBackend: false,
 	
@@ -26,7 +26,7 @@ export default {
 	//TODO: adminMustConfirmNewMembers: ...
 	//TODO: voting algorith: absoluteMajority or margin
 
-	// Dummy data for mocked login. Must be same as mockdata/teamUserJwt.json
+	// Dummy data for mocked login. Must be same as @/mockdata/teamUserJwt.json
 	devLogin: {
 		teamName: "DevLogin Team",
 		token: "XXXXX_DevLoginToken",

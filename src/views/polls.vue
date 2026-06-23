@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<liquido-header ref="liquido-header"></liquido-header>
+		<liquido-header ref="liquido-header" :page-title="pageTitleLoc"></liquido-header>
 		<h1 id="polls-page" class="page-title">
 			{{ pageTitleLoc }}
 		</h1>

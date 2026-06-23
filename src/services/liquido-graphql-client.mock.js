@@ -142,7 +142,21 @@ const detectOperation = query => {
 
 const findMemberByEmail = email => (mockState.team.members || []).find(m => m.user?.email === email)
 const findMemberByMobile = mobile => (mockState.team.members || []).find(m => m.user?.mobilephone === mobile)
+const findMemberByUserId = userId => (mockState.team.members || []).find(m => String(m.user?.id) === String(userId))
 const findPoll = pollId => (mockState.team.polls || []).find(p => p.id === pollId)
+
+const jwtFromAuthHeader = () => {
+	const authHeader = axios.defaults.headers.common.Authorization || ""
+	const match = authHeader.match(/^Bearer\s+(.+)$/i)
+	return match ? match[1] : undefined
+}
+
+const findMemberByJwt = jwt => {
+	if (jwt === teamUserJwtMock.jwt) return findMemberByUserId(teamUserJwtMock.user.id)
+	const match = (jwt || "").match(/^mock-jwt-(.+)$/)
+	if (!match) return undefined
+	return findMemberByUserId(match[1])
+}
 
 const currentUserOrThrow = () => {
 	if (!mockState.currentUser) {
@@ -193,8 +207,12 @@ const queryHandlers = {
 	ping: () => "MOCK responses are active!",
 	team: () => deepClone(mockState.team),
 	loginWithJwt: () => {
-		const user = currentUserOrThrow()
-		return loginMock(user.email)
+		console.log("========> MOCKED loginWithJwt")
+		const member = findMemberByJwt(jwtFromAuthHeader())
+		if (!member) {
+			rejectLiquido(LiquidoExceptionCodes.JWT_TOKEN_INVALID, "Invalid mock JWT")
+		}
+		return loginMock(member.user.email)
 	},
 	requestEmailLoginLink: query => {
 		const email = argFromQuery(query, "email")

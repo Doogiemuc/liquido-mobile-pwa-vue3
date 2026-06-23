@@ -17,7 +17,7 @@
 						<i class="fas fa-person-booth"></i>&nbsp;{{ $tc('votes', poll.numBallots || 0) }}
 					</div>
 					<div v-if="poll.status === 'FINISHED'">
-						<i class="fas fa-check-circle"></i>&nbsp;{{ $t('finished') }}
+						<i class="fas fa-check-circle"></i>&nbsp;{{ $t('Finished') }}
 					</div>
 
 					<div v-if="poll.status === 'VOTING'"><i class="far fa-clock"></i>&nbsp;{{ $tc('daysLeft', daysLeft) }}</div>
@@ -33,12 +33,27 @@
 <script>
 import dayjs from "dayjs"
 import localizedFormat from "dayjs/plugin/localizedFormat"
-
 dayjs.extend(localizedFormat)
 
 export default {
 	name: "PollCard",
 	emits: ["click"],
+	i18n: {
+		messages: {
+			de: {
+				// Poll related translations (singular|dual|plural style)
+				numProposals: "0 Vorschläge | 1 Vorschlag | {n} Vorschläge",
+				votes: "0 Stimmen | 1 Stimme | {n} Stimmen",
+				daysLeft: "Beendet | noch ein Tag | noch {n} Tage",
+			},
+			en: {
+				// Poll related translations (singular|dual|plural style)
+				numProposals: "No proposals | 1 proposal | {n} proposals",
+				votes: "0 votes | 1 vote | {n} votes",
+				daysLeft: "Voting finished | 1 day left | {n} days left",
+			}
+		}
+	},
 	props: {
 		poll: {
 			type: Object,

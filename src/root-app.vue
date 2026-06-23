@@ -278,7 +278,5 @@ export default {
 </script>
 
 <style>
-
-/* Global styles are defined in liquido.css, which is imported in main.js */
-
+/* All root layout styles are consolidated in liquido.css */
 </style>

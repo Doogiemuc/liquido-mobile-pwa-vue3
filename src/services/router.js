@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { store }  from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
 import config from "config"
@@ -153,10 +153,9 @@ if (import.meta.env.MODE === "development") {
 }
 
 const router = createRouter({
-	// https://router.vuejs.org/guide/essentials/history-mode
-	// The history mode withouth hash "#" needs a special web-server configuration in PROD.
-	// Its advantage is that it provides clean SEO conform URLs, e.g. /liquido-mobile/login
-  history: createWebHistory(config.BASE_URL),  // createWebHashHistory(config.BASE_URL),
+	// We use `createWebHistory()` for clean URL paths.
+	// `createWebHashHistory()` with the hash(#) in the URL was necessary for iOS web app, but now also works fine like this.
+	history: createWebHistory(config.BASE_URL),
 
 	// Disable scroll behavior to prevent history.state warnings
 	// Scroll position is managed in root-app.vue watch.$route instead
