@@ -12,6 +12,7 @@ export default {
 	configSource: "common",
 	BASE_URL: "/",                   				   				// Used for loading JS libs in browser. MUST end with '/'
 	LIQUIDO_API_URL: "https://api.liquido.vote",  		// URI to Backend API. 
+	showDebugLog: false,
 	mockBackend: false,
 	
 	//TODO: implement these settings per Team! in the backend!

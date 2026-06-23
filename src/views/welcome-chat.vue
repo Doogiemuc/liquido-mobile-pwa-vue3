@@ -970,9 +970,11 @@ export default {
 	border: none;
 	/*padding: 0.5rem; Bootstrap's default is fine. "Don't be afraid of whitespace!"  :-)  */  
 }
+/*
 .chat-bubble .card-body {
-  /*padding: 0.5rem;*/
+  padding: 0.5rem;
 }
+*/
 .chat-bubble .card-body ul {
   padding-inline-start: 25px;
 }

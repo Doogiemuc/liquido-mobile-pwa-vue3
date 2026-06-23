@@ -26,7 +26,6 @@
 				<h3 class="ms-3">{{ page.name }}</h3>
 				<div class="page-preview-container">
 					<iframe 
-						:ref="el => { if(el && page) iframeElements[page.name] = el }"
 						:src="page.route" 
 						class="page-iframe">
 					</iframe>
@@ -38,7 +37,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed } from 'vue'
 import api from "@/services/liquido-graphql-client.js"
 import config from "config"
 // Expose config to template
@@ -72,33 +71,15 @@ const pages = [
 
 if (!config.mockBackend) console.log("==== Design overview: You might want to set config.mockBackend = true =======")
 
-/** Map to store references to all iframe elements for reloading after login */
-const iframeElements = ref({})
-
-onMounted(() => {
-	// iframes are now self-contained, no additional setup needed
-})
-
 const currentUser = computed(() => api.getCachedUser())
-
-/**
- * Reload all iframes. Used after successful login to refresh all pages with new auth state.
- */
-const reloadAllIframes = () => {
-	Object.values(iframeElements.value).forEach(iframe => {
-		if (iframe?.contentWindow) {
-			iframe.contentWindow.location.reload()
-		}
-	})
-}
 
 /** Quickly login as a member user. This is available as a button in the design overview when in DEV env.  */
 const devLoginMember = () => {
 	if (import.meta.env.MODE !== "development" && import.meta.env.MODE !== "test") return
 	api.logout()
-	api.devLogin(config.devLogin.member.email, null, config.devLogin.token)
+	api.devLogin(config.devLogin.member.email, config.devLogin.teamName, config.devLogin.token)
 		.then(() => {
-			reloadAllIframes()
+			window.location.reload()
 		})
 		.catch(err => console.error("DevLogin Member failed!", err))
 }
@@ -107,9 +88,9 @@ const devLoginMember = () => {
 const devLoginAdmin = () => {
 	if (import.meta.env.MODE !== "development" && import.meta.env.MODE !== "test") return
 	api.logout()
-	api.devLogin(config.devLogin.admin.email, null, config.devLogin.token)
+	api.devLogin(config.devLogin.admin.email, config.devLogin.teamName, config.devLogin.token)
 		.then(() => {
-			reloadAllIframes()
+			window.location.reload()
 		})
 		.catch(err => console.error("DevLogin Admin failed!", err))
 }
@@ -155,9 +136,10 @@ const logout = () => {
 
 .page-preview-container {
 	position: relative;
-	height: 812px;
-	min-height: 812px;
-	max-height: 812px;
+	height: 780px;
+	width: 390px;
+	min-height: 780px;
+	min-width: 390px;
 	border: 1px solid #333;
 	border-radius: 15px;
 	border-width: 5px;

@@ -2,7 +2,15 @@
 
 This file provides a comprehensive analysis of the project to be used as instructional context for future interactions with the Gemini CLI agent.
 
-## Project Overview
+# LIQUIDO
+
+LIQUIDO is a free, secure and fair voting application. Its implementend as a progressive web application. In LIQUIDO voters cast a vote on proposals by ranking them by their preferences. A clever algorithm then calculates the winning proposal with the biggest approval in the team.
+
+## List of polls
+
+The most important central page in the app is the "list of polls" page. It shows the currently active polls. A team normally has around a dozen active polls.  Each poll has a title and runs through three states. First it is "new", when created. When the admin starts the voting phase it is "in voting" and all members of the team can cast their vote in this poll. Finally a poll is "finished" and hte winning poll is shown.
+
+## Technical Project Overview
 
 This is a Vue.js 3 project for a mobile Progressive Web App (PWA) called **LIQUIDO**. LIQUIDO is a platform for liquid democracy, allowing users to vote on proposals by ranking their preferences. This frontend communicates with a GraphQL backend via HTTP requests.
 
