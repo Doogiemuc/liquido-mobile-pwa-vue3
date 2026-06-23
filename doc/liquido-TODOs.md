@@ -1,6 +1,11 @@
 # TODOs
 
+Do I need a tool for managing my own backlog? => No just, this .md file
 
+
+# Canaries for public instance
+
+ * Let the happy case run against INT every 5 mins.  => From which host?
 
 # Write further Tests
  * Create a second team when already registered
