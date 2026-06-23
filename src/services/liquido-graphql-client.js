@@ -533,15 +533,15 @@ let graphQlApi = {
 	/** 
 	 * [DEV] Quick development login. This calls the REST backend!
 	 * @param email users email. User must exist in team
-	 * @param teamName team to login
+	 * @param teamName team to login, optional for the client; the backend mock only needs email
 	 * @param token valid and correct devLogin.token. Will be validated in backend. This is like a simulated SMS token.
 	 * @return login data with team, user and jwt (same as a joinTeam calls)
 	 */
 	async devLogin(email, teamName, devLoginToken) {
 		if (!["development", "test", "int"].includes(import.meta.env.MODE))
 			return Promise.reject("devLogin is only allowed in NODE_ENV development, test or int")
-		if (!email || !teamName || !devLoginToken) 
-			return Promise.reject("Need email, teamName and devLoginToken!")
+		if (!email || !devLoginToken) 
+			return Promise.reject("Need email and devLoginToken!")
 		/*
 		return axios({
 			method: "GET", 
@@ -555,7 +555,7 @@ let graphQlApi = {
 		let graphQL = `query { devLogin(email: "${email}", devLoginToken: "${devLoginToken}") ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		return graphQlQuery(graphQL)
 			.then(res => {
-				console.log("API: devLogin for <"+email+"> in team '"+teamName+"'", res.data.devLogin)
+				console.log("API: devLogin for <"+email+">", res.data.devLogin)
 				this.login(res.data.devLogin.team, res.data.devLogin.user, res.data.devLogin.jwt)
 				return res.data.devLogin
 			})
