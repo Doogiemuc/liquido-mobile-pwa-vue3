@@ -32,9 +32,9 @@
   --subtle-bg: #fafbfd;
 
 	/* Icons per poll status */
-	--elaboration-bg: #e9d47f;
-	--voting-bg: #2e8dff;  /* primary */
-	--finished-bg: #198754;
+	--elaboration-bg: #aaacbf;
+	--voting-bg: #7a7fdb;  /* primary */
+	--finished-bg: #45936f;
 
 	/* Icon for a proposal */
   --proposal-icon-bg: #429cf3;
