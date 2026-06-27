@@ -30,7 +30,7 @@
  * the global popup for infos and errors
  * and it offers some utility functions that are available to all components.
  */
-import liquidoHeader from "@/components/liquido-header.vue"
+//import liquidoHeader from "@/components/liquido-header.vue"
 import popupModal from "@/components/popup-modal.vue"
 import log from "loglevel"
 import mobileDebugLog from "@/components/mobile-debug-log.vue"
@@ -74,7 +74,7 @@ export default {
 	},
 	name: "LiquidoApp",
 	// Remark: vue-i18n is configured in main.js! Do not overwrite it here by setting the i18n: property
-	components: { liquidoHeader, popupModal, mobileDebugLog },
+	components: { /* liquidoHeader, */ popupModal, mobileDebugLog },
 	data() { 
 		// These data attributes are reactive and available in EVERY sub-component as this.$root.<attributeName>
 		return {
