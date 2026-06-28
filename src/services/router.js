@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { store }  from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
 import config from "config"

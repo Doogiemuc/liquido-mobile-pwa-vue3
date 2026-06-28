@@ -72,7 +72,7 @@ const globalTranslations = {
 	
 		newPoll: "Neue Abstimmung",
 		allPolls: "Alle Abstimmungen",
-		YourPolls: "Eure Abstimmungen",
+		YourPolls: "Abstimmungen",
 		pollTitle: "Titel der Abstimmung",
 		pollInElaboration: "Neue Abstimmung",   // Im großen LIQUIDO: "Abstimmung zur Debatte"m denn das elaborierte Fremdwort "Debatte" macht den Eindruck den wir wollen.
 		pollsInElaboration: "Neue Abstimmungen",
@@ -96,13 +96,14 @@ const i18n = new createI18n({
 	fallbackLocale: "de",
 	warnHtmlInMessage: 'off', // disable of the Detected HTML in message
 	silentFallbackWarn: true,
-	//allowComposition: true, // you need to specify that!
+	allowComposition: true, // you need to specify that!
 	messages: globalTranslations
 })
 
-/*   for upgrading to vue-i18n v11 with Composition API
+/* 
+//TODO: upgrade vue-i18n to v11 with Composition API
 const i18n = new createI18n({
-	legacy: false, // you must set `legacy: false`, to use Composition API
+	legacy: false,    // you must set `legacy: false`, to use Composition API
 	locale: "de",
 	fallbackLocale: "de",
 	strictMessage: false,

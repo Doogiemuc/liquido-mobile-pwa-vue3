@@ -1,5 +1,5 @@
 <template>
-	<nav id="pollsNavbar">
+	<nav id="pollsNavbar" :class="{ 'navbar-padding-bottom' : isHomeScreenPWA }">
 		<a href="" class="team-button" aria-label="Team" @click.prevent="$root.gotoTeam">
 			<i class="fas fa-users"></i>
 			<div class="icon-title">{{ $t("team") }}</div>
@@ -62,7 +62,7 @@ export default {
 	data() {
 		return {
 			selectedFilter: this.modelValue,
-			//forceRefreshComputed: 0
+			isHomeScreenPWA: this.$root.isHomeScreenPWA
 		} 
 	},
 	computed: {
@@ -175,7 +175,7 @@ export default {
 	align-items: center;
 	
 	margin: 0;
-	padding: 0;
+	padding: 0;  
 	background: var(--header-bg);
 	border-top: 1px solid lightgray;
 	box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.1);
@@ -195,6 +195,11 @@ export default {
 		min-width: 1.2em;
 		overflow: hidden;
 		line-height: 1.1;
+	}
+
+	/* This  is added when we are a web app on the iOS home screen */
+	&.navbar-padding-bottom {
+		padding-bottom: 15px;
 	}
 
 	.icon-title {
@@ -266,20 +271,13 @@ export default {
 		
 		.deselected {
 			opacity: 0.6;
-			/*
-			a {	color: white !important; }
-			background-color: var(--arrowColorSelected);
-			.counter-badge {
-				color: var(--primary) !important;
-			}
-			*/
 		}
 
 
 		.discuss-button {
 			flex-basis: 22%;
-			border-top-left-radius: var(--border-radius);
-			border-bottom-left-radius: var(--border-radius);
+			border-top-left-radius: var(--liquido-border-radius);;
+			border-bottom-left-radius: var(--liquido-border-radius);;
 			/* Arrow shape using clip-path */
 			clip-path: polygon(0 0, calc(100% - var(--arrowWidth)) 0, 100% 50%, calc(100% - var(--arrowWidth)) 100%, 0 100%, 0% 50%);
 			z-index: 2;
@@ -295,99 +293,13 @@ export default {
 		.finished-button {
 			flex-basis: 22%;
 			z-index: 4;
-			border-top-right-radius: var(--border-radius);
-			border-bottom-right-radius: var(--border-radius);
+			border-top-right-radius: var(--liquido-border-radius);
+			border-bottom-right-radius: var(--liquido-border-radius);
 			clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, var(--arrowWidth) 50%);
 			margin-left: var(--arrowGap);
 		}
 		
-
-		/* OLD VERSION:  Arrow dividers between buttons 
-		.discuss-button::after,
-		.vote-button::after {
-			content: '';
-			position: absolute;
-			right: -10px;
-			width: 0;
-			height: 0;
-			border-left: 8px solid var(--arrowColor);
-			border-top: 20px solid transparent;
-			border-bottom: 20px solid transparent;
-			z-index: 1;
-			transition: border-color 0.5s ease;
-		}
-			*/
-		
-		/*
-		.vote-button::before,
-		.finished-button:before {
-			content: '';
-			position: absolute;
-			left: -10px;
-			width: 0;
-			height: 0;
-			border-right: 8px solid var(--arrowColor);
-			border-top: 20px solid transparent;
-			border-bottom: 20px solid transparent;
-			z-index: 1;
-			transition: border-color 0.5s ease;
-		}
-			*/
-		
-		/*
-		.finished-button::before {
-			content: '';
-			position: absolute;
-			left: -10px;
-			width: 0;
-			height: 0;
-			border-left: 8px solid var(--arrowColor);
-			border-top: 20px solid transparent;
-			border-bottom: 20px solid transparent;
-			z-index: 1;
-			transition: border-color 0.5s ease;
-		}
-			*/
-		
-		/* Selected state arrow dividers 
-		.discuss-button.selected::after {
-			border-left-color: var(--arrowColorSelected);
-		}
-		
-		.vote-button.selected::after {
-			border-left-color: var(--arrowColorSelected);
-		}
-		
-		.vote-button.selected::before {
-			border-right-color: var(--arrowColorSelected);
-		}
-		
-		.finished-button.selected::before {
-			border-right-color: var(--arrowColorSelected);
-		}
-			*/
-
-		/*
-		.disabled {
-			a { color: lightgray !important; }
-			.counter-badge {
-				color: lightgray !important;
-			}
-		}
-		.disabled.selected {
-			a {
-				opacity: 0.8;
-				color: lightgray !important; 
-			}
-			.counter-badge {
-				opacity: 0.8;
-				color: var(--primary) !important;
-				background: lightgray !important;
-			}
-		}
-			*/
 	}
-
 
 }	
 

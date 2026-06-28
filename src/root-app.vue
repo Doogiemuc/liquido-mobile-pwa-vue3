@@ -93,6 +93,15 @@ export default {
 		config() {
 			return config
 		},
+		/** 
+		 * Is our PWA currently running as a standalone web application on the iOS or android home screen 
+		 * We need to adjust #appContent.margin-top accordingly.
+		 */
+		isHomeScreenPWA() {
+			const iosStandalone = window.navigator.standalone === true  // Apple iOs specific
+			const displayModeStandalone = window.matchMedia('(display-mode: standalone)').matches  // generic standard
+			return iosStandalone || displayModeStandalone
+		}
 	},
 	// watch the `$route` to determine the transition to use
 	// https://router.vuejs.org/guide/advanced/transitions.html#per-route-transition
@@ -124,20 +133,35 @@ export default {
 	},
 
 	created() {
-
+		
 	},
 
 	mounted() {
+		
+		
 		// Enable my awesome mobile debug log on mobile devices.
 		// This has some consequences ... be carefull ... you for example loose context and this conflicts with "loglevel" lib!
 		// All log messages will come from mobile-debug-log.vue
 		//this.$refs["mobileDebugLogRef"]?.redefineConsoleMethods()
-
-	
 		this.$refs["mobileDebugLogRef"]?.info(config.LIQUIDO_API_URL)
 		this.$refs["mobileDebugLogRef"]?.debug(config)
 		log.debug("Full LIQUIDO config:\n" + JSON.stringify(config, null, 2))
-		
+
+		const safeAreaTop = getComputedStyle(document.documentElement)
+  		.getPropertyValue('--safe-area-inset-top')
+		console.log('safe-area-inset-top:', safeAreaTop)
+		this.$refs["mobileDebugLogRef"]?.debug("safe-area-inset-top: "+safeAreaTop)
+
+		const safeAreaBottom = getComputedStyle(document.documentElement)
+  		.getPropertyValue('--safe-area-inset-bottom')
+		console.log('safe-area-inset-bottom:', safeAreaBottom)
+		this.$refs["mobileDebugLogRef"]?.debug("safe-area-inset-bottom: "+safeAreaBottom)
+
+		if (this.isHomeScreenPWA) {
+			log.debug("I am a full screen web app");	
+			this.$refs["mobileDebugLogRef"]?.debug("I am a full screen web app")
+		}
+	
 		// Check if we can reach the liquido backend
 		api.pingApi()
 			.then(() => {
@@ -153,7 +177,7 @@ export default {
 					this.showWarning(this.$t("BackendNotReachable"));
 				}
 			})
-	
+		
 	},
 	methods: {
 		//

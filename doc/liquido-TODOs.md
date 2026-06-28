@@ -57,9 +57,10 @@ Do I need any setting per poll? Wouldn't know of any yet.
  * Alternative ideas that can be suggested, and then become alternative proposals if they gather enough supporters.
  * Polls that can be started when there are at least two proposals.
 
-## Code cleanup, security, ...
+## Code cleanup, small stuff
  
  * Timeout for backend requests
+ * mobile-debug-log: Drag "L" handle. Configurable: at the right screen edge, drag'n'drop
 
 
 ## Bigger technical lifts

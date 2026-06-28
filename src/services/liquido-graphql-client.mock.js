@@ -23,6 +23,21 @@ const createState = () => {
 	const seed = deepClone(teamUserJwtMock)
 	const pollIds = (seed.team?.polls || []).map(p => p.id)
 	const proposalIds = (seed.team?.polls || []).flatMap(p => (p.proposals || []).map(pr => pr.id))
+
+	
+	seed.team.polls.forEach(poll => {
+		if (poll.status == 'VOTING') {
+			// mock dates  poll.votingStartAt and votingEndAt for polls in voting
+			const msInDay = 1000 * 60 * 60 * 24;																// I LOVE time calculations :-) If we'll ever understand why we humans have sooo much trouble grasping the concept of time, we'll be able to explore space.
+			const randomPast = Date.now() + (-4 + Math.random()*3) * msInDay   	// 1-4 days in the past
+			const randomDuration = (7 + Math.random()*7) * msInDay							// 7-14 days duration for voting
+			poll.votingStartAt = new Date(randomPast).toISOString()
+			poll.votingEndAt   = new Date(randomPast + randomDuration).toISOString();
+			poll.numBallots    = Math.floor(Math.random() * 12);								// 0-11 fake ballots
+
+		}
+	})
+
 	return {
 		team: seed.team,
 		//currentUser: seed.user,

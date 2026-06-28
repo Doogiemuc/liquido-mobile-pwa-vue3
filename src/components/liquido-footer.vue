@@ -1,5 +1,5 @@
 <template>
-	<footer ref="footer" class="liquido-footer">
+	<footer ref="footer" class="liquido-footer" :class="{ 'footer-margin-bottom' : isHomeScreenPWA }">
 		<div v-if="infoText" class="liquido-footer-info">
 			<slot name="info">
 				<span v-if="infoText !== undefined">{{ infoText }}</span>
@@ -46,13 +46,12 @@ export default {
 	data() {
 		return {
 			footerResizeObserver: null,
+			isHomeScreenPWA: this.$root.isHomeScreenPWA
 		}
 	},
 	mounted() {
-		
 	},
 	methods: {
-	
 	},
 }
 </script>
@@ -68,11 +67,19 @@ export default {
 	flex-direction: column;
 
 	margin: 0;
-	padding: 0 0 env(safe-area-inset-bottom) 0;
+	padding: 0;
 	background: var(--header-bg);
 	border-top: 1px solid var(--secondary);
 	box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.1);
 	z-index: 999;
+}
+
+/* 
+ * This  is added when we are a web app on the iOS home screen. 
+ * Normally one would do `margin-bottom: env(safe-area-inset-bottom);` But this adds too much space for our footer design.
+ */
+.footer-margin-bottom {
+	margin-bottom: 15px;
 }
 
 .liquido-footer-info {
@@ -120,7 +127,7 @@ export default {
 	color: var(--primary);
 	font-size: 1.5rem;
 	text-decoration: none;
-	/* Need a bit of manual padding, so that the footer left and right links look aligned with the center main action button */
+	/* Need to manually adjust the vertical padding of the icons on the left and right, so that they look aligned with the main action button in the middle. */
 	padding: 0.5rem 0 0.2rem 0rem;  
 	height: 100%;
 	text-decoration: none;

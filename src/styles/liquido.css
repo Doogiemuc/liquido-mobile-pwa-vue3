@@ -1,6 +1,7 @@
 /**
  * LIQUIDO global styles and CSS variables.
  * These styles and variables are available in every component.
+ * These colors were generate by www.lovable.dev  THX for your awesome AI.
  */
 
 /* 
@@ -8,22 +9,34 @@
   https://mycolor.space/?hex=%232E8DFF&sub=1
  */
 
- /* Global variables available in all my VUE components */
 :root {
-	
+
+	/*********************** Globals ***********************/
   --app-max-width: 1000px;
-	--app-background: #f3f4f6;  /* also nice, abit darker: #e3e7f0; */
+	--app-background: #f7f8fb; /* Main app background */
+	--liquido-border-radius: 0.5rem;
 
-	--primary: #2e8dff;				/* Primary, e.g. buttons */
-  --secondary: #bbb;					/* Secondary text */
 
-	--header-color: #2e8dff;     /* Header TEXT color */
-  --header-bg: white;        /* Nice color by stitch.withgoogle.com #429cf3; */
-  
-	--liquido-header-height: 3rem;   /* Carefully adjusted when LIQUIDO is added to iOS home screen as a web app */
+	--unit: 1rem;    								/* used for padding, margin, spacing, etc. */
+	--two: calc(var(--unit) * 2);
+	--three: calc(var(--unit) * 3);
+	--four: calc(var(--unit) * 4);
+
+	/************** MAIN font and text color ***************/
+	
+	--text-color: #0f1b3d;     			/* Main text foreground. Nearly black but not quite. */
+	--primary: #1e3a5f;							/* Primary color. Used for primary action background, title text foreground */
+  --secondary: #959cab;						/* Secondary, muted or dimmed text. Quite dark for better contrast to --app-background */
+	--tertiary: #e8edf3;      				/* Tertiary dimmed. Really light. e.g. for poll progress bar */
+  --sans-serif-font: 'Segoe UI', Verdana, sans-serif;
+	--serif-font: "Libre Baskerville", "Georgia", serif;
+
+	--header-color: #2e8dff;     		/* Header TEXT color */
+  --header-bg: white;        			/* Nice color by stitch.withgoogle.com #429cf3; */  
+	--liquido-header-height: 3rem;  	 /* Carefully adjusted when LIQUIDO is added to iOS home screen as a web app */
 	--liquido-footer-height: 80px;
 	
-	--liquido-border-radius: 20px;
+
 
   /* Welcome Chat */
   --chat-left-bg: #dbeafe; /* light blue by stich google,   that was a darker one #aacfff; */
@@ -31,21 +44,41 @@
   --liquido-input-bg: #afc2fa;
   --subtle-bg: #fafbfd;
 
-	/* Icons per poll status */
-	--elaboration-bg: #aaacbf;
-	--voting-bg: #7a7fdb;  /* primary */
-	--finished-bg: #45936f;
+	
+
+	/* Colors for poll status */
+  --state-new:#5a6a85;
+  --state-new-bg:#eef1f6;
+  --state-voting:#1f5a92;
+  --state-voting-bg:#e6eef7;
+  --state-finished:#2f6b54;
+  --state-finished-bg: #e6f1ec;
 
 	/* Icon for a proposal */
   --proposal-icon-bg: #429cf3;
+
+
+
+	/****************** Info, Warning and Error messages *************/
 
 	/* Info text in .alert on --app-background */
   --liquido-info-color: #4e5b70;
 	--liquido-info-border-color: #dbeafe;
   --liquido-info-background: #eff6ff;
-  
+
+	/** Error */
+	--destructive:#b3261e;
+  --destructive-foreground:#fff;
+
+	/** Info for admin */
 	--admin-info-text-color: white;
   --admin-info-background: #2e8dff;
+
+
+
+	/** Need these as variables, so that I can log.debug them in root-app.vue */
+	--safe-area-inset-top: env(safe-area-inset-top);
+	--safe-area-inset-bottom: env(safe-area-inset-bottom);
 }
 
 
@@ -87,78 +120,47 @@ body {
 /** Main content area - accounts for fixed header and navbar */
 #app #appContent {
 	background-color: var(--app-background);
-	min-height: 100%;  													/* TODO: 100vh? Always fill viewport height, even with minimal content */
-	padding-top: var(--liquido-header-height);  /* Space behind fixed header */
-	padding-bottom: calc(var(--liquido-footer-height) + 50px);  /* allow scrolling up, so that content is visible behind liquido-footer */
-	padding-left: 10px;
-	padding-right: 10px;
+	min-height: 100%;  												/* TODO: 100vh? Always fill viewport height, even with minimal content */
+	padding-top: env(safe-area-inset-top);    /* var(--liquido-header-height);   Space for iOS dynamic island */
+	padding-bottom: 100px;  									/* allow scrolling up, so that content is visible behind liquido-footer */
+	
+	padding-left: var(--unit); 
+	padding-right: var(--unit);
+
 	box-sizing: border-box;
 }
 
 
-/** LIQUIDO - beautifull brand mark */
+/************ LIQUIDO - beautifull brand mark *********/
+
 .liquido:after {
 	content: "LIQUIDO";
 	font-family: 'Libre Baskerville', serif;
 	font-weight: bold;
 }
 
-/* Slide animation between pages */
-.router-view {
-	transition: all 0.25s ease-in-out;
-}
 
-/* Fade transtition (used in Polly and List of polls) */
-.fade-enter,
-.fade-leave-to {
-	opacity: 0;
-}
-.fade-leave-active {
-	position: absolute;
-	top: 0;
-	width: 100%;
-}
-
-/* Slide left-right animations on navigation */
-
-/* This is added to the page that enters from the left */
-.slide-left-enter-from,
-/* or leaves to the right */
-.slide-right-leave-to {
-	-webkit-transform: translate(100%, 0);
-	transform: translate(100%, 0);
-}
-/* This class is added to the page that leaves */
-.slide-left-leave-active,
-.slide-right-leave-active {
-	position: absolute;  /* MUST position this page absolute, so that incomign page is shown correctly */
-	top: 0;
-	width: 100%;
-	height: 100%;
-	min-height: 100%;  /* Keep leaving page at full viewport height during transition */
-}
-/* This class is added to the page that leaves to the left */
-.slide-left-leave-to,
-/* or enters from the right */
-.slide-right-enter-from {
-	-webkit-transform: translate(-100%, 0);
-	transform: translate(-100%, 0);
-}
+/***************** Headers and titles *****************/
 
 #app .page-title {
-  /*font-family: 'Libre Baskerville', serif; */
+  font-family: 'Libre Baskerville', 'Georgia', serif;
 	color: var(--primary);
+	font-size: 2rem;
 	transition: opacity 0.2s linear;
-  margin: 2rem 0;
-  text-align: center;
+  margin: 2rem 0 0.25rem 0;
 }
 
-#app a {
-  color: var(--primary);
+.page-subtitle {
+	color: var(--secondary);
+	font-family: system-ui, 'Segoe UI', sans-serif;
+	font-size: 0.8rem;
+	margin: 0 0 1rem 10px;
 }
+
 
 #app h1, #app h2, #app h3, #app h4, #app h5, #app h6 {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	font-family: 'Libre Baskerville', 'Georgia', serif;
+  /*font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
 }
 
 #app h1 { font-size: 1.50rem }
@@ -168,12 +170,58 @@ body {
 #app h5 { font-size: 1rem; }
 #app h6 { font-size: 1rem; }
 
+
+/*********** Rounded pills for poll status *****************/
+/* Used in poll-card.vue and more places */
+
+.poll-status-pill {
+	font-family: system-ui, 'Segoe UI', sans-serif;
+	text-transform: uppercase;
+	padding: 5px 10px;
+	letter-spacing: .05em;
+	font-weight: normal;
+}
+
+.elaboration-pill {
+	color: var(--state-new);
+	background-color: var(--state-new-bg);
+}
+
+.in-voting-pill {
+	color: var(--state-voting);
+	background-color: var(--state-voting-bg);
+}
+
+.finished-pill {
+	color: var(--state-finished);
+	background-color: var(--state-finished-bg);
+}
+
+
+/***************** Links *****************/
+
+#app a {
+  color: var(--primary);
+}
+
+.cancel-link {
+  color: var(--secondary);
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+
+
+/***************** Alerts and info boxes *****************/
+
 /*
 .alert {
-	// Had Smaller than bootstrap's default. Don't be afraid of space. Keep default
+	// Once ago I had smaller paddings than bootstrap's default. But don't be afraid of space. Keep default
 	//padding: 0.5rem;
 }
 */	
+
 
 .liquido-info {
 	position: relative;
@@ -182,7 +230,7 @@ body {
   color: var(--liquido-info-color);
   background-color: var(--liquido-info-background);
   border: 1px solid var(--liquido-info-border-color);
-	border-radius: var(--bs-border-radius);
+	border-radius: var(--liquido-border-radius);
 	z-index: 1;
 	overflow: hidden;
 }
@@ -228,9 +276,48 @@ body {
   z-index: 0;
 }
 
-.cancel-link {
-  color: var(--secondary);
-  font-size: 0.9rem;
-  text-decoration: none;
-  cursor: pointer;
+
+
+
+
+/* Slide animation between pages */
+.router-view {
+	transition: all 0.25s ease-in-out;
+}
+
+/* Fade transtition (used in Polly and List of polls) */
+.fade-enter,
+.fade-leave-to {
+	opacity: 0;
+}
+.fade-leave-active {
+	position: absolute;
+	top: 0;
+	width: 100%;
+}
+
+/* Slide left-right animations on navigation */
+
+/* This is added to the page that enters from the left */
+.slide-left-enter-from,
+/* or leaves to the right */
+.slide-right-leave-to {
+	-webkit-transform: translate(100%, 0);
+	transform: translate(100%, 0);
+}
+/* This class is added to the page that leaves */
+.slide-left-leave-active,
+.slide-right-leave-active {
+	position: absolute;  /* MUST position this page absolute, so that incomign page is shown correctly */
+	top: 0;
+	width: 100%;
+	height: 100%;
+	min-height: 100%;  /* Keep leaving page at full viewport height during transition */
+}
+/* This class is added to the page that leaves to the left */
+.slide-left-leave-to,
+/* or enters from the right */
+.slide-right-enter-from {
+	-webkit-transform: translate(-100%, 0);
+	transform: translate(-100%, 0);
 }

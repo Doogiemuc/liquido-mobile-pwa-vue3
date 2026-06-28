@@ -272,7 +272,7 @@
 		"polls": [
 			{
 				"id": 307,
-				"title": "Poll1 to test voting in two polls",
+				"title": "Poll1 with a very long title just to test if this wraps correctly with a very long title and this must be really very long",
 				"status": "VOTING",
 				"createdAt": "2025-12-25T19:13:02.588356",
 				"updatedAt": "2025-12-25T19:13:02.588392",
@@ -805,7 +805,7 @@
 			},
 			{
 				"id": 309,
-				"title": "Poll to test vote of proxy",
+				"title": "This is a poll with a very long title just to test if this breaks correctly",
 				"status": "VOTING",
 				"createdAt": "2025-12-25T19:13:03.135835",
 				"updatedAt": "2025-12-25T19:13:03.135854",

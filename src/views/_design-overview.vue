@@ -40,8 +40,6 @@
 import { computed } from 'vue'
 import api from "@/services/liquido-graphql-client.js"
 import config from "config"
-// Expose config to template
-const appConfig = config
 
 const polls = api.getCachedPolls()
 let firstPollId = 55555
