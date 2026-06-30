@@ -28,12 +28,19 @@
 	
 	--text-color: #0f1b3d;     			/* Main text foreground. Nearly black but not quite. */
 	--primary: #1e3a5f;							/* Primary color. Used for primary action background, title text foreground */
+	--bs-primary: var(--primary);		   /* Align Bootstrap CSS variable to LIQUIDO primary */
+	--bs-primary-rgb: 30, 58, 95;			 /* RGB of #1e3a5f — used by Bootstrap for box-shadow alphas */
   --secondary: #959cab;						/* Secondary, muted or dimmed text. Quite dark for better contrast to --app-background */
 	--tertiary: #e8edf3;      				/* Tertiary dimmed. Really light. e.g. for poll progress bar */
+
+	--light-bg: #e6eef7;							/* Light background for info alerts, sections, etc. */
+
   --sans-serif-font: 'Segoe UI', Verdana, sans-serif;
 	--serif-font: "Libre Baskerville", "Georgia", serif;
 
-	--header-color: #2e8dff;     		/* Header TEXT color */
+	/************** LIQUIDO header & footer ***************/
+
+	--header-color: var(--primary);		 /* Header TEXT color */
   --header-bg: white;        			/* Nice color by stitch.withgoogle.com #429cf3; */  
 	--liquido-header-height: 3rem;  	 /* Carefully adjusted when LIQUIDO is added to iOS home screen as a web app */
 	--liquido-footer-height: 80px;
@@ -42,7 +49,7 @@
   --chat-left-bg: #dbeafe; /* light blue by stich google,   that was a darker one #aacfff; */
   --chat-right-bg: #fff;
   --liquido-input-bg: #afc2fa;
-  --subtle-bg: #fafbfd;
+  --subtle-bg: #fafbfd;  /*TODO replace with light-bg */
 
 	/* Colors for poll status */
   --state-new:#5a6a85;
@@ -53,7 +60,7 @@
   --state-finished-bg: #e6f1ec;
 
 	/* Icon for a proposal */
-  --proposal-icon-bg: #429cf3;
+  --proposal-icon-bg: var(--tertiary);
 
 	/****************** Info, Warning and Error messages *************/
 
@@ -116,8 +123,8 @@ body {
 #app #appContent {
 	background-color: var(--app-background);
 	min-height: 100%;  												/* TODO: 100vh? Always fill viewport height, even with minimal content */
-	padding-top: calc(env(safe-area-inset-top) + var(--unit));    /* var(--liquido-header-height);   Space for iOS dynamic island */
-	padding-bottom: 100px;  									/* allow scrolling up, so that content is visible behind liquido-footer */
+	padding-top: calc(env(safe-area-inset-top) + var(--liquido-header-height));    /*  Space for iOS dynamic island */
+	padding-bottom: calc(var(--liquido-footer-height) + 100px); 		/* allow scrolling up, so that content is visible behind liquido-footer */
 	padding-left: var(--unit); 
 	padding-right: var(--unit);
 	box-sizing: border-box;
@@ -283,6 +290,29 @@ body {
 
 
 
+
+/***************** Bootstrap component overrides *****************/
+/*
+ * Bootstrap 5.2+ drives button appearance entirely through CSS custom properties.
+ * A single ruleset is all that's needed — no separate :hover/:focus/:active rules.
+ * Hover/active shades: 85 % (#1a3151) and 75 % (#172c47) of --primary (#1e3a5f).
+ */
+
+.btn-primary {
+	--bs-btn-color: #fff;
+	--bs-btn-bg: var(--primary);
+	--bs-btn-border-color: var(--primary);
+	--bs-btn-hover-color: #fff;
+	--bs-btn-hover-bg: #1a3151;
+	--bs-btn-hover-border-color: #18304e;
+	--bs-btn-focus-shadow-rgb: 30, 58, 95;
+	--bs-btn-active-color: #fff;
+	--bs-btn-active-bg: #172c47;
+	--bs-btn-active-border-color: #142843;
+	--bs-btn-disabled-color: #fff;
+	--bs-btn-disabled-bg: var(--primary);
+	--bs-btn-disabled-border-color: var(--primary);
+}
 
 /* Slide animation between pages */
 .router-view {

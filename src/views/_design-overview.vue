@@ -1,29 +1,31 @@
 <template>
 	<div>
-		<h1 id="design-page" class="page-title mt-0">LIQUIDO Design Overview</h1>
- 
-		<div class="text-center">
-			<p v-if="currentUser">
-				Logged in as <b>{{ currentUser.email }}</b>
-				<a class="ms-5" href="#" @click.prevent="logout">Logout</a>
-			</p>
-			<div v-else class="button-group">
-				<button type="button" class="btn btn-outline-secondary"
-					@click="devLoginMember">
-					<i class="fas fa-user me-2"></i>
-					<span class="flex-grow-1 text-center">DevLogin Member</span>
-				</button>
-				<button type="button" class="btn btn-outline-secondary"
-					@click="devLoginAdmin">
-					<i class="fas fa-shield-alt me-2"></i>
-					<span class="flex-grow-1 text-center">DevLogin Admin</span>
-				</button>
+		<div class="d-flex justify-content-between m-3">
+			<h1 id="design-page">LIQUIDO Design Overview</h1>
+	
+			<div class="text-center">
+				<p v-if="currentUser">
+					Logged in as <b>{{ currentUser.email }}</b>
+					<a class="ms-5" href="#" @click.prevent="logout">Logout</a>
+				</p>
+				<div v-else class="button-group">
+					<button type="button" class="btn btn-outline-secondary"
+						@click="devLoginMember">
+						<i class="fas fa-user me-2"></i>
+						<span class="flex-grow-1 text-center">DevLogin Member</span>
+					</button>
+					<button type="button" class="btn btn-outline-secondary"
+						@click="devLoginAdmin">
+						<i class="fas fa-shield-alt me-2"></i>
+						<span class="flex-grow-1 text-center">DevLogin Admin</span>
+					</button>
+				</div>
 			</div>
 		</div>
 
 		<div class="overview">
 			<section v-for="page in pages" :key="page.name" class="overview-section">
-				<h3 class="ms-3">{{ page.name }}</h3>
+				<h3 class="ms-2">{{ page.name }}</h3>
 				<div class="page-preview-container">
 					<iframe 
 						:src="page.route" 
@@ -111,6 +113,11 @@ const logout = () => {
 	background-color: white !important;
 	width: 100%;
 	max-width: 100%;
+	padding-top: 0 !important;
+}
+
+.overview-section {
+	margin-top: var(--two);  /** allign all mobile views (section) the same way */
 }
 
 .button-group {
