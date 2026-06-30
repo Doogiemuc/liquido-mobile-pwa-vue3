@@ -70,20 +70,17 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue"
+import { useI18n } from 'vue-i18n'
 import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
-import PollSection from "@/components/poll-section.vue"
+import { store } from "@/services/store"
 import PollsFooter from "@/components/polls-footer.vue"
-
+import PollSection from "@/components/poll-section.vue"
 import { useRouter} from 'vue-router'
 const router = useRouter()
 
 
-//TODO: upgrade i18n to be supported in options API components
-/*
-import { useI18n } from 'vue-i18n'
-const { t } = useI18n() 
-*/
+const { t } = useI18n()
 
 
 /* -----------------------
@@ -105,9 +102,10 @@ function syncPolls() {
 }
 
 onMounted(() => {
+	store.setHeaderTitle(t('Polls'))
 	EventBus.on(EventBus.Event.POLL_LOADED, syncPolls)
 	EventBus.on(EventBus.Event.POLLS_LOADED, syncPolls)
-
+	
 	syncPolls()
 })
 

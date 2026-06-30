@@ -1,6 +1,5 @@
 <template>
 	<div>
-		<liquido-header></liquido-header>
 
 		<!-- Welcome -->
 		<div id="welcome-chat" :class="{ 'hide-left': !FLOW.Welcome }" class="card chat-bubble chat-left mt-3">
@@ -364,7 +363,6 @@
 import config from "config"
 import QRCode from "qrcode"
 import liquidoInput from "@/components/liquido-input.vue"
-import liquidoHeader from "@/components/liquido-header.vue"
 import api from "@/services/liquido-graphql-client.js"
 import log from 'loglevel'
 //import EventBus from "@/services/event-bus.js"
@@ -467,7 +465,7 @@ export default {
 		},
 	},
 	name: "WelcomeChat",
-	components: { liquidoInput, liquidoHeader },
+	components: { liquidoInput },
 	props: {
 		// URL query parameter "?inviteCode=ABC123", mapped in router.js
 		inviteCodeQueryParam: { type: String, required: false },

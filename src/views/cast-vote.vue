@@ -1,14 +1,7 @@
 <template>
 	<div>
-		<liquido-header ref="liquido-header">
-			<template #header-row-two>
-				<div class="cast-vote-poll-title">
-					<h2>{{ poll ? poll.title : "" }}</h2>
-				</div>
-			</template>
-		</liquido-header>
 
-		<span id="cast-vote-page" style="display: none;"></span>
+		<h2 id="cast-vote-page">{{ poll ? poll.title : "" }}</h2>
 
 		<div v-if="loading" class="draggable">
 			<div class="spinner-border" role="status">
@@ -106,7 +99,6 @@
 //import config from "config"
 import api from "@/services/liquido-graphql-client.js"
 import { VueDraggableNext } from 'vue-draggable-next'
-import liquidoHeader from "@/components/liquido-header.vue";
 import liquidoFooter from "@/components/liquido-footer.vue";
 import log from "loglevel"
 
@@ -141,7 +133,7 @@ export default {
 			},
 		},
 	},
-	components: { draggable: VueDraggableNext, liquidoHeader, liquidoFooter },
+	components: { draggable: VueDraggableNext, liquidoFooter },
 	props: {
 		// the cast-vote page only receives the pollId and reloads the poll from the backend
 		pollId: { type: String, required: true },

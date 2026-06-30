@@ -1,6 +1,5 @@
 <template>
 	<div>
-		<liquido-header></liquido-header>
 
 		<h1 id="login-page" class="page-title">{{ $t("Login") }}</h1>
 
@@ -144,7 +143,6 @@
 
 <script>
 import config from "config"
-import liquidoHeader from "@/components/liquido-header.vue"
 import api from "@/services/liquido-graphql-client.js"
 import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
 import webauthnService from "@/services/webauthn-service.js"
@@ -226,7 +224,7 @@ export default {
 			}
 		}
 	},
-	components: { liquidoHeader },
+	components: {},
 	props: {
 		email: { type: String, required: false, default: undefined },
 		emailToken: { type: String, required: false, default: undefined },

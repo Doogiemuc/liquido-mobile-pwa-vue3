@@ -1,6 +1,5 @@
 <template>
 	<div>
-		<liquido-header></liquido-header>
 
 		<h1 id="login-via-sms-page" class="page-title">{{ pageTitle }}</h1>
 
@@ -83,7 +82,6 @@
 <script>
 import config from "config"
 import liquidoInput, { STATE } from "@/components/liquido-input.vue"
-import liquidoHeader from "@/components/liquido-header.vue"
 import api from "@/services/liquido-graphql-client.js"
 
 const REQUEST_THROTTLE_SECS = 10
@@ -127,7 +125,7 @@ export default {
 			}
 		}
 	},
-	components: { liquidoInput, liquidoHeader },
+	components: { liquidoInput },
 	data() {
 		return {
 			pageTitle: this.$t("LoginViaSms"),

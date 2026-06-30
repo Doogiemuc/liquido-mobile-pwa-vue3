@@ -116,10 +116,6 @@ const logout = () => {
 	padding-top: 0 !important;
 }
 
-.overview-section {
-	margin-top: var(--two);  /** allign all mobile views (section) the same way */
-}
-
 .button-group {
 	display: flex;
 	gap: 1rem;

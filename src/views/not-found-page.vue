@@ -1,6 +1,5 @@
 <template>
 	<div>
-		<liquido-header></liquido-header>
 
 		<h1 class="page-title">{{ $t("pageTitle") }}</h1>
 
@@ -32,7 +31,6 @@
 </template>
 
 <script>
-import liquidoHeader from "@/components/liquido-header.vue"
 
 export default {
 	name: "NotFoundPage",
@@ -52,7 +50,7 @@ export default {
 			},
 		},
 	},
-	components: { liquidoHeader },
+	components: {},
 	created() {
 		this.$store.setHeaderTitle(this.$t("pageTitle"))
 	},

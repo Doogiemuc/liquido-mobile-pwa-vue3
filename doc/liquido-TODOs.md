@@ -2,6 +2,9 @@
 
 Do I need a tool for managing my own backlog? => No just, this .md file
 
+# Design Decisions
+
+ * Header that scrolls away? Or no header at all? Other native apps in modern iOS have the rounded bubbles with transparent background. I don't like this.
 
 
 # Canaries for public instance

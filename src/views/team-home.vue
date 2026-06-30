@@ -5,6 +5,7 @@
 		</h2>
 
 		<section v-if="pollsInVoting.length > 0">
+			<p class="text-secondary">In diesen Abstimmungen kannst du jetzt deine Stimme abgeben:</p>
 			<div class="polls-in-voting-container" ref="pollsInVotingContainer" >
 				<div v-for="poll in pollsInVoting" :key="poll.id" class="poll-card-wrapper user-select-none">
 					<poll-card
@@ -31,7 +32,7 @@
 
 		<!-- Team members as circles -->
 		<section class="section-background-alt py-3">
-			<h2>Teammitglieder</h2>
+			<h2>Euer Team</h2>
 			<div id="memberCircles" class="member-grid mt-3 mb-3">
 				<div v-for="member in members.slice(0,6)" :key="member.user.id" class="member-circle">
 					<img :src="getImgUrl(member.user.picture)" class="member-avatar" alt="Member Avatar" />
@@ -195,6 +196,10 @@ async function setupPasskey() {
 </script>
 
 <style scoped>
+section {
+	margin-top: var(--two);  /* more relaxed space between sections on the team home page */
+}
+
 .passkey-icon { font-size: 2.5rem; color: var(--primary); flex-shrink: 0; }
 .passkey-title { margin: 0 0 0.25rem 0; }
 

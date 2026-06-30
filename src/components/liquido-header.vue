@@ -1,5 +1,5 @@
 <template>
-	<header id="liquidoHeader" :class="headerClass">
+	<header id="liquidoHeader" :class="[headerClass, { 'transition-header': isSticky }]">
 		<div class="header-top-row">
 			<div class="header-left" @click="clickLeft">
 				<i v-if="headerBackTarget" class="fas fa-angle-left" />
@@ -21,9 +21,6 @@
 					:show-menu="showMenu"
 				/>
 			</div>
-		</div>
-		<div class="header-row-two">
-			<slot name="header-row-two" />
 		</div>
 	</header>
 </template>
@@ -53,8 +50,6 @@ export default {
 		return {
 			showMenu: false,
 			isSticky: false,
-			onAppScroll: null,
-			scrollElem: null,
 		}
 	},
 	
@@ -81,15 +76,25 @@ export default {
 		}
 	},
 
+	watch: {
+		// Drive the external .page-title class reactively instead of via classList.add/remove
+		isSticky(sticky) {
+			const el = document.getElementsByClassName("page-title")[0]
+			if (el) el.classList.toggle("transition-page-title", sticky)
+		},
+	},
+
 	beforeUnmount() {
 		this.scrollElem?.removeEventListener("scroll", this.onAppScroll)
 		window.removeEventListener("scroll", this.onAppScroll)
 	},
 
 	methods: {
-		/*
+
+		/*  @deprecated   we have a fixed header! 
 		updateHeaderHeight() {
 			if (!this.$el) return
+			console.log("updateHeaderHeight: header height is now " + this.$el.offsetHeight + "px")
 			document.documentElement.style.setProperty("--header-height", `${this.$el.offsetHeight}px`)
 		},
 		*/
@@ -106,41 +111,11 @@ export default {
 		},
 
 		/**
-		 * This is called on scroll of the main "app" element.
-		 * When the main "app" is scrolled upwards for more then a given amount of pixels
-		 * Then the "LIQUIDO" title will be replaced with the {{title}} of the page.
-		 * The {{title}} will scroll into view from the bottom.
-		 * (But all that only if the title is actually set.)
+		 * Called on scroll. Sets isSticky which drives both the header's own class
+		 * (via :class binding) and the external .page-title class (via the isSticky watcher).
 		 */
 		stickyHeader() {
-			let headerElem = document.getElementById("liquidoHeader")
-			let pageTitleElem = document.getElementsByClassName("page-title")[0]
-			let scrollTop = this.getScrollTop()
-			if (!headerElem) {
-				console.warn("Cannot find headerElem")
-				return  // something is wrong, so just return
-			}
-			if (this.headerTitle == undefined) {
-				headerElem.classList.remove("transition-header")
-				if (pageTitleElem != null) {
-					pageTitleElem.classList.remove("transition-page-title")
-				}
-			} else {				
-				// we do have a headerTitle
-				if (this.isSticky === false && scrollTop > scrollAfterPx) {
-					this.isSticky = true
-					headerElem.classList.add("transition-header")
-					if (pageTitleElem != null) {
-						pageTitleElem.classList.add("transition-page-title")
-					}
-				} else if (this.isSticky === true && scrollTop < scrollAfterPx) {
-					this.isSticky = false
-					headerElem.classList.remove("transition-header")
-					if (pageTitleElem != null) {
-						pageTitleElem.classList.remove("transition-page-title")
-					}
-				}	
-			}		
+			this.isSticky = !!this.headerTitle && this.getScrollTop() > scrollAfterPx
 		},
 
 		clickLeft() {
@@ -186,13 +161,15 @@ export default {
 	/* TODO: Header has a fixed height. I am currently only using header-row-two in cast-vote-vue  => does min-height work here? */
 	min-height: var(--liquido-header-height);
 	color: var(--header-color);
-	background-color: var(--header-bg);
+	background: rgba(255, 255, 255, 0.82);
+	-webkit-backdrop-filter: saturate(180%) blur(20px);
+	backdrop-filter: saturate(180%) blur(20px);
 	z-index: 9999; 			/* make sure the header is on top of everything */
-	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); /* horizontal, vertical, blur, color */
+	border-bottom: 0.5px solid rgba(0, 0, 0, 0.15);
 	
 	/**
-		* When user scrolls, then scroll LIQUIDO claim out towards the top
-		* and let the center-title appear from the bottom
+		* When user scrolls, slide the LIQUIDO claim out towards the top
+		* and let the center-title slide in from the bottom.
 		*/
 	&.transition-header {
 		.liquido-claim {
@@ -214,7 +191,7 @@ export default {
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;	
-		padding: 0.5rem 0;
+		padding: 0;
 				
 		.header-left, .header-right {
 			color: var(--header-color);
@@ -224,6 +201,17 @@ export default {
 			justify-content: center;
 			font-size: 25px;
 			width: var(--liquido-header-height); /* square click area */
+			.fa-angle-left {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 2rem;
+				height: 2rem;
+				background: rgba(0, 0, 0, 0.07);
+				border-radius: 50%;
+				font-size: 1.1rem;
+				cursor: pointer;
+			}
 		}
 		.header-back-link {
 			display: flex;
@@ -254,13 +242,22 @@ export default {
 				width: 100%;
 				transform: translateX(-50%);
 				transition: top 0.5s;
-				h2 { 
+				padding: 0;
+				margin: 0;
+				h1, h2 { 
 					margin: 0;
+					padding: 0;
 				}
 			}
 		}
 	}
 	
+}
+
+/* In PWA standalone mode: extend header under the status bar / Dynamic Island */
+.is-pwa #liquidoHeader {
+	padding-top: env(safe-area-inset-top);
+	min-height: calc(var(--liquido-header-height) + env(safe-area-inset-top));
 }
 
 </style>

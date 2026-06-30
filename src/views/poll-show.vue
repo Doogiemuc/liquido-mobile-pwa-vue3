@@ -1,6 +1,5 @@
 <template>
 	<div>
-		<liquido-header ref="liquido-header"></liquido-header>
 		<h1 id="poll-show" class="page-title">
 			{{ this.pageTitleLoc }}
 		</h1>
@@ -79,7 +78,6 @@
 
 <script>
 import pollPanel from "@/components/poll-panel.vue"
-import liquidoHeader from "@/components/liquido-header.vue"
 import liquidoFooter from "@/components/liquido-footer.vue"
 // import polly from '@/components/polly.vue'
 import EventBus from "@/services/event-bus.js"
@@ -118,7 +116,7 @@ export default {
 			},
 		},
 	},
-	components: { pollPanel, liquidoHeader, liquidoFooter },
+	components: { pollPanel, liquidoFooter },
 	props: {
 		// Allow number or string that contains an integer. Url parameter is passed as String, 
 		// but $router.push({name: "pollShow", params: {pollId: 4711 }}) can be passed as number. We'll accept both

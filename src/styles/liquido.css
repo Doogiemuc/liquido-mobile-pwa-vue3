@@ -33,8 +33,6 @@
   --secondary: #959cab;						/* Secondary, muted or dimmed text. Quite dark for better contrast to --app-background */
 	--tertiary: #e8edf3;      				/* Tertiary dimmed. Really light. e.g. for poll progress bar */
 
-	--light-bg: #e6eef7;							/* Light background for info alerts, sections, etc. */
-
   --sans-serif-font: 'Segoe UI', Verdana, sans-serif;
 	--serif-font: "Libre Baskerville", "Georgia", serif;
 
@@ -49,7 +47,6 @@
   --chat-left-bg: #dbeafe; /* light blue by stich google,   that was a darker one #aacfff; */
   --chat-right-bg: #fff;
   --liquido-input-bg: #afc2fa;
-  --subtle-bg: #fafbfd;  /*TODO replace with light-bg */
 
 	/* Colors for poll status */
   --state-new:#5a6a85;
@@ -64,10 +61,16 @@
 
 	/****************** Info, Warning and Error messages *************/
 
+	/* Light blue colors used for info alerts, alternating sections */
+	--light-color: #1e3a5f;						
+	--light-bg: #eff6ff;							  
+	--light-border: #dbeafe;						
+
+
 	/* Info text in .alert on --app-background */
-  --liquido-info-color: #4e5b70;
-	--liquido-info-border-color: #dbeafe;
-  --liquido-info-background: #eff6ff;
+  --liquido-info-color: var(--light-color);
+	--liquido-info-border-color: var(--light-border);
+  --liquido-info-background: var(--light-bg);
 
 	/** Error */
 	--destructive:#b3261e;
@@ -130,11 +133,6 @@ body {
 	box-sizing: border-box;
 }
 
-/** Spacing between sections in #appContent. The first section has no top margin, but all subsequent sections have a top margin of var(--two) */
-#appContent section:not(:first-child) {
-	margin-top: var(--two);
-}
-
 .section-background-alt {
 	background-color: var(--app-background-alt);
 	margin-left: calc(-1 * var(--unit));
@@ -157,8 +155,9 @@ body {
 #app .page-title {
   font-family: var(--serif-font);
 	color: var(--primary);
-	margin-top: var(--unit);
-	margin-bottom: var(--unit);  /* Sections also have their own top margin  */
+	text-align: center;          /* One of those design decisions I never can settle on left or center? */
+	margin-top: var(--unit);  	
+	margin-bottom: var(--unit);
 	transition: opacity 0.2s linear;
 }
 

@@ -1,6 +1,5 @@
 <template>
 	<div class="user-home">
-		<liquido-header ref="liquido-header"></liquido-header>
 
 		<h1 class="page-title text-center">
 			{{ currentUser.name }}
@@ -156,7 +155,6 @@
 </template>
 
 <script>
-import liquidoHeader from "@/components/liquido-header.vue"
 import liquidoFooter from "@/components/liquido-footer.vue"
 import liquidoInput from "@/components/liquido-input.vue"
 import api from "@/services/liquido-graphql-client.js"
@@ -221,7 +219,7 @@ export default {
 			},
 		},
 	},
-	components: { liquidoHeader, liquidoFooter, liquidoInput },
+	components: { liquidoFooter, liquidoInput },
 	data() {
 		return {
 			profilePictureUrl: undefined,
@@ -445,7 +443,7 @@ export default {
 	border-radius: var(--liquido-border-radius);
 	padding: 2rem 1rem;
 	text-align: center;
-	background-color: var(--subtle-bg);
+	background-color: var(--light-bg);
 }
 
 .upload-icon {

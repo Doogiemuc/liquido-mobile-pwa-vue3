@@ -424,9 +424,11 @@ label {
 	background: white;
 	border-radius: 5px;
 
+	/*
 	&.disabled {
-		background-color: var(--subtle-bg);
+		background-color: var(--light-bg);
 	}
+	*/
 }
 
 .iconRight {
@@ -458,7 +460,9 @@ label {
 	font-size: 0.875em;
 }
 
+/*
 .liquido-input .form-control:disabled {
-	background-color: var(--subtle-bg);
+	background-color: var(--disabled-bg);
 }
+*/
 </style>
