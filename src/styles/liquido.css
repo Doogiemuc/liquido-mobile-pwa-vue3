@@ -13,11 +13,13 @@
 
 	/*********************** Globals ***********************/
   --app-max-width: 1000px;
-	--app-background: #f7f8fb; /* Main app background */
+	--app-background: #f7f8fb; 		/* Main app background */
+	--app-background-alt: #f0f6ff; 	/* Alternate background for sections, cards, etc. */
 	--liquido-border-radius: 0.5rem;
 
 
-	--unit: 1rem;    								/* used for padding, margin, spacing, etc. */
+	/*************** Layout "unit" used for grids, margin, padding and spacing **********************/
+	--unit: 1rem;    									
 	--two: calc(var(--unit) * 2);
 	--three: calc(var(--unit) * 3);
 	--four: calc(var(--unit) * 4);
@@ -36,15 +38,11 @@
 	--liquido-header-height: 3rem;  	 /* Carefully adjusted when LIQUIDO is added to iOS home screen as a web app */
 	--liquido-footer-height: 80px;
 	
-
-
   /* Welcome Chat */
   --chat-left-bg: #dbeafe; /* light blue by stich google,   that was a darker one #aacfff; */
   --chat-right-bg: #fff;
   --liquido-input-bg: #afc2fa;
   --subtle-bg: #fafbfd;
-
-	
 
 	/* Colors for poll status */
   --state-new:#5a6a85;
@@ -56,8 +54,6 @@
 
 	/* Icon for a proposal */
   --proposal-icon-bg: #429cf3;
-
-
 
 	/****************** Info, Warning and Error messages *************/
 
@@ -74,9 +70,8 @@
 	--admin-info-text-color: white;
   --admin-info-background: #2e8dff;
 
-
-
-	/** Need these as variables, so that I can log.debug them in root-app.vue */
+	/** Safe Area on mobile phones (Apple: Dynamic Island) */
+	/*  Need these as CSS variables variables here, so that I can log.debug them in root-app.vue */
 	--safe-area-inset-top: env(safe-area-inset-top);
 	--safe-area-inset-bottom: env(safe-area-inset-bottom);
 }
@@ -121,15 +116,25 @@ body {
 #app #appContent {
 	background-color: var(--app-background);
 	min-height: 100%;  												/* TODO: 100vh? Always fill viewport height, even with minimal content */
-	padding-top: env(safe-area-inset-top);    /* var(--liquido-header-height);   Space for iOS dynamic island */
+	padding-top: calc(env(safe-area-inset-top) + var(--unit));    /* var(--liquido-header-height);   Space for iOS dynamic island */
 	padding-bottom: 100px;  									/* allow scrolling up, so that content is visible behind liquido-footer */
-	
 	padding-left: var(--unit); 
 	padding-right: var(--unit);
-
 	box-sizing: border-box;
 }
 
+/** Spacing between sections in #appContent. The first section has no top margin, but all subsequent sections have a top margin of var(--two) */
+#appContent section:not(:first-child) {
+	margin-top: var(--two);
+}
+
+.section-background-alt {
+	background-color: var(--app-background-alt);
+	margin-left: calc(-1 * var(--unit));
+	margin-right: calc(-1 * var(--unit));
+	padding-left: var(--unit);
+	padding-right: var(--unit);
+}
 
 /************ LIQUIDO - beautifull brand mark *********/
 
@@ -143,24 +148,23 @@ body {
 /***************** Headers and titles *****************/
 
 #app .page-title {
-  font-family: 'Libre Baskerville', 'Georgia', serif;
+  font-family: var(--serif-font);
 	color: var(--primary);
-	font-size: 2rem;
+	margin-top: var(--unit);
+	margin-bottom: var(--unit);  /* Sections also have their own top margin  */
 	transition: opacity 0.2s linear;
-  margin: 2rem 0 0.25rem 0;
 }
 
 .page-subtitle {
 	color: var(--secondary);
-	font-family: system-ui, 'Segoe UI', sans-serif;
+	font-family: var(--sans-serif-font);
 	font-size: 0.8rem;
 	margin: 0 0 1rem 10px;
 }
 
 
 #app h1, #app h2, #app h3, #app h4, #app h5, #app h6 {
-	font-family: 'Libre Baskerville', 'Georgia', serif;
-  /*font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
+	font-family: var(--serif-font);
 }
 
 #app h1 { font-size: 1.50rem }
@@ -241,11 +245,11 @@ body {
 	color: var(--primary);
 	position: absolute;
 	right: -5%;
-	top: -5%;
+	bottom: -10%;
 	font-size: 4rem;        /* large background presence */
-  opacity: 0.2;           /* subtle */
+  opacity: 0.05;          /* very subtle */
   pointer-events: none;   /* ignore mouse interaction */
-  z-index: 0;
+  z-index: 2;
 }
 
 .liquido-info p:last-child {

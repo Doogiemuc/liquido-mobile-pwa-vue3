@@ -567,7 +567,7 @@ let graphQlApi = {
 		let graphQL = `query { devLogin(email: "${email}", devLoginToken: "${devLoginToken}") ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		return graphQlQuery(graphQL)
 			.then(res => {
-				console.log("API: devLogin for <"+email+">", res.data.devLogin)
+				console.log("API: devLogin <"+email+">")
 				this.login(res.data.devLogin.team, res.data.devLogin.user, res.data.devLogin.jwt)
 				return res.data.devLogin
 			})

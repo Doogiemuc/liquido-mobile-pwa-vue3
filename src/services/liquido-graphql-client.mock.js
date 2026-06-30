@@ -33,9 +33,11 @@ const createState = () => {
 			const randomDuration = (7 + Math.random()*7) * msInDay							// 7-14 days duration for voting
 			poll.votingStartAt = new Date(randomPast).toISOString()
 			poll.votingEndAt   = new Date(randomPast + randomDuration).toISOString();
-			poll.numBallots    = Math.floor(Math.random() * 12);								// 0-11 fake ballots
+			poll.numBallots    = Math.floor(Math.random() * 12)									// 0-11 fake ballots
 
 		}
+
+		console.debug("MOCK: created new mockstate")
 	})
 
 	return {
@@ -77,6 +79,7 @@ const loadMockState = () => {
 		if (typeof window !== 'undefined' && window.sessionStorage) {
 			const saved = window.sessionStorage.getItem(MOCK_STATE_KEY)
 			if (saved) {
+				console.log("MOCK: loaded mock state from sessionStorage")
 				return JSON.parse(saved)
 			}
 		}
@@ -202,7 +205,7 @@ const loginMock = email => {
 	mockState.jwt = `mock-jwt-${user.id}`
 	saveMockState(mockState)
 
-	console.debug("Mock login successful for <" + user.email + "> into team '" + mockState.team.teamName + "'")
+	console.log("Mock login successful for <" + user.email + "> into team '" + mockState.team.teamName + "'")
 
 	return {
 		team: deepClone(mockState.team),

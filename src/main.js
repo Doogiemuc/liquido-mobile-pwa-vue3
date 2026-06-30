@@ -86,7 +86,9 @@ const globalTranslations = {
 		Elaboration: "Diskussion",	// Abstimmung die gerade debatiert wird. (Nur für großes LIQUIDO)
 		InVoting: "Wahl läuft", 		// Abstimmung im Status "die Wahl läuft gerade" 
 		Finished: "Abgeschlossen", // "Beendet" ?
-
+		User: "Profil",
+		gotoPolls: "Alle eure Abstimmungen",
+		inviteNewMembers: "Teammitglieder einladen",
 	},
 }
 
