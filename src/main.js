@@ -89,6 +89,16 @@ const globalTranslations = {
 		User: "Profil",
 		gotoPolls: "Abstimmungen",  // Link to /polls page  short!
 		inviteNewMembers: "Teammitglieder einladen",
+
+
+
+		// Need these translations here, because of an issue when upgrading vue-i18n
+		// Or maybe it's even a good idea to have all translations in one place => NO its not!! :-)  => In LIQUIDO we want to have visual in place translation service per page
+
+		// Polls page
+		"noPollYet": "Es gibt noch keine Abstimmungen in eurem Team.",
+		"onlyAdminCanCreateNewPolls": "Nur du als Admin kannst neue Polls anlegen.",
+		"createPoll": "Abstimmung anlegen"
 	},
 }
 
