@@ -1,7 +1,7 @@
 <template>
 	<div>
 
-		<h2 id="cast-vote-page">{{ poll ? poll.title : "" }}</h2>
+		<h2 id="cast-vote-page" class="page-title">{{ $t('castVoteTitle') }}</h2>
 
 		<div v-if="loading" class="draggable">
 			<div class="spinner-border" role="status">
@@ -10,49 +10,98 @@
 			&nbsp;{{ $t('Loading') }}
 		</div>
 
-		<div id="castVoteInfo" class="alert liquido-info cast-vote-info-top">
-			<p>{{ $t('dragInfo') }}</p>
-		</div>
-
-		<div v-if="!loading" class="cast-vote-container">
-			<div class="index-number-container">
-				<div v-for="(prop, index) in poll.proposals" :key="prop.id" class="proposal-index-number">
-					{{ index + 1 }}.
-				</div>
-			</div>
-			
-			<draggable id="myDraggable" v-model="proposalsInBallot" class="draggable" item-key="id"
-				:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
-				:can-scroll-x="false">
-
-				<div v-for="law in proposalsInBallot" :key="law.id" class="card shadow-sm law-panel d-flex flex-row align-items-center user-select-none">
-					<div class="law-icon">
-						<i class="fas fa-fw" :class="'fa-' + law.icon" />
-					</div>
-					<div class="d-flex flex-column text-truncate">
-						<h4 class="law-title">
-							{{ law.title }}
-						</h4>
-						<div class="law-subtitle">
-							<div :class="{ supported: law.supportedByCurrentUser }" class="d-inline">
-								<i :class="{
-										far: !law.supportedByCurrentUser,
-										fas: law.supportedByCurrentUser,
-									}"
-									class="fa-thumbs-up"
-								></i>
-								&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
-							</div>
-							<i class="far fa-user ms-2"></i>&nbsp;{{ law.createdBy.name }}
+		<div v-if="!loading" class="cast-vote-wrapper">
+			<!-- Drop target: the user drops & sorts the proposals he wants to vote for -->
+			<div class="vote-drop-target">
+				<h2 class="page-title">{{ $t('yourBallot') }}</h2>
+				<p v-if="proposalsInBallot.length === 0" class="drop-placeholder" v-html="$t('dropProposalsHere')">
+				</p>
+				<div class="cast-vote-container">
+					<div class="index-number-container">
+						<div v-for="(prop, index) in proposalsInBallot" :key="prop.id" class="proposal-index-number">
+							{{ index + 1 }}.
 						</div>
 					</div>
-				
-					<div class="drag-handle">
-						<i class="fas fa-bars"></i>
-					</div>
-				</div>
-			</draggable>
 
+					<draggable id="ballotDraggable" v-model="proposalsInBallot" class="draggable" group="proposals" item-key="id"
+						:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
+						:can-scroll-x="false">
+						<template #item="{ element: law }">
+							<div class="card shadow-sm law-panel d-flex flex-row align-items-center user-select-none">
+								<div class="law-icon">
+									<i class="fas fa-fw" :class="'fa-' + law.icon" />
+								</div>
+								<div class="d-flex flex-column text-truncate">
+									<h4 class="law-title">
+										{{ law.title }}
+									</h4>
+									<div class="law-subtitle">
+										<div :class="{ supported: law.likedByCurrentUser }" class="d-inline">
+											<i :class="{
+													far: !law.likedByCurrentUser,
+													fas: law.likedByCurrentUser,
+												}"
+												class="fa-thumbs-up"
+											></i>
+											&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
+										</div>
+										<i class="far fa-user ms-2"></i>&nbsp;{{ law.createdBy.name }}
+									</div>
+								</div>
+
+								<div class="drag-handle">
+									<i class="fas fa-bars"></i>
+								</div>
+							</div>
+						</template>
+					</draggable>
+				</div>
+				<div v-if="proposalsInBallot.length > 0" class="text-center mb-2">...</div>
+			</div>
+
+			<!-- Upward arrow hint: drag proposals up from the available list into your ballot -->
+			<div class="drag-up-arrow" aria-hidden="true">
+				<svg viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M50 8 L92 46 L68 46 L68 92 L32 92 L32 46 L8 46 Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+				</svg>
+			</div>
+
+			<!-- Available proposals in the poll. Drag them up into the drop target above. -->
+			<div class="available-proposals">
+				<h2 class="page-title">{{ $t('availableProposals') }}</h2>
+				<draggable id="availableDraggable" v-model="availableProposals" class="draggable" group="proposals" item-key="id"
+					:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
+					:can-scroll-x="false">
+					<template #item="{ element: law }">
+						<div class="card shadow-sm law-panel d-flex flex-row align-items-center user-select-none">
+							<div class="law-icon">
+								<i class="fas fa-fw" :class="'fa-' + law.icon" />
+							</div>
+							<div class="d-flex flex-column text-truncate">
+								<h4 class="law-title">
+									{{ law.title }}
+								</h4>
+								<div class="law-subtitle">
+									<div :class="{ supported: law.likedByCurrentUser }" class="d-inline">
+										<i :class="{
+												far: !law.likedByCurrentUser,
+												fas: law.likedByCurrentUser,
+											}"
+											class="fa-thumbs-up"
+										></i>
+										&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
+									</div>
+									<i class="far fa-user ms-2"></i>&nbsp;{{ law.createdBy.name }}
+								</div>
+							</div>
+
+							<div class="drag-handle">
+								<i class="fas fa-bars"></i>
+							</div>
+						</div>
+					</template>
+				</draggable>
+			</div>
 		</div>
 
 
@@ -83,7 +132,7 @@
 				</div>
 			</template>
 			<template #primary>
-				<button v-if="canCastVote" id="castVoteButton" type="button" class="btn btn-primary btn-lg w-100" :disabled="loading || castVoteLoading" @click="clickCastVote()">
+				<button v-if="poll && poll.status === 'VOTING'" id="castVoteButton" type="button" class="btn btn-primary btn-lg w-100" :disabled="loading || castVoteLoading || !canCastVote" @click="clickCastVote()">
 					<div v-if="castVoteLoading" class="spinner-border" role="status">
 						<span class="visually-hidden">{{ $t("Loading") }}</span>	
 					</div>
@@ -98,7 +147,7 @@
 <script>
 //import config from "config"
 import api from "@/services/liquido-graphql-client.js"
-import { VueDraggableNext } from 'vue-draggable-next'
+import draggable from 'vuedraggable'
 import liquidoFooter from "@/components/liquido-footer.vue";
 import log from "loglevel"
 
@@ -110,15 +159,19 @@ export default {
 				castVoteInfo: "Please sort the proposals into your personally preferred order. With your favorite proposal at the top.",
 				castVote: "Cast vote",
 				yourBallot: "Your ballot",
+				dropProposalsHere: "Drop the proposals that you want to vote for here. And sort them according to your preferences.",
+				availableProposals: "Available proposals",
 			},
 			de: {
 				castVoteTitle: "Abstimmen",
 				dragInfo: "Sortiere die Vorschläge per Drag & Drop. Schiebe deinen Favoriten ganz nach oben.",
+				dropProposalsHere: "Sortiere diejenigen Vorschläge,<br/>für die du stimmen möchtest,<br/>hier hinein.",
+				availableProposals: "Verfügbare Vorschläge",
 				castVoteFooterInfo:
 					"In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> Vorschlag, sondern sortiere " +
 					"<em>alle</em> Vorschläge nach deiner Präferenz.",
 				voteCountedNTimes: "Deine Stimme als Proxy wurde {voteCount} mal gezählt.",
-				yourBallot: "Dein Stimmzettel:",
+				yourBallot: "Dein Stimmzettel",
 				updateBallotButton: "Eigene Stimme aktualisieren",
 				castVoteButton: "Diese Stimme abgeben",
 				voteCastedSuccessfully: "Deine Stimme wurde erfolgreich gezählt.",
@@ -133,7 +186,7 @@ export default {
 			},
 		},
 	},
-	components: { draggable: VueDraggableNext, liquidoFooter },
+	components: { draggable, liquidoFooter },
 	props: {
 		// the cast-vote page only receives the pollId and reloads the poll from the backend
 		pollId: { type: String, required: true },
@@ -143,6 +196,7 @@ export default {
 			loading: true,
 			poll: undefined,
 			proposalsInBallot: [],
+			availableProposals: [],
 			collapsed: true,
 			existingBallot: undefined,
 			voteCount: 0,
@@ -153,7 +207,7 @@ export default {
 	},
 	computed: {
 		canCastVote() {
-			return this.poll && this.poll.status === "VOTING"
+			return this.poll && this.poll.status === "VOTING" && this.proposalsInBallot.length > 0
 		},
 		hasBallot() {
 			return this.existingBallot
@@ -190,81 +244,28 @@ export default {
 		 */
 		let setProposalsInBallot = (ballot) => {
 			if (ballot) {
+				// User already voted: pre-fill the drop target with his previous vote order.
+				// The remaining proposals (not in his ballot) stay in the available list below.
 				let proposalsById = {}
 				this.poll.proposals.forEach(prop => proposalsById[prop.id] = prop)
 				this.existingBallot = ballot
+				let votedIds = new Set(ballot.voteOrder.map(elem => elem.id))
 				this.proposalsInBallot = ballot.voteOrder.map(elem => proposalsById[elem.id])
+				this.availableProposals = this.poll.proposals.filter(prop => !votedIds.has(prop.id))
 			} else {
-				// Create a shallow copy of the proposals array for local sorting. This prevents mutating the original `this.poll.proposals` array.
-				this.proposalsInBallot = [...this.poll.proposals]
+				// First vote: the drop target starts empty. All proposals are available to be dragged in.
+				// Create a shallow copy so we don't mutate the original `this.poll.proposals` array.
+				this.proposalsInBallot = []
+				this.availableProposals = [...this.poll.proposals]
 			}
 			this.loading = false
 		}
 
-		let delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-
-		/**
-		 * Some math magic :-) taken from https://spicyyoghurt.com/tools/easing-functions
-		 * @param {Number} t current "time", e.g. 0 to 1
-		 * @param {Number} b start value
-		 * @param {Number} c value delta (b + c = end value)
-		 * @param {Number} d final value of time at the end, e.g. 1
-		 */
-		function easeOutCubic(t, b, c, d) {
-			return c * ((t = t / d - 1) * t * t + 1) + b;
-		}
-
-		/**
-		 * If this is the first time that the user votes at all,
-		 * then show a little UX animation as a hint 
-		 * that proposals can be dragged.
-		 * 
-		 * Move the top proposal in a cubic circular motion to the bottom.
-		 */
-		let showDraggingHint = async function () {
-			let element = document.querySelector("#myDraggable > div")
-			if (element == null) {
-				log.warn("No proposals in poll!")  // This should never happen.
-				return
-			}
-			element.classList.add("sortable-chosen")
-			const delayMs = 5
-			const dragHeight = element.clientHeight * 2
-			const dragWidth = dragHeight / 10
-			const step = 1 / dragHeight
-			const startX = element.style.left
-			const startY = element.style.top
-			for (let time = 0; time < 1; time += step) {
-				let i = easeOutCubic(time, 0, 1, 1)
-				let dx = Math.sin(i * Math.PI) * dragWidth
-				let dy = i * dragHeight
-				element.style.top = dy + "px"
-				element.style.left = dx + "px"
-				await delay(delayMs)
-			}
-			for (let time = 1; time >= 0; time -= step) {
-				let i = easeOutCubic(time, 0, 1, 1)
-				let dx = Math.sin(i * Math.PI) * dragWidth
-				let dy = i * dragHeight
-				element.style.top = dy + "px"
-				element.style.left = dx + "px"
-				await delay(delayMs)
-			}
-			element.style.top = startY
-			element.style.left = startX
-			element.classList.remove("sortable-chosen")
-		}
-
-
 		loadPoll()
-			.then(getExistingBallot)  		// get existing ballot of user (if he alreay casted a vote)
-			.then(setProposalsInBallot)		// set proposals (and sort them in the voteOrder of the users ballot if he already voted)
+			.then(getExistingBallot)  		// get existing ballot of user (if he already casted a vote)
+			.then(setProposalsInBallot)		// pre-fill drop target from ballot, or start with an empty drop target
 			.then(() => {
 				this.loading = false
-				setTimeout(function () {
-					showDraggingHint()
-				}, 500)
-
 			})
 			.catch(err => {
 				console.error("Cannot get data to cast vote!", err)
@@ -338,38 +339,51 @@ export default {
 
 <style>
 
-.cast-vote-poll-title {
-	padding: 0.5rem 1rem;
-	text-align: center;
-	color: black;
-}
-
-.cast-vote-info-top {
-	margin: 1rem;
-}
-
-.cast-vote-container {	
-	margin-top: 1rem;
-	display: flex;
-	flex-direction: row;
-	width: 100%;
-	padding-right: 0.5rem;
-
+.cast-vote-wrapper {
 	--polly-proposal-height: 4rem;
 	--polly-proposal-margin-bottom: 0.5rem;
-	
+
+	/* Drop target where the user drops & sorts the proposals he wants to vote for */
+	.vote-drop-target {
+		position: relative;
+		margin: 0;
+		padding: 0 var(--unit) 0 0.5rem;
+		background-color: var(--tertiary);
+		border: 1px dashed var(--secondary);
+		border-radius: var(--liquido-border-radius);
+	}
+
+	.drop-placeholder {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		margin: 0;
+		padding: 1.5rem;
+		color: var(--secondary);
+		pointer-events: none;
+	}
+
+	.cast-vote-container {
+		display: flex;
+		flex-direction: row;
+		width: 100%;
+	}
+
 	.index-number-container {
-		width: 1rem;  /* same as cast-vote-info-top */
+		width: var(--unit);
 	}
 
 	.proposal-index-number {
-		color: var(--secondary);
+		color: var(--text-color);
 		height: var(--polly-proposal-height);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		margin-bottom: var(--polly-proposal-margin-bottom);
-		padding: 0 5px;
+		padding: 0;
 		/*
 		border-left: 1px dotted grey;
 		border-top: 1px dotted grey;
@@ -380,8 +394,9 @@ export default {
 	
 	.draggable {
 		flex-grow: 1;
+		min-height: calc(2 * var(--polly-proposal-height) + 3rem);
 		.sortable-ghost {
-			opacity: 0.1;
+			opacity: 0.2;
 		}
 		.sortable-chosen {
 			z-index: 999;
@@ -391,6 +406,47 @@ export default {
 		}
 	}
 
+
+
+
+
+
+
+
+
+	/* Upward arrow hint between the ballot drop target and the available proposals */
+	.drag-up-arrow {
+		width: 7rem;
+		height: var(--two);
+		margin: 10px auto;
+		color: var(--secondary);
+	}
+
+	.drag-up-arrow svg {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	/* List of proposals still available to be dragged into the drop target */
+	.available-proposals {
+		position: relative;
+		margin: 0;
+		padding: 0 var(--unit) 0 var(--unit);
+		/*background-color: var(--tertiary);*/
+		
+		border: 1px dashed var(--secondary);
+		border-radius: var(--liquido-border-radius);
+		
+	}
+
+	.available-proposals-title {
+		font-size: 1rem;
+		color: var(--secondary);
+		margin-bottom: 0.5rem;
+	}
+
+	
 
 	/* keep this similar to poll-panel.vue */
 	.law-panel {   

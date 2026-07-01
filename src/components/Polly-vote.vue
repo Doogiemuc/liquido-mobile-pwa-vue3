@@ -14,7 +14,7 @@ import {
 	//	watch,
 	onMounted,
 } from 'vue'
-import { VueDraggableNext as draggable } from 'vue-draggable-next'
+import draggable from 'vuedraggable'
 import * as bootstrap from 'bootstrap'
 import config from "config"
 import liquidoInput from './liquido-input.vue'
@@ -439,16 +439,18 @@ function isEmail(s) {
 				<div class="polly-proposals-wrapper">
 					<draggable id="pollyDraggable" v-model="poll.proposals" class="draggable" item-key="id"
 							:swap-threshold="0.5" :delay="40" :animation="500" :can-scroll-x="false">
-						<div v-for="prop in poll.proposals" :key="prop.id" class="form-control polly-proposal sortable-proposal user-select-none">
-							<div class="arrow-up pos-top-middle">&nbsp;</div>
-							<div class="sortable-proposal-title">
-								{{ prop.title }}
+						<template #item="{ element: prop }">
+							<div class="form-control polly-proposal sortable-proposal user-select-none">
+								<div class="arrow-up pos-top-middle">&nbsp;</div>
+								<div class="sortable-proposal-title">
+									{{ prop.title }}
+								</div>
+								<div class="proposal-bars">
+									<i class="fas fa-bars"></i>
+								</div>
+								<div class="arrow-up pos-bottom-middle-down">&nbsp;</div>
 							</div>
-							<div class="proposal-bars">
-								<i class="fas fa-bars"></i>
-							</div>
-							<div class="arrow-up pos-bottom-middle-down">&nbsp;</div>
-						</div>
+						</template>
 					</draggable>
 				</div>
 			</div>

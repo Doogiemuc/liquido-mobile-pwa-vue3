@@ -790,8 +790,12 @@ let graphQlApi = {
 			`{ level checksum voteOrder { id } } }`
 		return graphQlQuery(graphQL)
 			.then(res => {
-				console.debug("User's ballot in poll(id="+pollId+") is", res.data.ballot)
-				return res.data.ballot
+				if (res.data.myBallot) {
+					console.debug(`User's ballot in poll(id=${pollId}) is`, res.data.myBallot)
+				} else {
+					console.debug(`User has not voted yet in poll(id=${pollId})`)
+				}
+				return res.data.myBallot
 			})
 	},
 
