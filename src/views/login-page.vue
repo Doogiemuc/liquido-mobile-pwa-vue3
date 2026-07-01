@@ -276,6 +276,11 @@ export default {
 		this.$store.setHeaderTitle(this.$t("Login"))
 	},
 	mounted() {
+		// If only email is passed, then fill it. (This is used when coming back from password reset page)
+		if (this.email) {
+			this.emailInputVal = this.email
+		}
+		// If both email and emailToken are passed, then try to login. This is used when login in via email link
 		if (this.email && this.emailToken) {
 			this.loginWithEMailToken()
 			return

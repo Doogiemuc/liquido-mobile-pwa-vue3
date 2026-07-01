@@ -102,7 +102,7 @@ context('Login Test', () => {
 		//THEN user is logged in and teamHome is shown
 		cy.get("#team-home")
 		// AND the user is shown in the team
-		cy.get("#memberCards").contains(Cypress.expose("admin").name)
+		cy.get("#memberCircles").contains(Cypress.expose("admin").name)
 	})
 
 	it('Unknown email shows not found message', function() {
@@ -138,48 +138,50 @@ context('Login Test', () => {
 		cy.get("#emailInput").type(Cypress.expose("admin").email)
 		cy.get("#requestPasswordResetButton").click()
 
-		// Should show success message
+		// Should show success message and no error message
 		cy.get("#requestPasswordResetSuccessMessage").should("be.visible")
+		cy.get("#requestPasswordResetErrorMessage").should("not.exist")
 
 		// ========= Step 2: Reset password with token ========
 
-		// Simulate receiving the one time token via email 
-		// Here in this test we use a static secret "testPasswordResetToken". Real email could be tested with mailtrap.com
-
+		// Here we test the password reset flow with a secret "testPasswordResetToken".
 		//TODO: copy implementation with mailtrap from below!
 
-		cy.visit(`/resetPassword?email=${encodeURIComponent(Cypress.expose("admin").email)}&resetPasswordToken=${Cypress.expose("testPasswordResetToken")}`)
+		cy.env(["testPasswordResetToken"]).then(({testPasswordResetToken}) => {
+			cy.visit(`/resetPassword?email=${encodeURIComponent(Cypress.expose("admin").email)}&resetPasswordToken=${testPasswordResetToken}`)
+		})
 		cy.get("#forgot-password-page")
 
 		// Enter new password twice   (set the same password again, so that the test is repeatable)
-		let newPassword = Cypress.expose("admin").email + Cypress.expose("passwordSuffix")
-		cy.get("#newPasswordInput1").type(newPassword) // first input
-		cy.get("#newPasswordInput2").type(newPassword) // second input
+		cy.env(["passwordSuffix"]).then(({passwordSuffix}) => {
+			const newPassword = Cypress.expose("admin").email + passwordSuffix
+			cy.get("#newPasswordInput1").type(newPassword) // first input
+			cy.get("#newPasswordInput2").type(newPassword) // second input
+			
+			// Click reset password button
+			cy.get("#resetPasswordButton").click()
 
-		// Click reset password button
-		cy.get("#resetPasswordButton").click()
+			// Should show password reset success message
+			cy.get("#resetPasswordSuccessMessage").should("not.be.empty")
 
-		// Should show password reset success message
-		cy.get("#resetPasswordSuccessMessage").should("not.be.empty")
+			// ======== Step 3: Login with new password ========
 
-		//cy.pause()
+			cy.visit("/login")
 
-		// ======== Step 3: Login with new password ========
+			cy.get("#login-page")
 
-		cy.visit("/login")
+			//WHEN test user enters his email & password
+			cy.get("#loginEmailInput").type(Cypress.expose("admin").email)
+			cy.get("#continueButton").click()
+			cy.get("#loginPasswordInput").type(newPassword)
+			
+			// AND click login button
+			cy.get("#loginWithEmailPasswordButton").click()
 
-		cy.get("#login-page")
-
-		//WHEN test user enters his email & password
-		cy.get("#loginEmailInput").type(Cypress.expose("admin").email)
-		cy.get("#continueButton").click()
-		cy.get("#loginPasswordInput").type(newPassword)
-		
-		// AND click login button
-		cy.get("#loginWithEmailPasswordButton").click()
-
-		//THEN user is logged in and teamHome is shown
-		cy.get("#team-home")
+			//THEN user is logged in and teamHome is shown
+			cy.get("#team-home")
+			
+		})
 	})
 
 

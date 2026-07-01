@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<h2 id="team-home" class="page-title">
+		<h2 id="team-home" class="page-title" :data-teamname="team.teamName" :data-username="currentUserName">
 			Hallo {{ currentUserName }}!
 		</h2>
 

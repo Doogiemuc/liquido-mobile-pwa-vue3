@@ -25,11 +25,11 @@
 					class="mb-3"
 					@keyup="emailInputKeyUp"/>
 
-				<div id="requestPasswordResetErrorMessage" class="alert alert-danger mb-3" v-if="requestPasswordResetErrorMessage">
+				<div id="requestPasswordResetErrorMessage" class="alert alert-danger my-3" v-if="requestPasswordResetErrorMessage">
 					{{ requestPasswordResetErrorMessage }}
 				</div>
 
-				<div id="requestPasswordResetSuccessMessage" class="alert alert-success mb-3" v-if="requestPasswordResetSuccessMessage">
+				<div id="requestPasswordResetSuccessMessage" class="alert alert-success my-3" v-if="requestPasswordResetSuccessMessage">
 					{{ requestPasswordResetSuccessMessage }}
 				</div>	
 
@@ -45,6 +45,10 @@
 		<!-- Step2: With email and token: set new password -->
 		<div class="card" v-if="resetPasswordToken">
 			<div class="card-body">
+
+				<div class="text-center my-3">
+            <i class="fas fa-key fa-3x" style="color: var(--primary)"></i>
+        </div>
 
 				<p class="text-center">{{ $t('ResetPasswordInfo') }}</p>
 				<p class="text-center">{{ email }}</p>
@@ -76,24 +80,24 @@
 					type="password"
 				/>
 
-				<div id="resetPasswordErrorMessage" class="alert alert-danger" v-if="resetPasswordErrorMessage">
+				<div id="resetPasswordErrorMessage" class="alert alert-danger mt-3" v-if="resetPasswordErrorMessage">
 					{{ resetPasswordErrorMessage }}
 				</div>
 
-				<div id="resetPasswordSuccessMessage" class="alert alert-success" v-if="resetPasswordSuccessMessage">
+				<div id="resetPasswordSuccessMessage" class="alert alert-success mt-3" v-if="resetPasswordSuccessMessage">
 					{{ resetPasswordSuccessMessage }}
 				</div>	
 
 				<button id="resetPasswordButton" type="button" class="btn btn-primary my-3 w-100" 
 					@click="clickResetPasswordButton"
 					:disabled="resetPasswordButtonDisabled">
-					{{ $t('ResetPassword') }}
+					{{ primaryActionButtonText }}
 				</button>
 			</div>
 		</div>
 	
 		<div class="back-to-login-link my-5">
-			<router-link :to="{ name: 'login' }">{{ $t('BackToLogin') }}</router-link>
+			<router-link :to="{ name: 'login', query: { email: emailInputVal } }">{{ $t('BackToLogin') }}</router-link>
 		</div>
 
 	</div>
@@ -159,7 +163,9 @@ export default {
 			newPasswordInput2Val: "",
 			newPasswordInput2State: undefined,
 			resetPasswordErrorMessage: null,
-			resetPasswordSuccessMessage: null
+			resetPasswordSuccessMessage: null,
+			primaryActionButtonText: this.$t("ResetPassword"),
+			passwordResetSuccessfull: false
 		}
 	},
 	computed: {
@@ -168,7 +174,7 @@ export default {
 		},
 
 		resetPasswordButtonDisabled() {
-			return this.newPasswordInput1State !== STATE.VALID || this.newPasswordInput2State !== STATE.VALID || this.resetPasswordSuccessMessage !== null
+			return !((this.newPasswordInput1State == STATE.VALID && this.newPasswordInput2State == STATE.VALID) || this.passwordResetSuccessfull)
 		},
 
 	},
@@ -227,8 +233,11 @@ export default {
 		},
 
 		clickResetPasswordButton() {
-			if (this.primaryActionButtonText == this.$t("BackToLogin")) {
-				this.$router.push({ name: "login" })
+			if (this.passwordResetSuccessfull) {
+				this.$router.push({
+					name: "login",
+					query: { email: this.email || this.emailInputVal }
+				})
 			} else {
 				this.resetPassword()
 			}
@@ -245,10 +254,12 @@ export default {
 			loginRestApi.resetPassword(this.email, this.resetPasswordToken, this.newPasswordInput1Val)
 				.then(() => {
 					this.resetPasswordSuccessMessage = this.$t("PasswordResetSuccessful")
+					this.passwordResetSuccessfull = true
 					this.primaryActionButtonText = this.$t("BackToLogin")
 				})
 				.catch(err => {
 					console.error("Could not reset password with token", err)
+					this.passwordResetSuccessfull = false
 					this.resetPasswordErrorMessage = this.$t("PasswordResetFailed")
 				})
 		},

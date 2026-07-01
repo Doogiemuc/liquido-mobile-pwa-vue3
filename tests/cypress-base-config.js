@@ -34,7 +34,7 @@ export default {
 			name: "Member 1781788893728",
 			email: "membr47110@liquido.vote",
 			mobilephone: "01515551781788893728"
-		},		
+		}
   },
 
   viewportWidth: 375,

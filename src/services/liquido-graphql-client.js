@@ -401,19 +401,34 @@ let graphQlApi = {
 	 */
 	requestPasswordReset(email) {
 		if (!email) throw new Error("Need email to request password reset!")
+		return axios.get('/login/requestPasswordResetEmail', {
+			params: { email: email }
+		}).then(res => res.data)
+		/*
+		//MAYBE: change requestPasswordReset email back to GraphQL, once the Quarkus bug is fixed
 		let graphQL = `query { requestPasswordReset(email: "${email}") }`
 		return graphQlQuery(graphQL)
 			.then(res => {
 				return res.data.requestPasswordReset
 			})
+				*/
 	},
 
 	resetPassword(email, resetPasswordToken, newPassword) {
+		return axios.get('/login/resetPassword', {
+			params: { 
+				email: email,
+				resetPasswordToken: resetPasswordToken,
+				newPassword: newPassword
+			}
+		}).then(res => res.data)
+		/*
 		let graphQL = `query { resetPassword(email: "${email}", resetPasswordToken: "${resetPasswordToken}", newPassword: "${newPassword}") }`
 		return graphQlQuery(graphQL)
 			.then(res => {
 				return res.data.resetPassword
 			})
+		*/
 	},
 
 	/**
