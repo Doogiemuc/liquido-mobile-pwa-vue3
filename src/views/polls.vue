@@ -8,7 +8,7 @@
 		<div id="searchWrapper" class="search-wrapper mb-4" :class="showSearchClass">
 			<input
 				id="searchInput"
-				class="form-control border-0"
+				class="form-control"
 				v-model="searchQuery"
 				type="text"
 				:placeholder="$t('Search')"

@@ -394,8 +394,8 @@ export default {
 			de: {
 				welcome:
 					"<p>Willkommen bei <span class='liquido'></span>!</p>"+
-					"<p>Der App für sichere, faire und <em>liquide</em> Abstimmungen.</p>"+
-					"<p>Hier stimmst du nicht nur für einen <em>einzelnen</em> Vorschlag, sondern jeder in eurem Team sortiert <em>alle</em> Vorschläge nach der eigenen Präferenz. " + 
+					"<p>Sichere, faire und <em>liquide</em> Abstimmungen.</p>"+
+					"<p>Hier stimmst du nicht nur für <em>einen</em> Vorschlag, sondern jeder in eurem Team sortiert Vorschläge nach der eigenen Präferenz. " + 
 					"Ein cleverer Algorithmus berechnet daraus dann den Vorschlag mit der größten Zustimmung.</p>",
 				hasInviteCodeForTeam: "Hey, du wurdest in das Team <b>{teamName}</b> eingeladen.",
 				whatsYourName: "Darf ich fragen wie du heißt?",
@@ -982,8 +982,9 @@ export default {
 
 .chat-left {
   position: relative;
-	color: #1e3a8a;  /* dark blue */
+	color: var(--chat-left-color);
   background-color: var(--chat-left-bg);
+	border-color: var(--chat-left-border-color);
   margin-right: 2rem;
   margin-bottom: 1rem;
   &::before {
@@ -1001,6 +1002,7 @@ export default {
 
 .chat-right {
   position: relative;
+  color: var(--chat-right-color);
   background-color: var(--chat-right-bg);
   margin-left: 2rem;
   margin-bottom: 1rem;
@@ -1041,12 +1043,13 @@ export default {
 }
 
 .login-link {
-	z-index: 999;
+	z-index: 9799;
 	position: fixed;
 	cursor: pointer;
 	padding: 1rem;
-	bottom: 2rem;
-	right: 2rem;
+	left: 50%;
+	bottom: var(--save-area-inset-bottom, 2rem);
+	transform: translateX(-50%);
 }
 
 #createOrJoinButtons {

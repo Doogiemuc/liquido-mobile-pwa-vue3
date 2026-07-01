@@ -4,7 +4,7 @@
 			{{ $t("addProposal") }}
 		</h1>
 
-		<div class="card border-0 shadow-sm mb-5">
+		<div class="card shadow-sm mb-5">
 			<div class="card-body">
 				<div class="card-title">
 					{{ $t("yourProposal") }}

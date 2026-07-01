@@ -3,16 +3,12 @@
     class="poll-section"
     :class="{ empty: polls.length === 0 }"
   >
-    <h3 class="poll-status-header">
+    <h2 class="poll-status-header">
       {{ title }}
-
-      <span
-        v-if="polls.length"
-        class="badge rounded-pill poll-count"
-      >
+      <span v-if="polls.length" class="badge rounded-pill poll-count">
         {{ polls.length }}
       </span>
-    </h3>
+    </h2>
 
     <!-- Poll list -->
     <transition-group

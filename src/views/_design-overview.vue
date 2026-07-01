@@ -25,7 +25,7 @@
 
 		<div class="overview">
 			<section v-for="page in pages" :key="page.name" class="overview-section">
-				<h3 class="ms-2">{{ page.name }}</h3>
+				<h2 class="ms-2">{{ page.name }}</h2>
 				<div class="page-preview-container">
 					<iframe 
 						:src="page.route" 
@@ -57,6 +57,7 @@ const pages = [
 	{ name: 'Login', route: '/login' },
 	{ name: 'Welcome', route: '/welcome' },
 	{ name: 'Team', route: '/team' },
+	{ name: 'User home', route: '/userhome' },
 	{ name: 'List of Polls', route: '/polls' },
 	{ name: 'New Poll', route: `/polls/${newPollId}` },
 	{ name: 'Poll in Voting', route: `/polls/${pollInVotingId}` },
@@ -113,7 +114,6 @@ const logout = () => {
 	background-color: white !important;
 	width: 100%;
 	max-width: 100%;
-	padding-top: 0 !important;
 }
 
 .button-group {
@@ -143,7 +143,6 @@ const logout = () => {
 	min-width: 390px;
 	border: 1px solid #333;
 	border-radius: 15px;
-	border-width: 5px;
 	overflow: hidden;
 	background-color: var(--app-background);
 }

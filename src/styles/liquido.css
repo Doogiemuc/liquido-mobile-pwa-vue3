@@ -17,7 +17,6 @@
 	--app-background-alt: #f0f6ff; 	/* Alternate background for sections, cards, etc. */
 	--liquido-border-radius: 0.5rem;
 
-
 	/*************** Layout "unit" used for grids, margin, padding and spacing **********************/
 	--unit: 1rem;    									
 	--two: calc(var(--unit) * 2);
@@ -25,16 +24,24 @@
 	--four: calc(var(--unit) * 4);
 
 	/************** MAIN font and text color ***************/
-	
 	--text-color: #0f1b3d;     			/* Main text foreground. Nearly black but not quite. */
-	--primary: #1e3a5f;							/* Primary color. Used for primary action background, title text foreground */
-	--bs-primary: var(--primary);		   /* Align Bootstrap CSS variable to LIQUIDO primary */
-	--bs-primary-rgb: 30, 58, 95;			 /* RGB of #1e3a5f — used by Bootstrap for box-shadow alphas */
+	--primary: #1e3a5f;							/* Primary color. Used for background of primary action buttons, ... */
   --secondary: #959cab;						/* Secondary, muted or dimmed text. Quite dark for better contrast to --app-background */
 	--tertiary: #e8edf3;      				/* Tertiary dimmed. Really light. e.g. for poll progress bar */
 
+	--light-color: #1e3a5f;					/* Light blue colors used for info alerts and chat bubbles on welcome.vue */
+	--light-bg: #eff6ff;							  
+	--light-border: #dbeafe;		
+
+	--destructive:#b3261e;						/* For error alerts */
+  --destructive-foreground:#fff;		/* For text on destructive background */
+
+	/************* Fonts ***************/
   --sans-serif-font: 'Segoe UI', Verdana, sans-serif;
 	--serif-font: "Libre Baskerville", "Georgia", serif;
+
+	--bs-primary: var(--primary);		   /* Align Bootstrap CSS variable to LIQUIDO primary */
+	--bs-primary-rgb: 30, 58, 95;			 /* RGB of #1e3a5f — used by Bootstrap for box-shadow alphas */
 
 	/************** LIQUIDO header & footer ***************/
 
@@ -44,9 +51,15 @@
 	--liquido-footer-height: 80px;
 	
   /* Welcome Chat */
-  --chat-left-bg: #dbeafe; /* light blue by stich google,   that was a darker one #aacfff; */
-  --chat-right-bg: #fff;
-  --liquido-input-bg: #afc2fa;
+  --chat-left-color: var(--light-color); 
+	--chat-left-bg: #dbeafe;									/* light blue by stich google: #dbeafe */
+	--chat-left-border: #dbeafe;
+  --chat-right-color: var(--text-color);
+	--chat-right-bg: #fff;
+	--chat-right-border: #e5e7eb;
+
+	/** Further UI and form elements */
+  --liquido-input-bg: var(--secondary);
 
 	/* Colors for poll status */
   --state-new:#5a6a85;
@@ -61,25 +74,18 @@
 
 	/****************** Info, Warning and Error messages *************/
 
-	/* Light blue colors used for info alerts, alternating sections */
-	--light-color: #1e3a5f;						
-	--light-bg: #eff6ff;							  
-	--light-border: #dbeafe;						
-
-
 	/* Info text in .alert on --app-background */
   --liquido-info-color: var(--light-color);
 	--liquido-info-border-color: var(--light-border);
   --liquido-info-background: var(--light-bg);
 
-	/** Error */
-	--destructive:#b3261e;
-  --destructive-foreground:#fff;
-
-	/** Info for admin */
+	
+	/** Info .alert for admin */
 	--admin-info-text-color: white;
-  --admin-info-background: #2e8dff;
+  --admin-info-background: #567eaf;
 
+
+	
 	/** Safe Area on mobile phones (Apple: Dynamic Island) */
 	/*  Need these as CSS variables variables here, so that I can log.debug them in root-app.vue */
 	--safe-area-inset-top: env(safe-area-inset-top);
@@ -280,8 +286,8 @@ body {
   right: 5%;
   top: 30%;
   transform: rotate(10deg) translateY(-50%);
-  font-size: 12rem;        /* large background presence */
-  opacity: 0.2;           /* subtle */
+  font-size: 12rem;       /* large background presence */
+  opacity: 0.1;           /* very subtle */
   pointer-events: none;   /* ignore mouse interaction */
   z-index: 0;
 }

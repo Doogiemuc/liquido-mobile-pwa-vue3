@@ -5,11 +5,9 @@
 		</h2>
 
 		<section v-if="pollsInVoting.length > 0">
-			<p class="text-secondary">In diesen Abstimmungen kannst du jetzt deine Stimme abgeben:</p>
 			<div class="polls-in-voting-container" ref="pollsInVotingContainer" >
 				<div v-for="poll in pollsInVoting" :key="poll.id" class="poll-card-wrapper user-select-none">
 					<poll-card
-						class="shadow-sm"
 						:poll="poll"
 						:date-text="d(new Date(poll.createdAt), 'shortDate')"
 						@click="$root.gotoPoll"
@@ -21,7 +19,7 @@
 		<!-- Passkey info box with fingerprint icon on the left -->
 		<section>
 			<div class="alert liquido-info alert-dismissible fade show" role="alert">
-				<h3>LIQUIDO ist sicher</h3>
+				<h2>Mache LIQUIDO sicher!</h2>
 				<p>Melde dich in Zukunft ganz einfach mit Face-ID oder Fingerabdruck an.</p>
 				<button id="passkeyButton" type="button" class="btn btn-primary" @click="setupPasskey">
 					<i class="fas fa-fingerprint me-2" />Passkey einrichten
@@ -31,8 +29,8 @@
 		</section>
 
 		<!-- Team members as circles -->
-		<section class="section-background-alt py-3">
-			<h2>Euer Team</h2>
+		<section>
+			<h2>{{ team.teamName }}</h2>
 			<div id="memberCircles" class="member-grid mt-3 mb-3">
 				<div v-for="member in members.slice(0,6)" :key="member.user.id" class="member-circle">
 					<img :src="getImgUrl(member.user.picture)" class="member-avatar" alt="Member Avatar" />
@@ -96,6 +94,7 @@ import LiquidoFooter from "@/components/liquido-footer.vue"
 import PollCard from "@/components/poll-card.vue"
 import QRCode from "qrcode"
 import webauthnService from '@/services/webauthn-service.js'
+import { store } from "@/services/store"
 
 const router = useRouter()
 const { t, d } = useI18n()
@@ -117,6 +116,7 @@ let passkeyLabel = ref("passkeylabel")
 
 onMounted(() => {
 	team.value = api.getCachedTeam() || {}
+	store.setHeaderTitle(team.value?.teamName || t("TeamHome"))
 })
 
 function getImgUrl(imgFile) {
@@ -226,7 +226,7 @@ section {
 }
 
 .poll-card-wrapper {
-	min-width: 80vw;
+	min-width: 70vw;
 	height: 9rem;   /* TODO: make the poll card have a FIXED height */
 }
 
