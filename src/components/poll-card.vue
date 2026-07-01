@@ -150,7 +150,7 @@ export default {
 	width: 100%;
 	height: 4px;
 	margin-top: 0.25rem;
-	background-color: var(--tertiary);
+	background-color: #eee;
 	z-index: 100;
 	border-radius: 999px;
 	

@@ -423,8 +423,8 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: linear-gradient(180deg, #f3f6fb 0%, #e7edf6 100%);
-	color: var(--secondary);
+	background: linear-gradient(180deg, #b8c0cd 0%, #e7edf6 100%);
+	color: var(--tertiary);
 	font-size: 3.5rem;
 }
 

@@ -165,7 +165,7 @@ export default {
 	-webkit-backdrop-filter: saturate(180%) blur(20px);
 	backdrop-filter: saturate(180%) blur(20px);
 	z-index: 9999; 			/* make sure the header is on top of everything */
-	border-bottom: 0.5px solid rgba(0, 0, 0, 0.15);
+	border-bottom: 0.5px solid var(--light-border);
 	
 	/**
 		* When user scrolls, slide the LIQUIDO claim out towards the top

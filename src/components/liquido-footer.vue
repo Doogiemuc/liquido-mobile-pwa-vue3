@@ -69,7 +69,7 @@ export default {
 	margin: 0;
 	padding: 0;
 	background: var(--header-bg);
-	border-top: 1px solid var(--secondary);
+	border-top: 1px solid var(--light-border);
 	box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.1);
 	z-index: 999;
 }
