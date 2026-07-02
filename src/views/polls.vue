@@ -23,7 +23,7 @@
 		<!-- POLL SECTIONS -->
 		<div id="poll-list-wrapper" class="mb-5">
 
-			<PollSection
+			<PollListSection
 				v-for="section in activeSections"
 				:key="section.status"
 				:title="$t(section.title)"
@@ -75,7 +75,7 @@ import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
 import { store } from "@/services/store"
 import PollsFooter from "@/components/polls-footer.vue"
-import PollSection from "@/components/poll-section.vue"
+import PollListSection from "@/components/poll-list-section.vue"
 import { useRouter} from 'vue-router'
 const router = useRouter()
 

@@ -10,12 +10,15 @@
 			&nbsp;{{ $t('Loading') }}
 		</div>
 
+		<div v-if="!loading" class="poll-card-wrapper">
+			<poll-card :poll="poll" :show-arrow-right="false" class="poll-card"></poll-card>
+		</div>
+
 		<div v-if="!loading" class="cast-vote-wrapper">
 			<!-- Drop target: the user drops & sorts the proposals he wants to vote for -->
 			<div class="vote-drop-target">
-				<h2 class="page-title">{{ $t('yourBallot') }}</h2>
-				<p v-if="proposalsInBallot.length === 0" class="drop-placeholder" v-html="$t('dropProposalsHere')">
-				</p>
+				<h2 class="drop-target-title">{{ $t('yourBallot') }}</h2>
+				<p v-if="proposalsInBallot.length === 0" class="drop-placeholder" v-html="$t('dropTargetInfo')"></p>
 				<div class="cast-vote-container">
 					<div class="index-number-container">
 						<div v-for="(prop, index) in proposalsInBallot" :key="prop.id" class="proposal-index-number">
@@ -56,7 +59,7 @@
 						</template>
 					</draggable>
 				</div>
-				<div v-if="proposalsInBallot.length > 0" class="text-center mb-2">...</div>
+				<div v-if="proposalsInBallot.length > 0 && proposalsInBallot.length < poll?.proposals.length" class="text-center mb-2">...</div>
 			</div>
 
 			<!-- Upward arrow hint: drag proposals up from the available list into your ballot -->
@@ -68,7 +71,8 @@
 
 			<!-- Available proposals in the poll. Drag them up into the drop target above. -->
 			<div class="available-proposals">
-				<h2 class="page-title">{{ $t('availableProposals') }}</h2>
+				<h2 class="drop-target-title">{{ $t('availableProposals') }}</h2>
+				<p v-if="availableProposals.length === 0" class="drop-placeholder" v-html="$t('youVotedForAllProposals')"></p>
 				<draggable id="availableDraggable" v-model="availableProposals" class="draggable" group="proposals" item-key="id"
 					:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
 					:can-scroll-x="false">
@@ -102,6 +106,10 @@
 					</template>
 				</draggable>
 			</div>
+		</div>
+
+		<div class="page-subtitle mt-5">
+			<p v-html="$t('castVoteInfo')"></p>
 		</div>
 
 
@@ -149,6 +157,7 @@
 import api from "@/services/liquido-graphql-client.js"
 import draggable from 'vuedraggable'
 import liquidoFooter from "@/components/liquido-footer.vue";
+import pollCard from "@/components/poll-card.vue"
 import log from "loglevel"
 
 export default {
@@ -163,13 +172,15 @@ export default {
 				availableProposals: "Available proposals",
 			},
 			de: {
-				castVoteTitle: "Abstimmen",
-				dragInfo: "Sortiere die Vorschläge per Drag & Drop. Schiebe deinen Favoriten ganz nach oben.",
-				dropProposalsHere: "Sortiere diejenigen Vorschläge,<br/>für die du stimmen möchtest,<br/>hier hinein.",
+				castVoteTitle: "Stimme abgeben",
+				dropTargetInfo: "Schiebe die Vorschläge, die du unterstützen möchtest, hierher. Du musst nicht alle auswählen. Sortiere die ausgewählten Vorschläge anschließend per Drag & Drop – dein Favorit steht oben.",
+				youVotedForAllProposals: "Sehr gut, du hast alle Vorschläge sortiert.",
 				availableProposals: "Verfügbare Vorschläge",
-				castVoteFooterInfo:
-					"In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> Vorschlag, sondern sortiere " +
-					"<em>alle</em> Vorschläge nach deiner Präferenz.",
+				castVoteInfo:
+					"<p>In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> Vorschlag, sondern erstellst eine Rangfolge derjenigen Vorschläge, " +
+					"die du unterstützen möchtest. Ziehe diese auf den Stimmzettel oben und ordne sie nach deiner Präferenz - dein Favorit ganz oben. " +
+					"Vorschläge die du nicht unterstützen möchtest lässt du ganz einfach unten.</p>" +
+					"<p>Deine stimme ist sicher und anonym. Niemand kann zurückverfolgen wie du abgestimmt hast.</p>",
 				voteCountedNTimes: "Deine Stimme als Proxy wurde {voteCount} mal gezählt.",
 				yourBallot: "Dein Stimmzettel",
 				updateBallotButton: "Eigene Stimme aktualisieren",
@@ -186,7 +197,7 @@ export default {
 			},
 		},
 	},
-	components: { draggable, liquidoFooter },
+	components: { draggable, liquidoFooter, pollCard },
 	props: {
 		// the cast-vote page only receives the pollId and reloads the poll from the backend
 		pollId: { type: String, required: true },
@@ -228,6 +239,9 @@ export default {
 			this.poll = poll
 			return poll
 		}).catch(err => console.warn("Cannot get poll.id=" + this.pollId, err))
+
+
+		//TODO: Check if user has a valid RightToVote. If not, show an error.
 
 		/**
 		 * Check if current user already voted in this poll. Then he would have a ballot.
@@ -339,16 +353,43 @@ export default {
 
 <style>
 
+.page-title {
+	margin-top: 0 !important;
+	margin-right: calc(-1*var(--unit)) !important;
+	margin-bottom: 0 !important;
+	margin-left: calc(-1*var(--unit)) !important;
+	background-color: var(--header-bg);
+	padding-top: var(--unit) !important;
+	padding-bottom: var(--unit) !important;
+}
+
+ .drop-target-title {
+	margin-top: var(--unit);
+	margin-bottom: var(--unit);
+	text-align: center;
+ }
+
+.poll-card-wrapper {
+	height: 8rem;
+	background-color: var(--header-bg);
+	margin-left: calc(-1*var(--unit));
+	margin-right: calc(-1*var(--unit));
+	padding: 0 var(--unit) var(--unit) var(--unit);
+
+	
+}
+
 .cast-vote-wrapper {
 	--polly-proposal-height: 4rem;
 	--polly-proposal-margin-bottom: 0.5rem;
+	margin-top: var(--two);
 
 	/* Drop target where the user drops & sorts the proposals he wants to vote for */
 	.vote-drop-target {
 		position: relative;
 		margin: 0;
 		padding: 0 var(--unit) 0 0.5rem;
-		background-color: var(--tertiary);
+		background-color: var(--light-bg);
 		border: 1px dashed var(--secondary);
 		border-radius: var(--liquido-border-radius);
 	}
@@ -408,12 +449,6 @@ export default {
 
 
 
-
-
-
-
-
-
 	/* Upward arrow hint between the ballot drop target and the available proposals */
 	.drag-up-arrow {
 		width: 7rem;
@@ -433,10 +468,10 @@ export default {
 		position: relative;
 		margin: 0;
 		padding: 0 var(--unit) 0 var(--unit);
-		/*background-color: var(--tertiary);*/
-		
+		/*
+		background-color: var(--tertiary);
 		border: 1px dashed var(--secondary);
-		border-radius: var(--liquido-border-radius);
+		border-radius: var(--liquido-border-radius);*/
 		
 	}
 

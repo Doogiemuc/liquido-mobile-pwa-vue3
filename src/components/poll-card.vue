@@ -29,7 +29,7 @@
 				</div>
 				
 			</div>
-			<div class="flex-grow-0 align-self-center ms-1">
+			<div v-if="showArrowRight" class="flex-grow-0 align-self-center ms-1">
 				<i class="fas fa-angle-right"></i>
 			</div>
 		</div>
@@ -77,7 +77,12 @@ export default {
 		numVoters: {			// When passed, shows  "3/24 votes"
 			type: Number,
 			required: false
+		},
+		showArrowRight: {
+			required: false,
+			default: true
 		}
+
 	},
 	computed: {
 		votingEndAtDateLoc() {
@@ -125,12 +130,12 @@ export default {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
-	font-size: 0.7rem;
+	font-size: 0.8rem;
 }
 
 .poll-card .poll-title {
 	color: var(--text-color);
-	font-size: 1rem !important;
+	/*font-size: 1rem !important;*/
 	font-weight: normal;
 	margin: 0;
 	padding: 0;

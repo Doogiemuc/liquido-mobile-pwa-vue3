@@ -36,7 +36,6 @@ const createState = () => {
 			poll.numBallots    = Math.floor(Math.random() * 12)									// 0-11 fake ballots
 
 		}
-
 		console.debug("MOCK: created new mockstate")
 	})
 
