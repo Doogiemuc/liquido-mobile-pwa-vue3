@@ -35,7 +35,7 @@
 
 		<!-- Login button -->
 		<div v-if="showLoginButton" class="login-link" @click="goToLogin">
-			<button class="btn btn-primary btn-sm">{{ $t('Login') }}</button>
+			<button class="btn btn-primary btn-lg">{{ $t('Login') }}</button>
 		</div>
 
 		<!-- Nice to meet you bubble -->

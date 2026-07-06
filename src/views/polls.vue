@@ -56,8 +56,8 @@
 
 		<div v-if="userIsAdmin" class="alert alert-admin mt-5">
 			<p>{{ $t('onlyAdminCanCreateNewPolls') }}</p>
-			<button id="createPollButton" class="btn btn-primary float-end" @click="gotoCreatePoll">
-				{{ $t("createPoll") }}
+			<button id="createNewPollButton" class="btn btn-primary float-end" @click="gotoCreateNewPoll">
+				{{ $t("createNewPoll") }}
 			</button>
 		</div>
 
@@ -103,6 +103,9 @@ function syncPolls() {
 
 onMounted(() => {
 	store.setHeaderTitle(t('Polls'))
+	if (api.isAdmin()) {
+		store.setHeaderRight('createNewPoll')
+	}
 	EventBus.on(EventBus.Event.POLL_LOADED, syncPolls)
 	EventBus.on(EventBus.Event.POLLS_LOADED, syncPolls)
 	
@@ -214,7 +217,7 @@ function goToPoll(id) {
 	router.push({ name: "showPoll", params: { pollId } })
 }
 
-function gotoCreatePoll() {
+function gotoCreateNewPoll() {
 	router.push({ name: "createPoll" })
 }
 

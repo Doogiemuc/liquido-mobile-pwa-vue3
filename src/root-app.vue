@@ -13,7 +13,15 @@
 			@clickSecondary="rootPopupClickSecondary"
 		>
 		</popup-modal>
-		<liquido-header></liquido-header>
+		<liquido-header>
+			<template #header-right>
+				<template v-if="$store.headerRight === 'createNewPoll'">
+					<button class="header-action-btn" type="button" @click="gotoCreateNewPoll" :aria-label="$t('createNewPoll')">
+						<i class="fas fa-plus" />
+					</button>
+				</template>
+			</template>
+		</liquido-header>
 		<router-view v-slot="{ Component }">
 			<transition :name="transitionName">
 				<component :is="Component" id="appContent" class="router-view container-lg" />
@@ -191,6 +199,10 @@ export default {
 		
 		gotoPolls() {
 			this.$router.push({name: "polls"})
+		},
+
+		gotoCreateNewPoll() {
+			this.$router.push({name: "createPoll"})
 		},
 
 		gotoTeam() {

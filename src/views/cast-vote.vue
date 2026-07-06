@@ -59,7 +59,9 @@
 						</template>
 					</draggable>
 				</div>
-				<div v-if="proposalsInBallot.length > 0 && proposalsInBallot.length < poll?.proposals.length" class="text-center mb-2">...</div>
+				<div v-if="proposalsInBallot.length > 0 && proposalsInBallot.length < poll?.proposals.length" class="text-center page-subtitle mb-2">
+					{{ $t('canAddProposalsIntoBallot') }}
+				</div>
 			</div>
 
 			<!-- Upward arrow hint: drag proposals up from the available list into your ballot -->
@@ -174,13 +176,14 @@ export default {
 			de: {
 				castVoteTitle: "Stimme abgeben",
 				dropTargetInfo: "Schiebe die Vorschläge, die du unterstützen möchtest, hierher. Du musst nicht alle auswählen. Sortiere die ausgewählten Vorschläge anschließend per Drag & Drop – dein Favorit steht oben.",
-				youVotedForAllProposals: "Sehr gut, du hast alle Vorschläge sortiert.",
+				youVotedForAllProposals: "Sehr gut, du hast alle Vorschläge sortiert. Du kannst deinen Stimmzettel jetzt abgeben.",
 				availableProposals: "Verfügbare Vorschläge",
 				castVoteInfo:
 					"<p>In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> Vorschlag, sondern erstellst eine Rangfolge derjenigen Vorschläge, " +
 					"die du unterstützen möchtest. Ziehe diese auf den Stimmzettel oben und ordne sie nach deiner Präferenz - dein Favorit ganz oben. " +
 					"Vorschläge die du nicht unterstützen möchtest lässt du ganz einfach unten.</p>" +
-					"<p>Deine stimme ist sicher und anonym. Niemand kann zurückverfolgen wie du abgestimmt hast.</p>",
+					"<p><i class='fa fa-shield-halved'></i> Deine stimme ist sicher und anonym. Niemand kann zurückverfolgen wie du abgestimmt hast.</p>",
+				canAddProposalsIntoBallot: "Du kannst weitere Vorschläge unterstützen und hier einsortieren, wenn du das möchtest.",
 				voteCountedNTimes: "Deine Stimme als Proxy wurde {voteCount} mal gezählt.",
 				yourBallot: "Dein Stimmzettel",
 				updateBallotButton: "Eigene Stimme aktualisieren",
@@ -214,6 +217,7 @@ export default {
 			castVoteLoading: false,
 			isFirstVote: true,		// used for showing the correct confirmation message
 			ballotIsVerified: false,
+			draggingHintObserver: null,
 		}
 	},
 	computed: {
@@ -279,7 +283,10 @@ export default {
 			.then(getExistingBallot)  		// get existing ballot of user (if he already casted a vote)
 			.then(setProposalsInBallot)		// pre-fill drop target from ballot, or start with an empty drop target
 			.then(() => {
-				this.loading = false
+				// Poll loading is complete, now set up the dragging hint observer
+				this.$nextTick(() => {
+					this.setupDraggingHintObserver()
+				})
 			})
 			.catch(err => {
 				console.error("Cannot get data to cast vote!", err)
@@ -290,6 +297,12 @@ export default {
 
 	mounted() {
 		this.$root.scrollToTop()
+	},
+
+	beforeUnmount() {
+		if (this.draggingHintObserver) {
+			this.draggingHintObserver.disconnect()
+		}
 	},
 	methods: {
 		/** Collapse the descriptions of all proposals in the ballot (not used) */
@@ -346,9 +359,87 @@ export default {
 			})
 		},
 
+		setupDraggingHintObserver() {
+			// Get the fixed footer height from CSS variable
+			const footerHeight = getComputedStyle(document.documentElement).getPropertyValue('--liquido-footer-height').trim()
+			
+			// Create observer to watch for when the first available proposal becomes visible
+			// Use rootMargin to exclude the area covered by the fixed footer plus 1 rem extra space
+			this.draggingHintObserver = new IntersectionObserver((entries) => {
+				entries.forEach(entry => {
+					if (entry.isIntersecting) {
+						showDraggingHint()
+						this.draggingHintObserver.unobserve(entry.target)  // only run once
+					}
+				})
+			}, { 
+				threshold: 1.0,
+				rootMargin: `0px 0px -${footerHeight} 0px`
+			})
+
+			const element = document.querySelector("#availableDraggable > div")
+			if (element) {
+				this.draggingHintObserver.observe(element)
+			}
+		},
 
 	},
 }
+
+		let delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+		/**
+		 * Some math magic :-) taken from https://spicyyoghurt.com/tools/easing-functions
+		 * @param {Number} t current "time", e.g. 0 to 1
+		 * @param {Number} b start value
+		 * @param {Number} c value delta (b + c = end value)
+		 * @param {Number} d final value of time at the end, e.g. 1
+		 */
+		function easeOutCubic(t, b, c, d) {
+			return c * ((t = t / d - 1) * t * t + 1) + b;
+		}
+
+		/**
+		 * If this is the first time that the user votes at all,
+		 * then show a little UX animation as a hint 
+		 * that proposals can be dragged.
+		 * 
+		 * Move the top proposal in a cubic circular motion to the bottom.
+		 */
+		let showDraggingHint = async function () {
+			let element = document.querySelector("#availableDraggable > div")
+			if (element == null) {
+				log.warn("No proposals in poll!")  // This should never happen.
+				return
+			}
+			element.classList.add("sortable-chosen")
+			const delayMs = 5
+			const dragHeight = element.clientHeight * 2
+			const dragWidth = dragHeight / 10
+			const step = 1 / dragHeight
+			const startX = element.style.left
+			const startY = element.style.top
+			for (let time = 0; time < 1; time += step) {
+				let i = easeOutCubic(time, 0, 1, 1)
+				let dx = Math.sin(i * Math.PI) * dragWidth
+				let dy = -i * dragHeight
+				element.style.top = dy + "px"
+				element.style.left = dx + "px"
+				await delay(delayMs)
+			}
+			for (let time = 1; time >= 0; time -= step) {
+				let i = easeOutCubic(time, 0, 1, 1)
+				let dx = Math.sin(i * Math.PI) * dragWidth
+				let dy = -i * dragHeight
+				element.style.top = dy + "px"
+				element.style.left = dx + "px"
+				await delay(delayMs)
+			}
+			element.style.top = startY
+			element.style.left = startX
+			element.classList.remove("sortable-chosen")
+		}
+
 </script>
 
 <style>
@@ -369,14 +460,13 @@ export default {
 	text-align: center;
  }
 
+ /* Hero below liquido-header same background */
 .poll-card-wrapper {
-	height: 8rem;
+	height: 10rem;  /* must not be smaller. For Polls with two lines of text in the title */
 	background-color: var(--header-bg);
 	margin-left: calc(-1*var(--unit));
 	margin-right: calc(-1*var(--unit));
 	padding: 0 var(--unit) var(--unit) var(--unit);
-
-	
 }
 
 .cast-vote-wrapper {
@@ -419,6 +509,8 @@ export default {
 
 	.proposal-index-number {
 		color: var(--text-color);
+		font-family: var(--sans-serif-font);
+		font-size: 1.5rem;
 		height: var(--polly-proposal-height);
 		display: flex;
 		align-items: center;

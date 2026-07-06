@@ -6,43 +6,43 @@
 
 		<div class="card">
 			<div class="card-body">
-				
+				<span class="badge rounded-pill poll-status-pill elaboration-pill">{{ $t('New') }}</span>
+
 				<liquido-input
 					id="pollTitleInput"
 					v-model="pollTitle"
-					class="mb-3"
+					class="mt-2"
 					:label="$t('pollTitle')"
 					:valid-func="isPollTitleValid"
 					:invalid-feedback="pollTitleInvalidFeedback"
 					@blur="pollTitleValidated = true"
 				>
 				</liquido-input>
-
-				<div class="d-flex justify-content-between align-items-center mt-4 mb-2">
-					<a class="cancel-link " @click="clickCancelOrBack">{{ $t("Cancel") }}</a>
-					<button
-						id="createPollButton"
-						:disabled="createPollButtonDisabled"
-						variant="primary"
-						class="btn btn-primary"
-						@click="clickCreateNewPoll()"
-					>
-						{{ $t("createPoll") }}
-						<i class="fas fa-angle-double-right" />
-					</button>
-				</div>
+				
 			</div>
 		</div>
 
 		<div class="alert alert-admin my-5">
 			<div v-html="$t('createPollInfo')" />
 		</div>
+
+		<liquido-footer>
+			<template #primary>
+				<button type="button" class="btn btn-lg w-100 btn-primary" 
+				  :disabled="createPollButtonDisabled"
+				  @click="clickCreateNewPoll">
+					{{ $t("createPoll") }}
+					<i class="fas fa-angle-double-right" />
+				</button>
+			</template>
+		</liquido-footer>
 	</div>
 </template>
 
 <script>
 import config from "config"
 import liquidoInput from "@/components/liquido-input.vue"
+import liquidoFooter from "@/components/liquido-footer.vue"
 import api from "@/services/liquido-graphql-client.js"
 import log from "loglevel"
 
@@ -54,19 +54,19 @@ export default {
 				newPoll: "Neue Abstimmung anlegen",
 				//TODO: Improve Translation: Nicht "Wahlphase", sondern einfach nur "Abstimmung starten"  ?
 				createPollInfo:
-					"<p>Nur du als Admin kannst neue Abstimmungen erstellen. Abstimmung laufen durch drei Phasen:</p>"+
-					"<p>(1) Eine Abstimmung wird erst einmal diskutiert (<i class='fas fa-comments'></i>). Jeder aus deinem Team "+
-					"kann in dieser Phase seinen eigenen Vorschlag (<i class='fas fa-vote-yea'></i>) hinzufügen.</p>" +
-					"<p>(2) Wenn du die Wahlphase der Abstimmung startest, kann jeder im Team seine Stimme anonym abgeben. (<i class='fas fa-person-booth'></i>)</p>" +
-					"<p>(3) Erst nachdem du die Wahlphase beendet hast, ist das Wahlergebnis für alle sichtbar.",
+					"<p><span class='liquido'></span> Abstimmung laufen durch drei Phasen:</p>"+
+					"<p>(1) <i class='fas fa-comments'></i> Eine Abstimmung wird erst einmal diskutiert. Jeder aus deinem Team "+
+					"kann in dieser Phase seinen eigenen Vorschlag hinzufügen.</p>" +
+					"<p>(2) <i class='fas fa-person-booth'></i> Sobald die Abstimmung startet kann jeder im Team seine Stimme anonym abgeben.</p>" +
+					"<p>(3) Nachdem die Abstimmung beendet wurde, ist das Wahlergebnis für alle sichtbar.",
 				pollTitle: "Titel der Abstimmung",
 				pollTitleInvalid: "Titel ist zu kurz. Bitte mind. {minLen} Zeichen.",
-				createPoll: "Abstimmung anlegen",
+				createPoll: "Abstimmung anlegen"
 			},
 		},
 	},
 	name: "CreatePollPage",
-	components: { liquidoInput },
+	components: { liquidoInput, liquidoFooter },
 	data() {
 		return {
 			pollTitle: "",
@@ -116,5 +116,9 @@ export default {
 </script>
 
 <style>
-
+.poll-footer {
+	margin-top: var(--unit);
+	font-size: 0.7rem;
+	color: var(--secondary);
+}
 </style>

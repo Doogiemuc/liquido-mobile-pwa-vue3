@@ -1,8 +1,10 @@
-<template>
+ <template>
 	<header id="liquidoHeader" :class="[headerClass, { 'transition-header': isSticky }]">
 		<div class="header-top-row">
 			<div class="header-left" @click="clickLeft">
-				<i v-if="headerBackTarget" class="fas fa-angle-left" />
+				<button v-if="headerBackTarget" class="header-action-btn header-action-btn--left" type="button" @click.stop="clickLeft" aria-label="Back">
+					<i class="fas fa-angle-left" />
+				</button>
 			</div>
 			<div class="header-center" @click="clickHeaderCenter">
 				<div class="liquido-claim">
@@ -13,13 +15,8 @@
 					<h1>{{ headerTitle }}</h1>
 				</div>
 			</div>
-			<div class="header-right">
-				<slot
-					name="header-right"
-					:click-right="clickRight"
-					:toggle-menu="toggleMenu"
-					:show-menu="showMenu"
-				/>
+			<div class="header-right" :click-right="clickRight">
+				<slot name="header-right" />
 			</div>
 		</div>
 	</header>
@@ -28,8 +25,6 @@
 <script>
 import EventBus from "@/services/event-bus.js"
 import config from "config"
-
-
 
 /** 
  * When the page is scrolled up this number of pixels, then the LIQUIDO claim
@@ -48,7 +43,6 @@ export default {
 	},
 	data() {
 		return {
-			showMenu: false,
 			isSticky: false,
 		}
 	},
@@ -131,12 +125,8 @@ export default {
 		},
 
 		clickRight() {
-			this.toggleMenu()
+			EventBus.emit(EventBus.Event.CLICK_HEADER_RIGHT)
 		},
-
-		toggleMenu() {
-			this.showMenu = !this.showMenu
-		}
 
 	}
 }
@@ -199,19 +189,32 @@ export default {
 			align-items: center;
 			text-align: center;
 			justify-content: center;
+			min-width: var(--liquido-header-height);
+			width: var(--liquido-header-height);
+			min-height: var(--liquido-header-height);
+			padding: 0 0.25rem;
 			font-size: 25px;
-			width: var(--liquido-header-height); /* square click area */
-			.fa-angle-left {
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				width: 2rem;
-				height: 2rem;
-				background: rgba(0, 0, 0, 0.07);
-				border-radius: 50%;
-				font-size: 1.1rem;
-				cursor: pointer;
-			}
+		}
+
+		.header-left > *, .header-right > * {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: calc(var(--liquido-header-height) * 0.8);
+			height: calc(var(--liquido-header-height) * 0.8);
+			border: 0;
+			border-radius: 50%;
+			background: rgba(0, 0, 0, 0.07);
+			color: var(--header-color);
+			/*font-size: 1.1rem;*/
+			cursor: pointer;
+			padding: 0;
+		}
+
+		.header-left > *:hover, .header-right > *:hover,
+		.header-left > *:focus-visible, .header-right > *:focus-visible {
+			background: rgba(0, 0, 0, 0.12);
+			outline: none;
 		}
 		.header-back-link {
 			display: flex;

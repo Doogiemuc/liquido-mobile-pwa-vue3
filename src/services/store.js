@@ -10,10 +10,19 @@ export const store = reactive({
   
 	headerTitle: undefined,
 	headerBackTarget: undefined,
+	headerRight: undefined,
 
   setHeaderTitle(newTitle) {
     this.headerTitle = newTitle
   },
+
+	setHeaderRight(content) {
+		this.headerRight = content
+	},
+
+	clearHeaderRight() {
+		this.headerRight = undefined
+	},
 
 	/**
 	 * Sets the target page for the back link at the left side of the header

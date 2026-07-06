@@ -236,6 +236,7 @@ router.beforeEach(async (routeTo, routeFrom) => {
 		//console.log("===== Router: Clear header")
 		store.setHeaderTitle(undefined)
 		store.setHeaderBackTarget(undefined)
+		store.clearHeaderRight()
 	}
 	
 	return tryToAuthenticate().then(() => {

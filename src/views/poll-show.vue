@@ -91,25 +91,24 @@ export default {
 			de: {
 				cannotFindPoll: "<h4>Fehler</h4><hr/><p>Diese Abstimmung konnte nicht gefunden werden.</p>",
 				pollInElaborationInfo: 
-					"<p>Diese Abstimmung ist neu.</p>" +
-					"<p>Sobald euer Admin die Wahl startet, kannst du hier dann anonym deine Stimme abgeben.</p>",
+					"<p>Diese Abstimmung ist gerade neu angelegt worden. Es können auch noch weitere Vorschläge hinzugefügt werden.</p>" +
+					"<p>Sobald die Wahl startet, kannst du hier anonym und sicher deine Stimme abgeben.</p>",
 				canAddProposal: 
 					"Du kannst einen eigenen Vorschlag zu dieser Abstimmung hinzufügen.",
 				alreadyAddedProposal: 
 					"Du hast deinen Vorschlag bereits zu dieser Abstimmung hinzugefügt.",
 				addProposal: "Vorschlag hinzufügen",
 				startVotingPhaseInfo: 
-					"Hallo Admin! Möchstest du die Wahlphase für diese Abstimmung starten? Dann sind die Vorschläge fixiert und dein Team kann abstimmen.",
-				startVotingPhase: "Wahlphase starten",
+					"Hallo Admin! Möchstest du die diese Abstimmung starten? Dann sind die Vorschläge fixiert und dein Team kann abstimmen.",
+				startVotingPhase: "Abstimmung starten",
 				finishVotingPhaseInfo: "Hallo Admin! Bisher wurden in dieser Abstimmung {numBallots} Stimmen abgegeben.",
-				finishVotingPhase: "Wahlphase schließen",
-				votingPhaseStartedSuccessfully: "Die Wahlphase dieser Abstimmung ist jetzt gestartet.",
-				votingPhaseInfo: "Die Wahlphase dieser Abstimmung läuft gerade. Du kannst jetzt deine Stimme abgeben.",
+				finishVotingPhase: "Abstimmung beenden",
+				votingPhaseStartedSuccessfully: "Diese Abstimmung läuft gerade.",
+				votingPhaseInfo: "Diese Abstimmung läuft gerade. Du kannst jetzt deine Stimme abgeben.",
 				goToCastVote: "Zur Abstimmung",
 				editOwnVote: "Stimmzettel ändern",
 				alreadyVotedInfo:
-					"<p>Du hast in dieser Abstimmung bereits eine Stimme abgegeben.</p><p>So lange die Wahlphase dieser Abstimmung noch läuft, "+
-					"kannst du in <span class='liquido'></span> die Prio Reihenfolge auf deinem Stimmzettel auch noch ändern wenn du möchstest.</p>",
+					"<p>Du hast in dieser Abstimmung bereits eine Stimme abgegeben.</p>",
 				finishedPollInfo: "Diese Abstimmung ist abgeschlossen. Gewonnen hat der Vorschlag '{winnerTitle}'. " +
 					"Es wurden {numBallots} Stimmen abgegeben.",
 				backToPolls: "zurück",
