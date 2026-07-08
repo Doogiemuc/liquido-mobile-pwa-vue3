@@ -413,6 +413,11 @@ export default {
 	padding-top: 12px;
 }
 
+.liquido-input .form-control::placeholder {
+	color: var(--secondary, #959cab);
+	opacity: 0.5;
+}
+
 label {
 	position: absolute;
 	color: grey;
