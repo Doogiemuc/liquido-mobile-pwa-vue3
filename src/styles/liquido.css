@@ -70,7 +70,7 @@
   --state-finished-bg: #e6f1ec;
 
 	/* Icon for a proposal */
-  --proposal-icon-bg: var(--secondary);
+  --proposal-icon-bg: #c8dcf5;		/* background for proposal icon in poll-card.vue */
 
 	/****************** Info, Warning and Error messages *************/
 

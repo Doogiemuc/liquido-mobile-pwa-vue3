@@ -35,9 +35,9 @@
 									<i class="fas fa-fw" :class="'fa-' + law.icon" />
 								</div>
 								<div class="d-flex flex-column text-truncate">
-									<h4 class="law-title">
+									<h3 class="law-title">
 										{{ law.title }}
-									</h4>
+									</h3>
 									<div class="law-subtitle">
 										<div :class="{ supported: law.likedByCurrentUser }" class="d-inline">
 											<i :class="{
@@ -84,9 +84,9 @@
 								<i class="fas fa-fw" :class="'fa-' + law.icon" />
 							</div>
 							<div class="d-flex flex-column text-truncate">
-								<h4 class="law-title">
+								<h3 class="law-title">
 									{{ law.title }}
-								</h4>
+								</h3>
 								<div class="law-subtitle">
 									<div :class="{ supported: law.likedByCurrentUser }" class="d-inline">
 										<i :class="{
@@ -580,38 +580,34 @@ export default {
 		height: var(--polly-proposal-height);
 		overflow: hidden;
 		margin-bottom: var(--polly-proposal-margin-bottom);
+		border-radius: var(--liquido-border-radius);
 		cursor: grab;
 		
 		.law-title {
 			color: var(--primary);
-			margin-bottom: 0.4rem;
+			font-weight: 600;
+			margin: 0 0 2px 0;
 			padding: 0;
-			font-size: 0.8rem !important;
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
 		}
 		.law-subtitle {
-			font-size: 10px;
-			color: #bbb;
-			margin-bottom: 5px;
+			font-size: 0.8rem;
+			color: var(--secondary);
 		}
 		.law-icon {
-			--proposal_icon_size: 32px;
-			color: white;
-			background-color: var(--proposal-icon-bg);
+			flex: 0 0 auto;
+			width: 2.5rem;
+			height: 2.5rem;
 			margin: 0 0.75rem;
 			border-radius: 50%;
-			border: none;
-			text-align: center;
-			line-height: var(--proposal_icon_size);
-			min-width: var(--proposal_icon_size);
-			max-width: var(--proposal_icon_size);
-			width: var(--proposal_icon_size);
-			min-height: var(--proposal_icon_size);
-			max-height: var(--proposal_icon_size);
-			height: var(--proposal_icon_size);
-
+			background-color: var(--proposal-icon-bg);
+			color: white;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 1.1rem;
 		}
 
 		.law-description {

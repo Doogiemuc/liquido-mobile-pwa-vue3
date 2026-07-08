@@ -35,6 +35,12 @@
 <script>
 import PollCard from "@/components/poll-card.vue"
 
+
+/**
+ * One section on the Polls page, showing a list of polls with a title and count.
+ * We have one section for each poll status (new, voting, finished).
+ * A section can be empty, in which case it will collapse to zero height.
+ */
 export default {
   name: "PollSection",
 
@@ -104,7 +110,7 @@ export default {
 
 /* card wrapper keeps layout stable for transitions */
 .poll-card-wrapper {
-  height: 9rem;                 /* <==== THIS IS CRUCIAL !!!! YOU MUST DEFINE A FIXED HEIGHT FOR THE poll-card! Otherwise all list transition animations don't work. ======== */
+  /*height: 10rem;                 /* <==== THIS IS CRUCIAL !!!! YOU MUST DEFINE A FIXED HEIGHT FOR THE poll-card! Otherwise all list transition animations don't work. ======== */
   min-width: 80%;
   margin-bottom: 1rem;
   overflow: visible;

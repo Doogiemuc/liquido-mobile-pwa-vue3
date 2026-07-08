@@ -337,7 +337,7 @@ context('LIQUIDO Happy Case', () => {
 
 		// THEN sucessModal is shown and poll is in status voting
 		cy.get('#modalPrimaryButton').click()
-		cy.get(".poll-panel[data-poll-status='VOTING']")
+		cy.get(".poll-card[data-poll-status='VOTING']")
 			.should("have.attr", "data-poll-status", "VOTING")  
 	})
 
@@ -387,10 +387,10 @@ context('LIQUIDO Happy Case', () => {
 
 		// THEN poll is FINISHED
 		cy.get("#finishedPollInfo").should("be.visible")
-		cy.get(".poll-panel[data-poll-status='FINISHED']")
+		cy.get(".poll-card[data-poll-status='FINISHED']")
 			.should("have.attr", "data-poll-status", "FINISHED")  
 		//  AND there is exactly one winner (because we casted exactly one vote)
-		cy.get(".poll-panel .proposal-list-group-item.winner").should("have.length", 1)
+		cy.get(".poll-card .proposal-list-group-item.winner").should("have.length", 1)
 	})
 	
 	/* TODO

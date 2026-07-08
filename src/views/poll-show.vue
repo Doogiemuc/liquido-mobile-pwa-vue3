@@ -8,7 +8,7 @@
 			<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;{{ $t('Loading') }}
 		</div>
 	
-		<poll-panel v-if="poll.id" :poll="poll" :read-only="true" class="mb-4" />
+		<poll-card v-if="poll.id" :poll="poll" :show-arrow-right="false" :show-proposals="true" class="mb-4" />
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
 			<div v-html="$t('cannotFindPoll', {pollId: pollId})" />
@@ -77,7 +77,7 @@
 </template>
 
 <script>
-import pollPanel from "@/components/poll-panel.vue"
+import PollCard from "@/components/poll-card.vue"
 import liquidoFooter from "@/components/liquido-footer.vue"
 // import polly from '@/components/polly.vue'
 import EventBus from "@/services/event-bus.js"
@@ -115,7 +115,7 @@ export default {
 			},
 		},
 	},
-	components: { pollPanel, liquidoFooter },
+	components: { PollCard, liquidoFooter },
 	props: {
 		// Allow number or string that contains an integer. Url parameter is passed as String, 
 		// but $router.push({name: "pollShow", params: {pollId: 4711 }}) can be passed as number. We'll accept both

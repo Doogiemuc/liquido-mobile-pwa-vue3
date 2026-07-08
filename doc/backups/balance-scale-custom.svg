@@ -1,0 +1,17 @@
+<!-- Balance-scale icon - maybe for my liquido footer (Feather/Lucide stroke style) -->
+<svg class="footer-svg-icon" viewBox="55 95 130 130" fill="none" stroke="currentColor"
+	stroke-width="8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+	<!-- central pivot and balance beam -->
+	<circle cx="120" cy="120" r="10" />
+	<path d="M80 120 H110" />
+	<path d="M130 120 H160" />
+	<!-- central stand with rounded foot -->
+	<path d="M120 130 V190" />
+	<path d="M100 210 A20 20 0 0 1 140 210 Z" />
+	<!-- left hanger and pan -->
+	<path d="M80 120 L95 160 L65 160 Z" />
+	<path fill="currentColor" d="M60 160 A20 20 0 0 0 100 160 Z" />
+	<!-- right hanger and pan -->
+	<path d="M160 120 L175 160 L145 160 Z" />
+	<path fill="currentColor" d="M140 160 A20 20 0 0 0 180 160 Z" />
+</svg>

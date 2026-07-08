@@ -69,7 +69,7 @@
 		<liquido-footer>
 			<template #left>
 				<RouterLink to="/userhome" class="footer-icon-container" aria-label="UserHome">
-					<div class="footer-icon"><i class="fas fa-user-circle"></i></div>
+					<div class="footer-icon"><i class="far fa-user-circle"></i></div>
 					<div class="footer-icon-title">{{ t('User') }}</div>
 				</RouterLink>
 			</template>

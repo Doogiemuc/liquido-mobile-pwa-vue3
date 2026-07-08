@@ -1,6 +1,6 @@
 <template>
-	<div class="poll-card card border-opacity-25" @click="$emit('click', poll.id)">
-		<div class="card-body d-flex flex-nowrap">
+	<div class="poll-card card border-opacity-25" :data-poll-status="poll.status">
+		<div class="card-body d-flex flex-nowrap" :class="{ clickable: !showProposals }" @click="$emit('click', poll.id)">
 			<div class="flex-grow-1 d-flex flex-column justify-content-between">
 				<div class="poll-eyebrow">
 					<span v-if="poll.status === 'ELABORATION'" class="badge rounded-pill poll-status-pill elaboration-pill">{{ $t('New') }}</span>
@@ -33,10 +33,41 @@
 				<i class="fas fa-angle-right"></i>
 			</div>
 		</div>
+
+		<!-- List of proposals, only shown in detail view (e.g. on the poll-show page) -->
+		<ul v-if="showProposals && poll.proposals && poll.proposals.length > 0" class="list-group list-group-flush proposal-list">
+			<li v-for="prop in sortedProposals" :key="prop.id"
+				class="list-group-item proposal-list-group-item"
+				:class="proposalListGroupItemClasses(prop.id)">
+				<div class="proposal-icon">
+					<i class="fas fa-fw" :class="'fa-' + prop.icon"></i>
+				</div>
+				<div class="proposal-body flex-grow-1">
+					<h3 class="proposal-title">{{ prop.title }}</h3>
+					<div class="proposal-description" v-html="prop.description"></div>
+					<div class="proposal-subtitle">
+						<span v-if="prop.likedByCurrentUser" class="like-button liked">
+							<i class="fas fa-heart"></i>&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
+						</span>
+						<span v-else-if="canLike(prop)" class="like-button can-like" @click.stop="clickLike(poll.id, prop)">
+							<i class="far fa-heart"></i>&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
+						</span>
+						<span v-else class="like-button">
+							<i class="far fa-heart"></i>&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
+						</span>
+						<span class="createdby-user">
+							{{ $t('createdBy') }}&nbsp;{{ prop.createdBy.name }}
+						</span>
+					</div>
+					
+				</div>
+			</li>
+		</ul>
 	</div>
 </template>
 
 <script>
+import api from "@/services/liquido-graphql-client.js"
 import dayjs from "dayjs"
 import 'dayjs/locale/de'
 //import 'dayjs/locale/en'
@@ -57,7 +88,8 @@ export default {
 				votes: "Noch keine Stimmen | 1 Stimme abgegeben | {n} Stimmen abgegeben",
 				daysLeft: "Beendet | noch ein Tag | noch {n} Tage",
 				endsIn: "endet",
-				awaitingStart: "wird bald gestartet"
+				awaitingStart: "wird bald gestartet",
+				createdBy: "von"
 			},
 			en: {
 				// Poll related translations (singular|dual|plural style)
@@ -65,7 +97,8 @@ export default {
 				votes: "0 votes | 1 vote | {n} votes",
 				daysLeft: "Voting finished | 1 day left | {n} days left",
 				endsIn: "ends",
-				awaitingStart: "awaiting start"
+				awaitingStart: "awaiting start",
+				createdBy: "by"
 			}
 		}
 	},
@@ -78,9 +111,13 @@ export default {
 			type: Number,
 			required: false
 		},
-		showArrowRight: {
-			required: false,
+		showArrowRight: {		// Show the chevron arrow on the right side of the card (e.g. in the polls list)
+			type: Boolean,
 			default: true
+		},
+		showProposals: {		// When true, the poll's list of proposals is shown below the summary (e.g. on the poll-show page)
+			type: Boolean,
+			default: false
 		}
 
 	},
@@ -107,21 +144,70 @@ export default {
 			let widthPercent = elapsedMs / durationMs * 100
 			widthPercent = Math.min(100, Math.max(0, widthPercent))  // clamp between 0..100
 			return { "width": widthPercent+"%" };
+		},
+		/**
+		 * Proposals sorted by their creation date.
+		 * This keeps the order stable, e.g. it does not change when a user likes a proposal
+		 * and the poll is then reloaded from the backend.
+		 */
+		sortedProposals() {
+			if (!this.poll || !this.poll.proposals) return []
+			return this.poll.proposals.toSorted((p1, p2) => p1.createdAt.localeCompare(p2.createdAt))
+		}
+	},
+	methods: {
+		/** CSS classes for a proposal list item, highlighting the winner/losers of a FINISHED poll. */
+		proposalListGroupItemClasses(propId) {
+			let isWinner = this.poll.winner && propId === this.poll.winner.id
+			return {
+				"winner": this.poll.status === "FINISHED" && isWinner,
+				"lost": this.poll.status === "FINISHED" && !isWinner,
+			}
+		},
+		isCreatedByCurrentUser(prop) {
+			let currentUser = api.getCachedUser() || {}
+			return prop.createdBy.id === currentUser.id
+		},
+		/**
+		 * A proposal can be liked, when it is in ELABORATION,
+		 * it is not already liked, nor created by the currently logged in user.
+		 */
+		canLike(prop) {
+			return prop.status === "ELABORATION" && !prop.likedByCurrentUser && !this.isCreatedByCurrentUser(prop)
+		},
+		clickLike(pollId, prop) {
+			if (this.canLike(prop)) api.likeProposal(pollId, prop.id)
 		}
 	},
 }
 </script>
 
 <style scoped>
+
+
+/* Component-local sizing variables. They must live on .poll-card (the component root), NOT on
+   :root — Vue scoped styles rewrite ":root" to ":root[data-v-xxx]", which never matches <html>,
+   so the variables would be undefined and the fixed heights would silently break. */
+.poll-card {
+	--poll-card-height: 10rem;   /* This is crucial for list animations to work correctly. The card must have a fixed height, otherwise the animation will be jumpy. */
+	--proposal-height: 10rem;		 /* Each proposal has the same height. */
+}
+
+
 .poll-card {
 	/* --iconSize: 40px;   polls had an icon long ago. Just yet another thing we simplified, although it hurts at first */
-	cursor: pointer;
 	height: 100%;
 	border-radius: var(--liquido-border-radius);
 	border-color: rgba(0, 0, 0, 0.1);
 	
 	.card-body {
 		padding: var(--unit);
+		height: var(--poll-card-height);   /* This is crucial for list animations to work correctly. The card must have a fixed height, otherwise the animation will be jumpy. */
+		
+		/* Only the upper summary part of the card navigates. Show the pointer only there (i.e. in the polls list). */
+		&.clickable {
+			cursor: pointer;
+		}
 	}
 
 }
@@ -147,7 +233,7 @@ export default {
 }
 
 .poll-card .poll-footer {
-	font-size: 0.7rem;
+	font-size: 0.8rem;
 	color: var(--secondary);
 }
 
@@ -184,5 +270,104 @@ export default {
 		filter: opacity(1.0);
 		transform: scale(0.8);
 	}
+}
+
+/* List of proposals shown at the bottom of the card (only when showProposals is true) */
+.poll-card .proposal-list {
+	border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.poll-card .proposal-list-group-item {
+	display: flex;
+	align-items: stretch;   /* let .proposal-body stretch to the full, fixed row height */
+	gap: 0.75rem;
+	padding: var(--unit);
+	height: var(--proposal-height);
+	max-height: var(--proposal-height);
+	overflow: hidden;
+}
+
+/* The proposal icon, centered in a fixed-width column on the left */
+.poll-card .proposal-icon {
+	flex: 0 0 auto;
+	align-self: center;   /* vertically center the icon within the fixed-height row */
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 50%;
+	background-color: var(--proposal-icon-bg);
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.4rem;
+}
+
+/* The right side: title, description and subtitle share the same left indentation.
+   A flex column so the description can flex to fill the remaining height and truncate,
+   while the title and subtitle keep their natural height and the subtitle stays visible. */
+.poll-card .proposal-body {
+	display: flex;
+	flex-direction: column;
+	height: 100%;   /* fill the fixed row height */
+	min-width: 0;   /* allow the title's text-overflow: ellipsis to work inside the flex row */
+}
+
+.poll-card .proposal-title {
+	flex: 0 0 auto;   /* one line high; never shrink */
+	color: var(--primary);
+	margin: 0 0 0.5rem 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.poll-card .proposal-subtitle {
+	flex: 0 0 auto;   /* keep the likes/creator line fully visible; never shrink */
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 0.8rem;
+	color: var(--secondary);
+	margin-top: 0.5rem;
+}
+
+.poll-card .proposal-subtitle .like-button {
+	padding: 1px 6px;
+	border-radius: 5px;
+}
+
+.poll-card .proposal-subtitle .can-like {
+	cursor: pointer;
+}
+
+.poll-card .proposal-subtitle .can-like:hover {
+	color: var(--primary);
+	border-color: var(--primary);
+}
+
+.poll-card .proposal-subtitle .liked {
+	/*border: 1px solid #bbb;
+	background-color: #bbb;*/
+	color: var(--primary);
+	cursor: default;
+}
+
+.poll-card .proposal-description {
+	flex: 1 1 auto;    /* take the remaining height between the title and the subtitle */
+	min-height: 0;     /* allow it to shrink below its content height so it can be clipped */
+	font-size: 0.9rem;
+	color: var(--text-color);
+	overflow: hidden;  /* truncate longer descriptions so every proposal stays the same height */
+}
+
+/* FINISHED poll: highlight the winner, dim the losers */
+.poll-card .proposal-list-group-item.winner {
+	background-color: var(--bs-success-bg-subtle);
+}
+
+.poll-card .proposal-list-group-item.lost,
+.poll-card .proposal-list-group-item.lost .proposal-title,
+.poll-card .proposal-list-group-item.lost .proposal-description {
+	color: lightgray;
 }
 </style>

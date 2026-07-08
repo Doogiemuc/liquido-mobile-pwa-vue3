@@ -21,7 +21,7 @@
 				</slot>
 			</div>
 			<RouterLink to="/polls" class="footer-icon-container" aria-label="Polls">
-				<div class="footer-icon"><i class="fas fa-chart-pie"></i></div>
+				<div v-if="true" class="footer-icon"><i class="fas fa-balance-scale"></i></div>
 				<div class="footer-icon-title">Polls</div>
 			</RouterLink>
 		</div>
@@ -32,8 +32,8 @@
 /**
  * A flexible navbar component shown at the bottom of many SEAF pages.
  * Each SEAF page can have it's own footer depending on UX and context.
- * This component provides a standard UI that can be reused
- * The footer has an info text and a primary action button.
+ * This footer has two slots for icons on the left and right, 
+ * and a primary action button in the middle.
  */
 export default {
 	name: "LiquidoFooter",
@@ -144,6 +144,13 @@ export default {
 	font-size: 2.0rem;
 	color: var(--primary);
 	height: 100%;
+}
+
+/* Custom stroke-based SVG icons in the footer scale with the icon font-size */
+.footer-svg-icon {
+	width: 1em;
+	height: 1em;
+	display: block;
 }
 
 .footer-icon-title {
