@@ -20,10 +20,37 @@
 					</button>
 				</slot>
 			</div>
-			<RouterLink to="/polls" class="footer-icon-container" aria-label="Polls">
-				<div v-if="true" class="footer-icon"><i class="fas fa-balance-scale"></i></div>
+			<div class="footer-icon-container" @click="$root.gotoPolls">
+				<!-- div class="footer-icon"><i class="fas fa-balance-scale"></i></div> -->
+				<!-- LIQUIDO Balance-scale icon for polls -->
+				<svg xmlns="http://www.w3.org/2000/svg" 
+					class="footer-svg-icon" 
+				  viewBox="0 5 130 90"
+					fill="none" 
+					stroke="currentColor" 
+					stroke-width="10" 
+					stroke-linecap="round" 
+					stroke-linejoin="round" 
+					aria-hidden="true">
+					<!-- central pivot and balance beam -->
+					<circle cx="65" cy="20" r="10"/>
+					<path d="M25 20 H55"/>
+					<path d="M75 20 H105"/>
+					<!-- path d="M65 0 V10"/ -->
+					<!-- central vertical beam -->
+					<path d="M65 30 V90"/>
+					<!-- stand at the bottom -->
+					<path d="M35 90 H90"/>
+					<!-- path fill="currentColor" stroke="none" d="M25 105 V110 A10 10 0 0 1 30 95 H95 A10 10 0 0 1 105 100 V105 Z"/ -->
+					<!-- left hanger and pan -->
+					<path d="M25 20 L45 65 L5 65 Z"/>
+					<path fill="currentColor" d="M5 65 A10 5 0 0 0 45 65 Z"/>
+					<!-- right hanger and pan -->
+					<path d="M105 20 L125 65 L85 65 Z"/>
+					<path fill="currentColor" d="M85 65 A10 5 0 0 0 125 65 Z"/>
+				</svg>
 				<div class="footer-icon-title">Polls</div>
-			</RouterLink>
+			</div>
 		</div>
 	</footer>
 </template>
@@ -46,12 +73,14 @@ export default {
 	data() {
 		return {
 			footerResizeObserver: null,
-			isHomeScreenPWA: this.$root.isHomeScreenPWA
+			isHomeScreenPWA: this.$root.isHomeScreenPWA,
+			iconSwitch: true
 		}
 	},
 	mounted() {
 	},
 	methods: {
+		
 	},
 }
 </script>
@@ -148,8 +177,8 @@ export default {
 
 /* Custom stroke-based SVG icons in the footer scale with the icon font-size */
 .footer-svg-icon {
-	width: 1em;
-	height: 1em;
+	width: 2em;
+	height: 1.40em;
 	display: block;
 }
 

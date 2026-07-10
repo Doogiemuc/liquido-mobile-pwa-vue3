@@ -1,17 +1,26 @@
-<!-- Balance-scale icon - maybe for my liquido footer (Feather/Lucide stroke style) -->
-<svg class="footer-svg-icon" viewBox="55 95 130 130" fill="none" stroke="currentColor"
-	stroke-width="8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-	<!-- central pivot and balance beam -->
-	<circle cx="120" cy="120" r="10" />
-	<path d="M80 120 H110" />
-	<path d="M130 120 H160" />
-	<!-- central stand with rounded foot -->
-	<path d="M120 130 V190" />
-	<path d="M100 210 A20 20 0 0 1 140 210 Z" />
-	<!-- left hanger and pan -->
-	<path d="M80 120 L95 160 L65 160 Z" />
-	<path fill="currentColor" d="M60 160 A20 20 0 0 0 100 160 Z" />
-	<!-- right hanger and pan -->
-	<path d="M160 120 L175 160 L145 160 Z" />
-	<path fill="currentColor" d="M140 160 A20 20 0 0 0 180 160 Z" />
-</svg>
+	<svg v-else xmlns="http://www.w3.org/2000/svg" 
+					class="footer-svg-icon" 
+				  viewBox="0 5 130 90"
+					fill="none" 
+					stroke="currentColor" 
+					stroke-width="10" 
+					stroke-linecap="round" 
+					stroke-linejoin="round" 
+					aria-hidden="true">
+					<!-- central pivot and balance beam -->
+					<circle cx="65" cy="20" r="10"/>
+					<path d="M25 20 H55"/>
+					<path d="M75 20 H105"/>
+					<!-- path d="M65 0 V10"/ -->
+					<!-- central vertical beam -->
+					<path d="M65 30 V90"/>
+					<!-- stand at the bottom -->
+					<path d="M35 90 H90"/>
+					<!-- path fill="currentColor" stroke="none" d="M25 105 V110 A10 10 0 0 1 30 95 H95 A10 10 0 0 1 105 100 V105 Z"/ -->
+					<!-- left hanger and pan -->
+					<path d="M25 20 L45 65 L5 65 Z"/>
+					<path fill="currentColor" d="M5 65 A10 5 0 0 0 45 65 Z"/>
+					<!-- right hanger and pan -->
+					<path d="M105 20 L125 65 L85 65 Z"/>
+					<path fill="currentColor" d="M85 65 A10 5 0 0 0 125 65 Z"/>
+				</svg>

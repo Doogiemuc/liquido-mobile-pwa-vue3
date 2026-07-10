@@ -53,7 +53,7 @@
 			</div>
 		</section>
 
-		<section>
+		<section v-if="userIsAdmin">
 			<h2>Admin Einstellungen</h2>
 			<p>Nur du kannst <router-link to="/new-poll">neue Abstimmungen erstellen</router-link>.</p>
 		</section>

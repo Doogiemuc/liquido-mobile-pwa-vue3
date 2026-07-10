@@ -19,7 +19,10 @@
 
 		<div v-if="!showError" class="alert liquido-info">
 			<p v-if="poll.status === 'ELABORATION'" v-html="$t('pollInElaborationInfo')" />
-			<p v-if="poll.status === 'VOTING' && !poll.usersBallot" v-html="$t('votingPhaseInfo')" />
+			<p v-if="poll.status === 'VOTING' && !poll.usersBallot">
+				{{ $t('votingPhaseIsRunngin') }}
+				<router-link :to="{name: 'castVote'}">{{ $t('votingPhaseInfo') }}</router-link>
+			</p>
 			<p v-if="poll.status === 'VOTING' &&  poll.usersBallot" v-html="$t('alreadyVotedInfo')" />
 			<p v-if="poll.status === 'FINISHED'" id="finishedPollInfo">
 				{{ $t('finishedPollInfo', {
@@ -83,6 +86,7 @@ import liquidoFooter from "@/components/liquido-footer.vue"
 import EventBus from "@/services/event-bus.js"
 import api from "@/services/liquido-graphql-client.js"
 import log from 'loglevel'
+import { RouterLink } from "vue-router"
 
 export default {
 	i18n: {
@@ -103,8 +107,9 @@ export default {
 				startVotingPhase: "Abstimmung starten",
 				finishVotingPhaseInfo: "Hallo Admin! Bisher wurden in dieser Abstimmung {numBallots} Stimmen abgegeben.",
 				finishVotingPhase: "Abstimmung beenden",
-				votingPhaseStartedSuccessfully: "Diese Abstimmung läuft gerade.",
-				votingPhaseInfo: "Diese Abstimmung läuft gerade. Du kannst jetzt deine Stimme abgeben.",
+				votingPhaseStartedSuccessfully: "Die Abstimmung ist jetzt gestartet.",
+				votingPhaseIsRunngin: "Diese Abstimmung läuft gerade.",
+				votingPhaseInfo: "Du kannst jetzt deine Stimme abgeben.",
 				goToCastVote: "Zur Abstimmung",
 				editOwnVote: "Stimmzettel ändern",
 				alreadyVotedInfo:
