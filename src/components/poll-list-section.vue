@@ -104,10 +104,8 @@ export default {
 
 /* card wrapper keeps layout stable for transitions */
 .poll-card-wrapper {
-  height: 9rem;                 /* <==== THIS IS CRUCIAL !!!! YOU MUST DEFINE A FIXED HEIGHT FOR THE poll-card! Otherwise all list transition animations don't work. ======== */
-  min-width: 80%;
-  margin-bottom: 1rem;
-  overflow: visible;
+  height: 10rem;                 /* <==== THIS IS CRUCIAL !!!! YOU MUST DEFINE A FIXED HEIGHT FOR THE poll-card! Otherwise all list transition animations don't work. ======== */
+	margin-bottom: var(--unit);
 }
 
 /* --- ITEM TRANSITIONS, when filtered --- */

@@ -9,16 +9,20 @@
 					</span>
 					<span v-if="poll.status === 'FINISHED'" class="badge rounded-pill poll-status-pill finished-pill">{{ $t('Finished') }}</span>
 					<span v-if="poll.status === 'FINISHED'" class="float-end">{{ votingEndAtDateLoc }}</span>
+					<div class="num-proposals">
+						<i class="far fa-lightbulb"></i>&nbsp;{{ poll?.proposals.length }}
+					</div>
 				</div>
 				<h2 class="poll-title">{{ poll.title }}</h2>
 				<div class="poll-footer">
-					
-					<div v-if="poll.status === 'ELABORATION'">
-						{{ $tc('numProposals', poll.proposals?.length || 0)}}&nbsp;&middot;&nbsp;{{ $t('awaitingStart') }} 
+					<div v-if="poll.status === 'ELABORATION'" class="d-flex justify-content-between">
+						<span>{{ $tc('numProposals', poll.proposals?.length || 0)}}</span>
+						<span>{{ $t('awaitingStart') }}</span>
 					</div>
-					<div v-if="poll.status === 'VOTING'">
+					<div v-if="poll.status === 'VOTING'" class="d-flex justify-content-between">
 						<!-- i class="fas fa-person-booth"></i>&nbsp; -->
-						{{ $tc('votes', poll.numBallots || 0) }}&nbsp;&middot;&nbsp;{{ $t('endsIn') }}&nbsp;{{ timeLeft }}
+						<span>{{ $tc('votes', poll.numBallots || 0) }}</span>
+						<span>{{ $t('endsIn') }}&nbsp;{{ timeLeft }}</span>
 					</div>
 					<div v-if="poll.status === 'FINISHED'">
 						<i class="fas fa-trophy"></i>&nbsp;{{ poll?.winner?.title }}
@@ -27,7 +31,6 @@
 						<div class="poll-progress-bar-inner" :style="progressBarWidth"></div>
 					</div>
 				</div>
-				
 			</div>
 			<div v-if="showArrowRight" class="flex-grow-0 align-self-center ms-1">
 				<i class="fas fa-angle-right"></i>
@@ -219,6 +222,11 @@ export default {
 	font-size: var(--font-size-small);
 }
 
+.num-proposals {
+	color: var(--secondary);
+	font-size: 0.8rem;
+}
+
 .poll-card .poll-title {
 	color: var(--text-color);
 	/*font-size: 1rem !important;*/
@@ -233,7 +241,7 @@ export default {
 }
 
 .poll-card .poll-footer {
-	font-size: var(---font-size-small);
+	font-size: 0.8rem; /* needs to be smaller than our standard  var(---font-size-small);  0.9rem */
 	color: var(--secondary);
 }
 
@@ -367,7 +375,9 @@ export default {
 
 .poll-card .proposal-list-group-item.lost,
 .poll-card .proposal-list-group-item.lost .proposal-title,
-.poll-card .proposal-list-group-item.lost .proposal-description {
+.poll-card .proposal-list-group-item.lost .proposal-description,
+.poll-card .proposal-list-group-item.lost .proposal-subtitle {
+
 	color: lightgray;
 }
 </style>

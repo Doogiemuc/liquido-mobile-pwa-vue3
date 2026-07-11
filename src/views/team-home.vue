@@ -226,8 +226,8 @@ section {
 }
 
 .poll-card-wrapper {
-	min-width: 70vw;
-	height: 9rem;   /* TODO: make the poll card have a FIXED height */
+	min-width: 70vw;  /* must set a mind width for sideway scrolling */
+	height: 10rem;    /* the cards wrapper defines the height */
 }
 
 

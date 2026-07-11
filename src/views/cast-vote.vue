@@ -1,16 +1,18 @@
 <template>
 	<div>
-		<h2 id="cast-vote-page" class="liquido-hero page-title">{{ $t('castVoteTitle') }}</h2>
+		<div class="liquido-hero">
+			<h2 id="cast-vote-page" class="page-title">{{ $t('castVoteTitle') }}</h2>
 
-		<div v-if="loading" class="draggable">
-			<div class="spinner-border" role="status">
-				<span class="visually-hidden">{{ $t('Loading') }}</span>
+			<div v-if="loading" class="draggable">
+				<div class="spinner-border" role="status">
+					<span class="visually-hidden">{{ $t('Loading') }}</span>
+				</div>
+				&nbsp;{{ $t('Loading') }}
 			</div>
-			&nbsp;{{ $t('Loading') }}
-		</div>
 
-		<div v-if="!loading" class="poll-card-wrapper">
-			<poll-card :poll="poll" :show-arrow-right="false" class="poll-card"></poll-card>
+			<div v-if="!loading" class="poll-card-wrapper">
+				<poll-card :poll="poll" :show-arrow-right="false" class="poll-card"></poll-card>
+			</div>
 		</div>
 
 		<h2 class="page-title">{{ $t('yourBallot') }}</h2>
@@ -24,26 +26,26 @@
 				<draggable id="ballotDraggable" v-model="proposalsInBallot" class="draggable ballot-draggable" group="proposals" item-key="id"
 					:disabled="loading || castVoteLoading" 
 					:can-scroll-x="false">
-					<template #item="{ element: law, index }">
-						<div class="card shadow-sm law-panel d-flex flex-row align-items-center user-select-none">
+					<template #item="{ element: proposal, index }">
+						<div class="card shadow-sm proposal-panel d-flex flex-row align-items-center user-select-none">
 							<div class="rank-circle">
 								{{ index + 1 }}
 							</div>
 							<div class="d-flex flex-column text-truncate">
-								<h4 class="law-title">
-									{{ law.title }}
+								<h4 class="proposal-title">
+									{{ proposal.title }}
 								</h4>
-								<div class="law-subtitle">
-									<div :class="{ supported: law.likedByCurrentUser }" class="d-inline">
+								<div class="proposal-subtitle">
+									<div :class="{ supported: proposal.likedByCurrentUser }" class="d-inline">
 										<i :class="{
-												far: !law.likedByCurrentUser,
-												fas: law.likedByCurrentUser,
+												far: !proposal.likedByCurrentUser,
+												fas: proposal.likedByCurrentUser,
 											}"
 											class="fa-thumbs-up"
 										></i>
-										&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
+										&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span>
 									</div>
-									<i class="far fa-user ms-2"></i>&nbsp;{{ law.createdBy.name }}
+									<i class="far fa-user ms-2"></i>&nbsp;{{ proposal.createdBy.name }}
 								</div>
 							</div>
 
@@ -92,26 +94,26 @@
 				<draggable id="availableDraggable" v-model="availableProposals" class="draggable" group="proposals" item-key="id"
 					:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
 					:can-scroll-x="false">
-					<template #item="{ element: law }">
-						<div class="card shadow-sm law-panel d-flex flex-row align-items-center user-select-none">
-							<div class="law-icon">
-								<i class="fas fa-fw" :class="'fa-' + law.icon" />
+					<template #item="{ element: proposal }">
+						<div class="card shadow-sm proposal-panel d-flex flex-row align-items-center user-select-none">
+							<div class="proposal-icon">
+								<i class="fas fa-fw" :class="'fa-' + proposal.icon" />
 							</div>
 							<div class="d-flex flex-column text-truncate">
-								<h4 class="law-title">
-									{{ law.title }}
+								<h4 class="proposal-title">
+									{{ proposal.title }}
 								</h4>
-								<div class="law-subtitle">
-									<div :class="{ supported: law.likedByCurrentUser }" class="d-inline">
+								<div class="proposal-subtitle">
+									<div :class="{ supported: proposal.likedByCurrentUser }" class="d-inline">
 										<i :class="{
-												far: !law.likedByCurrentUser,
-												fas: law.likedByCurrentUser,
+												far: !proposal.likedByCurrentUser,
+												fas: proposal.likedByCurrentUser,
 											}"
 											class="fa-thumbs-up"
 										></i>
-										&nbsp;<span class="numLikes">{{ law.numSupporters }}</span>
+										&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span>
 									</div>
-									<i class="far fa-user ms-2"></i>&nbsp;{{ law.createdBy.name }}
+									<i class="far fa-user ms-2"></i>&nbsp;{{ proposal.createdBy.name }}
 								</div>
 							</div>
 
@@ -462,24 +464,18 @@ export default {
 <style>
 
 
+ /* Hero below liquido-header with same white background as header */
 .liquido-hero {
+	padding: var(--unit);
 	margin-top: 0 !important;
 	margin-right: calc(-1*var(--unit)) !important;
-	margin-bottom: 0 !important;
 	margin-left: calc(-1*var(--unit)) !important;
 	background-color: var(--header-bg);
-	padding-top: var(--unit) !important;
-	padding-bottom: var(--unit) !important;
 }
 
-
- /* Hero below liquido-header same background */
 .poll-card-wrapper {
 	height: 10rem;  /* must not be smaller. For Polls with two lines of text in the title */
-	background-color: var(--header-bg);
-	margin-left: calc(-1*var(--unit));
-	margin-right: calc(-1*var(--unit));
-	padding: 0 var(--unit) var(--unit) var(--unit);
+	margin-bottom: var(--two);
 }
 
 .cast-vote-wrapper {
@@ -492,7 +488,7 @@ export default {
 		margin: 0;
 		padding: var(--unit);
 		background-color: var(--light-bg);
-		border: 2px dashed var(--light-color);
+		border: 1px solid var(--light-border);
 		border-radius: var(--liquido-border-radius);
 	}
 
@@ -557,9 +553,9 @@ export default {
 		/*background-color: var(--tertiary);*/
 		color: rgba(0, 0, 0, 0.2);
 		.rank-circle {
-			border: 1px solid rgba(0, 0, 0, 0.3);
+			border: 1px solid rgba(0, 0, 0, 0.);
 			background-color: transparent;
-			color: rgba(0, 0, 0, 0.3);
+			color: rgba(0, 0, 0, 0.2);
 		}
 	}
 
@@ -603,13 +599,13 @@ export default {
 	
 
 	/* keep this similar to poll-panel.vue */
-	.law-panel {   
+	.proposal-panel {   
 		height: var(--polly-proposal-height);
 		overflow: hidden;
 		margin-bottom: var(--polly-proposal-margin-bottom);
 		cursor: grab;
 		
-		.law-title {
+		.proposal-title {
 			color: var(--primary);
 			margin-bottom: 0.4rem;
 			padding: 0;
@@ -618,12 +614,12 @@ export default {
 			overflow: hidden;
 			text-overflow: ellipsis;
 		}
-		.law-subtitle {
+		.proposal-subtitle {
 			font-size: 10px;
 			color: #bbb;
 			margin-bottom: 5px;
 		}
-		.law-icon {
+		.proposal-icon {
 			--proposal_icon_size: 32px;
 			color: white;
 			background-color: var(--proposal-icon-bg);
@@ -638,10 +634,9 @@ export default {
 			min-height: var(--proposal_icon_size);
 			max-height: var(--proposal_icon_size);
 			height: var(--proposal_icon_size);
-
 		}
 
-		.law-description {
+		.proposal-description {
 			font-size: 12px;
 			overflow: hidden;
 		}
