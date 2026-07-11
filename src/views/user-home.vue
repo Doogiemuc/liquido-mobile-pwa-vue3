@@ -467,7 +467,7 @@ export default {
 .selected-file-name {
 	margin-top: 1rem;
 	color: var(--secondary);
-	font-size: 0.9rem;
+	font-size: var(--font-size-small);
 	word-break: break-word;
 	text-align: center;
 }

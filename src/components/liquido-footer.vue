@@ -116,7 +116,7 @@ export default {
 	flex-grow: 1;
 	text-align: center;
 	color: var(--liquido-info-color);
-	font-size: 0.8rem;
+	font-size: var(--font-size-small);
 	line-height: 1.2;
 	color: var(--secondary);
 	padding: 0.5rem;

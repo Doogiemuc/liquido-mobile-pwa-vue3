@@ -597,7 +597,7 @@ function isEmail(s) {
 
 	.footer-status {
 		position: relative;
-		font-size: 0.8rem;
+		font-size: var(--font-size-small);
 	}
 
 	.footer-status div {

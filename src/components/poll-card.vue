@@ -216,7 +216,7 @@ export default {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
-	font-size: 0.8rem;
+	font-size: var(--font-size-small);
 }
 
 .poll-card .poll-title {
@@ -233,7 +233,7 @@ export default {
 }
 
 .poll-card .poll-footer {
-	font-size: 0.8rem;
+	font-size: var(---font-size-small);
 	color: var(--secondary);
 }
 
@@ -326,7 +326,7 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	font-size: 0.8rem;
+	font-size: var(--font-size-small);
 	color: var(--secondary);
 	margin-top: 0.5rem;
 }
@@ -355,7 +355,7 @@ export default {
 .poll-card .proposal-description {
 	flex: 1 1 auto;    /* take the remaining height between the title and the subtitle */
 	min-height: 0;     /* allow it to shrink below its content height so it can be clipped */
-	font-size: 0.9rem;
+	font-size: var(--font-size-small);
 	color: var(--text-color);
 	overflow: hidden;  /* truncate longer descriptions so every proposal stays the same height */
 }

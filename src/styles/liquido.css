@@ -43,6 +43,8 @@
 	--bs-primary: var(--primary);		   /* Align Bootstrap CSS variable to LIQUIDO primary */
 	--bs-primary-rgb: 30, 58, 95;			 /* RGB of #1e3a5f — used by Bootstrap for box-shadow alphas */
 
+	--font-size-small: 0.9rem;				 /* used for subtitles, captions, and small text */
+
 	/************** LIQUIDO header & footer ***************/
 
 	--header-color: var(--primary);		 /* Header TEXT color */
@@ -161,7 +163,7 @@ body {
 #app .page-title {
   font-family: var(--serif-font);
 	color: var(--primary);
-	text-align: center;          /* One of those design decisions I never can settle on left or center? */
+	text-align: center;          /* One of those design decisions I never can settle on. Left aligned or centered? */
 	margin-top: var(--unit);  	
 	margin-bottom: var(--unit);
 	transition: opacity 0.2s linear;
@@ -170,8 +172,7 @@ body {
 .page-subtitle {
 	color: var(--secondary);
 	font-family: var(--sans-serif-font);
-	font-size: 0.8rem;
-	margin: 0 0 1rem 10px;
+	font-size: var(--font-size-small);
 }
 
 
@@ -222,7 +223,7 @@ body {
 
 .cancel-link {
   color: var(--secondary);
-  font-size: 0.9rem;
+  font-size: var(--font-size-small);
   text-decoration: none;
   cursor: pointer;
 }
