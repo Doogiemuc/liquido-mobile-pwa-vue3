@@ -137,8 +137,9 @@ const logout = () => {
 
 .page-preview-container {
 	position: relative;
-	height: 780px;
-	width: 390px;
+	/* iPhone 17  https://developer.apple.com/design/human-interface-guidelines/layout#Specifications */
+	width: 402px;
+	height: 874px;
 	min-height: 780px;
 	min-width: 390px;
 	border: 1px solid #333;
