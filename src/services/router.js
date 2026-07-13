@@ -88,6 +88,12 @@ const routes = [
 		component: () => import("@/views/cast-vote.vue"),
 		props: true,
 	},
+	{
+		path: "/polls/:pollId/castVoteV2",
+		name: "castVoteV2",
+		component: () => import("@/views/cast-vote-v2.vue"),
+		props: true,
+	},
 	{	
 		path: "/forgotPassword",
 		name: "forgotPassword",

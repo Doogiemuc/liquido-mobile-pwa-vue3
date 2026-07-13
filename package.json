@@ -20,6 +20,7 @@
     "@kubric/litedash": "^1.0.0",
     "@simplewebauthn/browser": "^13.2.2",
     "@vitejs/plugin-vue": "^6.0.6",
+    "@vue-dnd-kit/core": "^2.4.6",
     "axios": "^1.16.0",
     "bootstrap": "^5.3.8",
     "cypress": "^15.17.0",
