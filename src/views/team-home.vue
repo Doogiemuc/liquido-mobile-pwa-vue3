@@ -74,7 +74,7 @@
 				</RouterLink>
 			</template>
 			<template #primary>
-				<button id="gotoPollsButton" type="button" class="btn btn-lg w-100 btn-primary" @click="gotoPolls">
+				<button id="gotoPollsButton" type="button" class="btn btn-primary" @click="gotoPolls">
 					{{ t("gotoPolls") }}
 					<i class="fas fa-angle-double-right" />
 				</button>

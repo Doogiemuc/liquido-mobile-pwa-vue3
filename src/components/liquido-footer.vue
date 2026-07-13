@@ -14,7 +14,7 @@
 			</slot>
 			<div class="footer-center">
 				<slot name="primary">
-					<button v-if="primaryText !== undefined" class="btn btn-lg" type="button" :disabled="primaryDisabled"
+					<button v-if="primaryText !== undefined" class="btn" type="button" :disabled="primaryDisabled"
 						@click="$emit('primary')">
 						{{ primaryText }}
 					</button>
@@ -130,7 +130,8 @@ export default {
 	align-items: center;
 	flex-grow: 1;
 	min-width: 0;
-	padding: 0.25rem 0;
+	margin: 0;
+	padding: 0;
 }
 
 .footer-center {
@@ -154,7 +155,6 @@ export default {
 	align-items: center;
 	justify-content: center;
 	color: var(--primary);
-	font-size: 1.5rem;
 	text-decoration: none;
 	/* Need to manually adjust the vertical padding of the icons on the left and right, so that they look aligned with the main action button in the middle. */
 	padding: 0.5rem 0 0.2rem 0rem;  
@@ -170,7 +170,7 @@ export default {
 	align-items: center;
 	justify-content: center;
 	text-align: center;
-	font-size: 2.0rem;
+	font-size: 1.8rem;
 	color: var(--primary);
 	height: 100%;
 }
@@ -181,6 +181,7 @@ export default {
 	height: 1.40em;
 	display: block;
 }
+
 
 .footer-icon-title {
 	font-size: 10px;

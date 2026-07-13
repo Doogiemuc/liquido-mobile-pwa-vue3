@@ -145,7 +145,7 @@
 
 		<liquido-footer>
 			<template #primary>
-				<button type="button" class="btn btn-lg w-100 btn-primary" @click="$root.gotoTeam">
+				<button type="button" class="btn btn-primary" @click="$root.gotoTeam">
 					{{ $t("YourTeam") }}
 					<i class="fas fa-angle-double-right" />
 				</button>

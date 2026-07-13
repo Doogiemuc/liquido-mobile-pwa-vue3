@@ -193,7 +193,7 @@
 
 		<liquido-footer>
 			<template #primary>
-				<button v-if="poll && poll.status === 'VOTING'" id="castVoteButton" type="button" class="btn btn-primary btn-lg w-100" :disabled="loading || castVoteLoading || !canCastVote" @click="clickCastVote()">
+				<button v-if="poll && poll.status === 'VOTING'" id="castVoteButton" type="button" class="btn btn-primary" :disabled="loading || castVoteLoading || !canCastVote" @click="clickCastVote()">
 					<div v-if="castVoteLoading" class="spinner-border" role="status">
 						<span class="visually-hidden">{{ $t("Loading") }}</span>	
 					</div>
