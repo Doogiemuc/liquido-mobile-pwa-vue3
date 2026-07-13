@@ -15,7 +15,7 @@
 			</div>
 		</div>
 
-		<h2 class="page-title mt-5">{{ $t('yourBallot') }}</h2>
+		<h2 class="page-title">{{ $t('yourBallot') }}</h2>
 		<p class="page-subtitle text-center" v-html="$t('castVoteSubtitle')"></p>
 
 		<div v-if="!loading" class="cast-vote-wrapper">
@@ -30,7 +30,7 @@
 							<p class="mb-0">{{ $t('favoriteDropTargetInfo') }}</p>
 						</div>
 					</div>
-					<div class="empty-slot empty-slot-faded d-flex flex-row align-items-center user-select-none" aria-hidden="true">
+					<div class="empty-slot d-flex flex-row align-items-center user-select-none" aria-hidden="true">
 						<div class="rank-circle">
 							2
 						</div>
@@ -62,19 +62,17 @@
 									{{ proposal.title }}
 								</h4>
 								<div class="proposal-subtitle">
-									<div :class="{ supported: proposal.likedByCurrentUser }" class="d-inline">
-										<i :class="{
-												far: !proposal.likedByCurrentUser,
-												fas: proposal.likedByCurrentUser,
-											}"
-											class="fa-thumbs-up"
-										></i>
-										&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span>
+									<span v-if="proposal.likedByCurrentUser" class="like-button liked">
+										<i class="fas fa-heart"></i>&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span>
+									</span>
+									<span v-else class="like-button">
+										<i class="far fa-heart"></i>&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span>
+									</span>
+									<div class="createdby-user">
+										{{ $t('createdBy') }}&nbsp;{{ proposal?.createdBy?.name }}
 									</div>
-									<i class="far fa-user ms-2"></i>&nbsp;{{ proposal?.createdBy?.name }}
 								</div>
 							</div>
-
 							<div class="drag-handle">
 								<i class="fas fa-bars"></i>
 							</div>
@@ -104,9 +102,10 @@
 
 
 				</draggable>
-				<!-- div v-if="proposalsInBallot.length < poll?.proposals.length" class="text-center ballot-footer-info">
-					{{ $t('canAddProposalsIntoBallot') }}
-				</div -->
+				<!-- Just a small, very subtle hint, that the user can add more proposals into his ballot -->
+				<div v-if="poll?.proposals?.length > 2 && proposalsInBallot.length < poll?.proposals.length" class="text-center ballot-footer-info">
+					...
+				</div>
 			</div>
 
 			
@@ -115,14 +114,14 @@
 			
 			<!-- Available proposals  -->
 
-			<div class="d-flex justify-content-center align-items-center w-75 mx-auto">
+			<div class="d-flex justify-content-around align-items-center">
 				<!-- Upward arrow hint: drag proposals up from the available list into your ballot -->
 				<div class="drag-up-arrow" aria-hidden="true">
 					<svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg">
 						<path d="M50 4 L92 23 L68 23 L68 46 L32 46 L32 23 L8 23 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" />
 					</svg>
 				</div>
-				<h2 class="page-title flex-grow-1">{{ $t('availableProposals') }}</h2>
+				<h2 class="available-proposals-title">{{ $t('availableProposals') }}</h2>
 				<!-- Upward arrow hint: drag proposals up from the available list into your ballot -->
 				<div class="drag-up-arrow" aria-hidden="true">
 					<svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg">
@@ -146,22 +145,19 @@
 									{{ proposal.title }}
 								</h4>
 								<div class="proposal-subtitle">
-									<div :class="{ supported: proposal.likedByCurrentUser }" class="d-inline">
-										<i :class="{
-												far: !proposal.likedByCurrentUser,
-												fas: proposal.likedByCurrentUser,
-											}"
-											class="fa-thumbs-up"
-										></i>
-										&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span>
-									</div>
+									<span v-if="proposal.likedByCurrentUser" class="like-button liked">
+										<i class="fas fa-heart"></i>&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span>
+									</span>
+									<span v-else class="like-button">
+										<i class="far fa-heart"></i>&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span>
+									</span>
 									<div class="createdby-user">
 										{{ $t('createdBy') }}&nbsp;{{ proposal?.createdBy?.name }}
 									</div>
 								</div>
 							</div>
 
-							<div class="drag-handle ps-2">
+							<div class="drag-handle">
 								<i class="fas fa-bars"></i>
 							</div>
 						</div>
@@ -230,11 +226,11 @@ export default {
 			},
 			de: {
 				castVoteTitle: "Stimme abgeben",
-				castVoteSubtitle: "Ziehe die Vorschläge, die du unterstützen möchtest, in die Slots.<br/>Sortiere sie auf deinem Stimmzettel.",
+				castVoteSubtitle: "Ziehe die Vorschläge, die du unterstützen möchtest, in die Slots. Sortiere sie dann in deinem Stimmzettel.",
 				favoriteDropTargetInfo: "Slot 1 - dein Lieblingsvorschlag",
 				secondDropTargetInfo: "Slot 2 - leer",
 				
-				youVotedForAllProposals: "Sehr gut, du hast für alle Vorschläge gestimmt. Sortiere sie oben und gib dann deine Stimme ab.",
+				youVotedForAllProposals: "Danke dass du alle Vorschläge unterstützt. Sortiere sie oben und gib dann deine Stimme ab.",
 				availableProposals: "Verfügbare Vorschläge",
 				castVoteInfo:
 					"<p>In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> Vorschlag, sondern erstellst eine Rangfolge derjenigen Vorschläge, " +
@@ -242,6 +238,8 @@ export default {
 					"Vorschläge die du nicht unterstützen möchtest lässt du ganz einfach unten.</p>" +
 					"<p><i class='fa fa-shield-halved'></i> Deine stimme ist sicher und anonym. Niemand kann zurückverfolgen wie du abgestimmt hast.</p>",
 				
+				createdBy: "von",
+
 				voteCountedNTimes: "Deine Stimme als Proxy wurde {voteCount} mal gezählt.",
 				yourBallot: "Dein Stimmzettel",
 				updateBallotButton: "Eigene Stimme aktualisieren",
@@ -521,7 +519,7 @@ export default {
  /* Hero below liquido-header with same white background as header */
 .liquido-hero {
 	padding: var(--unit);
-	margin-top: 0 !important;
+	
 	margin-right: calc(-1*var(--unit)) !important;
 	margin-left: calc(-1*var(--unit)) !important;
 	background-color: var(--header-bg);
@@ -530,7 +528,6 @@ export default {
 /* Poll-card.vue needs a wrapper to define its height. */
 .poll-card-wrapper {
 	height: 10rem;
-	margin-bottom: var(--two);
 }
 
 /* The wrapper is hidden until poll is loaded. */
@@ -555,6 +552,7 @@ export default {
 			border-color: var(--primary);
 		}
 
+		/* Empty placeholder slots, behind the proposals in the ballot */
 		.empty-slots-behind {
 			position: absolute;
 			top: var(--unit);
@@ -562,6 +560,7 @@ export default {
 			right: var(--unit);
 			z-index: 1;
 		}
+		/* Must also position the draggable absolute with a higher z-index *before* the .empty-slots-behind */
 		#ballot-draggable {
 			position: absolute;
 			top: 0;
@@ -572,17 +571,17 @@ export default {
 		}
 	}
 
-	/* Empty ballot slot. Dimmed and dashed. */
+	/* One empty ballot slot. Dimmed and dashed. */
 	.empty-slot {
 		height: var(--polly-proposal-height);
 		margin-bottom: var(--polly-proposal-margin-bottom);
 		border: 1px dashed var(--secondary);
 		border-radius: var(--liquido-border-radius);
-		/*background-color: var(--tertiary);*/
+		background-color: rgba(0,0,0, 0.02);  /* just a tiny little bit darker */
 		color: rgba(0, 0, 0, 0.2);
 		.rank-circle {
-			border: 1px solid rgba(0, 0, 0, 0.);
-			background-color: transparent;
+			border: 1px solid rgba(0, 0, 0, 0.04);
+			background-color: rgba(0,0,0, 0.02);
 			color: rgba(0, 0, 0, 0.2);
 		}
 	}
@@ -594,43 +593,32 @@ export default {
 	}
 
 
-	/** Shown when there are no more available proposals and the user dragged all proposals to the top */
-	.available-proposals-empty {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		text-align: center;
-		margin: 0;
-		padding: 1.5rem;
-		color: var(--secondary);
-		pointer-events: none;
-	}
-
 	/** Common class for both draggable lists */
 	.draggable {
 		position: relative;
 		flex-grow: 1;
 		min-height: calc(2 * (var(--polly-proposal-height) + var(--polly-proposal-margin-bottom)) + var(--unit));	
-		padding-bottom: var(--three);
+		padding-bottom: var(--unit);
 		z-index: 20;
 
-		/* the drop target */
-		.sortable-ghost {
-			opacity: 0.2;
-		}
-
-		/* the currently chosen icon (right after long press) */
+		/* the currently chosen proposal (right after long press) */
 		.sortable-chosen {
 			z-index: 999;
 			-webkit-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
 			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
 			transform: rotate(1deg);
+			cursor: grab;
 		}
 
-		/* the icon currently beeing dragged */
+		/* the proposal currently beeing dragged */
 		.sortable-drag {
+			transform: rotate(1deg);
+			cursor: grab;
+		}
+
+		/* the drop target */
+		.sortable-ghost {
+			opacity: 0.2;
 			transform: rotate(1deg);
 		}
 	}
@@ -689,13 +677,35 @@ export default {
 		height: 100%;
 	}
 
+
 	/* List of proposals still available to be dragged into the drop target */
 	.available-proposals {
 		position: relative;
 		margin: 0;
-		padding: var(--unit);
-		border: 1px dashed var(--secondary);
-		border-radius: var(--liquido-border-radius);
+		padding: 0 var(--unit) var(--unit) var(--unit); /* no padding-top so that the "AVAILABLE PROPOSALS" text is exactly horizontally centered between the two groups */
+		/*border: 1px solid var(--tertiary);
+		border-radius: var(--liquido-border-radius); */
+	}
+
+	.available-proposals-title {
+		font-size: 0.6rem !important;
+		text-transform: uppercase;
+		letter-spacing: 0.4em;
+		margin: var(--two) 0;
+	}
+
+	/** Shown when there are no more available proposals and the user dragged all proposals to the top */
+	.available-proposals-empty {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		margin: 0;
+		padding: 1.5rem;
+		color: var(--secondary);
+		pointer-events: none;
 	}
 	
 
@@ -719,7 +729,7 @@ export default {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			font-size: var(--font-size-small);
+			font-size: 0.8rem;  /* Fixed as small. Wie also would have var(--font-size-small); */
 			color: var(--secondary);
 		}
 		.proposal-icon {
@@ -744,16 +754,15 @@ export default {
 			overflow: hidden;
 		}
 
-		.supported {
-			color: green;
+		.liked {
+			color: var(--primary);
+			cursor: default;
 		}
 
 		.drag-handle {
-			position: absolute;
-			right: 10px;
-			top: 50%;
-			transform: translateY(-50%);
-			opacity: 0.3;
+			color: var(--secondary);
+			opacity: 0.5;
+			margin: 0 10px;
 		}
 	}
 }

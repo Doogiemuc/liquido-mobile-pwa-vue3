@@ -31,7 +31,7 @@
 
 	--light-color: #1e3a5f;					/* Light blue colors used for info alerts and chat bubbles on welcome.vue */
 	--light-bg: #eff6ff;							  
-	--light-border: #cee1f9;		
+	--light-border: #d9e7f7;		
 
 	--destructive:#b3261e;						/* For error alerts */
   --destructive-foreground:#fff;		/* For text on destructive background */
@@ -43,7 +43,7 @@
 	--bs-primary: var(--primary);		   /* Align Bootstrap CSS variable to LIQUIDO primary */
 	--bs-primary-rgb: 30, 58, 95;			 /* RGB of #1e3a5f — used by Bootstrap for box-shadow alphas */
 
-	--font-size-small: 0.9rem;				 /* used for subtitles, captions, and small text */
+	--font-size-small: 0.8rem;				 /* used for subtitles, captions, and small text */
 
 	/************** LIQUIDO header & footer ***************/
 
