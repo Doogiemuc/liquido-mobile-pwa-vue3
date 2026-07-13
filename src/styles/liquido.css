@@ -27,7 +27,7 @@
 	--text-color: #0f1b3d;     			/* Main text foreground. Nearly black but not quite. */
 	--primary: #1e3a5f;							/* Primary color. Used for background of primary action buttons, ... */
   --secondary: #959cab;						/* Secondary, muted or dimmed text. Quite dark for better contrast to --app-background */
-	--tertiary: #f0f2f5;      				/* Tertiary dimmed. Really light. e.g. for vote drop target and poll progress bar */
+	--tertiary: #dde5f1;      				/* Tertiary dimmed. Really light. e.g. for vote drop target and poll progress bar */
 
 	--light-color: #1e3a5f;					/* Light blue colors used for info alerts and chat bubbles on welcome.vue */
 	--light-bg: #eff6ff;							  

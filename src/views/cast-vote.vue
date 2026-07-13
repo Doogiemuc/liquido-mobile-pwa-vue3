@@ -20,7 +20,7 @@
 
 		<div v-if="!loading" class="cast-vote-wrapper">
 			<!-- Drop target: the user drops & sorts the proposals he wants to vote for -->
-			<div class="the-ballot">
+			<div class="the-ballot" :class="{ 'ballot-drag-over': isDraggingOverBallot }">
 				<div class="empty-slots-behind">
 					<div class="empty-slot d-flex flex-row align-items-center user-select-none" aria-hidden="true">
 						<div class="rank-circle">
@@ -30,7 +30,7 @@
 							<p class="mb-0">{{ $t('favoriteDropTargetInfo') }}</p>
 						</div>
 					</div>
-					<div class="empty-slot d-flex flex-row align-items-center user-select-none" aria-hidden="true">
+					<div class="empty-slot empty-slot-faded d-flex flex-row align-items-center user-select-none" aria-hidden="true">
 						<div class="rank-circle">
 							2
 						</div>
@@ -48,6 +48,8 @@
 					item-key="id"
 					animation="500"
 					swapThreshold="0.60"
+					:move="onDragMove"
+					@end="onDragEnd"
 					:disabled="loading || castVoteLoading" 
 					:can-scroll-x="false">
 					<template #item="{ element: proposal, index }">
@@ -69,7 +71,7 @@
 										></i>
 										&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span>
 									</div>
-									<i class="far fa-user ms-2"></i>&nbsp;{{ proposal.createdBy.name }}
+									<i class="far fa-user ms-2"></i>&nbsp;{{ proposal?.createdBy?.name }}
 								</div>
 							</div>
 
@@ -108,24 +110,31 @@
 			</div>
 
 			
-			
-			<!-- Upward arrow hint: drag proposals up from the available list into your ballot -->
-			<div class="drag-up-arrow" aria-hidden="true">
-				<svg viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M50 8 L92 46 L68 46 L68 92 L32 92 L32 46 L8 46 Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" />
-				</svg>
-			</div>
-
-			
+		
 			
 			
 			<!-- Available proposals  -->
 
-			 <h2 class="page-title">{{ $t('availableProposals') }}</h2>
+			<div class="d-flex justify-content-center align-items-center w-75 mx-auto">
+				<!-- Upward arrow hint: drag proposals up from the available list into your ballot -->
+				<div class="drag-up-arrow" aria-hidden="true">
+					<svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg">
+						<path d="M50 4 L92 23 L68 23 L68 46 L32 46 L32 23 L8 23 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+					</svg>
+				</div>
+				<h2 class="page-title flex-grow-1">{{ $t('availableProposals') }}</h2>
+				<!-- Upward arrow hint: drag proposals up from the available list into your ballot -->
+				<div class="drag-up-arrow" aria-hidden="true">
+					<svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg">
+						<path d="M50 4 L92 23 L68 23 L68 46 L32 46 L32 23 L8 23 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+					</svg>
+				</div>
+			</div>
 			<div class="available-proposals">	
 				<p v-if="availableProposals.length === 0" class="available-proposals-empty" v-html="$t('youVotedForAllProposals')"></p>
 				<draggable id="availableDraggable" v-model="availableProposals" class="draggable" group="proposals" item-key="id"
 					:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
+					:move="onDragMove" @end="onDragEnd"
 					:can-scroll-x="false">
 					<template #item="{ element: proposal }">
 						<div class="card shadow-sm proposal-panel d-flex flex-row align-items-center user-select-none">
@@ -146,11 +155,13 @@
 										></i>
 										&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span>
 									</div>
-									<i class="far fa-user ms-2"></i>&nbsp;{{ proposal.createdBy.name }}
+									<div class="createdby-user">
+										{{ $t('createdBy') }}&nbsp;{{ proposal?.createdBy?.name }}
+									</div>
 								</div>
 							</div>
 
-							<div class="drag-handle">
+							<div class="drag-handle ps-2">
 								<i class="fas fa-bars"></i>
 							</div>
 						</div>
@@ -219,11 +230,11 @@ export default {
 			},
 			de: {
 				castVoteTitle: "Stimme abgeben",
-				castVoteSubtitle: "Ziehe die Vorschläge, welche du unterstützen möchtest, in die Slots.<br/>Sortiere sie auf deinem Stimmzettel.",
+				castVoteSubtitle: "Ziehe die Vorschläge, die du unterstützen möchtest, in die Slots.<br/>Sortiere sie auf deinem Stimmzettel.",
 				favoriteDropTargetInfo: "Slot 1 - dein Lieblingsvorschlag",
 				secondDropTargetInfo: "Slot 2 - leer",
 				
-				youVotedForAllProposals: "Sehr gut, du hast alle Vorschläge sortiert. Du kannst deinen Stimmzettel jetzt abgeben.",
+				youVotedForAllProposals: "Sehr gut, du hast für alle Vorschläge gestimmt. Sortiere sie oben und gib dann deine Stimme ab.",
 				availableProposals: "Verfügbare Vorschläge",
 				castVoteInfo:
 					"<p>In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> Vorschlag, sondern erstellst eine Rangfolge derjenigen Vorschläge, " +
@@ -264,6 +275,7 @@ export default {
 			castVoteLoading: false,
 			isFirstVote: true,		// used for showing the correct confirmation message
 			ballotIsVerified: false,
+			isDraggingOverBallot: false,   // highlight the ballot while a proposal is dragged over it
 			draggingHintObserver: null,
 		}
 	},
@@ -359,6 +371,20 @@ export default {
 				pollPanel.toggleCollapse()
 			})
 			this.collapsed = !this.collapsed
+		},
+
+		/**
+		 * vuedraggable/Sortable `move` callback: fires while a proposal is dragged over a list.
+		 * Highlight the ballot while the drag hovers over it. Always returns true (never blocks a drop).
+		 */
+		onDragMove(evt) {
+			this.isDraggingOverBallot = !!(evt.to && evt.to.id === "ballotDraggable")
+			return true
+		},
+
+		/** Reset the ballot highlight when the drag ends (drop or cancel). */
+		onDragEnd() {
+			this.isDraggingOverBallot = false
 		},
 
 		clickCastVote() {
@@ -501,11 +527,13 @@ export default {
 	background-color: var(--header-bg);
 }
 
+/* Poll-card.vue needs a wrapper to define its height. */
 .poll-card-wrapper {
-	height: 10rem;  /* must not be smaller. For Polls with two lines of text in the title */
+	height: 10rem;
 	margin-bottom: var(--two);
 }
 
+/* The wrapper is hidden until poll is loaded. */
 .cast-vote-wrapper {
 	--polly-proposal-height: 4rem;
 	--polly-proposal-margin-bottom: 0.5rem;
@@ -519,9 +547,14 @@ export default {
 		background-color: var(--light-bg);
 		border: 1px solid var(--light-border);
 		border-radius: var(--liquido-border-radius);
-	}
+		transition: background-color 0.15s ease, border-color 0.15s ease;
 
-	.the-ballot {
+		/* Highlighted while the user drags a proposal over the ballot. */
+		&.ballot-drag-over {
+			background-color: #dbeafe;
+			border-color: var(--primary);
+		}
+
 		.empty-slots-behind {
 			position: absolute;
 			top: var(--unit);
@@ -555,9 +588,9 @@ export default {
 	}
 
 	/* The extra slot at the very bottom of the ballot fades out towards the bottom. */
-	.empty-slot--faded {
-		-webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
-		mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
+	.empty-slot-faded {
+		-webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 30%, rgba(0, 0, 0, 0) 100%);
+		mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 30%, rgba(0, 0, 0, 0) 100%);
 	}
 
 
@@ -575,30 +608,32 @@ export default {
 		pointer-events: none;
 	}
 
+	/** Common class for both draggable lists */
 	.draggable {
 		position: relative;
 		flex-grow: 1;
-		min-height: calc(2 * var(--polly-proposal-height) + 3rem);
-		padding-bottom: var(--unit);
+		min-height: calc(2 * (var(--polly-proposal-height) + var(--polly-proposal-margin-bottom)) + var(--unit));	
+		padding-bottom: var(--three);
 		z-index: 20;
+
 		/* the drop target */
 		.sortable-ghost {
 			opacity: 0.2;
 		}
-		/* the chosen icon */
+
+		/* the currently chosen icon (right after long press) */
 		.sortable-chosen {
 			z-index: 999;
 			-webkit-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
 			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
 			transform: rotate(1deg);
 		}
+
 		/* the icon currently beeing dragged */
 		.sortable-drag {
 			transform: rotate(1deg);
 		}
 	}
-
-
 
 
 	/* Ranking number at the left of a proposal in the ballot (replaces the proposal icon). */
@@ -618,7 +653,6 @@ export default {
 		color: white;
 		font-family: var(--sans-serif-font);
 		font-size: 1rem;
-		/*font-weight: bold;*/
 		line-height: 1;
 		z-index: 30;
 	}
@@ -635,22 +669,18 @@ export default {
 	}	
 	*/
 
-
-	/** like bootstraps text-small our our info alert. But here must match the rest of the ballot */
+	/* Info text that the user can still add further proposals into the ballot. */
 	.ballot-footer-info {
 		font-size: var(--font-size-small);
 		text-align: center;
 		color: rgba(0, 0, 0, 0.5)
 	 }
 
-
-
 	/* Upward arrow hint between the ballot drop target and the available proposals */
 	.drag-up-arrow {
-		width: 7rem;
-		height: var(--two);
-		margin: 10px auto;
-		color: var(--secondary);
+		width: var(--two);
+		height: var(--unit);
+		color: var(--tertiary);
 	}
 
 	.drag-up-arrow svg {
@@ -678,17 +708,19 @@ export default {
 		
 		.proposal-title {
 			color: var(--primary);
-			margin-bottom: 0.4rem;
+			margin: 0;
 			padding: 0;
-			font-size: 0.8rem !important;
+			/*font-size: 0.8rem !important;*/
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
 		}
 		.proposal-subtitle {
-			font-size: 10px;
-			color: #bbb;
-			margin-bottom: 5px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			font-size: var(--font-size-small);
+			color: var(--secondary);
 		}
 		.proposal-icon {
 			--proposal_icon_size: 32px;
