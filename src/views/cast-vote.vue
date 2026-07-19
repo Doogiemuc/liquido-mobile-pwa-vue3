@@ -11,7 +11,7 @@
 			</div>
 
 			<div v-if="!loading" class="poll-card-wrapper">
-				<poll-card :poll="poll" :show-arrow-right="false" class="poll-card"></poll-card>
+				<poll-card :poll="poll" :show-arrow-right="false" class="poll-card shadow-sm"></poll-card>
 			</div>
 		</div>
 

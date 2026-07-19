@@ -8,7 +8,7 @@
 			<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;{{ $t('Loading') }}
 		</div>
 	
-		<poll-card v-if="poll.id" :poll="poll" :show-arrow-right="false" :show-proposals="true" class="mb-4" />
+		<poll-card v-if="poll.id" :poll="poll" :show-arrow-right="false" :show-proposals="true" class="shadow-sm mb-4" />
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
 			<div v-html="$t('cannotFindPoll', {pollId: pollId})" />
