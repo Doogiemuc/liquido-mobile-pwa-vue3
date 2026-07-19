@@ -16,28 +16,22 @@
 		</div>
 
 		<h2 class="page-title">{{ $t('yourBallot') }}</h2>
-		<p class="page-subtitle text-center" v-html="$t('castVoteSubtitle')"></p>
+		<p v-if="!hasAlreadyVoted" class="page-subtitle text-center">{{ $t('castVoteSubtitle') }}></p>
+		<p v-if="hasAlreadyVoted" class="page-subtitle text-center">{{ $t('hasAlreadyVotedSubtitle') }}</p>
 
 		<div v-if="!loading" class="cast-vote-wrapper">
 			<!-- Drop target: the user drops & sorts the proposals he wants to vote for -->
 			<div class="the-ballot" :class="{ 'ballot-drag-over': isDraggingOverBallot }">
-				<div class="empty-slots-behind">
-					<div class="empty-slot d-flex flex-row align-items-center user-select-none" aria-hidden="true">
+				<div v-if="!hasAlreadyVoted" class="empty-slots-behind">
+					<div v-for="(prop,index) in poll?.proposals" class="empty-slot d-flex flex-row align-items-center user-select-none" aria-hidden="true">
 						<div class="rank-circle">
-							1
+							{{ index + 1 }}
 						</div>
 						<div class="d-flex">
-							<p class="mb-0">{{ $t('favoriteDropTargetInfo') }}</p>
+							<p class="mb-0">{{ emptySlotTitle(index) }}</p>
 						</div>
 					</div>
-					<div class="empty-slot d-flex flex-row align-items-center user-select-none" aria-hidden="true">
-						<div class="rank-circle">
-							2
-						</div>
-						<div class="d-flex">
-							<p class="mb-0">{{ $t('secondDropTargetInfo', { n: 2 })	 }}</p>
-						</div>
-					</div>
+
 				</div>
 				
 				<draggable 
@@ -102,10 +96,10 @@
 
 
 				</draggable>
-				<!-- Just a small, very subtle hint, that the user can add more proposals into his ballot -->
+				<!-- Just a small, very subtle hint, that the user can add more proposals into his ballot
 				<div v-if="poll?.proposals?.length > 2 && proposalsInBallot.length < poll?.proposals.length" class="text-center ballot-footer-info">
 					...
-				</div>
+				</div -->
 			</div>
 
 			
@@ -114,7 +108,7 @@
 			
 			<!-- Available proposals  -->
 
-			<div class="d-flex justify-content-around align-items-center">
+			<div v-if="!hasAlreadyVoted" class="d-flex justify-content-around align-items-center">
 				<!-- Upward arrow hint: drag proposals up from the available list into your ballot -->
 				<div class="drag-up-arrow" aria-hidden="true">
 					<svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg">
@@ -129,7 +123,7 @@
 					</svg>
 				</div>
 			</div>
-			<div class="available-proposals">	
+			<div v-if="!hasAlreadyVoted" class="available-proposals">	
 				<p v-if="availableProposals.length === 0" class="available-proposals-empty" v-html="$t('youVotedForAllProposals')"></p>
 				<draggable id="availableDraggable" v-model="availableProposals" class="draggable" group="proposals" item-key="id"
 					:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
@@ -166,17 +160,9 @@
 			</div>
 		</div>
 
-		<div class="page-subtitle mt-5">
-			<p v-html="$t('castVoteInfo')"></p>
-		</div>
-
-
-		<div v-if="isUpdatableBallot" id="isUpdateableBallotInfo" class="alert liquido-info">
-			<i class="fas fa-info-circle float-end" />
-			<p v-html="$t('updateBallotInfo')"></p>
-		</div>
-
-		<div v-if="hasBallot" class="alert liquido-info">
+		
+		
+		<div v-if="hasAlreadyVoted" class="alert liquido-info mt-5">
 			<p>
 				{{ $t("checksumOfYourBallot") }}
 			</p>
@@ -191,14 +177,23 @@
 			</p>
 		</div>
 
+		<div class="page-subtitle mt-5">
+			<p v-html="$t('castVoteInfo')"></p>
+		</div>
+
 		<liquido-footer>
 			<template #primary>
-				<button v-if="poll && poll.status === 'VOTING'" id="castVoteButton" type="button" class="btn btn-primary" :disabled="loading || castVoteLoading || !canCastVote" @click="clickCastVote()">
-					<div v-if="castVoteLoading" class="spinner-border" role="status">
+				<button v-if="loading || castVoteLoading" id="loadingButton" type="button" class="btn btn-primary" disabled="true">
+					<div class="spinner-border" role="status">
 						<span class="visually-hidden">{{ $t("Loading") }}</span>	
 					</div>
-					<i v-if="!castVoteLoading" class="fas fa-vote-yea"></i>
-					{{ isUpdatableBallot ? $t("updateBallotButton") : $t("castVoteButton") }}
+				</button>
+				<button v-if="canCastvote" id="castVoteButton" type="button" class="btn btn-primary" disabled="false" @click="clickCastVote()">
+					<i class="fas fa-vote-yea"></i>
+					{{ $t("castVoteButton") }}
+				</button>
+				<button v-if="hasAlreadyVoted" id="alreadyVotedButton" type="button" class="btn btn-primary" disabled="true">
+					{{ $t("alreadyVotedButton") }}
 				</button>
 			</template>
 		</liquido-footer>
@@ -225,12 +220,14 @@ export default {
 				availableProposals: "Available proposals",
 			},
 			de: {
-				castVoteTitle: "Stimme abgeben",
-				castVoteSubtitle: "Ziehe die Vorschläge, die du unterstützen möchtest, in die Slots. Sortiere sie dann in deinem Stimmzettel.",
+				castVoteTitle: "Stimme bereits abgeben",
+				castVoteSubtitle: "Ziehe die Vorschläge, welche du unterstützen möchtest, in die Slots und ordne sie nach deiner Präferenz.",
+				hasAlreadyVotedSubtitle: "Danke, du hast diese Stimme abgegeben.",
+				alreadyVotedButton: "Stimme bereits abgegeben",
 				favoriteDropTargetInfo: "Slot 1 - dein Lieblingsvorschlag",
-				secondDropTargetInfo: "Slot 2 - leer",
+				emptySlotNumber: "Slot {n} - leer",
 				
-				youVotedForAllProposals: "Danke dass du alle Vorschläge unterstützt. Sortiere sie oben und gib dann deine Stimme ab.",
+				youVotedForAllProposals: "Danke dass du alle Vorschläge unterstützt. Sortiere sie oben nach deiner Präferenz und gib dann deine Stimme ab.",
 				availableProposals: "Verfügbare Vorschläge",
 				castVoteInfo:
 					"<p>In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> Vorschlag, sondern erstellst eine Rangfolge derjenigen Vorschläge, " +
@@ -249,7 +246,7 @@ export default {
 				voteCastError: "Es gab leider einen technischen Fehler beim Abgeben deiner Stimme. Bitte versuche es später noch einmal.",
 				updateBallotInfo: "Du hast in dieser Abstimmung bereits eine Stimme abgegeben. In <span class='liquido'></span> kannst du deinen Stimmzettel " +
 					"auch jetzt noch ändern, so lange die Abstimmung noch läuft.",
-				checksumOfYourBallot: "Mit dieser Checksumme kannst du prüfen ob dein Stimmzettel korrekt gezählt wurde:",
+				checksumOfYourBallot: "Mit dieser Checksumme kannst du prüfen ob deine Stimme korrekt gezählt wurde:",
 				verifyBallotButton: "Prüfen",
 				ballotIsVerified: "Deine Stimme wurde erfolgreich gezählt.",
 				backToPolls: "Zurück zu euren Abstimmungen"
@@ -271,7 +268,6 @@ export default {
 			existingBallot: undefined,
 			voteCount: 0,
 			castVoteLoading: false,
-			isFirstVote: true,		// used for showing the correct confirmation message
 			ballotIsVerified: false,
 			isDraggingOverBallot: false,   // highlight the ballot while a proposal is dragged over it
 			draggingHintObserver: null,
@@ -279,13 +275,14 @@ export default {
 	},
 	computed: {
 		canCastVote() {
-			return this.poll && this.poll.status === "VOTING" && this.proposalsInBallot.length > 0
+			return this.poll && this.poll.status === "VOTING" && !this.hasAlreadyVoted && this.proposalsInBallot.length > 0 
 		},
-		hasBallot() {
+		hasAlreadyVoted() {
 			return this.existingBallot
 		},
 		isUpdatableBallot() {
-			return this.poll && this.poll.status === "VOTING" && this.existingBallot
+			return false  //  voters are not allowed to update their ballot
+			// this.poll && this.poll.status === "VOTING" && this.existingBallot
 		},
 	},
 	created() {
@@ -310,7 +307,6 @@ export default {
 		 */
 		let getExistingBallot = () => api.getMyBallot(this.pollId).then(ballot => {
 			this.existingBallot = ballot  // may be undefined!
-			if (this.existingBallot) this.isFirstVote = false
 			return ballot
 		}).catch(err => console.warn("Cannot get ballot of user", err))
 
@@ -362,6 +358,21 @@ export default {
 		}
 	},
 	methods: {
+		/** 
+		 * Show one empty slot for every proposal in the ballot 
+		 * But the ballot is set to overflow: hidden and has a minHeight, 
+		 * just right to show at least two slots and one half one. 
+		 * To visualy give a hint that the user CAN drag more proposals up into the ballot,
+		 * but does not have to.
+		 */
+		emptySlotTitle(index) {
+			if (index == 0) {
+				return this.$t('favoriteDropTargetInfo')
+			} else {
+				return this.$t('emptySlotNumber', { n: index+1 })
+			}
+		},
+
 		/** Collapse the descriptions of all proposals in the ballot (not used) */
 		toggleBallotCollapse() {
 			this.$refs["proposalsInBallot"].forEach(pollPanel => {
@@ -399,13 +410,7 @@ export default {
 					this.existingBallot = castVoteResponse.ballot
 					this.voteCount = castVoteResponse.voteCount
 					this.castVoteLoading = false
-					
-					// Build success message
-					let successMsg = this.isFirstVote ? this.$t("voteCastedSuccessfully") : this.$t("voteUpdatedSuccessfully")
-					if (this.voteCount > 1) {
-						successMsg += "\n" + this.$t('voteCountedNTimes', { voteCount: this.voteCount })
-					}
-					this.$root.showSuccess(successMsg, "")
+					this.$root.showSuccess(this.$t("voteCastedSuccessfully"), "")
 				})
 			}).catch((err) => {
 				console.error("Cannot cast vote", err)
@@ -532,6 +537,10 @@ export default {
 
 /* The wrapper is hidden until poll is loaded. */
 .cast-vote-wrapper {
+	/* 
+		These heights are extremly important.  
+	  The minHeight of both draggable areas is calcolated based on these. 
+	*/
 	--polly-proposal-height: 4rem;
 	--polly-proposal-margin-bottom: 0.5rem;
 
@@ -556,8 +565,10 @@ export default {
 		.empty-slots-behind {
 			position: absolute;
 			top: var(--unit);
+			bottom: 0;
 			left: var(--unit);
 			right: var(--unit);
+			overflow: hidden;
 			z-index: 1;
 		}
 		/* Must also position the draggable absolute with a higher z-index *before* the .empty-slots-behind */
