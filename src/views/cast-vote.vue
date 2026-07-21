@@ -53,30 +53,7 @@
 					:disabled="loading || castVoteLoading" 
 					:can-scroll-x="false">
 					<template #item="{ element: proposal, index }">
-						<div class="card shadow-sm proposal-panel d-flex flex-row align-items-center user-select-none">
-							<div class="rank-circle">
-								{{ index + 1 }}
-							</div>
-							<div class="d-flex flex-column text-truncate">
-								<h4 class="proposal-title">
-									{{ proposal.title }}
-								</h4>
-								<div class="proposal-subtitle">
-									<span v-if="proposal.likedByCurrentUser" class="like-button liked">
-										<i class="fas fa-heart"></i>&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span>
-									</span>
-									<span v-else class="like-button">
-										<i class="far fa-heart"></i>&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span>
-									</span>
-									<div class="createdby-user">
-										{{ $t('createdBy') }}&nbsp;{{ proposal?.createdBy?.name }}
-									</div>
-								</div>
-							</div>
-							<div class="drag-handle">
-								<i class="fas fa-bars"></i>
-							</div>
-						</div>
+						<liquido-proposal :proposal="proposal" :rank="index + 1" />
 					</template>
 					
 					<!-- template #footer>
@@ -103,7 +80,7 @@
 
 				</draggable>
 				<!-- Just a small, very subtle hint, that the user can add more proposals into his ballot -->
-				<div v-if="poll?.proposals?.length > 2 && proposalsInBallot.length < poll?.proposals.length" class="text-center ballot-footer-info">
+				<div v-if="poll?.proposals?.length > 2 && proposalsInBallot.length < poll?.proposals.length" class="ballot-footer-info">
 					...
 				</div>
 			</div>
@@ -136,31 +113,7 @@
 					:move="onDragMove" @end="onDragEnd"
 					:can-scroll-x="false">
 					<template #item="{ element: proposal }">
-						<div class="card shadow-sm proposal-panel d-flex flex-row align-items-center user-select-none">
-							<div class="proposal-icon">
-								<i class="fas fa-fw" :class="'fa-' + proposal.icon" />
-							</div>
-							<div class="d-flex flex-column text-truncate">
-								<h4 class="proposal-title">
-									{{ proposal.title }}
-								</h4>
-								<div class="proposal-subtitle">
-									<span v-if="proposal.likedByCurrentUser" class="like-button liked">
-										<i class="fas fa-heart"></i>&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span>
-									</span>
-									<span v-else class="like-button">
-										<i class="far fa-heart"></i>&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span>
-									</span>
-									<div class="createdby-user">
-										{{ $t('createdBy') }}&nbsp;{{ proposal?.createdBy?.name }}
-									</div>
-								</div>
-							</div>
-
-							<div class="drag-handle">
-								<i class="fas fa-bars"></i>
-							</div>
-						</div>
+						<liquido-proposal :proposal="proposal" />
 					</template>
 				</draggable>
 			</div>
@@ -211,6 +164,7 @@ import api from "@/services/liquido-graphql-client.js"
 import draggable from 'vuedraggable'
 import liquidoFooter from "@/components/liquido-footer.vue";
 import pollCard from "@/components/poll-card.vue"
+import liquidoProposal from "@/components/liquido-proposal.vue"
 import log from "loglevel"
 
 export default {
@@ -256,7 +210,7 @@ export default {
 			},
 		},
 	},
-	components: { draggable, liquidoFooter, pollCard },
+	components: { draggable, liquidoFooter, pollCard, liquidoProposal },
 	props: {
 		// the cast-vote page only receives the pollId and reloads the poll from the backend
 		pollId: { type: String, required: true },
@@ -354,12 +308,20 @@ export default {
 
 	mounted() {
 		this.$root.scrollToTop()
+		// TEST HELPER: expose a hook so Cypress e2e tests can fill the ballot without
+		// simulating native drag'n'drop (vuedraggable/SortableJS). Guarded by window.Cypress.
+		if (window.Cypress) {
+			window.liquidoCastVoteTest = {
+				addFirstProposalToBallot: () => this.addFirstProposalToBallot(),
+			}
+		}
 	},
 
 	beforeUnmount() {
 		if (this.draggingHintObserver) {
 			this.draggingHintObserver.disconnect()
 		}
+		if (window.Cypress) delete window.liquidoCastVoteTest
 	},
 	methods: {
 		/** Collapse the descriptions of all proposals in the ballot (not used) */
@@ -383,6 +345,20 @@ export default {
 		/** Reset the ballot highlight when the drag ends (drop or cancel). */
 		onDragEnd() {
 			this.isDraggingOverBallot = false
+		},
+
+		/**
+		 * TEST HELPER (Cypress e2e only): programmatically move the first available proposal
+		 * into the ballot. This lets the happy-case e2e test fill the ballot without having to
+		 * simulate native HTML5 drag'n'drop, which is unreliable with vuedraggable/SortableJS.
+		 * Exposed on `window.liquidoCastVoteTest` from mounted() when `window.Cypress` is set.
+		 * @returns {boolean} true if a proposal was moved, false if none were available.
+		 */
+		addFirstProposalToBallot() {
+			if (this.availableProposals.length === 0) return false
+			const proposal = this.availableProposals.shift()
+			this.proposalsInBallot.push(proposal)
+			return true
 		},
 
 		clickCastVote() {
@@ -659,16 +635,23 @@ export default {
 
 	/* Info text that the user can still add further proposals into the ballot. */
 	.ballot-footer-info {
-		font-size: var(--font-size-small);
+		
+		color: var(--secondary);
 		text-align: center;
-		color: rgba(0, 0, 0, 0.5)
+		position: absolute;
+		bottom: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		margin: 0;
+		padding: 0;
+		
 	 }
 
 	/* Upward arrow hint between the ballot drop target and the available proposals */
 	.drag-up-arrow {
 		width: var(--two);
 		height: var(--unit);
-		color: var(--tertiary);
+		color: var(--secondary);
 	}
 
 	.drag-up-arrow svg {
@@ -689,6 +672,7 @@ export default {
 
 	.available-proposals-title {
 		font-size: 0.6rem !important;
+		color: var(--secondary);
 		text-transform: uppercase;
 		letter-spacing: 0.4em;
 		margin: var(--two) 0;
@@ -709,62 +693,6 @@ export default {
 	}
 	
 
-	/* keep this similar to poll-panel.vue */
-	.proposal-panel {   
-		height: var(--polly-proposal-height);
-		/*overflow: hidden;*/
-		margin-bottom: var(--polly-proposal-margin-bottom);
-		cursor: grab;
-		
-		.proposal-title {
-			color: var(--primary);
-			margin: 0;
-			padding: 0;
-			/*font-size: 0.8rem !important;*/
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-		}
-		.proposal-subtitle {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			font-size: 0.8rem;  /* Fixed as small. Wie also would have var(--font-size-small); */
-			color: var(--secondary);
-		}
-		.proposal-icon {
-			--proposal_icon_size: 32px;
-			color: white;
-			background-color: var(--proposal-icon-bg);
-			margin: 0 0.75rem;
-			border-radius: 50%;
-			border: none;
-			text-align: center;
-			line-height: var(--proposal_icon_size);
-			min-width: var(--proposal_icon_size);
-			max-width: var(--proposal_icon_size);
-			width: var(--proposal_icon_size);
-			min-height: var(--proposal_icon_size);
-			max-height: var(--proposal_icon_size);
-			height: var(--proposal_icon_size);
-		}
-
-		.proposal-description {
-			font-size: 12px;
-			overflow: hidden;
-		}
-
-		.liked {
-			color: var(--primary);
-			cursor: default;
-		}
-
-		.drag-handle {
-			color: var(--secondary);
-			opacity: 0.5;
-			margin: 0 10px;
-		}
-	}
 }
 
 

@@ -22,7 +22,11 @@ afterEach(function() {
   }
 });
 
-context('LIQUIDO Happy Case', () => {
+// testIsolation:false — the happy case is one sequential flow whose steps build on each other.
+// The mocked backend keeps its "database" in sessionStorage (see liquido-graphql-client.mock.js).
+// With Cypress' default testIsolation:true, sessionStorage is wiped before every test, which would
+// discard the team/admin created in earlier steps and make the JWT re-login fail (JWT_TOKEN_INVALID).
+context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 
 	/** 
 	 * Create new test fixtures for each happy case test run. 
@@ -160,7 +164,7 @@ context('LIQUIDO Happy Case', () => {
 		//GIVEN a logged in admin
 		localStorage.setItem("LIQUIDO_JWT", fix.adminJWT)
 		cy.visit("/polls")
-		cy.get('#createPollButton').click()
+		cy.get('#createNewPollButton').click()
 
 		// ============= create poll
 		//GIVEN
@@ -275,7 +279,6 @@ context('LIQUIDO Happy Case', () => {
 		//WHEN going to polls
 		cy.get('#gotoPollsButton').click()
 		//THEN we see our poll in elaboration with the correct title
-		cy.get("#pollsInDiscussionArrow").click()
 		cy.contains(".poll-title", fix.pollTitle).click()
 		
 		// WHEN user adds a proposal
@@ -351,13 +354,30 @@ context('LIQUIDO Happy Case', () => {
 		
 		// AND a poll in voting
 		cy.get('#gotoPollsButton').click()
-		cy.get("#pollsInVotingArrow").click()
-		cy.contains(".poll-title", fix.pollTitle).click()
+		// team-home also lists polls that are in voting, so wait for the polls page and scope the
+		// poll selection to the polls list. Otherwise cy.contains() may match/click the stale
+		// team-home card during the fade transition and navigation to the poll won't land.
+		cy.get('#polls-page')
+		cy.get('#poll-list-wrapper').contains(".poll-title", fix.pollTitle).click()
 		cy.get("#goToCastVoteButton").click()
 		cy.get("#cast-vote-page")
 
+		// AND the poll's proposals have loaded into the "available proposals" pool
+		cy.get("#availableDraggable .proposal-panel").first().should("be.visible")
+
+		// AND user drags a proposal into his ballot.
+		// Native drag'n'drop (vuedraggable/SortableJS) is unreliable to simulate in Cypress,
+		// so we use the test-only helper that cast-vote.vue exposes when window.Cypress is set.
+		cy.window().then(win => {
+			expect(win.liquidoCastVoteTest, "cast-vote test helper should be exposed on window").to.exist
+			win.liquidoCastVoteTest.addFirstProposalToBallot()
+		})
+
+		// THEN the proposal appears in the ballot
+		cy.get("#ballotDraggable .proposal-panel").first().should("be.visible")
+
 		// WHEN user casts his vote
-		cy.get("#castVoteButton").click()
+		cy.get("#castVoteButton").should("not.be.disabled").click()
 		
 		// THEN success modal is shown with correct type attribute
 		cy.get('#rootPopupModal').should("have.attr", "data-modaltype", "success")

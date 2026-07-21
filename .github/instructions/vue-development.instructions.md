@@ -87,9 +87,7 @@ Full details in [doc/ai/i18n-usage-notes.md](../../doc/ai/i18n-usage-notes.md). 
 
 - **Routed components must have a single element root.** `<router-view>` passes
   `id="appContent" class="router-view container-lg"` as fallthrough attributes and wraps the page in a
-  `<Transition>`; a fragment / multi‑root / bare `<DnDProvider>` root triggers
-  *"Extraneous non‑props attributes"* and *"non‑element root cannot be animated"* warnings and breaks
-  layout. Wrap such roots in a plain `<div>`.
+  `<Transition>`; the page must not have multiple top‑level elements in the `<template>` root.
 - **Styling:** Bootstrap 5 classes + **CSS custom properties** from
   [src/styles/liquido.css](../../src/styles/liquido.css) — e.g. `--primary`, `--secondary`,
   `--unit` (1rem base spacing), `--two`, `--liquido-border-radius`, `--header-bg`, `--light-bg`,
@@ -103,27 +101,6 @@ Full details in [doc/ai/i18n-usage-notes.md](../../doc/ai/i18n-usage-notes.md). 
 - Reusable slots: `liquido-footer.vue` exposes `#info`, `#left`, `#primary`; `poll-card.vue` takes
   `poll`, `showArrowRight`, `showProposals`.
 
-## Drag & drop — `@vue-dnd-kit/core`
-
-Used by the cast‑vote v2 page. Non‑obvious rules learned the hard way:
-
-- `makeDraggable` / `makeDroppable` / `useDnDProvider` call `inject` internally — they **must run in a
-  component nested inside `<DnDProvider>`**, never in the same component that renders the provider.
-- They **register the element inside `onMounted`** (read the ref once, no watcher). So the draggable /
-  droppable element **must already exist at mount**. If it is behind a `v-if` that is false at mount
-  (e.g. an async `loading` flag), it never registers — use **`v-show`** to keep it mounted instead.
-- Draggable elements need **`touch-action: none`** (and `user-select: none`) in CSS, otherwise Chrome
-  treats the touch listener as passive and logs *"Unable to preventDefault inside passive event
-  listener"* and the drag misbehaves. For long scrollable lists, apply this to a **drag handle** only
-  and pass `dragHandle: '.handle'`.
-- `<DnDProvider>` renders a **fragment** (slot + a teleported preview), so it cannot be a routed
-  component's root — wrap it in a `<div>` (see the single‑root rule above).
-- The floating overlay has class `.dnd-kit-preview`; it uses `transform: translate3d()` for cursor
-  tracking, so **do not** override `transform` on `.dnd-kit-preview` itself — style its child instead,
-  and keep overlay CSS **global** (it is teleported outside scoped DOM).
-- Update lists by **replacing** arrays from `event.helpers.suggestSort()` — never mutate in place
-  (the library detects changes by identity).
-
 ## Quick gotcha checklist
 
 - [ ] Ran commands with `npm.cmd` / `npx.cmd`.
@@ -131,4 +108,4 @@ Used by the cast‑vote v2 page. Non‑obvious rules learned the hard way:
 - [ ] New routed view has a single `<div>` root.
 - [ ] No `proxy.$t()` in `<script setup>` — used a local `t()` mock or template `$t()`.
 - [ ] Used liquido.css CSS variables + Bootstrap, scoped styles, tabs for indentation.
-- [ ] For DnD: elements kept mounted (`v-show`), `touch-action: none` set, provider nested correctly.
+

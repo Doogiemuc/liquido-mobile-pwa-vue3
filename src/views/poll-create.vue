@@ -28,7 +28,7 @@
 
 		<liquido-footer>
 			<template #primary>
-				<button type="button" class="btn btn-lg w-100 btn-primary" 
+				<button id="createPollButton" type="button" class="btn btn-lg w-100 btn-primary" 
 				  :disabled="createPollButtonDisabled"
 				  @click="clickCreateNewPoll">
 					{{ $t("createPoll") }}

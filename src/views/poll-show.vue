@@ -188,7 +188,7 @@ export default {
 		})
 		EventBus.on(EventBus.Event.POLL_LOADED, (loadedPoll) => {
 			if (loadedPoll.id === this.poll.id) {
-				console.log("poll-show.vue: Poll.id=" + this.poll.id + " was reloaded", loadedPoll)
+				console.log("poll-show.vue: Poll.id=" + this.poll.id + " has bee reloaded.")
 				this.poll = loadedPoll
 			}
 		})
