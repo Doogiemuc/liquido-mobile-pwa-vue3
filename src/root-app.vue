@@ -77,7 +77,7 @@ export default {
 			de: {
 				// We carefully distinguish between these two cases!
 				NetworkOffline: "Du bist offline. Bitte schalte dein WLAN ein.",
-				BackendNotReachable: "Ich kann den LIQUIDO Server gerade nicht erreichen. Bitte versuche es später noch einmal.",
+				BackendNotReachable: "Ich kann den LIQUIDO Server gerade nicht erreichen. Bitte prüfe ob du onlien bist.",
 				DEV_OpenGraphQL: "DEV HINT: Open /graphql/schema.graphql"
 			}
 		},

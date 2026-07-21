@@ -200,13 +200,13 @@ export default {
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			width: calc(var(--liquido-header-height) * 0.8);
-			height: calc(var(--liquido-header-height) * 0.8);
+			width: calc(var(--liquido-header-height) * 0.6);
+			height: calc(var(--liquido-header-height) * 0.6);
 			border: 0;
 			border-radius: 50%;
 			background: rgba(0, 0, 0, 0.07);
 			color: var(--header-color);
-			/*font-size: 1.1rem;*/
+			font-size: 1.2rem;
 			cursor: pointer;
 			padding: 0;
 		}

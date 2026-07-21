@@ -8,7 +8,7 @@
 			<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;{{ $t('Loading') }}
 		</div>
 	
-		<poll-card v-if="poll.id" :poll="poll" :show-arrow-right="false" :show-proposals="true" class="mb-4" />
+		<poll-card v-if="poll.id && !loadingPoll" :poll="poll" :show-arrow-right="false" :show-proposals="!hasAlreadyVoted" class="shadow-sm mb-4" />
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
 			<div v-html="$t('cannotFindPoll', {pollId: pollId})" />
@@ -17,13 +17,12 @@
 			</button>
 		</div>
 
-		<div v-if="!showError" class="alert liquido-info">
+		<div v-if="!showError && !hasAlreadyVoted" class="alert liquido-info">
 			<p v-if="poll.status === 'ELABORATION'" v-html="$t('pollInElaborationInfo')" />
-			<p v-if="poll.status === 'VOTING' && !poll.usersBallot">
+			<p v-if="poll.status === 'VOTING' && !hasAlreadyVoted">
 				{{ $t('votingPhaseIsRunngin') }}
 				<router-link :to="{name: 'castVote'}">{{ $t('votingPhaseInfo') }}</router-link>
 			</p>
-			<p v-if="poll.status === 'VOTING' &&  poll.usersBallot" v-html="$t('alreadyVotedInfo')" />
 			<p v-if="poll.status === 'FINISHED'" id="finishedPollInfo">
 				{{ $t('finishedPollInfo', {
 					winnerTitle: poll.winner ? poll.winner.title : "",
@@ -32,25 +31,36 @@
 			</p>
 		</div>
 
+		<div v-if="hasAlreadyVoted" class="already-voted-ballot">
+			<h2 class="page-title mt-5">{{ $t('yourBallot') }}</h2>
+			<p class="page-subtitle text-center">{{ $t('alreadyVotedSubtitle') }}</p>
+			<liquido-ballot
+				:proposals="proposalsInBallot"
+				:created-by-label="$t('createdBy')"
+				:interactive="false"
+				:disabled="true"
+				:show-drag-handle="false"
+				draggable-id="pollShowBallotDraggable"
+			/>
+		</div>
+
 		<liquido-footer>
 			<template #info>
 				<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && !userAlreadyHasProposal" v-html="$t('canAddProposal')" />	
 				<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && userAlreadyHasProposal" v-html="$t('alreadyAddedProposal')" />
 			</template>
 			<template #primary>
-				<button v-if="poll.status === 'VOTING' && !poll.usersBallot" id="goToCastVoteButton" type="button" class="btn btn-lg w-100 btn-primary" @click="clickCastVote()">
+				<button v-if="poll.status === 'VOTING' && !hasAlreadyVoted" id="goToCastVoteButton" type="button" class="btn btn-primary" @click="clickCastVote()">
 					<i class="fas fa-person-booth" />
 					{{ $t("goToCastVote") }}
 					<i class="fas fa-angle-double-right" />
 				</button>
 
-				<button v-else-if="poll.status === 'VOTING' && poll.usersBallot" type="button" class="btn btn-primary btn-lg" @click="clickCastVote()">
-					<i class="fas fa-person-booth" />
-					{{ $t("editOwnVote") }}
-					<i class="fas fa-angle-double-right" />
+				<button v-else-if="poll.status === 'VOTING' && hasAlreadyVoted" id="alreadyVotedButton" type="button" class="btn btn-primary" disabled="true">
+					{{ $t("alreadyVotedButton") }}
 				</button>
 	
-				<button v-else-if="showAddProposal" id="addProposalButton" type="button" class="btn btn-primary btn-lg" @click="clickAddProposal()">
+				<button v-else-if="showAddProposal" id="addProposalButton" type="button" class="btn btn-primary" @click="clickAddProposal()">
 					{{ $t("addProposal") }}
 					<i class="fas fa-angle-double-right" />
 				</button>
@@ -82,6 +92,7 @@
 <script>
 import PollCard from "@/components/poll-card.vue"
 import liquidoFooter from "@/components/liquido-footer.vue"
+import liquidoBallot from "@/components/liquido-ballot.vue"
 // import polly from '@/components/polly.vue'
 import EventBus from "@/services/event-bus.js"
 import api from "@/services/liquido-graphql-client.js"
@@ -99,6 +110,7 @@ export default {
 					"<p>Sobald die Wahl startet, kannst du hier anonym und sicher deine Stimme abgeben.</p>",
 				canAddProposal: 
 					"Du kannst einen eigenen Vorschlag zu dieser Abstimmung hinzufügen.",
+				yourBallot: "Dein Stimmzettel",
 				alreadyAddedProposal: 
 					"Du hast deinen Vorschlag bereits zu dieser Abstimmung hinzugefügt.",
 				addProposal: "Vorschlag hinzufügen",
@@ -112,15 +124,16 @@ export default {
 				votingPhaseInfo: "Du kannst jetzt deine Stimme abgeben.",
 				goToCastVote: "Zur Abstimmung",
 				editOwnVote: "Stimmzettel ändern",
-				alreadyVotedInfo:
-					"<p>Du hast in dieser Abstimmung bereits eine Stimme abgegeben.</p>",
+				alreadyVotedSubtitle: "Du hast diese Stimme bereits abgegeben:",
+				alreadyVotedButton: "Stimme bereits abgegeben",
+				createdBy: "von",
 				finishedPollInfo: "Diese Abstimmung ist abgeschlossen. Gewonnen hat der Vorschlag '{winnerTitle}'. " +
 					"Es wurden {numBallots} Stimmen abgegeben.",
 				backToPolls: "zurück",
 			},
 		},
 	},
-	components: { PollCard, liquidoFooter },
+	components: { PollCard, liquidoFooter, liquidoBallot },
 	props: {
 		// Allow number or string that contains an integer. Url parameter is passed as String, 
 		// but $router.push({name: "pollShow", params: {pollId: 4711 }}) can be passed as number. We'll accept both
@@ -135,6 +148,8 @@ export default {
 			loadingPoll: true,
 			startVoteLoading: false,
 			finishVoteLoading: false,
+			existingBallot: undefined,
+			proposalsInBallot: [],
 		}
 	},
 	computed: {
@@ -148,7 +163,10 @@ export default {
 		},
 		userIsAdmin() {
 			return api.isAdmin()
-		},		
+		},
+		hasAlreadyVoted() {
+			return this.poll.status === "VOTING" && !!this.existingBallot
+		},
 		userAlreadyHasProposal() {
 			let currentUser = api.getCachedUser()
 			if (!this.poll || !this.poll.proposals || !currentUser) return false
@@ -190,6 +208,7 @@ export default {
 			if (loadedPoll.id === this.poll.id) {
 				console.log("poll-show.vue: Poll.id=" + this.poll.id + " has bee reloaded.")
 				this.poll = loadedPoll
+				this.loadExistingBallot()
 			}
 		})
 	},
@@ -209,14 +228,43 @@ export default {
 			return api.getPollById(this.pollId, true)
 				.then(receivedPoll => {
 					this.poll = receivedPoll
-					this.loadingPoll = false
 					this.showError = false
+					return this.loadExistingBallot()
+				})
+				.then(() => {
+					this.loadingPoll = false
 				})
 				.catch(err => {
 					console.warn("Cannot find poll.id=" + this.pollId, err)
 					this.loadingPoll = false
 					this.showError = true
 				})
+		},
+
+		loadExistingBallot() {
+			this.existingBallot = undefined
+			this.proposalsInBallot = []
+			if (this.poll.status !== "VOTING") return Promise.resolve()
+
+			return api.getMyBallot(this.poll.id)
+				.then(ballot => {
+					this.existingBallot = ballot
+					this.setProposalsInBallot(ballot)
+				})
+				.catch(err => console.warn("Cannot get ballot of user", err))
+		},
+
+		setProposalsInBallot(ballot) {
+			if (!ballot || !this.poll.proposals) {
+				this.proposalsInBallot = []
+				return
+			}
+
+			let proposalsById = {}
+			this.poll.proposals.forEach(prop => proposalsById[prop.id] = prop)
+			this.proposalsInBallot = ballot.voteOrder
+				.map(elem => proposalsById[elem.id])
+				.filter(Boolean)
 		},
 		
 		clickAddProposal() {

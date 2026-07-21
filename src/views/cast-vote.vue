@@ -1,7 +1,9 @@
 <template>
 	<div>
 		<div class="liquido-hero">
-			<h2 id="cast-vote-page" class="page-title">{{ $t('castVoteTitle') }}</h2>
+			<h2 id="cast-vote-page" class="page-title">
+				{{ hasAlreadyVoted ? $t('voteCastedPageTitle') : $t('castVotePageTitle') }}
+			</h2>
 
 			<div v-if="loading" class="draggable">
 				<div class="spinner-border" role="status">
@@ -11,89 +13,45 @@
 			</div>
 
 			<div v-if="!loading" class="poll-card-wrapper">
-				<poll-card :poll="poll" :show-arrow-right="false" class="poll-card"></poll-card>
+				<poll-card :poll="poll" :show-arrow-right="false" class="poll-card shadow-sm"></poll-card>
 			</div>
 		</div>
 
-		<h2 class="page-title">{{ $t('yourBallot') }}</h2>
-		<p class="page-subtitle text-center" v-html="$t('castVoteSubtitle')"></p>
+		<div v-if="hasAlreadyVoted">
+			<h2 class="page-title">{{ $t('voteCastedBallot') }}</h2>
+			<p class="page-subtitle text-center">{{ $t('voteCastedSubtitle') }}</p>
+		</div>
+		<div v-else>
+			<h2 class="page-title">{{ $t('yourBallot') }}</h2>
+			<p class="page-subtitle text-center">{{ $t('castVoteSubtitle') }}</p>
+		</div>
+		
 
 		<div v-if="!loading" class="cast-vote-wrapper">
-			<!-- Drop target: the user drops & sorts the proposals he wants to vote for -->
-			<div class="the-ballot" :class="{ 'ballot-drag-over': isDraggingOverBallot }">
-				<div class="empty-slots-behind">
-					<div class="empty-slot d-flex flex-row align-items-center user-select-none" aria-hidden="true">
-						<div class="rank-circle">
-							1
-						</div>
-						<div class="d-flex">
-							<p class="mb-0">{{ $t('favoriteDropTargetInfo') }}</p>
-						</div>
-					</div>
-					<div class="empty-slot d-flex flex-row align-items-center user-select-none" aria-hidden="true">
-						<div class="rank-circle">
-							2
-						</div>
-						<div class="d-flex">
-							<p class="mb-0">{{ $t('secondDropTargetInfo', { n: 2 })	 }}</p>
-						</div>
-					</div>
-				</div>
-				
-				<draggable 
-					id="ballotDraggable" 
-					v-model="proposalsInBallot" 
-					class="draggable ballot-draggable" 
-					group="proposals" 
-					item-key="id"
-					animation="500"
-					swapThreshold="0.60"
-					:move="onDragMove"
-					@end="onDragEnd"
-					:disabled="loading || castVoteLoading" 
-					:can-scroll-x="false">
-					<template #item="{ element: proposal, index }">
-						<liquido-proposal :proposal="proposal" :rank="index + 1" />
-					</template>
-					
-					<!-- template #footer>
-						
-						<div v-if="proposalsInBallot.length === 0 && availableProposals.length > 0" class="empty-slot d-flex flex-row align-items-center user-select-none" aria-hidden="true">
-							<div class="rank-circle">
-								1
-							</div>
-							<div class="d-flex">
-								<p class="mb-0">{{ $t('favoriteDropTargetInfo') }}</p>
-							</div>
-						</div>
-						
-						<div v-if="proposalsInBallot.length < 2" class="empty-slot d-flex flex-row align-items-center user-select-none" aria-hidden="true">
-							<div class="rank-circle">
-							  {{ proposalsInBallot == 0 ? 2 : proposalsInBallot.length + 1 }}
-							</div>
-							<div class="d-flex">
-								<p class="mb-0">{{ $t('secondDropTargetInfo', { n: proposalsInBallot == 0 ? 2 : proposalsInBallot.length + 1 }) }}</p>
-							</div>
-						</div>
-					</template -->
+			<liquido-ballot
+				class="shadow"
+				:proposals="proposalsInBallot"
+				:proposal-count="poll?.proposals?.length"
+				:show-empty-slots="!hasAlreadyVoted"
+				:empty-slot-title="emptySlotTitle"
+				:created-by-label="$t('createdBy')"
+				:interactive="!hasAlreadyVoted"
+				:disabled="loading || castVoteLoading || hasAlreadyVoted"
+				:show-drag-handle="!hasAlreadyVoted"
+				:is-dragging-over="isDraggingOverBallot"
+				:move="onDragMove"
+				draggable-id="ballotDraggable"
+				@update:proposals="proposalsInBallot = $event"
+				@drag-end="onDragEnd"
+			/>
 
-
-				</draggable>
-				<!-- Just a small, very subtle hint, that the user can add more proposals into his ballot -->
-				<div v-if="poll?.proposals?.length > 2 && proposalsInBallot.length < poll?.proposals.length" class="ballot-footer-info">
-					...
-				</div>
-			</div>
-
-			
 		
 			
-			
-			<!-- Available proposals  -->
+			<!-- Available proposals (only shown if user has not yet casted his vote) -->
 
-			<div class="d-flex justify-content-around align-items-center">
+			<div v-if="!hasAlreadyVoted" class="d-flex justify-content-around align-items-center">
 				<!-- Upward arrow hint: drag proposals up from the available list into your ballot -->
-				<div class="drag-up-arrow" aria-hidden="true">
+				<div  class="drag-up-arrow" aria-hidden="true">
 					<svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg">
 						<path d="M50 4 L92 23 L68 23 L68 46 L32 46 L32 23 L8 23 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" />
 					</svg>
@@ -106,9 +64,11 @@
 					</svg>
 				</div>
 			</div>
-			<div class="available-proposals">	
+			<div v-if="!hasAlreadyVoted || availableProposals.length > 0" class="available-proposals">	
+				
 				<p v-if="availableProposals.length === 0" class="available-proposals-empty" v-html="$t('youVotedForAllProposals')"></p>
-				<draggable id="availableDraggable" v-model="availableProposals" class="draggable" group="proposals" item-key="id"
+
+				<draggable v-if="!hasAlreadyVoted" id="availableDraggable" v-model="availableProposals" class="draggable" group="proposals" item-key="id"
 					:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
 					:move="onDragMove" @end="onDragEnd"
 					:can-scroll-x="false">
@@ -116,20 +76,13 @@
 						<liquido-proposal :proposal="proposal" />
 					</template>
 				</draggable>
+				
 			</div>
 		</div>
 
-		<div class="page-subtitle mt-5">
-			<p v-html="$t('castVoteInfo')"></p>
-		</div>
-
-
-		<div v-if="isUpdatableBallot" id="isUpdateableBallotInfo" class="alert liquido-info">
-			<i class="fas fa-info-circle float-end" />
-			<p v-html="$t('updateBallotInfo')"></p>
-		</div>
-
-		<div v-if="hasBallot" class="alert liquido-info">
+		
+		
+		<div v-if="hasAlreadyVoted" class="alert liquido-info mt-5">
 			<p>
 				{{ $t("checksumOfYourBallot") }}
 			</p>
@@ -144,17 +97,38 @@
 			</p>
 		</div>
 
+		<div class="page-subtitle mt-5">
+			<p v-html="$t('castVoteInfo')"></p>
+		</div>
+
 		<liquido-footer>
 			<template #primary>
-				<button v-if="poll && poll.status === 'VOTING'" id="castVoteButton" type="button" class="btn btn-primary btn-lg w-100" :disabled="loading || castVoteLoading || !canCastVote" @click="clickCastVote()">
-					<div v-if="castVoteLoading" class="spinner-border" role="status">
+				<button v-if="loading || castVoteLoading" id="loadingButton" type="button" class="btn btn-primary" disabled="true">
+					<div class="spinner-border" role="status">
 						<span class="visually-hidden">{{ $t("Loading") }}</span>	
 					</div>
-					<i v-if="!castVoteLoading" class="fas fa-vote-yea"></i>
-					{{ isUpdatableBallot ? $t("updateBallotButton") : $t("castVoteButton") }}
+				</button>
+				<button v-else-if="hasAlreadyVoted" id="alreadyVotedButton" type="button" class="btn btn-primary" disabled="true">
+					{{ $t("alreadyVotedButton") }}
+				</button>
+				<button v-else id="castVoteButton" type="button" class="btn btn-primary" :disabled="!canCastVote" @click="clickCastVote()">
+					<i class="fas fa-vote-yea"></i>
+					{{ $t("castVoteButton") }}
 				</button>
 			</template>
 		</liquido-footer>
+
+		<popup-modal id="confirmVoteModal" ref="confirmVoteModal" primary-button-icon="fas fa-vote-yea">
+			<template #modal-body>
+				<p>{{ confirmationMessage }}</p>
+				<liquido-ballot
+					class="shadow"
+					:proposals="proposalsInBallot"
+					:created-by-label="$t('createdBy')"
+					draggable-id="confirmationBallotDraggable"
+				/>
+			</template>
+		</popup-modal>
 	</div>
 </template>
 
@@ -164,7 +138,8 @@ import api from "@/services/liquido-graphql-client.js"
 import draggable from 'vuedraggable'
 import liquidoFooter from "@/components/liquido-footer.vue";
 import pollCard from "@/components/poll-card.vue"
-import liquidoProposal from "@/components/liquido-proposal.vue"
+import popupModal from "@/components/popup-modal.vue"
+import liquidoBallot from "@/components/liquido-ballot.vue"
 import log from "loglevel"
 
 export default {
@@ -177,14 +152,29 @@ export default {
 				yourBallot: "Your ballot",
 				dropProposalsHere: "Drop the proposals that you want to vote for here. And sort them according to your preferences.",
 				availableProposals: "Available proposals",
+				confirmVoteTitle: "Confirm ballot",
+				confirmVoteMessage: "Please review your ballot. Do you want to cast this vote now?",
+				confirmVoteBallot: "Your ballot:",
+				confirmVoteButton: "Cast final vote",
+				cancel: "Edit ballot",
 			},
 			de: {
-				castVoteTitle: "Stimme abgeben",
-				castVoteSubtitle: "Ziehe die Vorschläge, die du unterstützen möchtest, in die Slots. Sortiere sie dann in deinem Stimmzettel.",
+				// User can cast a vote
+				castVotePageTitle: "Stimme abgeben",
+				castVoteBallotTitle: "Dein Stimmzettel",
+				castVoteSubtitle: "Ziehe die Vorschläge, welche du unterstützen möchtest, in die Slots und ordne sie nach deiner Präferenz.",
+				castVoteButton: "Diese Stimme abgeben",
+
+				// User has already voted
+				voteCastedPageTitle: "Abstimmung",   // just generic
+				voteCastedBallot: "Abgegebener Stimmzettel",
+				voteCastedSubtitle: "Danke, du hast diese Stimme abgegeben.",
+				alreadyVotedButton: "Stimme bereits abgegeben",
+
 				favoriteDropTargetInfo: "Slot 1 - dein Lieblingsvorschlag",
-				secondDropTargetInfo: "Slot 2 - leer",
+				emptySlotNumber: "Slot {n} - leer",
 				
-				youVotedForAllProposals: "Danke dass du alle Vorschläge unterstützt. Sortiere sie oben und gib dann deine Stimme ab.",
+				youVotedForAllProposals: "Danke dass du alle Vorschläge unterstützt. Sortiere sie oben nach deiner Präferenz und gib dann deine Stimme ab.",
 				availableProposals: "Verfügbare Vorschläge",
 				castVoteInfo:
 					"<p>In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> Vorschlag, sondern erstellst eine Rangfolge derjenigen Vorschläge, " +
@@ -197,20 +187,25 @@ export default {
 				voteCountedNTimes: "Deine Stimme als Proxy wurde {voteCount} mal gezählt.",
 				yourBallot: "Dein Stimmzettel",
 				updateBallotButton: "Eigene Stimme aktualisieren",
-				castVoteButton: "Diese Stimme abgeben",
+				
+				confirmVoteTitle: "Stimmzettel bestätigen",
+				confirmVoteMessage: "Bitte prüfe deinen Stimmzettel. Möchtest du diese Stimme jetzt so abgeben? Du kannst deine Stimme später nicht mehr ändern!",
+				confirmVoteBallot: "Dein Stimmzettel:",
+				confirmVoteButton: "Stimme final abgeben",
+				cancel: "Stimmzettel bearbeiten",
 				voteCastedSuccessfully: "Deine Stimme wurde erfolgreich gezählt.",
 				voteUpdatedSuccessfully: "Deine Stimme wurde erfolgreich aktualisiert.",
 				voteCastError: "Es gab leider einen technischen Fehler beim Abgeben deiner Stimme. Bitte versuche es später noch einmal.",
 				updateBallotInfo: "Du hast in dieser Abstimmung bereits eine Stimme abgegeben. In <span class='liquido'></span> kannst du deinen Stimmzettel " +
 					"auch jetzt noch ändern, so lange die Abstimmung noch läuft.",
-				checksumOfYourBallot: "Mit dieser Checksumme kannst du prüfen ob dein Stimmzettel korrekt gezählt wurde:",
+				checksumOfYourBallot: "Mit dieser Checksumme kannst du prüfen ob deine Stimme korrekt gezählt wurde:",
 				verifyBallotButton: "Prüfen",
 				ballotIsVerified: "Deine Stimme wurde erfolgreich gezählt.",
 				backToPolls: "Zurück zu euren Abstimmungen"
 			},
 		},
 	},
-	components: { draggable, liquidoFooter, pollCard, liquidoProposal },
+	components: { draggable, liquidoFooter, pollCard, popupModal, liquidoBallot },
 	props: {
 		// the cast-vote page only receives the pollId and reloads the poll from the backend
 		pollId: { type: String, required: true },
@@ -225,7 +220,7 @@ export default {
 			existingBallot: undefined,
 			voteCount: 0,
 			castVoteLoading: false,
-			isFirstVote: true,		// used for showing the correct confirmation message
+			confirmationMessage: "",
 			ballotIsVerified: false,
 			isDraggingOverBallot: false,   // highlight the ballot while a proposal is dragged over it
 			draggingHintObserver: null,
@@ -233,20 +228,19 @@ export default {
 	},
 	computed: {
 		canCastVote() {
-			return this.poll && this.poll.status === "VOTING" && this.proposalsInBallot.length > 0
+			return this.poll && this.poll.status === "VOTING" && !this.hasAlreadyVoted && this.proposalsInBallot.length > 0 
 		},
-		hasBallot() {
+		hasAlreadyVoted() {
 			return this.existingBallot
 		},
 		isUpdatableBallot() {
-			return this.poll && this.poll.status === "VOTING" && this.existingBallot
+			return false  //  voters are not allowed to update their ballot
+			// this.poll && this.poll.status === "VOTING" && this.existingBallot
 		},
 	},
 	created() {
 		this.loading = true
-		this.$store.setHeaderTitle(this.$t("castVoteTitle"))
-		this.$store.setHeaderBackTarget({name: "showPoll", params: {pollId: this.pollId} })
-
+		
 		/** 
 		 * Force refresh of the poll we want to cast a vote on. Load the from the backend.
 		 */
@@ -264,7 +258,6 @@ export default {
 		 */
 		let getExistingBallot = () => api.getMyBallot(this.pollId).then(ballot => {
 			this.existingBallot = ballot  // may be undefined!
-			if (this.existingBallot) this.isFirstVote = false
 			return ballot
 		}).catch(err => console.warn("Cannot get ballot of user", err))
 
@@ -295,6 +288,8 @@ export default {
 			.then(setProposalsInBallot)		// pre-fill drop target from ballot, or start with an empty drop target
 			.then(() => {
 				// Poll loading is complete, now set up the dragging hint observer
+				this.$store.setHeaderTitle(this.hasAlreadyVoted ? this.$t('voteCastedPageTitle') : this.$t("castVotePageTitle"))
+				this.$store.setHeaderBackTarget({name: "showPoll", params: {pollId: this.pollId} })
 				this.$nextTick(() => {
 					this.setupDraggingHintObserver()
 				})
@@ -324,6 +319,21 @@ export default {
 		if (window.Cypress) delete window.liquidoCastVoteTest
 	},
 	methods: {
+		/** 
+		 * Show one empty slot for every proposal in the ballot 
+		 * But the ballot is set to overflow: hidden and has a minHeight, 
+		 * just right to show at least two slots and one half one. 
+		 * To visualy give a hint that the user CAN drag more proposals up into the ballot,
+		 * but does not have to.
+		 */
+		emptySlotTitle(index) {
+			if (index == 0) {
+				return this.$t('favoriteDropTargetInfo')
+			} else {
+				return this.$t('emptySlotNumber', { n: index+1 })
+			}
+		},
+
 		/** Collapse the descriptions of all proposals in the ballot (not used) */
 		toggleBallotCollapse() {
 			this.$refs["proposalsInBallot"].forEach(pollPanel => {
@@ -362,6 +372,25 @@ export default {
 		},
 
 		clickCastVote() {
+			if (!this.canCastVote || this.castVoteLoading) return
+
+			this.confirmationMessage = this.$t("confirmVoteMessage")
+			this.$refs.confirmVoteModal.showInfo(
+				this.confirmationMessage,
+				this.$t("confirmVoteTitle"),
+				this.$t("confirmVoteButton"),
+				this.$t("cancel"),
+				this.confirmCastVote,
+				this.closeVoteConfirmation
+			)
+		},
+
+		closeVoteConfirmation() {
+			this.$refs.confirmVoteModal.hide()
+		},
+
+		confirmCastVote() {
+			this.closeVoteConfirmation()
 			this.castVoteLoading = true
 			let voteOrderIds = this.proposalsInBallot.map(proposal => proposal.id)
 
@@ -375,16 +404,10 @@ export default {
 					this.existingBallot = castVoteResponse.ballot
 					this.voteCount = castVoteResponse.voteCount
 					this.castVoteLoading = false
-					
-					// Build success message
-					let successMsg = this.isFirstVote ? this.$t("voteCastedSuccessfully") : this.$t("voteUpdatedSuccessfully")
-					if (this.voteCount > 1) {
-						successMsg += "\n" + this.$t('voteCountedNTimes', { voteCount: this.voteCount })
-					}
-					this.$root.showSuccess(successMsg, "")
+					this.$root.showSuccess(this.$t("voteCastedSuccessfully"), "")
 				})
 			}).catch((err) => {
-				console.error("Cannot cast vote", err)
+				console.error("Cannot cast vote: " + err?.liquidoException?.liquidoErrorMessage, err)
 				this.castVoteLoading = false
 				this.$root.showError(this.$t('voteCastError'), "")
 			})
@@ -504,10 +527,15 @@ export default {
 /* Poll-card.vue needs a wrapper to define its height. */
 .poll-card-wrapper {
 	height: 10rem;
+	padding-bottom: var(--unit);
 }
 
 /* The wrapper is hidden until poll is loaded. */
 .cast-vote-wrapper {
+	/* 
+		These heights are extremly important.  
+	  The minHeight of both draggable areas is calcolated based on these. 
+	*/
 	--polly-proposal-height: 4rem;
 	--polly-proposal-margin-bottom: 0.5rem;
 
@@ -532,8 +560,10 @@ export default {
 		.empty-slots-behind {
 			position: absolute;
 			top: var(--unit);
+			bottom: 0;
 			left: var(--unit);
 			right: var(--unit);
+			overflow: hidden;
 			z-index: 1;
 		}
 		/* Must also position the draggable absolute with a higher z-index *before* the .empty-slots-behind */
@@ -693,6 +723,10 @@ export default {
 	}
 	
 
+
+	.proposal-panel-readonly {
+		cursor: default;
+	}
 }
 
 

@@ -1,8 +1,8 @@
 <template>
 	<div>
-		<h1 id="addProposalTitle" class="page-title">
+		<h2 id="addProposalTitle" class="page-title">
 			{{ $t("addProposal") }}
-		</h1>
+		</h2>
 
 		<div class="card shadow-sm mb-5">
 			<div class="card-body">
@@ -90,24 +90,32 @@
 		</div>
 
 		<div v-if="poll && poll.proposals && poll.proposals.length > 0">
-			<p>{{ $t('previousProposalsInPoll') }}</p>
-			<poll-panel
+			<p class="">{{ $t('previousProposalsInPoll') }}</p>
+			<poll-card
 				:poll="poll"
-				:collapse="true"
-				:read-only="true"
-				class="shadow-sm mb-3"
+				:showArrowRight="false"
+				:showProposals="true"
 			/>
 		</div>
 		<div v-else class="alert mb-3">
 			{{ $t('noProposalYet') }}
 		</div>
+
+		<liquido-footer>
+			<template #primary>
+				<button type="button" class="btn btn-primary" :disabled="saveButtonDisabled" @click="saveProposal">
+					{{ $t("saveProposal") }}
+				</button>
+			</template>
+		</liquido-footer>
 	</div>
 </template>
 
 <script>
 
-import pollPanel from "@/components/poll-panel.vue"
+import pollCard from "@/components/poll-card.vue"
 import liquidoInput from "@/components/liquido-input.vue"
+import liquidoFooter from "../components/liquido-footer.vue"
 import api from "@/services/liquido-graphql-client.js"
 import EventBus from "@/services/event-bus.js"
 import faSolidIconsFree from "@/styles/fontawesome-solid-icons-free.json"  // List of free fontawesome icon names
@@ -119,6 +127,7 @@ export default {
 			de: {
 				addProposal: "Vorschlag hinzufügen",
 				yourProposal: "Dein neuer Vorschlag",
+				saveProposal: "Vorschlag speichern",
 				title: "Titel",
 				titleInvalid: "Titel zu kurz: Bitte mindestens {minChars} Zeichen!",
 				proposalDescription: "Beschreibung",
@@ -135,7 +144,7 @@ export default {
 			},
 		},
 	},
-	components: { pollPanel, liquidoInput },
+	components: { pollCard, liquidoInput, liquidoFooter },
 	props: {
 		pollId: { type: String, required: true },
 	},

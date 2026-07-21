@@ -110,6 +110,8 @@ onMounted(() => {
 	EventBus.on(EventBus.Event.POLLS_LOADED, syncPolls)
 	
 	syncPolls()
+
+	scrollToTop()
 })
 
 /* -----------------------

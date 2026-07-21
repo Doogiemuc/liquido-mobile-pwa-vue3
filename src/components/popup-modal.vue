@@ -21,7 +21,9 @@
 					</slot>
 				</div>
 				<div class="modal-body">
-					<slot>{{ myMessage }}</slot>
+					<slot name="modal-body">
+						<slot>{{ myMessage }}</slot>
+					</slot>
 				</div>
 				<div class="modal-footer">
 					<slot name="modal-footer">
@@ -29,6 +31,7 @@
 							{{ mySecondaryButtonText }}
 						</button>
 						<button id="modalPrimaryButton" type="button" class="btn btn-primary flex-grow-1" @click="clickPrimary">
+							<i v-if="myPrimaryButtonIcon" class="me-2" :class="myPrimaryButtonIcon"></i>
 							{{ myPrimaryButtonText }}
 						</button>
 					</slot>
@@ -45,7 +48,7 @@
  * Use like this:
  * 
  * <popup-modal id="successModal" ref="successModal" type="success" :primaryButtonText="Ok" >
- *  <div>Any HTML content</div>
+ *  <template #modal-body><div>Any HTML content</div></template>
  * </popup-modal>
  * 
  * And then open e.g. like this
@@ -78,6 +81,7 @@ export default {
 		title: { type: String, required: false, default: "" },  // or HTML can be provided into the <slot modal-title>
 		message: { type: String, required: false, default: "" },  // or HTML can be provided into the <slot modal-body>
 		contentClass: { type: String, required: false, default: "" },
+		primaryButtonIcon: { type: String, required: false, default: "" },
 		primaryButtonText: { type: String, required: false, default: function() { return OK_text } },
 		secondaryButtonText: { type: String, required: false, default: undefined },
 	},
@@ -88,6 +92,7 @@ export default {
 			myMessage: this.message,
 			myTitle: this.title,
 			myType: this.type,
+			myPrimaryButtonIcon: this.primaryButtonIcon,
 			myPrimaryButtonText: this.primaryButtonText,
 			mySecondaryButtonText: this.secondaryButtonText,
 			// optional callbacks provided by caller when showing the modal
@@ -126,7 +131,7 @@ export default {
 				case "error":
 					return "bg-danger text-white" + this.contentClass
 				default:
-					return "bg-info text-white " + this.contentClass
+					return "liquido-modal-info " + this.contentClass
 			}
 		}
 	},
@@ -288,6 +293,15 @@ export default {
 	}
 	&.bg-warning .btn {
 		background-color: darkgoldenrod;
+	}
+	&.liquido-modal-info {
+		color: var(--primary);
+		background-color: var(--liquido-info-background);
+		border: 1px solid var(--liquido-info-border-color);
+	}
+	&.liquido-modal-info .modal-title,
+	&.liquido-modal-info .modal-body {
+		color: var(--primary);
 	}
 
 }
