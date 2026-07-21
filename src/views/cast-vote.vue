@@ -139,6 +139,7 @@ import draggable from 'vuedraggable'
 import liquidoFooter from "@/components/liquido-footer.vue";
 import pollCard from "@/components/poll-card.vue"
 import popupModal from "@/components/popup-modal.vue"
+import liquidoProposal from "@/components/liquido-proposal.vue"
 import liquidoBallot from "@/components/liquido-ballot.vue"
 import log from "loglevel"
 
@@ -203,9 +204,9 @@ export default {
 				ballotIsVerified: "Deine Stimme wurde erfolgreich gezählt.",
 				backToPolls: "Zurück zu euren Abstimmungen"
 			},
-		},
+		}
 	},
-	components: { draggable, liquidoFooter, pollCard, popupModal, liquidoBallot },
+	components: { draggable, liquidoFooter, pollCard, popupModal, liquidoBallot, liquidoProposal },
 	props: {
 		// the cast-vote page only receives the pollId and reloads the poll from the backend
 		pollId: { type: String, required: true },
@@ -451,64 +452,65 @@ export default {
 			if (element) {
 				this.draggingHintObserver.observe(element)
 			}
-		},
-
-	},
+		}
+	}
 }
 
-		let delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-		/**
-		 * Some math magic :-) taken from https://spicyyoghurt.com/tools/easing-functions
-		 * @param {Number} t current "time", e.g. 0 to 1
-		 * @param {Number} b start value
-		 * @param {Number} c value delta (b + c = end value)
-		 * @param {Number} d final value of time at the end, e.g. 1
-		 */
-		function easeOutCubic(t, b, c, d) {
-			return c * ((t = t / d - 1) * t * t + 1) + b;
-		}
 
-		/**
-		 * If this is the first time that the user votes at all,
-		 * then show a little UX animation as a hint 
-		 * that proposals can be dragged.
-		 * 
-		 * Move the top proposal in a cubic circular motion to the bottom.
-		 */
-		let showDraggingHint = async function () {
-			let element = document.querySelector("#availableDraggable > div")
-			if (element == null) {
-				log.warn("No proposals in poll!")  // This should never happen.
-				return
-			}
-			element.classList.add("sortable-chosen")
-			const delayMs = 5
-			const dragHeight = element.clientHeight * 2
-			const dragWidth = dragHeight / 10
-			const step = 1 / dragHeight
-			const startX = element.style.left
-			const startY = element.style.top
-			for (let time = 0; time < 1; time += step) {
-				let i = easeOutCubic(time, 0, 1, 1)
-				let dx = Math.sin(i * Math.PI) * dragWidth
-				let dy = -i * dragHeight
-				element.style.top = dy + "px"
-				element.style.left = dx + "px"
-				await delay(delayMs)
-			}
-			for (let time = 1; time >= 0; time -= step) {
-				let i = easeOutCubic(time, 0, 1, 1)
-				let dx = Math.sin(i * Math.PI) * dragWidth
-				let dy = -i * dragHeight
-				element.style.top = dy + "px"
-				element.style.left = dx + "px"
-				await delay(delayMs)
-			}
-			element.style.top = startY
-			element.style.left = startX
-			element.classList.remove("sortable-chosen")
-		}
+let delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+/**
+ * Some math magic :-) taken from https://spicyyoghurt.com/tools/easing-functions
+ * @param {Number} t current "time", e.g. 0 to 1
+ * @param {Number} b start value
+ * @param {Number} c value delta (b + c = end value)
+ * @param {Number} d final value of time at the end, e.g. 1
+ */
+function easeOutCubic(t, b, c, d) {
+	return c * ((t = t / d - 1) * t * t + 1) + b;
+}
+
+/**
+ * If this is the first time that the user votes at all,
+ * then show a little UX animation as a hint 
+ * that proposals can be dragged.
+ * 
+ * Move the top proposal in a cubic circular motion to the bottom.
+ */
+let showDraggingHint = async function () {
+	let element = document.querySelector("#availableDraggable > div")
+	if (element == null) {
+		log.warn("No proposals in poll!")  // This should never happen.
+		return
+	}
+	element.classList.add("sortable-chosen")
+	const delayMs = 5
+	const dragHeight = element.clientHeight * 2
+	const dragWidth = dragHeight / 10
+	const step = 1 / dragHeight
+	const startX = element.style.left
+	const startY = element.style.top
+	for (let time = 0; time < 1; time += step) {
+		let i = easeOutCubic(time, 0, 1, 1)
+		let dx = Math.sin(i * Math.PI) * dragWidth
+		let dy = -i * dragHeight
+		element.style.top = dy + "px"
+		element.style.left = dx + "px"
+		await delay(delayMs)
+	}
+	for (let time = 1; time >= 0; time -= step) {
+		let i = easeOutCubic(time, 0, 1, 1)
+		let dx = Math.sin(i * Math.PI) * dragWidth
+		let dy = -i * dragHeight
+		element.style.top = dy + "px"
+		element.style.left = dx + "px"
+		await delay(delayMs)
+	}
+	element.style.top = startY
+	element.style.left = startX
+	element.classList.remove("sortable-chosen")
+}
 
 </script>
 
