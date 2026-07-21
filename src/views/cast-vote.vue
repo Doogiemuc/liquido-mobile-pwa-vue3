@@ -23,12 +23,13 @@
 		</div>
 		<div v-else>
 			<h2 class="page-title">{{ $t('yourBallot') }}</h2>
-			<p class="page-subtitle text-center">{{ $t('castVoteSubtitle') }}></p>
+			<p class="page-subtitle text-center">{{ $t('castVoteSubtitle') }}</p>
 		</div>
 		
 
 		<div v-if="!loading" class="cast-vote-wrapper">
 			<liquido-ballot
+				class="shadow"
 				:proposals="proposalsInBallot"
 				:proposal-count="poll?.proposals?.length"
 				:show-empty-slots="!hasAlreadyVoted"
@@ -145,6 +146,7 @@
 			<template #modal-body>
 				<p>{{ confirmationMessage }}</p>
 				<liquido-ballot
+					class="shadow"
 					:proposals="proposalsInBallot"
 					:created-by-label="$t('createdBy')"
 					draggable-id="confirmationBallotDraggable"
@@ -407,7 +409,7 @@ export default {
 					this.$root.showSuccess(this.$t("voteCastedSuccessfully"), "")
 				})
 			}).catch((err) => {
-				console.error("Cannot cast vote", err)
+				console.error("Cannot cast vote: " + err?.liquidoException?.liquidoErrorMessage, err)
 				this.castVoteLoading = false
 				this.$root.showError(this.$t('voteCastError'), "")
 			})
@@ -527,6 +529,7 @@ export default {
 /* Poll-card.vue needs a wrapper to define its height. */
 .poll-card-wrapper {
 	height: 10rem;
+	padding-bottom: var(--unit);
 }
 
 /* The wrapper is hidden until poll is loaded. */
@@ -673,7 +676,7 @@ export default {
 	.drag-up-arrow {
 		width: var(--two);
 		height: var(--unit);
-		color: var(--tertiary);
+		color: var(--secondary);
 	}
 
 	.drag-up-arrow svg {

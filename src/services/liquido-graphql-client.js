@@ -113,15 +113,12 @@ const graphQlQuery = function(query, variables) {
 		logNetworkCall("debug", query?.slice(0,40))
 		return axios.post(GRAPHQL, { query: query, variables: variables })
 			.then(res => {
+				// graphQL's way of returning errors, as defined in the GraphQL spec
+				// https://graphql.org/learn/serving-over-http/#http-status-codes
 				if (res.data && res.data.errors && res.data.errors.length > 0) {
-					// graphQL's way of returning errors, as defined in the GraphQL spec
-					// https://graphql.org/learn/serving-over-http/#http-status-codes
-					console.info("graphQlQuery() received data errors:", res.data.errors)   
-					if (res.data.errors[0].extensions) {
-						console.info("graphQlQuery() first liquidoException: "+JSON.stringify(res.data.errors[0].extensions))
-						// add the first liquidoException to the response data, so that the caller can handle it more easily
-						res.data.liquidoException = res.data.errors[0].extensions.liquidoException
-					}
+					console.info("graphQlQuery() received liquidoException: "+JSON.stringify(res.data.errors[0]?.extensions.liquidoException), res.data)
+					// add the first liquidoException to the response data, so that the caller can handle it more easily
+					res.data.liquidoException = res.data.errors[0].extensions.liquidoException
 					return Promise.reject(res.data)
 				}
 				return res.data // This is the axios HTTP "data". The graphQL response contains another "res.data.data" and the "res.data.errors" attribute. I know, it's confusing.
