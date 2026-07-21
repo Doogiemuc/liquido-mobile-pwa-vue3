@@ -68,6 +68,8 @@ Do I need any setting per poll? Wouldn't know of any yet.
 
 ## Bigger technical lifts
 
+ * Refactor all components to Composition style API
+ * Update i18n. See plans under doc/ai. Or implement our own loc(). Then date formatting is still a todo.
  * Three levels of polls,  Polly
  * Capacitorjs.com A cross platform native runtime for web apps.
  * split liquido-graphql-client.js  into authentication, cache-service and pure backend HTTP clients
