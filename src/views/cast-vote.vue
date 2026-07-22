@@ -2,7 +2,7 @@
 	<div>
 		<div class="liquido-hero">
 			<h2 id="cast-vote-page" class="page-title">
-				{{ hasAlreadyVoted ? $t('voteCastedPageTitle') : $t('castVotePageTitle') }}
+				{{ $t('castVotePageTitle') }}
 			</h2>
 
 			<div v-if="loading" class="draggable">
@@ -17,11 +17,7 @@
 			</div>
 		</div>
 
-		<div v-if="hasAlreadyVoted">
-			<h2 class="page-title">{{ $t('voteCastedBallot') }}</h2>
-			<p class="page-subtitle text-center">{{ $t('voteCastedSubtitle') }}</p>
-		</div>
-		<div v-else>
+		<div>
 			<h2 class="page-title">{{ $t('yourBallot') }}</h2>
 			<p class="page-subtitle text-center">{{ $t('castVoteSubtitle') }}</p>
 		</div>
@@ -78,23 +74,6 @@
 				</draggable>
 				
 			</div>
-		</div>
-
-		
-		
-		<div v-if="hasAlreadyVoted" class="alert liquido-info mt-5">
-			<p>
-				{{ $t("checksumOfYourBallot") }}
-			</p>
-			<div class="text-center mb-2">
-				<button id="verifyBallotButton" class="btn btn-primary btn-sm" @click="verifyBallot">
-					{{ existingBallot.checksum }}
-					<i v-if="ballotIsVerified" class="fas fa-check-circle text-success"></i>
-				</button>
-			</div>
-			<p v-if="ballotIsVerified" id="ballotIsVerifiedInfo">
-				{{ $t('ballotIsVerified') }}
-			</p>
 		</div>
 
 		<div class="page-subtitle mt-5">
@@ -222,7 +201,6 @@ export default {
 			voteCount: 0,
 			castVoteLoading: false,
 			confirmationMessage: "",
-			ballotIsVerified: false,
 			isDraggingOverBallot: false,   // highlight the ballot while a proposal is dragged over it
 			draggingHintObserver: null,
 		}
@@ -286,10 +264,17 @@ export default {
 
 		loadPoll()
 			.then(getExistingBallot)  		// get existing ballot of user (if he already casted a vote)
-			.then(setProposalsInBallot)		// pre-fill drop target from ballot, or start with an empty drop target
+			.then(ballot => {
+				if (ballot) {
+					this.$root.gotoPoll(this.pollId)
+					return
+				}
+				setProposalsInBallot(ballot)
+			})		// this page is only for casting; when already voted we forward to poll detail
 			.then(() => {
+				if (this.hasAlreadyVoted) return
 				// Poll loading is complete, now set up the dragging hint observer
-				this.$store.setHeaderTitle(this.hasAlreadyVoted ? this.$t('voteCastedPageTitle') : this.$t("castVotePageTitle"))
+				this.$store.setHeaderTitle(this.$t("castVotePageTitle"))
 				this.$store.setHeaderBackTarget({name: "showPoll", params: {pollId: this.pollId} })
 				this.$nextTick(() => {
 					this.setupDraggingHintObserver()
@@ -406,27 +391,12 @@ export default {
 					this.voteCount = castVoteResponse.voteCount
 					this.castVoteLoading = false
 					this.$root.showSuccess(this.$t("voteCastedSuccessfully"), "")
+					this.$root.gotoPoll(this.pollId)
 				})
 			}).catch((err) => {
 				console.error("Cannot cast vote: " + err?.liquidoException?.liquidoErrorMessage, err)
 				this.castVoteLoading = false
 				this.$root.showError(this.$t('voteCastError'), "")
-			})
-		},
-
-		verifyBallot() {
-			if (!this.existingBallot || this.ballotIsVerified) return
-			return api.verifyBallot(this.poll.id, this.existingBallot.checksum).then(ballot => {
-				if (!ballot) {
-					console.warn("Could not find a ballot for that checksum.")
-				} else {
-					console.debug("Ballot verified successfully.", ballot)
-					this.ballotIsVerified = true
-				}
-			}).catch(err => {
-				console.error("Cannot verify ballot with checksum!", err)
-				//TODO: show error message
-				this.ballotIsVerified = false
 			})
 		},
 
@@ -547,15 +517,14 @@ let showDraggingHint = async function () {
 		margin: 0;
 		/* UX fix: the draggable has the padding-bottom, to react quicker, when dragging a proposal upwards */
 		padding: var(--unit) var(--unit) 0 var(--unit);  
-		background-color: var(--light-bg);
-		border: 1px solid var(--light-border);
+		background-color: var(--ballot-bg);
+		border: 1px solid var(--ballot-border);
 		border-radius: var(--liquido-border-radius);
 		transition: background-color 0.15s ease, border-color 0.15s ease;
 
 		/* Highlighted while the user drags a proposal over the ballot. */
 		&.ballot-drag-over {
-			background-color: #dbeafe;
-			border-color: var(--primary);
+			filter: brightness(1.1);
 		}
 
 		/* Empty placeholder slots, behind the proposals in the ballot */
@@ -580,17 +549,18 @@ let showDraggingHint = async function () {
 	}
 
 	/* One empty ballot slot. Dimmed and dashed. */
+	--empty-slot-color: rgba(255, 255, 255, 0.5);
 	.empty-slot {
 		height: var(--polly-proposal-height);
 		margin-bottom: var(--polly-proposal-margin-bottom);
-		border: 1px dashed var(--secondary);
+		border: 1px dashed var(--empty-slot-color);
 		border-radius: var(--liquido-border-radius);
 		background-color: rgba(0,0,0, 0.02);  /* just a tiny little bit darker */
-		color: rgba(0, 0, 0, 0.2);
+		color: var(--empty-slot-color);
 		.rank-circle {
-			border: 1px solid rgba(0, 0, 0, 0.04);
-			background-color: rgba(0,0,0, 0.02);
-			color: rgba(0, 0, 0, 0.2);
+			border: 1px solid rgba(0, 0, 0, 0.2);
+			background-color: rgba(0, 0, 0, 0.1);
+			color: var(--empty-slot-color);
 		}
 	}
 

@@ -42,6 +42,21 @@
 				:show-drag-handle="false"
 				draggable-id="pollShowBallotDraggable"
 			/>
+
+			<div class="alert liquido-info mt-4">
+				<p>
+					{{ $t("checksumOfYourBallot") }}
+				</p>
+				<div class="text-center mb-2">
+					<button id="verifyBallotButton" class="btn btn-primary btn-sm" @click="verifyBallot">
+						{{ existingBallot.checksum }}
+						<i v-if="ballotIsVerified" class="fas fa-check-circle text-success"></i>
+					</button>
+				</div>
+				<p v-if="ballotIsVerified" id="ballotIsVerifiedInfo">
+					{{ $t('ballotIsVerified') }}
+				</p>
+			</div>
 		</div>
 
 		<liquido-footer>
@@ -126,6 +141,9 @@ export default {
 				editOwnVote: "Stimmzettel ändern",
 				alreadyVotedSubtitle: "Du hast diese Stimme bereits abgegeben:",
 				alreadyVotedButton: "Stimme bereits abgegeben",
+				checksumOfYourBallot: "Mit dieser Checksumme kannst du prüfen ob deine Stimme korrekt gezählt wurde:",
+				verifyBallotButton: "Prüfen",
+				ballotIsVerified: "Deine Stimme wurde erfolgreich gezählt.",
 				createdBy: "von",
 				finishedPollInfo: "Diese Abstimmung ist abgeschlossen. Gewonnen hat der Vorschlag '{winnerTitle}'. " +
 					"Es wurden {numBallots} Stimmen abgegeben.",
@@ -150,6 +168,7 @@ export default {
 			finishVoteLoading: false,
 			existingBallot: undefined,
 			proposalsInBallot: [],
+			ballotIsVerified: false,
 		}
 	},
 	computed: {
@@ -244,6 +263,7 @@ export default {
 		loadExistingBallot() {
 			this.existingBallot = undefined
 			this.proposalsInBallot = []
+			this.ballotIsVerified = false
 			if (this.poll.status !== "VOTING") return Promise.resolve()
 
 			return api.getMyBallot(this.poll.id)
@@ -273,6 +293,21 @@ export default {
 
 		clickCastVote() {
 			this.$router.push({name: "castVote", params: {pollId: this.poll.id} })
+		},
+
+		verifyBallot() {
+			if (!this.existingBallot || this.ballotIsVerified) return
+			return api.verifyBallot(this.poll.id, this.existingBallot.checksum).then(ballot => {
+				if (!ballot) {
+					console.warn("Could not find a ballot for that checksum.")
+				} else {
+					console.debug("Ballot verified successfully.", ballot)
+					this.ballotIsVerified = true
+				}
+			}).catch(err => {
+				console.error("Cannot verify ballot with checksum!", err)
+				this.ballotIsVerified = false
+			})
 		},
 
 		clickStartVote() {

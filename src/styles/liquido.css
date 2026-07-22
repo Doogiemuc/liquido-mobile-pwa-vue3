@@ -34,6 +34,10 @@
 	--light-bg: #d7e8ff;							  
 	--light-border: #add3ff;		
 
+	/* Dedicated ballot surface: distinct from info alerts but still in the same blue palette. */
+	--ballot-bg: #839cc5;
+	--ballot-border: #cfd9ea;
+
 	--destructive:#b3261e;						/* For error alerts */
   --destructive-foreground:#fff;		/* For text on destructive background */
 

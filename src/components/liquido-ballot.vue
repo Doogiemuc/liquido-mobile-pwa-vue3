@@ -71,8 +71,8 @@ export default {
 .the-ballot {
 	position: relative;
 	padding: var(--unit) var(--unit) 0;
-	background-color: var(--light-bg);
-	border: 1px solid var(--light-border);
+	background-color: var(--ballot-bg);
+	border: 1px solid var(--ballot-border);
 	border-radius: var(--liquido-border-radius);
 }
 
