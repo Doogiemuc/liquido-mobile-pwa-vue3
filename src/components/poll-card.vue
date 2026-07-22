@@ -3,12 +3,17 @@
 		<div class="card-body d-flex flex-nowrap" :class="{ clickable: !showProposals }" @click="$emit('click', poll.id)">
 			<div class="flex-grow-1 d-flex flex-column justify-content-between">
 				<div class="poll-eyebrow">
-					<span v-if="poll.status === 'ELABORATION'" class="badge rounded-pill poll-status-pill elaboration-pill">{{ $t('New') }}</span>
-					<span v-if="poll.status === 'VOTING'" class="badge rounded-pill poll-status-pill in-voting-pill">
-						<i class="fas fa-circle"></i>&nbsp;{{ $t('InVoting') }}
-					</span>
-					<span v-if="poll.status === 'FINISHED'" class="badge rounded-pill poll-status-pill finished-pill">{{ $t('Finished') }}</span>
-					<span v-if="poll.status === 'FINISHED'" class="float-end">{{ votingEndAtDateLoc }}</span>
+					<div class="poll-pill-group">
+						<span v-if="poll.status === 'ELABORATION'" class="badge rounded-pill poll-status-pill elaboration-pill">{{ $t('New') }}</span>
+						<span v-if="poll.status === 'VOTING'" class="badge rounded-pill poll-status-pill in-voting-pill">
+							<i class="fas fa-circle"></i>&nbsp;{{ $t('InVoting') }}
+						</span>
+						<span v-if="poll.status === 'VOTING' && poll.userAlreadyVoted" class="badge rounded-pill poll-status-pill voted-chip" :title="$t('votes', 1)">
+							<i class="fas fa-check"></i>&nbsp;{{ $t('voted') }}
+						</span>
+						<span v-if="poll.status === 'FINISHED'" class="badge rounded-pill poll-status-pill finished-pill">{{ $t('Finished') }}</span>
+						<span v-if="poll.status === 'FINISHED'" class="poll-finished-date">{{ votingEndAtDateLoc }}</span>
+					</div>
 					<div class="num-proposals">
 						<i class="far fa-lightbulb"></i>&nbsp;{{ poll?.proposals.length }}
 					</div>
@@ -92,6 +97,7 @@ export default {
 				daysLeft: "Beendet | noch ein Tag | noch {n} Tage",
 				endsIn: "endet",
 				awaitingStart: "wird bald gestartet",
+				voted: "abgestimmt",
 				createdBy: "von"
 			},
 			en: {
@@ -101,6 +107,7 @@ export default {
 				daysLeft: "Voting finished | 1 day left | {n} days left",
 				endsIn: "ends",
 				awaitingStart: "awaiting start",
+				voted: "voted",
 				createdBy: "by"
 			}
 		}
@@ -219,7 +226,19 @@ export default {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
+	align-items: center;
 	font-size: var(--font-size-small);
+}
+
+.poll-pill-group {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	min-width: 0;
+}
+
+.poll-finished-date {
+	white-space: nowrap;
 }
 
 .num-proposals {
@@ -262,9 +281,43 @@ export default {
 	}
 }
 
+/*********** Rounded pills for poll status *****************/
+/* Used in poll-card.vue and more places */
 
-.in-voting-pill .fa-circle {
-	animation: in-voting-circle-pulse 2s linear infinite;
+.poll-status-pill {
+	font-family: system-ui, 'Segoe UI', sans-serif;
+	text-transform: uppercase;
+	padding: 5px 10px;
+	letter-spacing: .1em;
+	font-size: 0.7rem;
+	font-weight: normal;
+}
+
+.elaboration-pill {
+	color: var(--state-new);
+	background-color: var(--state-new-bg);
+}
+
+.in-voting-pill {
+	color: var(--state-voting);
+	background-color: var(--state-voting-bg);
+	& .fa-circle {
+		animation: in-voting-circle-pulse 2s linear infinite;
+	}
+}
+
+.finished-pill {
+	color: var(--state-finished);
+	background-color: var(--state-finished-bg);
+}
+
+.voted-chip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background-color: var(--state-voting-bg);
+	color: var(--state-voting);
+	vertical-align: middle;
 }
 
 @keyframes in-voting-circle-pulse {

@@ -1,5 +1,5 @@
  <template>
-	<header id="liquidoHeader" :class="[headerClass, { 'transition-header': isSticky }]">
+	<header id="liquidoHeader" :class="{ 'transition-header': isSticky }">
 		<div class="header-top-row">
 			<div class="header-left" @click="clickLeft">
 				<button v-if="headerBackTarget" class="header-action-btn header-action-btn--left" type="button" @click.stop="clickLeft" aria-label="Back">
@@ -16,6 +16,7 @@
 				</div>
 			</div>
 			<div class="header-right" :click-right="clickRight">
+				<button v-if="isMockBackend" id="mockResetButton" class="mock-reset-button" type="button" @click.stop="resetMockState" title="Reset mock state" aria-label="Reset mock state">M</button>
 				<slot name="header-right" />
 			</div>
 		</div>
@@ -60,14 +61,13 @@ export default {
 		headerBackTarget() {
 			return this.$store.headerBackTarget
 		},
+		isMockBackend() {
+			return !!config.mockBackend
+		},
 		headerTitle() {
-			//TODO: can all components pass this as prop? => Yes if liquido-header.vue is part of the page. NO if liquido-header becomes a global component in rootApp again.
 			return this.pageTitle ?? this.$store.headerTitle
 		},
-		// If backend is mocked, then make header red
-		headerClass() {
-			return (config.mockBackend) ? "liquidoMockHeader" : ""
-		}
+
 	},
 
 	watch: {
@@ -128,17 +128,21 @@ export default {
 			EventBus.emit(EventBus.Event.CLICK_HEADER_RIGHT)
 		},
 
+		resetMockState() {
+			try {
+				sessionStorage.removeItem("LIQUIDO_MOCK_STATE")
+				window.location.reload()
+			} catch (err) {
+				console.warn("Cannot reset mock state", err)
+			}
+		},
+
 	}
 }
 </script>
 
 <style>
 
-/*
-.liquidoMockHeader {
-	background-color: darkred !important;
-}
-	*/
 
 #liquidoHeader {
 	position: fixed;
@@ -214,6 +218,24 @@ export default {
 		.header-left > *:hover, .header-right > *:hover,
 		.header-left > *:focus-visible, .header-right > *:focus-visible {
 			background: rgba(0, 0, 0, 0.12);
+			outline: none;
+		}
+
+		.mock-reset-button {
+			background: transparent;
+			border: none;
+			box-shadow: none;
+			color: #c40000;
+			font-weight: 800;
+			font-size: 1.35rem;
+			line-height: 1;
+			padding: 0;
+			cursor: pointer;
+		}
+
+		.mock-reset-button:hover,
+		.mock-reset-button:focus-visible {
+			color: #920000;
 			outline: none;
 		}
 		.header-back-link {

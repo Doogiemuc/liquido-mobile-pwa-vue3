@@ -133,7 +133,7 @@ const JQL_LOGIN_USER = `{ id name email mobilephone picture website hasWebauthn 
 const JQL_USER = `{ id name email mobilephone picture website  } `
 const JQL_TEAM_MEMBER = `{ role joinedAt user ${JQL_USER} } `
 const JQL_PROPOSAL =  `{ id title description icon status createdAt numSupporters likedByCurrentUser createdBy ${JQL_USER} } `   // no "is" before likedByCurrentUser!
-const JQL_POLL = `{ id title status createdAt updatedAt votingStartAt votingEndAt proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `  //TODO: duelMatrix { data }
+const JQL_POLL = `{ id title status createdAt updatedAt votingStartAt votingEndAt userAlreadyVoted proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `  //TODO: duelMatrix { data }
 const JQL_TEAM = `{ id teamName inviteCode ` +
 		`members ${JQL_TEAM_MEMBER} ` +
 		`polls ${JQL_POLL} } `

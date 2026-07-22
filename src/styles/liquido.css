@@ -189,33 +189,6 @@ body {
 #app h6 { font-size: 1rem; }
 
 
-/*********** Rounded pills for poll status *****************/
-/* Used in poll-card.vue and more places */
-
-.poll-status-pill {
-	font-family: system-ui, 'Segoe UI', sans-serif;
-	text-transform: uppercase;
-	padding: 5px 10px;
-	letter-spacing: .05em;
-	font-weight: normal;
-}
-
-.elaboration-pill {
-	color: var(--state-new);
-	background-color: var(--state-new-bg);
-}
-
-.in-voting-pill {
-	color: var(--state-voting);
-	background-color: var(--state-voting-bg);
-}
-
-.finished-pill {
-	color: var(--state-finished);
-	background-color: var(--state-finished-bg);
-}
-
-
 /***************** Links *****************/
 
 #app a {

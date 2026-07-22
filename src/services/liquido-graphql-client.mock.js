@@ -216,13 +216,31 @@ const loginMock = email => {
 const countVotesForPoll = pollId => Object.keys(mockState.ballotsByPollAndUser)
 	.filter(key => key.startsWith(`${pollId}:`)).length
 
+const currentUserId = () => mockState.currentUser?.id
+
+const hasCurrentUserVoted = pollId => {
+	const userId = currentUserId()
+	if (userId == null) return false
+	return Boolean(get(mockState, `ballotsByPollAndUser.${ballotKey(pollId, userId)}`))
+}
+
+const enrichPollForCurrentUser = poll => ({
+	...deepClone(poll),
+	userAlreadyVoted: hasCurrentUserVoted(poll.id),
+})
+
+const enrichTeamForCurrentUser = team => ({
+	...deepClone(team),
+	polls: (team.polls || []).map(enrichPollForCurrentUser),
+})
+
 
 
 
 	
 const queryHandlers = {
 	ping: () => "MOCK responses are active!",
-	team: () => deepClone(mockState.team),
+	team: () => enrichTeamForCurrentUser(mockState.team),
 	loginWithJwt: () => {
 		console.log("========> MOCKED loginWithJwt")
 		const member = findMemberByJwt(jwtFromAuthHeader())
@@ -291,12 +309,12 @@ const queryHandlers = {
 		}
 		return loginMock(email)
 	},
-	polls: () => deepClone(mockState.team.polls || []),
+	polls: () => (mockState.team.polls || []).map(enrichPollForCurrentUser),
 	poll: query => {
 		const pollId = asInt(argFromQuery(query, "pollId", "-1"))
 		const poll = findPoll(pollId)
 		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
-		return deepClone(poll)
+		return enrichPollForCurrentUser(poll)
 	},
 	voterToken: query => {
 		const pollId = asInt(argFromQuery(query, "pollId", "-1"))
@@ -407,11 +425,12 @@ const mutationHandlers = {
 			updatedAt: nowIso(),
 			votingStartAt: null,
 			votingEndAt: null,
+			userAlreadyVoted: false,
 			proposals: [],
 			winner: null,
 		}
 		mockState.team.polls.unshift(poll)
-		return deepClone(poll)
+		return enrichPollForCurrentUser(poll)
 	},
 	addProposal: query => {
 		const pollId = asInt(argFromQuery(query, "pollId", "-1"))
@@ -493,6 +512,8 @@ const mutationHandlers = {
 			voteOrder: voteOrderIds.map(id => ({ id })),
 		}
 		set(mockState, `ballotsByPollAndUser.${ballotKey(pollId, user.id)}`, ballot)
+		poll.userAlreadyVoted = true
+		poll.updatedAt = nowIso()
 		return {
 			voteCount: countVotesForPoll(pollId),
 			ballot: deepClone(ballot),

@@ -537,15 +537,14 @@ export default {
 				.catch(err => console.error("DevLogin Member failed!", err))
 		},
 
-		//TODO: REMOVE THIS!  Have static devLogin.member.email!!!  And configure per env!
-
 		getDevLoginUserEmail(role) {
-			if (!config.mockBackend) {
-				return role === "ADMIN" ? config.devLogin.admin.email : config.devLogin.member.email
+			if (config.mockBackend) {
+				// Use the first user with the given role from the mock data
+				const teamMembers = teamUserJwtMock?.team?.members || []
+				return teamMembers.find(m => m.role === role)?.user?.email
 			}
-			const teamMembers = teamUserJwtMock?.team?.members || []
-			const match = teamMembers.find(m => m.role === role)
-			return match?.user?.email || (role === "ADMIN" ? config.devLogin.admin.email : config.devLogin.member.email)
+			// Otherwise use the configured devLogin emails from the application config
+			return role === "ADMIN" ? config.devLogin.admin.email : config.devLogin.member.email
 		},
 	}
 }
