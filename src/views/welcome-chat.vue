@@ -1,6 +1,5 @@
 <template>
 	<div>
-
 		<!-- Welcome -->
 		<div id="welcome-chat" :class="{ 'hide-left': !FLOW.Welcome }" class="card chat-bubble chat-left mt-3">
 			<div class="card-body" v-html="$t('welcome')"></div>
@@ -35,7 +34,7 @@
 
 		<!-- Login button -->
 		<div v-if="showLoginButton" class="login-link" @click="goToLogin">
-			<button class="btn btn-primary btn-lg">{{ $t('Login') }}</button>
+			<button class="btn btn-outline-primary btn-lg px-5">{{ $t('Login') }}</button>
 		</div>
 
 		<!-- Nice to meet you bubble -->
@@ -394,17 +393,17 @@ export default {
 			de: {
 				welcome:
 					"<p>Willkommen bei <span class='liquido'></span>!</p>"+
-					"<p>Sichere, faire und <em>liquide</em> Abstimmungen.</p>"+
+					"<p>Sichere, anonyme, faire und <em>liquide</em> Abstimmungen für alle.</p>"+
 					"<p>Hier stimmst du nicht nur für <em>einen</em> Vorschlag, sondern jeder in eurem Team sortiert Vorschläge nach der eigenen Präferenz. " + 
 					"Ein cleverer Algorithmus berechnet daraus dann den Vorschlag mit der größten Zustimmung.</p>",
 				hasInviteCodeForTeam: "Hey, du wurdest in das Team <b>{teamName}</b> eingeladen.",
 				whatsYourName: "Darf ich fragen wie du heißt?",
 				yourNickname: "Dein Spitzname",
 				userNameInvalid: "Bitte mindestens " + config.usernameMinLength + " Zeichen!",
-				niceToMeetYou: "Hallo <b>{nickname}</b>, freut mich, dich kennen zu lernen! Ich benötige jetzt bitte noch deine E-Mail und ein Passwort.",
+				niceToMeetYou: "Hallo <b>{nickname}</b>, freut mich, dich kennen zu lernen!",
 
 				// Create or join team
-				createOrJoin: "Möchtest du ein neues Team gründen? Oder hast du einen Einladungscode bekommen und möchtest einem bestehenden Team beitreten?",
+				createOrJoin: "Möchtest du ein eigenes neues Team gründen? Oder hast du einen Einladungscode bekommen und möchtest einem bestehenden Team beitreten?",
 
 				// Create a new team
 				CreateNewTeam: "Neues Team gründen",
@@ -453,7 +452,7 @@ export default {
 				OkLater: "Ok, später",
 
 				// Admin: Create first poll bubble
-				pollInfo: "Möchtest du jetzt gleich eine erste <i class='fas fa-poll'></i> Abstimung für dein Team erstellen?",
+				pollInfo: "Möchtest du jetzt gleich eine erste Abstimung für dein Team erstellen?",
 				createPoll: "Abstimmung anlegen",
 
 				// Error messages
@@ -951,9 +950,23 @@ export default {
 </script>
 
 <style>
+
+.date-pill {
+	font-size: 0.7rem;
+	font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+	opacity: 0.5;
+	color: var(--text-color);
+	background-color: var(--tertiary);
+	border-radius: 1rem;
+	padding: 0.1rem 0.5rem;
+	text-align: center;
+	width: fit-content;
+	margin: 0.5rem auto;
+}
+
 /****** Chat bubbles *******/
 .chat-bubble {
-  border: none;
+  /* border: none; */
   margin-bottom: 1rem;
   opacity: 1;
   transform: none;
@@ -1004,9 +1017,10 @@ export default {
   position: relative;
   color: var(--chat-right-color);
   background-color: var(--chat-right-bg);
+	border-color: var(--chat-right-border-color);
   margin-left: 2rem;
   margin-bottom: 1rem;
-	box-shadow: 0.1rem 0.1rem 0.25rem rgba(32, 32, 32, 0.2);
+	box-shadow: var(--liquido-shadow);
   &::before {
     content: '';
     position: absolute;

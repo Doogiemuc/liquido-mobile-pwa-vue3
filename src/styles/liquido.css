@@ -16,6 +16,7 @@
 	--app-background: #f8f9ff; 		/* Main app background */
 	--app-background-alt: #f0f6ff; 	/* Alternate background for sections, cards, etc. */
 	--liquido-border-radius: 0.5rem;
+	--liquido-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);  /* same as bootstrap's --bs-box-shadow-sm */
 
 	/*************** Layout "unit" used for grids, margin, padding and spacing **********************/
 	--unit: 1rem;    									
@@ -31,7 +32,7 @@
 
 	--light-color: #1e3a5f;					/* Light blue colors used for info alerts and chat bubbles on welcome.vue */
 	--light-bg: #d7e8ff;							  
-	--light-border: #a0cafb;		
+	--light-border: #add3ff;		
 
 	--destructive:#b3261e;						/* For error alerts */
   --destructive-foreground:#fff;		/* For text on destructive background */
@@ -53,12 +54,12 @@
 	--liquido-footer-height: 80px;
 	
   /* Welcome Chat */
-  --chat-left-color: var(--light-color); 
-	--chat-left-bg: #dbeafe;									/* light blue by stich google: #dbeafe */
-	--chat-left-border: #dbeafe;
+  --chat-left-color:  var(--light-color); 
+	--chat-left-bg:     var(--light-bg);				/* light blue by stich google: #dbeafe */
+	--chat-left-border-color: var(--light-border);   	/* #dbeafe; */
   --chat-right-color: var(--text-color);
-	--chat-right-bg: #fff;
-	--chat-right-border: #e5e7eb;
+	--chat-right-bg: 		white;
+	--chat-right-border-color: var(--tertiary);
 
 	/** Further UI and form elements */
   --liquido-input-bg: var(--secondary);
