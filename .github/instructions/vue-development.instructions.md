@@ -75,13 +75,15 @@ Full details in [doc/ai/i18n-usage-notes.md](../../doc/ai/i18n-usage-notes.md). 
 - vue‑i18n runs in **legacy mode** with `allowComposition: true`. Global messages live in
   `src/main.js`; component‑local messages use the Options **`i18n:` option**. There are **no
   `<i18n>` SFC blocks** (the Intlify Vite plugin is not installed).
-- **Template `$t()` works everywhere** (legacy global injection).
-- **Gotcha:** in `<script setup>`, `getCurrentInstance().proxy.$t` is **not** a function in this
-  setup — it throws `proxy.$t is not a function`. Do **not** call `proxy.$t()`.
-- **Recommended for new `<script setup>` components:** define a local static `messages` object and a
-  tiny `t(key, params)` helper that interpolates `{placeholders}` (the same pattern as `loc()` in
-  `src/components/Polly-vote.vue`), and use `t()` in both template and script. `cast-vote-content.vue`
-  is a working example.
+- **Template `$t()` works everywhere** (legacy global injection in both Options API and `<script setup>`).
+- **In `<script setup>`:** use `useI18n()` from `vue-i18n` to get a `t` function for use inside script logic:
+  ```js
+  import { useI18n } from "vue-i18n"
+  const { t } = useI18n()
+  // t("myKey") works in both script and template
+  ```
+  See `src/views/team-home.vue` for a working example (`const { t, d } = useI18n()`).
+- **Options API:** use `this.$t("myKey")` as usual. Component‑local messages go in the `i18n:` option.
 
 ## Component & styling conventions
 
@@ -101,11 +103,53 @@ Full details in [doc/ai/i18n-usage-notes.md](../../doc/ai/i18n-usage-notes.md). 
 - Reusable slots: `liquido-footer.vue` exposes `#info`, `#left`, `#primary`; `poll-card.vue` takes
   `poll`, `showArrowRight`, `showProposals`.
 
+## Mock backend (`liquido-graphql-client.mock.js`)
+
+When `config.mockBackend === true` (set in `config/config.development.js`), every GraphQL call is
+intercepted by the mock instead of reaching the real backend. The mock also intercepts specific REST
+endpoints (WebAuthn, `check-login-email`) via an Axios request interceptor.
+
+### How it works
+
+- **Single source of truth:** all mutable state lives in a plain `mockState` object
+  (`team`, `currentUser`, `jwt`, `ballotsByPollAndUser`, `voterTokensByPollAndUser`, …).
+- **Persistence across reloads:** `mockState` is serialised to `sessionStorage` under the key
+  `"LIQUIDO_MOCK_STATE"` after every mutating operation. It is reloaded on page refresh.
+- **Seed data:** initial team, members and polls come from `src/mockdata/teamUserJwt.json`.
+  `createState()` clones this seed and computes the next safe numeric IDs.
+- **Login simulation:** `loginMock(email)` is the single internal function that sets
+  `mockState.currentUser` and `mockState.jwt`, mirroring what the real `graphQlApi.login()` does.
+  All login variants (email/password, JWT, devLogin, SMS token) call it.
+- **Per-user enrichment:** poll responses are passed through `enrichPollForCurrentUser(poll)` before
+  being returned. This computes derived fields (e.g. `userAlreadyVoted`) from `mockState` so they
+  always reflect the current user's actual state rather than a stored flag.
+
+### Guidelines for adding or changing mock handlers
+
+1. **Add new GraphQL operations to `detectOperation()`** — the operation name list is the only
+   place the mock router looks up which handler to call. Omitting it silently rejects the query.
+2. **Mutations must update `mockState` in place** — mutate the stored object (e.g. `poll.status`),
+   then return the correct shape. `saveMockState()` is called automatically by `graphQlQueryMock`
+   after every handler; you do not need to call it yourself inside a handler.
+3. **Return shapes must match the real GraphQL response** — the real client unwraps `res.data.<operationName>`.
+   The mock's `graphQlQueryMock` wraps the handler's return value in `{ data: { [operation]: payload } }`.
+   Return exactly what the real endpoint would put inside `data.<operation>`.
+4. **Use `enrichPollForCurrentUser()` when returning polls** — never return a raw `deepClone(poll)`
+   from a query/mutation that returns a poll object, because the clone won't have the correct
+   `userAlreadyVoted` value for the logged-in user.
+5. **Use `rejectLiquido(code, message)` for domain errors** — this throws a `MockLiquidoError`
+   which `graphQlQueryMock` converts into the same error envelope the real backend sends, so callers
+   can handle it identically. Use `LiquidoExceptionCodes` constants for the code.
+6. **REST endpoints** are mocked via the Axios request interceptor in `initializeLiquidoGraphQlMock()`.
+   Add new REST mocks there by matching `config.url` and replacing `config.adapter`.
+7. **Cypress e2e tests reset state** by calling
+   `sessionStorage.removeItem("LIQUIDO_MOCK_STATE")` in their `before()` hook. If a new operation
+   stores state outside `mockState` it will not be cleared and tests can bleed into each other.
+
 ## Quick gotcha checklist
 
-- [ ] Ran commands with `npm.cmd` / `npx.cmd`.
+- [ ] If you need to run npm check platform: On Windows use `npm.cmd` / `npx.cmd`. On Mac or Linux use `npm` / `npx`.
 - [ ] Compile‑checked with `$env:NODE_ENV="development"; npm.cmd run build`.
-- [ ] New routed view has a single `<div>` root.
-- [ ] No `proxy.$t()` in `<script setup>` — used a local `t()` mock or template `$t()`.
 - [ ] Used liquido.css CSS variables + Bootstrap, scoped styles, tabs for indentation.
-
+- [ ] New mock handler returns a poll? Use `enrichPollForCurrentUser()`, not `deepClone()`.
+- [ ] New mock handler for a new GraphQL operation? Added the operation name to `detectOperation()`.

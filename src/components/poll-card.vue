@@ -42,8 +42,19 @@
 			</div>
 		</div>
 
+		<!-- Toggle bar: only shown in detail view when proposals are available -->
+		<button v-if="showProposals && poll.proposals && poll.proposals.length > 0"
+			class="proposals-toggle-bar"
+			:aria-expanded="isExpanded"
+			@click.stop="isExpanded = !isExpanded">
+			<i class="fas" :class="isExpanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+		</button>
+
 		<!-- List of proposals, only shown in detail view (e.g. on the poll-show page) -->
-		<ul v-if="showProposals && poll.proposals && poll.proposals.length > 0" class="list-group list-group-flush proposal-list">
+		<div v-if="showProposals && poll.proposals && poll.proposals.length > 0"
+			class="proposal-list-wrapper"
+			:style="proposalListWrapperStyle">
+		<ul class="list-group list-group-flush proposal-list">
 			<li v-for="prop in sortedProposals" :key="prop.id"
 				class="list-group-item proposal-list-group-item"
 				:class="proposalListGroupItemClasses(prop.id)">
@@ -71,6 +82,7 @@
 				</div>
 			</li>
 		</ul>
+		</div>
 	</div>
 </template>
 
@@ -128,8 +140,17 @@ export default {
 		showProposals: {		// When true, the poll's list of proposals is shown below the summary (e.g. on the poll-show page)
 			type: Boolean,
 			default: false
+		},
+		proposalsExpanded: {	// Initial expanded/collapsed state of the proposal list (only relevant when showProposals is true)
+			type: Boolean,
+			default: false
 		}
 
+	},
+	data() {
+		return {
+			isExpanded: this.proposalsExpanded,
+		}
 	},
 	computed: {
 		votingEndAtDateLoc() {
@@ -163,7 +184,16 @@ export default {
 		sortedProposals() {
 			if (!this.poll || !this.poll.proposals) return []
 			return this.poll.proposals.toSorted((p1, p2) => p1.createdAt.localeCompare(p2.createdAt))
-		}
+		},
+		/** Controls the height transition of the proposal list wrapper. */
+		proposalListWrapperStyle() {
+			const n = this.poll.proposals?.length || 0
+			return {
+				maxHeight: this.isExpanded ? `calc(${n} * var(--proposal-height))` : '0px',
+				overflow: 'hidden',
+				transition: 'max-height 0.35s ease',
+			}
+		},
 	},
 	methods: {
 		/** CSS classes for a proposal list item, highlighting the winner/losers of a FINISHED poll. */
@@ -213,6 +243,7 @@ export default {
 	.card-body {
 		padding: var(--unit);
 		height: var(--poll-card-height);   /* This is crucial for list animations to work correctly. The card must have a fixed height, otherwise the animation will be jumpy. */
+		position: relative;   /* needed for absolute-positioned children if any */
 		
 		/* Only the upper summary part of the card navigates. Show the pointer only there (i.e. in the polls list). */
 		&.clickable {
@@ -333,19 +364,38 @@ export default {
 	}
 }
 
-/* List of proposals shown at the bottom of the card (only when showProposals is true) */
-.poll-card .proposal-list {
-	border-top: 1px solid rgba(0, 0, 0, 0.1);
+/* Toggle bar between the summary and the proposal list */
+.proposals-toggle-bar {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	width: 100%;
+	padding: 0.35rem 0.75rem;
+	cursor: pointer;
+	background: none;
+	border: none;
+	border-top: 1px solid rgba(0, 0, 0, 0.08);
+	color: var(--secondary);
+	font-size: 0.8rem;
 }
 
+.proposals-toggle-bar:hover {
+	color: var(--primary);
+}
+
+/* List of proposals shown at the bottom of the card (only when showProposals is true) */
 .poll-card .proposal-list-group-item {
 	display: flex;
 	align-items: stretch;   /* let .proposal-body stretch to the full, fixed row height */
 	gap: 0.75rem;
 	padding: var(--unit);
+	border: none;
 	height: var(--proposal-height);
 	max-height: var(--proposal-height);
 	overflow: hidden;
+	&:not(:last-child) {
+		content: "<div class='proposal-list-group-item-divider'></div>";
+	}
 }
 
 /* The proposal icon, centered in a fixed-width column on the left */

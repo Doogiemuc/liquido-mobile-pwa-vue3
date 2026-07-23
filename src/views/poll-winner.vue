@@ -18,8 +18,8 @@
 		</div>
 
 		<template v-else-if="poll && poll.id">
-			<!-- The poll itself (summary only, proposals are intentionally hidden here) -->
-			<poll-card :poll="poll" :show-arrow-right="false" class="mb-4 shadow-sm" />
+			<!-- The poll itself with expandable proposals -->
+			<poll-card :poll="poll" :show-arrow-right="false" :show-proposals="true" :proposals-expanded="true" class="mb-4 shadow-sm" />
 
 			<!-- The winning proposal, nicely highlighted. Only the winner is shown. -->
 			<template v-if="winner">

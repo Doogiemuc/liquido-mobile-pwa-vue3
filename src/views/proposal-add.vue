@@ -94,7 +94,7 @@
 			<poll-card
 				:poll="poll"
 				:showArrowRight="false"
-				:showProposals="true"
+				:proposalsExpanded="true"
 			/>
 		</div>
 		<div v-else class="alert mb-3">
