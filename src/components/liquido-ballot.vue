@@ -35,6 +35,10 @@
 				</div>
 			</template>
 		</draggable>
+
+		<div v-if="showEmptySlots" class="proposals-counter">
+			{{ proposals?.length }}/{{ proposalCount }}
+		</div>
 	</div>
 </template>
 
@@ -68,12 +72,22 @@ export default {
 </script>
 
 <style scoped>
+
 .the-ballot {
 	position: relative;
 	padding: var(--unit) var(--unit) 0;
 	background-color: var(--ballot-bg);
 	border: 1px solid var(--ballot-border);
 	border-radius: var(--liquido-border-radius);
+}
+
+.proposals-counter {
+	font-size: var(--font-size-small);
+	color: rgba(0, 0, 0, 0.2);
+	text-align: right;
+	position: absolute;
+	right: var(--unit);
+	bottom: 0;
 }
 
 .empty-slots-behind {
