@@ -575,21 +575,8 @@ let showDraggingHint = async function () {
 		}
 	}
 
-	/* One empty ballot slot. Dimmed and dashed. */
-	--empty-slot-color: rgba(255, 255, 255, 0.5);
-	.empty-slot {
-		height: var(--polly-proposal-height);
-		margin-bottom: var(--polly-proposal-margin-bottom);
-		border: 1px dashed var(--empty-slot-color);
-		border-radius: var(--liquido-border-radius);
-		background-color: rgba(0,0,0, 0.02);  /* just a tiny little bit darker */
-		color: var(--empty-slot-color);
-		.rank-circle {
-			border: 1px solid rgba(0, 0, 0, 0.2);
-			background-color: rgba(0, 0, 0, 0.1);
-			color: var(--empty-slot-color);
-		}
-	}
+	/* The proposal-panel, empty-slot and rank-circle styles now live globally in
+	   src/styles/liquido.css (shared with liquido-proposal.vue / liquido-ballot.vue). */
 
 	/* The extra slot at the very bottom of the ballot fades out towards the bottom. */
 	.empty-slot-faded {
@@ -628,27 +615,6 @@ let showDraggingHint = async function () {
 		}
 	}
 
-
-	/* Ranking number at the left of a proposal in the ballot (replaces the proposal icon). */
-	.rank-circle {
-		position: relative;
-		--rank-circle-size: 32px;
-		flex: 0 0 auto;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin: 0 0.75rem;
-		width: var(--rank-circle-size);
-		height: var(--rank-circle-size);
-		border-radius: 50%;
-		/*border: 1px solid rgba(0, 0, 0, 0.3);*/
-		background-color: var(--primary);
-		color: white;
-		font-family: var(--sans-serif-font);
-		font-size: 1rem;
-		line-height: 1;
-		z-index: 30;
-	}
 
 	/*  UX idea - connect the order-numbers in the ballot, to emphasize order. not yet perfect
 	#ballotDraggable .proposal-panel:not(:last-child) .rank-circle:after {

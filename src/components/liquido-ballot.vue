@@ -21,18 +21,12 @@
 			:can-scroll-x="false"
 		>
 			<template #item="{ element: proposal, index }">
-				<div class="card shadow-sm proposal-panel d-flex flex-row align-items-center user-select-none">
-					<div class="rank-circle">{{ index + 1 }}</div>
-					<div class="d-flex flex-column text-truncate flex-grow-1">
-						<h4 class="proposal-title">{{ proposal.title }}</h4>
-						<div class="proposal-subtitle">
-							<span v-if="proposal.likedByCurrentUser" class="like-button liked"><i class="fas fa-heart"></i>&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span></span>
-							<span v-else class="like-button"><i class="far fa-heart"></i>&nbsp;<span class="numLikes">{{ proposal.numSupporters }}</span></span>
-							<div class="createdby-user">{{ createdByLabel }}&nbsp;{{ proposal?.createdBy?.name }}</div>
-						</div>
-					</div>
-					<div v-if="showDragHandle" class="drag-handle" aria-hidden="true"><i class="fas fa-bars"></i></div>
-				</div>
+				<liquido-proposal
+					:proposal="proposal"
+					:rank="index + 1"
+					:show-drag-handle="showDragHandle"
+					:created-by-label="createdByLabel"
+				/>
 			</template>
 		</draggable>
 
@@ -44,10 +38,11 @@
 
 <script>
 import draggable from "vuedraggable"
+import liquidoProposal from "@/components/liquido-proposal.vue"
 
 export default {
 	name: "LiquidoBallot",
-	components: { draggable },
+	components: { draggable, liquidoProposal },
 	props: {
 		proposals: { type: Array, required: true },
 		proposalCount: { type: Number, default: 0 },
@@ -99,19 +94,6 @@ export default {
 	overflow: hidden;
 }
 
-.empty-slot,
-.proposal-panel {
-	height: 4rem;
-	margin-bottom: 0.5rem;
-}
-
-.empty-slot {
-	border: 1px dashed var(--secondary);
-	border-radius: var(--liquido-border-radius);
-	background-color: rgba(0, 0, 0, 0.02);
-	color: rgba(0, 0, 0, 0.2);
-}
-
 .draggable {
 	position: relative;
 	min-height: calc(2 * (4rem + 0.5rem) + var(--unit));
@@ -119,43 +101,6 @@ export default {
 	z-index: 1;
 }
 
-.rank-circle {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex: 0 0 auto;
-	width: 32px;
-	height: 32px;
-	margin: 0 0.75rem;
-	border-radius: 50%;
-	background-color: var(--primary);
-	color: white;
-}
-
-.proposal-title {
-	margin: 0;
-	padding: 0;
-	color: var(--primary);
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.proposal-subtitle {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	font-size: 0.8rem;
-	color: var(--secondary);
-}
-
-.liked {
-	color: var(--primary);
-}
-
-.drag-handle {
-	margin: 0 0.75rem;
-	color: var(--secondary);
-	opacity: 0.5;
-}
+/* The proposal-panel, empty-slot, rank-circle, proposal-title, proposal-subtitle, liked and
+   drag-handle styles are defined globally in src/styles/liquido.css and shared with liquido-proposal.vue. */
 </style>
