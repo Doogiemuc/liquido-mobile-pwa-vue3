@@ -19,6 +19,7 @@
 	--liquido-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);  /* same as bootstrap's --bs-box-shadow-sm */
 
 	/*************** Layout "unit" used for grids, margin, padding and spacing **********************/
+	--half: calc(var(--unit) * 0.5); 
 	--unit: 1rem;    									
 	--two: calc(var(--unit) * 2);
 	--three: calc(var(--unit) * 3);
@@ -273,6 +274,124 @@ body {
 
 
 
+
+
+/***************** Proposal panel *****************/
+/*
+ * A "proposal panel" is the card that renders a single proposal. It is shown in
+ * several places, all sharing these styles:
+ *   - liquido-proposal.vue → available proposals pool (shows the proposal icon)
+ *   - liquido-ballot.vue   → proposals in the ballot (shows a rank number),
+ *                            and as dashed empty placeholder slots
+ * The two --polly-* custom properties are declared on .cast-vote-wrapper and
+ * inherit down; the fallbacks keep the panel usable when rendered elsewhere
+ * (e.g. the confirmation modal).
+ *
+ * The inner-element rules are deliberately scoped under .proposal-panel / .empty-slot
+ * so they do NOT leak into poll-card.vue, which uses the same .proposal-title /
+ * .proposal-subtitle / .proposal-icon / .liked class names but a different, larger layout.
+ */
+
+.proposal-panel {
+	height: var(--polly-proposal-height, 4rem);
+	margin-bottom: var(--polly-proposal-margin-bottom, 0.5rem);
+	padding: 0 var(--half);
+	cursor: grab;
+}
+
+/* When the drag handle is hidden (e.g. a read-only ballot after the user has voted) the panel
+   loses the handle's right margin, so the title would run to the edge. Add matching right
+   padding to keep the content symmetric with the left inset (the rank/icon's 0.75rem margin). */
+.proposal-panel.no-drag-handle {
+	padding-right: var(--half);
+}
+
+.proposal-panel .proposal-title {
+	margin: 0;
+	padding: 0;
+	color: var(--primary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.proposal-panel .proposal-subtitle {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 0.8rem; /* Fixed as small. We also could have var(--font-size-small); */
+	color: var(--secondary);
+}
+
+/* Ranking number at the left of a proposal in the ballot (replaces the proposal icon).
+   Also used inside the dashed empty placeholder slots. */
+.proposal-panel .rank-circle,
+.empty-slot .rank-circle {
+	position: relative;
+	--rank-circle-size: 32px;
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 var(--half);
+	width: var(--rank-circle-size);
+	height: var(--rank-circle-size);
+	border-radius: 50%;
+	background-color: var(--primary);
+	color: white;
+	font-family: var(--sans-serif-font);
+	font-size: 1rem;
+	line-height: 1;
+	z-index: 30;
+}
+
+/* Proposal icon at the left of an available proposal (replaces the rank number). */
+.proposal-panel .proposal-icon {
+	--proposal_icon_size: 32px;
+	padding: 0;
+	margin-right: var(--half);
+	color: white;
+	background-color: var(--proposal-icon-bg);
+	border: none;
+	border-radius: 50%;
+	text-align: center;
+	line-height: var(--proposal_icon_size);
+	min-width: var(--proposal_icon_size);
+	max-width: var(--proposal_icon_size);
+	width: var(--proposal_icon_size);
+	min-height: var(--proposal_icon_size);
+	max-height: var(--proposal_icon_size);
+	height: var(--proposal_icon_size);
+}
+
+.proposal-panel .liked {
+	color: var(--primary);
+	cursor: default;
+}
+
+.proposal-panel .drag-handle {
+	margin-left: 0.75rem;
+	color: var(--secondary);
+	opacity: 0.5;
+}
+
+/* Empty placeholder slot in the ballot: a proposal panel with no content yet.
+   Dimmed and dashed, styled to read on the bluish --ballot-bg. */
+.empty-slot {
+	--empty-slot-color: rgba(255, 255, 255, 0.5);
+	height: var(--polly-proposal-height, 4rem);
+	margin-bottom: var(--polly-proposal-margin-bottom, 0.5rem);
+	border: 1px dashed var(--empty-slot-color);
+	border-radius: var(--liquido-border-radius);
+	background-color: rgba(0, 0, 0, 0.02); /* just a tiny little bit darker */
+	color: var(--empty-slot-color);
+}
+
+.empty-slot .rank-circle {
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	background-color: rgba(0, 0, 0, 0.1);
+	color: var(--empty-slot-color);
+}
 
 
 /***************** Bootstrap component overrides *****************/
