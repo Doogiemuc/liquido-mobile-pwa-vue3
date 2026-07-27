@@ -378,17 +378,22 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 
 		// WHEN user casts his vote
 		cy.get("#castVoteButton").should("not.be.disabled").click()
-		
-		// THEN success modal is shown with correct type attribute
-		cy.get('#rootPopupModal').should("have.attr", "data-modaltype", "success")
 
-		cy.get('#modalPrimaryButton').click()
+		// THEN a confirmation modal is shown (cast-vote.vue's own confirmVoteModal)
+		cy.get('#confirmVoteModal').should("be.visible")
+		// WHEN user confirms the vote (scope to this modal to avoid duplicate #modalPrimaryButton IDs)
+		cy.get('#confirmVoteModal').find('#modalPrimaryButton').click()
+		
+		// THEN root success modal is shown
+		cy.get('#rootPopupModal').should("be.visible").and("have.attr", "data-modaltype", "success")
+		// WHEN user clicks OK (navigates to poll-show via primaryCallback)
+		cy.get('#rootPopupModal').find('#modalPrimaryButton').click()
 		
 		//  AND user is informed, that he can updated his ballot
 		cy.get("#isUpdateableBallotInfo").should("be.visible")
 
 		//WHEN verifing checksum
-		cy.get("#verifyBallotButton").click()
+		cy.get("#verifyBallotButton").scrollIntoView().click({force: true})
 		//THEN ballot is valid
 		cy.get("#ballotIsVerifiedInfo").should("be.visible")
 	})

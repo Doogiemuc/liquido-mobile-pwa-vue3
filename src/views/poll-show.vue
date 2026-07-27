@@ -31,7 +31,7 @@
 			</p>
 		</div>
 
-		<div v-if="hasAlreadyVoted" class="already-voted-ballot">
+		<div v-if="hasAlreadyVoted" id="isUpdateableBallotInfo" class="already-voted-ballot">
 			<h2 class="page-title mt-5">{{ $t('yourBallot') }}</h2>
 			<p class="page-subtitle text-center">{{ $t('alreadyVotedSubtitle') }}</p>
 			<liquido-ballot

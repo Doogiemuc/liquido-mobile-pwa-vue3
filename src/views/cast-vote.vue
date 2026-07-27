@@ -390,8 +390,9 @@ export default {
 					this.existingBallot = castVoteResponse.ballot
 					this.voteCount = castVoteResponse.voteCount
 					this.castVoteLoading = false
-					this.$root.showSuccess(this.$t("voteCastedSuccessfully"), "")
-					this.$root.gotoPoll(this.pollId)
+					this.$root.showSuccess(this.$t("voteCastedSuccessfully"), "", undefined, undefined,
+						() => this.$root.gotoPoll(this.pollId)
+					)
 				})
 			}).catch((err) => {
 				console.error("Cannot cast vote: " + err?.liquidoException?.liquidoErrorMessage, err)
