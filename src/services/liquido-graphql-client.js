@@ -197,8 +197,8 @@ const fetchPollFunc = function(path) {
 	} else if (path[0].polls) {
 		console.debug("Fetch one poll from backend: "+JSON.stringify(path))
 		let pollId = path[0].polls
-		let graphQL = `query poll($pollId: ID!) { poll(pollId: $pollId) ${JQL.POLL} }`
-		return graphQlQuery(graphQL, { pollId }).then(res => {
+		let graphQL = `query poll($pollId: BigInteger!) { poll(pollId: $pollId) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId) }).then(res => {
 			EventBus.emit(EventBus.Event.POLL_LOADED, res.data.poll)  // notify listeners that ONE poll has been (re)loaded from the backend
 			return res.data.poll
 		})
@@ -723,8 +723,8 @@ let graphQlApi = {
 	 * @returns {Object} the updated poll with the added proposal
 	 */
 	async addProposal(pollId, title, description, icon) {
-		let graphQL = `mutation addProposal($pollId: ID!, $title: String!, $description: String!, $icon: String!) { addProposal(pollId: $pollId, title: $title, description: $description, icon: $icon) ${JQL.POLL} }`
-		return graphQlQuery(graphQL, { pollId, title, description, icon })
+		let graphQL = `mutation addProposal($pollId: BigInteger!, $title: String!, $description: String!, $icon: String!) { addProposal(pollId: $pollId, title: $title, description: $description, icon: $icon) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId), title, description, icon })
 			.then(res => {
 				let poll = res.data.addProposal
 				this.pollsCache.put("polls/"+poll.id, poll)
@@ -742,8 +742,8 @@ let graphQlApi = {
 	 * @returns {Object} the updated poll
 	 */
 	async likeProposal(pollId, proposalId) {
-		let graphQL = `mutation likeProposal($pollId: ID!, $proposalId: ID!) { likeProposal(pollId: $pollId, proposalId: $proposalId) ${JQL.POLL} }`
-		return graphQlQuery(graphQL, { pollId, proposalId })
+		let graphQL = `mutation likeProposal($pollId: BigInteger!, $proposalId: BigInteger!) { likeProposal(pollId: $pollId, proposalId: $proposalId) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId), proposalId: Number(proposalId) })
 			.then(res => {
 				let poll = res.data.likeProposal
 				this.pollsCache.put("polls/"+poll.id, poll)
@@ -754,8 +754,8 @@ let graphQlApi = {
 	},
 
 	async startVotingPhase(pollId) {
-		let graphQL = `mutation startVotingPhase($pollId: ID!) { startVotingPhase(pollId: $pollId) ${JQL.POLL} }`
-		return graphQlQuery(graphQL, { pollId })
+		let graphQL = `mutation startVotingPhase($pollId: BigInteger!) { startVotingPhase(pollId: $pollId) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId) })
 			.then(res => {
 				let poll = res.data.startVotingPhase
 				//TODO: invalidate cache for pollId
@@ -770,8 +770,8 @@ let graphQlApi = {
 	 * @returns {Object} the winning proposal
 	 */
 	async finishVotingPhase(pollId) {
-		let graphQL = `mutation finishVotingPhase($pollId: ID!) { finishVotingPhase(pollId: $pollId) ${JQL.PROPOSAL} }`
-		return graphQlQuery(graphQL, { pollId })
+		let graphQL = `mutation finishVotingPhase($pollId: BigInteger!) { finishVotingPhase(pollId: $pollId) ${JQL.PROPOSAL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId) })
 			.then(res => {
 				console.debug(`Finsihed voting phase of poll.id=${pollId}`)
 				return res.data.finishVotingPhase
@@ -780,8 +780,8 @@ let graphQlApi = {
 
 	/** Get one-time voterToken for a poll */
 	async getVoterToken(pollId) {
-		let graphQL = `query voterToken($pollId: ID!) { voterToken(pollId: $pollId) }`
-		return graphQlQuery(graphQL, { pollId }).then(res => {
+		let graphQL = `query voterToken($pollId: BigInteger!) { voterToken(pollId: $pollId) }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId) }).then(res => {
 			console.debug("Successfully received VoterToken for poll(id="+pollId+")")  // do not log the token!
 			return res.data.voterToken
 		})
@@ -789,9 +789,9 @@ let graphQlApi = {
 
 	async castVote(pollId, voteOrderIds, voterToken) {
 		console.debug("Cast vote in poll(id="+pollId+") => ", voteOrderIds)
-		let graphQL = `mutation castVote($pollId: ID!, $voteOrderIds: [Int!]!, $voterToken: String!) { castVote(pollId: $pollId, voteOrderIds: $voteOrderIds, voterToken: $voterToken) ` +
+		let graphQL = `mutation castVote($pollId: BigInteger!, $voteOrderIds: [BigInteger]!, $voterToken: String!) { castVote(pollId: $pollId, voteOrderIds: $voteOrderIds, voterToken: $voterToken) ` +
 			`{ voteCount ballot { level checksum voteOrder { id } } } }`
-		return graphQlQuery(graphQL, { pollId, voteOrderIds, voterToken })
+		return graphQlQuery(graphQL, { pollId: Number(pollId), voteOrderIds: voteOrderIds.map(Number), voterToken })
 			.then(res => {
 				console.debug("CastVote: Ballot was casted successfully.")
 				return res.data.castVote
@@ -800,9 +800,9 @@ let graphQlApi = {
 
 	/** Get voter's ballot if he voted already. MAY return null if not. */
 	async getMyBallot(pollId) {
-		let graphQL = `query myBallot($pollId: ID!) { myBallot(pollId: $pollId) ` +
+		let graphQL = `query myBallot($pollId: BigInteger!) { myBallot(pollId: $pollId) ` +
 			`{ level checksum voteOrder { id } } }`
-		return graphQlQuery(graphQL, { pollId })
+		return graphQlQuery(graphQL, { pollId: Number(pollId) })
 			.then(res => {
 				if (res.data.myBallot) {
 					console.debug(`User's ballot in poll(id=${pollId}) is`, res.data.myBallot)
@@ -815,10 +815,10 @@ let graphQlApi = {
 
 	/** Verify a voter's ballot with its checksum. */
 	async verifyBallot(pollId, checksum) {
-		let graphQL = `query verifyBallot($pollId: ID!, $checksum: String!) { verifyBallot(pollId: $pollId, checksum: $checksum) ` +
+		let graphQL = `query verifyBallot($pollId: BigInteger!, $checksum: String!) { verifyBallot(pollId: $pollId, checksum: $checksum) ` +
 			`{ level checksum voteOrder { id } } }`
 		// returns user's ballot if found
-		return graphQlQuery(graphQL, { pollId, checksum }).then(res => res.data.verifyBallot)
+		return graphQlQuery(graphQL, { pollId: Number(pollId), checksum }).then(res => res.data.verifyBallot)
 	},
 
 	/** poll status constants (trying to have one central definition for the whole client here) */
