@@ -184,17 +184,15 @@ export default {
 			this.myModal.toggle()
 		},
 		clickPrimary() {
-			// Call provided callback first (if any)
+			// Always hide the modal first, then call the callback
+			try { this.myModal.hide() } catch (e) { /* ignore */ }
 			if (typeof this.myPrimaryCallback === 'function') {
 				try { this.myPrimaryCallback() } catch (e) { console.error('popup-modal primary callback error', e) }
 			}
 			this.$emit("clickPrimary", this.id)
-			// If no callback was provided, close the modal by default
-			if (typeof this.myPrimaryCallback !== 'function') {
-				try { this.myModal.hide() } catch (e) { /* ignore */ }
-			}
 		},
 		clickSecondary() {
+			try { this.myModal.hide() } catch (e) { /* ignore */ }
 			if (typeof this.mySecondaryCallback === 'function') {
 				try { this.mySecondaryCallback() } catch (e) { console.error('popup-modal secondary callback error', e) }
 			}

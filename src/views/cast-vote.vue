@@ -200,6 +200,8 @@ export default {
 			existingBallot: undefined,
 			voteCount: 0,
 			castVoteLoading: false,
+			isUnmounted: false,
+			voterTokenPromise: null,   // ← add this
 			confirmationMessage: "",
 			isDraggingOverBallot: false,   // highlight the ballot while a proposal is dragged over it
 			draggingHintObserver: null,
@@ -210,7 +212,7 @@ export default {
 			return this.poll && this.poll.status === "VOTING" && !this.hasAlreadyVoted && this.proposalsInBallot.length > 0 
 		},
 		hasAlreadyVoted() {
-			return this.existingBallot
+			return !!this.existingBallot
 		},
 		isUpdatableBallot() {
 			return false  //  voters are not allowed to update their ballot
@@ -226,7 +228,13 @@ export default {
 		let loadPoll = () => api.getPollById(this.pollId, true).then(poll => {
 			this.poll = poll
 			return poll
-		}).catch(err => console.warn("Cannot get poll.id=" + this.pollId, err))
+		}).catch(err => {
+			console.warn("Cannot get poll.id=" + this.pollId, err)
+			this.$root.showError(this.$t('unexpectedError'), this.$t('Error'), undefined, undefined,
+				() => this.$root.gotoPolls()
+			)
+			return Promise.reject(err)  // stop the chain — no point calling getExistingBallot
+		})
 
 
 		//TODO: Check if user has a valid RightToVote. If not, show an error.
@@ -243,8 +251,9 @@ export default {
 		/**
 		 * When the user has already voted, then sort the proposals in this poll according to the user's vote.
 		 */
-		let setProposalsInBallot = (ballot) => {
-			if (ballot) {
+		let setupProposals = (ballot) => {
+			if (ballot) {   // CURRENTLY NOT USED!
+				//MAYBE: allow changing the ballot while the poll is still in VOTING phase. Do I really want to allow this in a voting app?
 				// User already voted: pre-fill the drop target with his previous vote order.
 				// The remaining proposals (not in his ballot) stay in the available list below.
 				let proposalsById = {}
@@ -262,15 +271,20 @@ export default {
 			this.loading = false
 		}
 
+		/*  
+		  Load the poll and check if the user has already voted. ie. has a ballot.
+		  If he has, then forward back to the polls page. (This should not happen, because the user should not be able to click "Cast vote" again after he already voted.)
+		 */
 		loadPoll()
-			.then(getExistingBallot)  		// get existing ballot of user (if he already casted a vote)
+			.then(getExistingBallot)  	
 			.then(ballot => {
 				if (ballot) {
+					console.warn("Navigating to cast-vote page, although user already voted. Forwarding back to poll-show page.")
 					this.$root.gotoPoll(this.pollId)
 					return
 				}
-				setProposalsInBallot(ballot)
-			})		// this page is only for casting; when already voted we forward to poll detail
+				setupProposals(ballot)    
+			})
 			.then(() => {
 				if (this.hasAlreadyVoted) return
 				// Poll loading is complete, now set up the dragging hint observer
@@ -299,6 +313,7 @@ export default {
 	},
 
 	beforeUnmount() {
+		this.isUnmounted = true
 		if (this.draggingHintObserver) {
 			this.draggingHintObserver.disconnect()
 		}
@@ -360,6 +375,9 @@ export default {
 		clickCastVote() {
 			if (!this.canCastVote || this.castVoteLoading) return
 
+			// Pre-fetch token while user reviews the modal — atomic from here on
+			this.voterTokenPromise = api.getVoterToken(this.pollId)
+
 			this.confirmationMessage = this.$t("confirmVoteMessage")
 			this.$refs.confirmVoteModal.showInfo(
 				this.confirmationMessage,
@@ -376,17 +394,19 @@ export default {
 		},
 
 		confirmCastVote() {
-			this.closeVoteConfirmation()
 			this.castVoteLoading = true
-			let voteOrderIds = this.proposalsInBallot.map(proposal => proposal.id)
-
-			//TODO: start a timer for timeout
-
+			const voteOrderIds = this.proposalsInBallot.map(proposal => parseInt(proposal.id, 10))
 			log.debug("CAST VOTE: poll.id=" + this.poll.id, "voteOrderIds", voteOrderIds)
-			return api.getVoterToken(this.pollId).then((voterToken) => {
-				console.debug("Received voter token. Now casting vote ...")
-				return api.castVote(this.poll.id, voteOrderIds, voterToken).then(castVoteResponse => {
+
+			// Token is already in flight — only one network call from here.
+			return this.voterTokenPromise
+				.then(voterToken => {
+					console.debug("Casting vote with pre-fetched voter token ...")
+					return api.castVote(this.poll.id, voteOrderIds, voterToken)
+				})
+				.then(castVoteResponse => {
 					console.info("Vote casted successfully.", castVoteResponse)
+					if (this.isUnmounted) return
 					this.existingBallot = castVoteResponse.ballot
 					this.voteCount = castVoteResponse.voteCount
 					this.castVoteLoading = false
@@ -394,13 +414,16 @@ export default {
 						() => this.$root.gotoPoll(this.pollId)
 					)
 				})
-			}).catch((err) => {
-				console.error("Cannot cast vote: " + err?.liquidoException?.liquidoErrorMessage, err)
-				this.castVoteLoading = false
-				this.$root.showError(this.$t('voteCastError'), "")
-			})
+				.catch(err => {
+					console.error("Cannot cast vote: " + err?.liquidoException?.liquidoErrorMessage, err)
+					this.castVoteLoading = false
+					this.$root.showError(this.$t('voteCastError'), "")
+				})
 		},
 
+		/**
+		 * When the user first visits the cast-vote page, then show a little UX hint that proposals can be dragged into the ballot.
+		 */
 		setupDraggingHintObserver() {
 			// Get the fixed footer height from CSS variable
 			const footerHeight = getComputedStyle(document.documentElement).getPropertyValue('--liquido-footer-height').trim()
