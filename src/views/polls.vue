@@ -229,8 +229,6 @@ function goToPoll(id) {
 	const poll = api.getCachedPolls().find(p => p.id == pollId)
 	if (poll?.status === "FINISHED") {
 		router.push({ name: "pollWinner", params: { pollId } })
-	} else if (poll?.status === "VOTING" && !poll?.userAlreadyVoted) {
-		router.push({ name: "castVote", params: { pollId } })
 	} else {
 		router.push({ name: "showPoll", params: { pollId } })
 	}

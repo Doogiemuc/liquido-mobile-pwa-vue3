@@ -191,6 +191,8 @@ export default {
 			const poll = api.getCachedPolls().find(p => p.id == pollId)
 			if (poll?.status === "FINISHED") {
 				this.$router.push({name: "pollWinner", params: {pollId: pollId}})
+			} else if (poll?.status === "VOTING" && !poll?.userAlreadyVoted) {
+				this.$router.push({name: "castVote", params: {pollId: pollId}})
 			} else {
 				this.$router.push({name: "showPoll", params: {pollId: pollId}})
 			}
