@@ -358,8 +358,11 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get('.polls-in-voting-container').contains(".poll-title", fix.pollTitle).click()
 		cy.get("#cast-vote-page")
 
-		// AND the poll's proposals have loaded into the "available proposals" pool
-		cy.get("#availableDraggable .proposal-panel").first().should("be.visible")
+		// AND both proposals have loaded into the "available proposals" pool.
+		// We only check that they exist in the DOM (not that they are visible): the test helper below
+		// is data-driven (it mutates Vue state, not the DOM), and an existence check is not affected
+		// by the page slide transition or by the panel sitting below the fold.
+		cy.get("#availableDraggable .proposal-panel").should("have.length", 2)
 
 		// AND user drags a proposal into his ballot.
 		// Native drag'n'drop (vuedraggable/SortableJS) is unreliable to simulate in Cypress,
@@ -370,7 +373,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		})
 
 		// THEN the proposal appears in the ballot
-		cy.get("#ballotDraggable .proposal-panel").first().should("be.visible")
+		cy.get("#ballotDraggable .proposal-panel").should("have.length", 1)
 
 		// WHEN user casts his vote
 		cy.get("#castVoteButton").should("not.be.disabled").click()

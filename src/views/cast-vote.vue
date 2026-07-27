@@ -25,6 +25,7 @@
 
 		<div v-if="!loading" class="cast-vote-wrapper">
 			<liquido-ballot
+				id="ballot"
 				class="shadow"
 				:proposals="proposalsInBallot"
 				:proposal-count="poll?.proposals?.length"

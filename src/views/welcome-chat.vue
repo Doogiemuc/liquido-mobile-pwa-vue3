@@ -492,8 +492,8 @@ export default {
 				//admins: [ ]
 			},
 
-			// Our polite and nice chat bot logic :-)
-			chatDelayMs: 1000, //window.Cypress || import.meta.env.MODE === "development" || import.meta.env.MODE === "test" ? 100 : 1000,
+			// Our polite and nice chat bot logic :-)   Much faster/shorter delay when testing
+			chatDelayMs: window.Cypress || import.meta.env.MODE === "development" || import.meta.env.MODE === "test" ? 100 : 1000,
 
 			// Semaphore so that the chat animation is only started once. This is for example relevant when the window is reloaded in the browser
 			chatAnimationStarted: false,
