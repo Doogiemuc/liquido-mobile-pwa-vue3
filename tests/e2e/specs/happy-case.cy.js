@@ -352,14 +352,10 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		localStorage.setItem("LIQUIDO_JWT", fix.userJWT)
 		cy.visit("/")
 		
-		// AND a poll in voting
-		cy.get('#gotoPollsButton').click()
-		// team-home also lists polls that are in voting, so wait for the polls page and scope the
-		// poll selection to the polls list. Otherwise cy.contains() may match/click the stale
-		// team-home card during the fade transition and navigation to the poll won't land.
-		cy.get('#polls-page')
-		cy.get('#poll-list-wrapper').contains(".poll-title", fix.pollTitle).click()
-		cy.get("#goToCastVoteButton").click()
+		// AND a poll in voting shown on team-home
+		// Clicking a poll in voting on the team-home page navigates directly to cast-vote
+		cy.get("#team-home")
+		cy.get('.polls-in-voting-container').contains(".poll-title", fix.pollTitle).click()
 		cy.get("#cast-vote-page")
 
 		// AND the poll's proposals have loaded into the "available proposals" pool
@@ -416,6 +412,25 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 			.should("have.attr", "data-poll-status", "FINISHED")  
 		//  AND there is exactly one winner (because we casted exactly one vote)
 		cy.get(".poll-card .proposal-list-group-item.winner").should("have.length", 1)
+	})
+
+	it("[Admin] Poll winner page shows the winning proposal", function() {
+		assert.isString(fix.adminJWT, "Need adminJWT to view poll winner page")
+
+		//GIVEN a logged in admin on the polls list
+		localStorage.setItem("LIQUIDO_JWT", fix.adminJWT)
+		cy.visit("/polls")
+
+		// WHEN clicking on the finished poll
+		// FINISHED polls route directly to the poll winner page
+		cy.contains(".poll-title", fix.pollTitle).click()
+
+		// THEN the poll winner page is shown
+		cy.get("#poll-winner-page").should("be.visible")
+
+		// AND the winning proposal is displayed in the winner card
+		cy.get(".winner-proposal").should("be.visible")
+		cy.get(".winner-title").should("be.visible")
 	})
 	
 	/* TODO
