@@ -110,9 +110,11 @@ function syncPolls() {
 
 onMounted(() => {
 	store.setHeaderTitle(t('Polls'))
+	/*
 	if (api.isAdmin()) {
 		store.setHeaderRight('createNewPoll')
 	}
+	*/
 	EventBus.on(EventBus.Event.POLL_LOADED, syncPolls)
 	EventBus.on(EventBus.Event.POLLS_LOADED, syncPolls)
 	
@@ -224,8 +226,14 @@ function clearSearchAndFilter() {
 function goToPoll(id) {
 	// keep compatibility with event payload
 	const pollId = typeof id === "object" ? id?.id : id
-	// router assumed available via global context (adjust if needed)
-	router.push({ name: "showPoll", params: { pollId } })
+	const poll = api.getCachedPolls().find(p => p.id == pollId)
+	if (poll?.status === "FINISHED") {
+		router.push({ name: "pollWinner", params: { pollId } })
+	} else if (poll?.status === "VOTING" && !poll?.userAlreadyVoted) {
+		router.push({ name: "castVote", params: { pollId } })
+	} else {
+		router.push({ name: "showPoll", params: { pollId } })
+	}
 }
 
 function gotoCreateNewPoll() {

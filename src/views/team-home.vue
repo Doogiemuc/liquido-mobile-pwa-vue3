@@ -109,7 +109,7 @@ const qrCodeDataUrl = ref("")
 
 // Computed properties that might dynamically change their values
 const members = computed(() => team.value?.members || [])
-const pollsInVoting = computed(() => api.getCachedPolls().filter(p => p.status === "VOTING") || [])
+const pollsInVoting = computed(() => api.getCachedPolls().filter(p => p.status === "VOTING" && !p.userAlreadyVoted) || [])
 const inviteLinkURL = computed(() => config.inviteLinkPrefix + team.value?.inviteCode)
 
 let passkeyLabel = ref("passkeylabel")

@@ -14,13 +14,7 @@
 		>
 		</popup-modal>
 		<liquido-header>
-			<template #header-right>
-				<template v-if="$store.headerRight === 'createNewPoll'">
-					<button class="header-action-btn" type="button" @click="gotoCreateNewPoll" :aria-label="$t('createNewPoll')">
-						<i class="fas fa-plus" />
-					</button>
-				</template>
-			</template>
+	
 		</liquido-header>
 		<router-view v-slot="{ Component }">
 			<transition :name="transitionName">
@@ -194,7 +188,12 @@ export default {
 		// These methods are available as this.$root.<method> in all vue sub components of root-app
 		//
 		gotoPoll(pollId) {
-			this.$router.push({name: "showPoll", params: {pollId: pollId}})
+			const poll = api.getCachedPolls().find(p => p.id == pollId)
+			if (poll?.status === "FINISHED") {
+				this.$router.push({name: "pollWinner", params: {pollId: pollId}})
+			} else {
+				this.$router.push({name: "showPoll", params: {pollId: pollId}})
+			}
 		},
 		
 		gotoPolls() {

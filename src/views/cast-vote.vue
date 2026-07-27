@@ -90,7 +90,7 @@
 				<button v-else-if="hasAlreadyVoted" id="alreadyVotedButton" type="button" class="btn btn-primary" disabled="true">
 					{{ $t("alreadyVotedButton") }}
 				</button>
-				<button v-else id="castVoteButton" type="button" class="btn btn-primary" :disabled="!canCastVote" @click="clickCastVote()">
+				<button v-else id="castVoteButton" type="button" class="btn btn-primary" :disabled="!canCastVote" @click="clickCastVoteButton">
 					<i class="fas fa-vote-yea"></i>
 					{{ $t("castVoteButton") }}
 				</button>
@@ -280,7 +280,7 @@ export default {
 			.then(ballot => {
 				if (ballot) {
 					console.warn("Navigating to cast-vote page, although user already voted. Forwarding back to poll-show page.")
-					this.$root.gotoPoll(this.pollId)
+					this.$router.push({name: "showPoll", params: {pollId: this.pollId}})
 					return
 				}
 				setupProposals(ballot)    
@@ -289,7 +289,7 @@ export default {
 				if (this.hasAlreadyVoted) return
 				// Poll loading is complete, now set up the dragging hint observer
 				this.$store.setHeaderTitle(this.$t("castVotePageTitle"))
-				this.$store.setHeaderBackTarget({name: "showPoll", params: {pollId: this.pollId} })
+				this.$store.setHeaderBackTarget({name: "polls"})
 				this.$nextTick(() => {
 					this.setupDraggingHintObserver()
 				})
@@ -372,7 +372,7 @@ export default {
 			return true
 		},
 
-		clickCastVote() {
+		clickCastVoteButton() {
 			if (!this.canCastVote || this.castVoteLoading) return
 
 			// Pre-fetch token while user reviews the modal — atomic from here on
@@ -393,6 +393,9 @@ export default {
 			this.$refs.confirmVoteModal.hide()
 		},
 
+		/**
+		 * This is the final transaction to cast the vote.
+		 */
 		confirmCastVote() {
 			this.castVoteLoading = true
 			const voteOrderIds = this.proposalsInBallot.map(proposal => parseInt(proposal.id, 10))
@@ -411,7 +414,7 @@ export default {
 					this.voteCount = castVoteResponse.voteCount
 					this.castVoteLoading = false
 					this.$root.showSuccess(this.$t("voteCastedSuccessfully"), "", undefined, undefined,
-						() => this.$root.gotoPoll(this.pollId)
+						() => this.$router.push({name: "showPoll", params: {pollId: this.pollId}})
 					)
 				})
 				.catch(err => {

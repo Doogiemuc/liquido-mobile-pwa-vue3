@@ -19,7 +19,7 @@
 
 		<template v-else-if="poll && poll.id">
 			<!-- The poll itself with expandable proposals -->
-			<poll-card :poll="poll" :show-arrow-right="false" :show-proposals="true" :proposals-expanded="true" class="mb-4 shadow-sm" />
+			<poll-card :poll="poll" :show-arrow-right="false" :show-proposals="true" :proposals-expanded="false" class="mb-4 shadow-sm" />
 
 			<!-- The winning proposal, nicely highlighted. Only the winner is shown. -->
 			<template v-if="winner">
@@ -47,12 +47,15 @@
 
 			<p v-else class="page-subtitle text-center mt-4">{{ $t('noWinner') }}</p>
 		</template>
+
+		<liquido-footer />
 	</div>
 </template>
 
 <script>
 import api from "@/services/liquido-graphql-client.js"
 import pollCard from "@/components/poll-card.vue"
+import liquidoFooter from "@/components/liquido-footer.vue"
 import log from "loglevel"
 
 export default {
@@ -77,7 +80,7 @@ export default {
 			},
 		},
 	},
-	components: { pollCard },
+	components: { pollCard, liquidoFooter },
 	props: {
 		// The poll-winner page only receives the pollId and (re)loads the poll from the backend.
 		pollId: { type: String, required: true },
@@ -97,7 +100,7 @@ export default {
 	created() {
 		this.loading = true
 		this.$store.setHeaderTitle(this.$t("pollWinnerPageTitle"))
-		this.$store.setHeaderBackTarget({ name: "showPoll", params: { pollId: this.pollId } })
+		this.$store.setHeaderBackTarget({ name: "polls" })
 
 		api.getPollById(this.pollId, true)
 			.then(poll => {
@@ -193,10 +196,18 @@ export default {
 				particles.push(new ConfettiParticle())
 			}
 			draw()
+
+			// After 1 s let the confetti fade out over 2 s, then stop the loop.
+			this.confettiFadeTimer = setTimeout(() => {
+				canvas.style.opacity = '0'
+				this.confettiStopTimer = setTimeout(() => this.stopConfetti(), 1000)
+			}, 2000)
 		},
 
 		// Stop the confetti animation and remove its resize listener (called on unmount).
 		stopConfetti() {
+			clearTimeout(this.confettiFadeTimer)
+			clearTimeout(this.confettiStopTimer)
 			if (this.confettiAnimationId) {
 				cancelAnimationFrame(this.confettiAnimationId)
 				this.confettiAnimationId = undefined
@@ -224,6 +235,7 @@ export default {
 	height: 100%;
 	pointer-events: none;
 	z-index: 1000;
+	transition: opacity 1s ease;
 }
 
 /* Large trophy hero icon */
