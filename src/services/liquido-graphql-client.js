@@ -48,6 +48,9 @@ if (!config || !config.LIQUIDO_API_URL) {
 // Configure axios HTTP REST client to point to our graphQL backend
 axios.defaults.baseURL = config.LIQUIDO_API_URL
 
+// Default global timeout = 10 secs
+axios.defaults.timeout = 10000
+
 /** This will be called for HTTP resopnse status 2xx */
 let onSuccess = (response) => {
 	if (response.config.url !== GRAPHQL) logNetworkCall("debug", `${response.config?.method?.toUpperCase()} ${response.config?.url} -> ${response.status}`)
@@ -194,8 +197,8 @@ const fetchPollFunc = function(path) {
 	} else if (path[0].polls) {
 		console.debug("Fetch one poll from backend: "+JSON.stringify(path))
 		let pollId = path[0].polls
-		let graphQL = `query { poll(pollId:${pollId}) ${JQL.POLL} }`
-		return graphQlQuery(graphQL).then(res => {
+		let graphQL = `query poll($pollId: ID!) { poll(pollId: $pollId) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId }).then(res => {
 			EventBus.emit(EventBus.Event.POLL_LOADED, res.data.poll)  // notify listeners that ONE poll has been (re)loaded from the backend
 			return res.data.poll
 		})
@@ -373,8 +376,8 @@ let graphQlApi = {
 	 */
 	requestEmailLoginLink(email) {
 		if (!email) throw new Error("Need email to log in!")
-		let graphQL = `query { requestEmailLoginLink(email: "${email}") }`
-		return graphQlQuery(graphQL)
+		let graphQL = `query requestEmailLoginLink($email: String!) { requestEmailLoginLink(email: $email) }`
+		return graphQlQuery(graphQL, { email })
 	},
 
 	/**
@@ -383,8 +386,8 @@ let graphQlApi = {
 	loginWithEmailPassword(email, password) {
 		if (!email) throw new Error("Need email to log in!")
 		if (!password) throw new Error("Need password to log in!")
-		let graphQL = `query { loginWithEmailPassword(email: "${email}", password: "${password}") ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
-		return graphQlQuery(graphQL).then(response => {
+		let graphQL = `query loginWithEmailPassword($email: String!, $password: String!) { loginWithEmailPassword(email: $email, password: $password) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
+		return graphQlQuery(graphQL, { email, password }).then(response => {
 			let res = response.data.loginWithEmailPassword
 			this.login(res.team, res.user, res.jwt)
 			return res
@@ -433,8 +436,8 @@ let graphQlApi = {
 	 * and receive login info in response	
 	 */
 	googleOneTapLogin(googleIdToken) {
-		let graphQL = `query { googleOneTapLogin(googleIdToken: "${googleIdToken}") ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
-		return graphQlQuery(graphQL).then(response => {
+		let graphQL = `query googleOneTapLogin($googleIdToken: String!) { googleOneTapLogin(googleIdToken: $googleIdToken) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
+		return graphQlQuery(graphQL, { googleIdToken }).then(response => {
 			let res = response.data.googleOneTapLogin
 			this.login(res.team, res.user, res.jwt)
 			return res
@@ -449,8 +452,8 @@ let graphQlApi = {
 	 * @param devLoginToken (optional) TESTs can send the devLoginToken to fake the request.
 	 */
 	requestAuthToken(mobilephone, devLoginToken) {
-		let graphQL = `query { authToken(mobilephone: "${mobilephone}", devLoginToken: "${devLoginToken}") }`
-		return graphQlQuery(graphQL)
+		let graphQL = `query authToken($mobilephone: String!, $devLoginToken: String!) { authToken(mobilephone: $mobilephone, devLoginToken: $devLoginToken) }`
+		return graphQlQuery(graphQL, { mobilephone, devLoginToken })
 	},
 
 	/**
@@ -459,8 +462,8 @@ let graphQlApi = {
 	loginWithAuthToken(mobilephone, authToken) {
 		if (!mobilephone) throw new Error("Need mobilephone to log in!")
 		if (!authToken) throw new Error("Need authToken to log in!")
-		let graphQL = `query { loginWithAuthToken(mobilephone: "${mobilephone}", authToken: "${authToken}") ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
-		return graphQlQuery(graphQL).then(response => {
+		let graphQL = `query loginWithAuthToken($mobilephone: String!, $authToken: String!) { loginWithAuthToken(mobilephone: $mobilephone, authToken: $authToken) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
+		return graphQlQuery(graphQL, { mobilephone, authToken }).then(response => {
 			let res = response.data.loginWithAuthToken
 			this.login(res.team, res.user, res.jwt)
 			return res
@@ -576,8 +579,8 @@ let graphQlApi = {
 				token: devLoginToken
 			}
 		*/
-		let graphQL = `query { devLogin(email: "${email}", devLoginToken: "${devLoginToken}") ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
-		return graphQlQuery(graphQL)
+		let graphQL = `query devLogin($email: String!, $devLoginToken: String!) { devLogin(email: $email, devLoginToken: $devLoginToken) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
+		return graphQlQuery(graphQL, { email, devLoginToken })
 			.then(res => {
 				console.log("API: devLogin <"+email+">")
 				this.login(res.data.devLogin.team, res.data.devLogin.user, res.data.devLogin.jwt)
@@ -623,8 +626,8 @@ let graphQlApi = {
 	 * @returns the team
 	 */
 	async getTeamForInviteCode(inviteCode) {
-		let graphQL = `query { teamForInviteCode(inviteCode: "${inviteCode}") ${JQL.TEAM} }`
-		return graphQlQuery(graphQL)
+		let graphQL = `query teamForInviteCode($inviteCode: String!) { teamForInviteCode(inviteCode: $inviteCode) ${JQL.TEAM} }`
+		return graphQlQuery(graphQL, { inviteCode })
 			.then(res => res.data.teamForInviteCode)
 	},
 
@@ -661,8 +664,8 @@ let graphQlApi = {
 	 **********************************************************************/
 
 	async createPoll(pollTitle) {
-		let graphQL = `mutation {	createPoll(title: "${pollTitle}") ${JQL.POLL}	}`
-		return graphQlQuery(graphQL)
+		let graphQL = `mutation createPoll($title: String!) { createPoll(title: $title) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { title: pollTitle })
 			.then(res => {
 				let poll = res.data.createPoll
 				this.pollsCache.put("polls/"+poll.id, poll)
@@ -720,8 +723,8 @@ let graphQlApi = {
 	 * @returns {Object} the updated poll with the added proposal
 	 */
 	async addProposal(pollId, title, description, icon) {
-		let graphQL = `mutation { addProposal(pollId: "${pollId}", title: "${title}", description: "${description}", icon: "${icon}") ${JQL.POLL} }`
-		return graphQlQuery(graphQL)
+		let graphQL = `mutation addProposal($pollId: ID!, $title: String!, $description: String!, $icon: String!) { addProposal(pollId: $pollId, title: $title, description: $description, icon: $icon) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId, title, description, icon })
 			.then(res => {
 				let poll = res.data.addProposal
 				this.pollsCache.put("polls/"+poll.id, poll)
@@ -739,8 +742,8 @@ let graphQlApi = {
 	 * @returns {Object} the updated poll
 	 */
 	async likeProposal(pollId, proposalId) {
-		let graphQL = `mutation { likeProposal(pollId: "${pollId}", proposalId: "${proposalId}") ${JQL.POLL} }`
-		return graphQlQuery(graphQL)
+		let graphQL = `mutation likeProposal($pollId: ID!, $proposalId: ID!) { likeProposal(pollId: $pollId, proposalId: $proposalId) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId, proposalId })
 			.then(res => {
 				let poll = res.data.likeProposal
 				this.pollsCache.put("polls/"+poll.id, poll)
@@ -751,8 +754,8 @@ let graphQlApi = {
 	},
 
 	async startVotingPhase(pollId) {
-		let graphQL = `mutation { startVotingPhase(pollId: "${pollId}") ${JQL.POLL} }`
-		return graphQlQuery(graphQL)
+		let graphQL = `mutation startVotingPhase($pollId: ID!) { startVotingPhase(pollId: $pollId) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId })
 			.then(res => {
 				let poll = res.data.startVotingPhase
 				//TODO: invalidate cache for pollId
@@ -767,8 +770,8 @@ let graphQlApi = {
 	 * @returns {Object} the winning proposal
 	 */
 	async finishVotingPhase(pollId) {
-		let graphQL = `mutation { finishVotingPhase(pollId: "${pollId}") ${JQL.PROPOSAL} }`
-		return graphQlQuery(graphQL)
+		let graphQL = `mutation finishVotingPhase($pollId: ID!) { finishVotingPhase(pollId: $pollId) ${JQL.PROPOSAL} }`
+		return graphQlQuery(graphQL, { pollId })
 			.then(res => {
 				console.debug(`Finsihed voting phase of poll.id=${pollId}`)
 				return res.data.finishVotingPhase
@@ -777,19 +780,18 @@ let graphQlApi = {
 
 	/** Get one-time voterToken for a poll */
 	async getVoterToken(pollId) {
-		let graphQL = `query { voterToken(pollId: "${pollId}") }`
-		return graphQlQuery(graphQL).then(res => {
+		let graphQL = `query voterToken($pollId: ID!) { voterToken(pollId: $pollId) }`
+		return graphQlQuery(graphQL, { pollId }).then(res => {
 			console.debug("Successfully received VoterToken for poll(id="+pollId+")")  // do not log the token!
 			return res.data.voterToken
 		})
 	},
 
 	async castVote(pollId, voteOrderIds, voterToken) {
-		let voteOrderStr = "[" + voteOrderIds.join(",") + "]"
-		console.debug("Cast vote in poll(id="+pollId+") => ", voteOrderStr)
-		let graphQL = `mutation { castVote(pollId: "${pollId}", voteOrderIds: ${voteOrderStr}, voterToken: "${voterToken}") ` +
+		console.debug("Cast vote in poll(id="+pollId+") => ", voteOrderIds)
+		let graphQL = `mutation castVote($pollId: ID!, $voteOrderIds: [Int!]!, $voterToken: String!) { castVote(pollId: $pollId, voteOrderIds: $voteOrderIds, voterToken: $voterToken) ` +
 			`{ voteCount ballot { level checksum voteOrder { id } } } }`
-		return graphQlQuery(graphQL)
+		return graphQlQuery(graphQL, { pollId, voteOrderIds, voterToken })
 			.then(res => {
 				console.debug("CastVote: Ballot was casted successfully.")
 				return res.data.castVote
@@ -798,9 +800,9 @@ let graphQlApi = {
 
 	/** Get voter's ballot if he voted already. MAY return null if not. */
 	async getMyBallot(pollId) {
-		let graphQL = `query { myBallot(pollId: "${pollId}") ` +
+		let graphQL = `query myBallot($pollId: ID!) { myBallot(pollId: $pollId) ` +
 			`{ level checksum voteOrder { id } } }`
-		return graphQlQuery(graphQL)
+		return graphQlQuery(graphQL, { pollId })
 			.then(res => {
 				if (res.data.myBallot) {
 					console.debug(`User's ballot in poll(id=${pollId}) is`, res.data.myBallot)
@@ -813,10 +815,10 @@ let graphQlApi = {
 
 	/** Verify a voter's ballot with its checksum. */
 	async verifyBallot(pollId, checksum) {
-		let graphQL = `query { verifyBallot(pollId: "${pollId}", checksum: "${checksum}") ` +
-			`{ level checksum voteOrder { id } } }`  
+		let graphQL = `query verifyBallot($pollId: ID!, $checksum: String!) { verifyBallot(pollId: $pollId, checksum: $checksum) ` +
+			`{ level checksum voteOrder { id } } }`
 		// returns user's ballot if found
-		return graphQlQuery(graphQL).then(res => res.data.verifyBallot)
+		return graphQlQuery(graphQL, { pollId, checksum }).then(res => res.data.verifyBallot)
 	},
 
 	/** poll status constants (trying to have one central definition for the whole client here) */

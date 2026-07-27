@@ -63,7 +63,7 @@
 				</div>
 				<div class="proposal-body flex-grow-1">
 					<h3 class="proposal-title">{{ prop.title }}</h3>
-					<div class="proposal-description" v-html="prop.description"></div>
+					<div class="proposal-description">{{ prop.description }}</div>
 					<div class="proposal-subtitle">
 						<span v-if="prop.likedByCurrentUser" class="like-button liked">
 							<i class="fas fa-heart"></i>&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>

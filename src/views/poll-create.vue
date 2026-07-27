@@ -23,7 +23,12 @@
 		</div>
 
 		<div class="alert alert-admin my-5">
-			<div v-html="$t('createPollInfo')" />
+			<p>{{ $t('createPollInfo1') }}</p>
+			<ol class='fa-ul'>
+				<li><span class='fa-li'><i class='fas fa-comments'></i></span> {{ $t('createPollInfo2') }} {{ $t('createPollInfo3') }}</li>
+				<li><span class='fa-li'><i class='fas fa-person-booth'></i></span> <span v-html="$t('createPollInfo4')"></span></li>
+				<li><span class='fa-li'><i class='fas fa-check-circle'></i></span> {{ $t('createPollInfo5') }}</li>
+			</ol>
 		</div>
 
 		<liquido-footer>
@@ -31,8 +36,13 @@
 				<button id="createPollButton" type="button" class="btn btn-lg w-100 btn-primary" 
 				  :disabled="createPollButtonDisabled"
 				  @click="clickCreateNewPoll">
-					{{ $t("createPoll") }}
-					<i class="fas fa-angle-double-right" />
+					<span v-if="creating" class="spinner-border spinner-border-sm" role="status">
+						<span class="visually-hidden">{{ $t('Loading') }}</span>
+					</span>
+					<span v-else>
+						{{ $t("createPoll") }}
+						<i class="fas fa-angle-double-right" />
+					</span>
 				</button>
 			</template>
 		</liquido-footer>
@@ -52,13 +62,14 @@ export default {
 			en: {},
 			de: {
 				newPoll: "Neue Abstimmung anlegen",
-				//TODO: Improve Translation: Nicht "Wahlphase", sondern einfach nur "Abstimmung starten"  ?
-				createPollInfo:
-					"<p><span class='liquido'></span> Abstimmung laufen durch drei Phasen:</p>"+
-					"<p>(1) <i class='fas fa-comments'></i> Eine Abstimmung wird erst einmal diskutiert. Jeder aus deinem Team "+
-					"kann in dieser Phase seinen eigenen Vorschlag hinzufügen.</p>" +
-					"<p>(2) <i class='fas fa-person-booth'></i> Sobald die Abstimmung startet kann jeder im Team seine Stimme anonym abgeben.</p>" +
-					"<p>(3) Nachdem die Abstimmung beendet wurde, ist das Wahlergebnis für alle sichtbar.",
+
+				// This info is for the admin, and only shown to him.
+				createPollInfo1: "Du bist der Admin dieses Teams.",
+				createPollInfo2: "Eine neue Abstimmung wird erst einmal debatiert.",
+				createPollInfo3: "Du kannst festlegen ob Teammitglieder eigene Vorschläge hinzufügen dürfen oder nicht.",
+				createPollInfo4: "Du, als Admin, startest die Abstimmung. In LIQUIDO stimmt man nicht nur für einen Vorschlag, sondern jeder im Team ordnet alle Vorschläge anonym in seine persönliche Reihenfolge.",
+				createPollInfo5: "Wenn du die Abstimmung abschliest, wird der Vorschlag mit der größten Zustimmung durch einen cleveren Algorithmus berechnet.",
+
 				pollTitle: "Titel der Abstimmung",
 				pollTitleInvalid: "Titel ist zu kurz. Bitte mind. {minLen} Zeichen.",
 				createPoll: "Abstimmung anlegen"
@@ -70,11 +81,12 @@ export default {
 	data() {
 		return {
 			pollTitle: "",
+			creating: false,
 		}
 	},
 	computed: {
 		createPollButtonDisabled() {
-			return !this.isPollTitleValid(this.pollTitle)
+			return this.creating || !this.isPollTitleValid(this.pollTitle)
 		},
 		pollTitleInvalidFeedback() {
 			return this.$t("pollTitleInvalid", {minLen: config.pollTitleMinLength})
@@ -103,13 +115,19 @@ export default {
 
 		/** Create a new poll with the given title */
 		clickCreateNewPoll() {
+			this.creating = true
 			return api.createPoll(this.pollTitle)
 				.then(createdPoll => {
 					log.info("New poll created", createdPoll)
 					this.$router.push({name: "showPoll", params: { pollId: createdPoll.id } })
 				})
-				//TODO: error handling for createPoll: show global popup error message
-				.catch(err => console.warn("Cannot create poll", err))
+				.catch(err => {
+					console.error("Cannot create poll", err)
+					this.$root.showError(this.$t('unexpectedError'), this.$t('Error'))
+				})
+				.finally(() => {
+					this.creating = false
+				})
 		},
 	},
 }

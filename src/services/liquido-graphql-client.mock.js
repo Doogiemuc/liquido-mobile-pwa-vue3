@@ -249,29 +249,29 @@ const queryHandlers = {
 		}
 		return loginMock(member.user.email)
 	},
-	requestEmailLoginLink: query => {
-		const email = argFromQuery(query, "email")
+	requestEmailLoginLink: (query, variables = {}) => {
+		const email = get(variables, "email", argFromQuery(query, "email"))
 		if (!findMemberByEmail(email)) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_EMAIL_NOT_FOUND, "Unknown email")
 		}
 		return true
 	},
-	loginWithEmailPassword: query => {
-		const email = argFromQuery(query, "email")
+	loginWithEmailPassword: (query, variables = {}) => {
+		const email = get(variables, "email", argFromQuery(query, "email"))
 		if (!findMemberByEmail(email)) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_EMAIL_NOT_FOUND, "Unknown email")
 		}
 		return loginMock(email)
 	},
-	requestPasswordReset: query => {
-		const email = argFromQuery(query, "email")
+	requestPasswordReset: (query, variables = {}) => {
+		const email = get(variables, "email", argFromQuery(query, "email"))
 		if (!findMemberByEmail(email)) {
 			rejectLiquido(LiquidoExceptionCodes.WONT_RESET_PASSWORD, "Cannot reset password for unknown email")
 		}
 		return true
 	},
-	resetPassword: query => {
-		const email = argFromQuery(query, "email")
+	resetPassword: (query, variables = {}) => {
+		const email = get(variables, "email", argFromQuery(query, "email"))
 		if (!findMemberByEmail(email)) {
 			rejectLiquido(LiquidoExceptionCodes.WONT_RESET_PASSWORD, "Cannot reset password for unknown email")
 		}
@@ -281,8 +281,8 @@ const queryHandlers = {
 		const user = currentUserOrThrow()
 		return loginMock(user.email)
 	},
-	authToken: query => {
-		const mobilephone = argFromQuery(query, "mobilephone")
+	authToken: (query, variables = {}) => {
+		const mobilephone = get(variables, "mobilephone", argFromQuery(query, "mobilephone"))
 		const member = findMemberByMobile(mobilephone)
 		if (!member) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_MOBILE_NOT_FOUND, "Unknown mobilephone")
@@ -290,9 +290,9 @@ const queryHandlers = {
 		set(mockState, `issuedAuthTokensByMobile.${mobilephone}`, config.devLogin.mockSmsToken)
 		return true
 	},
-	loginWithAuthToken: query => {
-		const mobilephone = argFromQuery(query, "mobilephone")
-		const authToken = argFromQuery(query, "authToken")
+	loginWithAuthToken: (query, variables = {}) => {
+		const mobilephone = get(variables, "mobilephone", argFromQuery(query, "mobilephone"))
+		const authToken = get(variables, "authToken", argFromQuery(query, "authToken"))
 		const member = findMemberByMobile(mobilephone)
 		if (!member) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_MOBILE_NOT_FOUND, "Unknown mobilephone")
@@ -302,22 +302,22 @@ const queryHandlers = {
 		}
 		return loginMock(member.user.email)
 	},
-	devLogin: query => {
-		const email = argFromQuery(query, "email")
+	devLogin: (query, variables = {}) => {
+		const email = get(variables, "email", argFromQuery(query, "email"))
 		if (!findMemberByEmail(email)) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_EMAIL_NOT_FOUND, "Unknown user for devLogin")
 		}
 		return loginMock(email)
 	},
 	polls: () => (mockState.team.polls || []).map(enrichPollForCurrentUser),
-	poll: query => {
-		const pollId = asInt(argFromQuery(query, "pollId", "-1"))
+	poll: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
 		const poll = findPoll(pollId)
 		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
 		return enrichPollForCurrentUser(poll)
 	},
-	voterToken: query => {
-		const pollId = asInt(argFromQuery(query, "pollId", "-1"))
+	voterToken: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
 		const user = currentUserOrThrow()
 		const poll = findPoll(pollId)
 		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
@@ -325,20 +325,20 @@ const queryHandlers = {
 		set(mockState, `voterTokensByPollAndUser.${ballotKey(pollId, user.id)}`, token)
 		return token
 	},
-	myBallot: query => {
-		const pollId = asInt(argFromQuery(query, "pollId", "-1"))
+	myBallot: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
 		const user = currentUserOrThrow()
 		return deepClone(get(mockState, `ballotsByPollAndUser.${ballotKey(pollId, user.id)}`, null))
 	},
-	verifyBallot: query => {
-		const pollId = asInt(argFromQuery(query, "pollId", "-1"))
-		const checksum = argFromQuery(query, "checksum")
+	verifyBallot: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
+		const checksum = get(variables, "checksum", argFromQuery(query, "checksum"))
 		const match = Object.entries(mockState.ballotsByPollAndUser)
 			.find(([key, ballot]) => key.startsWith(`${pollId}:`) && ballot?.checksum === checksum)
 		return match ? deepClone(match[1]) : null
 	},
-	teamForInviteCode: query => {
-		const inviteCode = argFromQuery(query, "inviteCode")
+	teamForInviteCode: (query, variables = {}) => {
+		const inviteCode = get(variables, "inviteCode", argFromQuery(query, "inviteCode"))
 		if (inviteCode !== mockState.team.inviteCode) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_JOIN_TEAM_INVITE_CODE_INVALID, "Invite code not found")
 		}
@@ -415,8 +415,8 @@ const mutationHandlers = {
 		// Log in the newly created member
 		return loginMock(newUser.email)
 	},
-	createPoll: query => {
-		const title = argFromQuery(query, "title", "New Mock Poll")
+	createPoll: (query, variables = {}) => {
+		const title = get(variables, "title", argFromQuery(query, "title", "New Mock Poll"))
 		const poll = {
 			id: mockState.nextPollId++,
 			title,
@@ -432,16 +432,16 @@ const mutationHandlers = {
 		mockState.team.polls.unshift(poll)
 		return enrichPollForCurrentUser(poll)
 	},
-	addProposal: query => {
-		const pollId = asInt(argFromQuery(query, "pollId", "-1"))
+	addProposal: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
 		const poll = findPoll(pollId)
 		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
 		const user = currentUserOrThrow()
 		poll.proposals.push({
 			id: mockState.nextProposalId++,
-			title: argFromQuery(query, "title", "Mock proposal"),
-			description: argFromQuery(query, "description", ""),
-			icon: argFromQuery(query, "icon", "vote-yea"),
+			title: get(variables, "title", argFromQuery(query, "title", "Mock proposal")),
+			description: get(variables, "description", argFromQuery(query, "description", "")),
+			icon: get(variables, "icon", argFromQuery(query, "icon", "vote-yea")),
 			status: poll.status === "VOTING" ? "VOTING" : "ELABORATION",
 			createdAt: nowIso(),
 			numSupporters: 0,
@@ -451,9 +451,9 @@ const mutationHandlers = {
 		poll.updatedAt = nowIso()
 		return deepClone(poll)
 	},
-	likeProposal: query => {
-		const pollId = asInt(argFromQuery(query, "pollId", "-1"))
-		const proposalId = asInt(argFromQuery(query, "proposalId", "-1"))
+	likeProposal: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
+		const proposalId = asInt(get(variables, "proposalId", argFromQuery(query, "proposalId", "-1")))
 		const poll = findPoll(pollId)
 		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
 		const proposal = (poll.proposals || []).find(p => p.id === proposalId)
@@ -463,8 +463,8 @@ const mutationHandlers = {
 		poll.updatedAt = nowIso()
 		return deepClone(poll)
 	},
-	startVotingPhase: query => {
-		const pollId = asInt(argFromQuery(query, "pollId", "-1"))
+	startVotingPhase: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
 		const poll = findPoll(pollId)
 		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
 		poll.status = "VOTING"
@@ -475,8 +475,8 @@ const mutationHandlers = {
 		})
 		return deepClone(poll)
 	},
-	finishVotingPhase: query => {
-		const pollId = asInt(argFromQuery(query, "pollId", "-1"))
+	finishVotingPhase: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
 		const poll = findPoll(pollId)
 		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
 		const winner = (poll.proposals || [])
@@ -491,10 +491,10 @@ const mutationHandlers = {
 		})
 		return deepClone(winner)
 	},
-	castVote: query => {
-		const pollId = asInt(argFromQuery(query, "pollId", "-1"))
-		const voteOrderIds = voteOrderFromQuery(query)
-		const voterToken = argFromQuery(query, "voterToken")
+	castVote: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
+		const voteOrderIds = variables?.voteOrderIds || voteOrderFromQuery(query)
+		const voterToken = get(variables, "voterToken", argFromQuery(query, "voterToken"))
 		const user = currentUserOrThrow()
 		const poll = findPoll(pollId)
 		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)

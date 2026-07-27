@@ -23,6 +23,12 @@
 		<!-- POLL SECTIONS -->
 		<div id="poll-list-wrapper" class="mb-5">
 
+			<div v-if="loading" class="text-center my-5">
+				<div class="spinner-border text-secondary" role="status">
+					<span class="visually-hidden">{{ $t('Loading') }}</span>
+				</div>
+			</div>
+
 			<PollListSection
 				v-for="section in activeSections"
 				:key="section.status"
@@ -92,6 +98,7 @@ const searchQuery = ref("")
 const pollStatusFilter = ref(api.POLL_STATUS.ALL_POLLS)
 
 const polls = ref([])
+const loading = ref(false)
 
 /* -----------------------
    LIFECYCLE
@@ -110,6 +117,8 @@ onMounted(() => {
 	EventBus.on(EventBus.Event.POLLS_LOADED, syncPolls)
 	
 	syncPolls()
+	if (polls.value.length === 0) loading.value = true
+	api.getPolls().finally(() => { loading.value = false })
 
 	scrollToTop()
 })

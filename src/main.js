@@ -90,7 +90,10 @@ const globalTranslations = {
 		gotoPolls: "Abstimmungen",  // Link to /polls page  short!
 		inviteNewMembers: "Teammitglieder einladen",
 
-
+		// Global error messages 
+		unexpectedError: "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.",
+		networkError: "Ein Netzwerkfehler ist aufgetreten. Bitte versuche es erneut.",
+		
 
 		// Need these translations here, because of an issue when upgrading vue-i18n
 		// Or maybe it's even a good idea to have all translations in one place => NO its not!! :-)  => In LIQUIDO we want to have visual in place translation service per page
@@ -147,4 +150,35 @@ const rootApp = createApp({
 rootApp.config.globalProperties.$store = store // make store available in all components via this.$store
 rootApp.use(router)
 rootApp.use(i18n)
-rootApp.mount("#app")
+
+/**
+ * Global Vue error boundary.
+ * Catches errors thrown in any component's lifecycle hook, render function, or watcher.
+ * NEVER show backend error details to the user — only show a fixed, localized message.
+ * rootInstance is set on mount() below; the handler fires lazily so it is always available.
+ */
+rootApp.config.errorHandler = (err, _instance, info) => {
+	console.error("[Global Vue Error] in:", info, err)
+	rootInstance?.showError?.(
+		i18n.global.t("unexpectedError"),
+		i18n.global.t("Error"),
+		undefined, undefined,
+		() => window.location.reload()
+	)
+}
+
+// app.mount() returns the root component's public proxy (Vue 3 documented behaviour)
+const rootInstance = rootApp.mount("#app")
+
+// Catch unhandled Promise rejections (e.g. unawaited API calls without .catch())
+window.addEventListener("unhandledrejection", (event) => {
+	console.error("[Unhandled Promise Rejection]", event.reason)
+	// NEVER forward backend error messages to the user — always show a fixed, localized message.
+	rootInstance?.showError?.(
+		i18n.global.t("networkError"),
+		i18n.global.t("Error"),
+		undefined, undefined,
+		() => window.location.reload()
+	)
+	event.preventDefault() // suppress browser's default console error
+})

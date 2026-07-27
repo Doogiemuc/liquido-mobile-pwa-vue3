@@ -85,6 +85,26 @@ Full details in [doc/ai/i18n-usage-notes.md](../../doc/ai/i18n-usage-notes.md). 
   See `src/views/team-home.vue` for a working example (`const { t, d } = useI18n()`).
 - **Options API:** use `this.$t("myKey")` as usual. Component‑local messages go in the `i18n:` option.
 
+## User-facing error messages
+
+**NEVER show raw backend error messages, exception details, or stack traces to the user.**
+Backend messages (e.g. `err.message`, `liquidoException.msg`, HTTP status text) may leak internal
+implementation details or confuse users with technical jargon.
+
+Always show a fixed, **localized** string:
+```js
+// ✅ correct
+this.$root.showError(this.$t('errorUnexpected'), this.$t('Error'))
+
+// ❌ wrong — leaks backend internals
+this.$root.showError(err.message, 'Error')
+this.$root.showError(err.liquidoException?.msg, 'Error')
+```
+
+Log the full technical error to the console for debugging, then show only the safe UI message.
+The global error boundary in `src/main.js` (`app.config.errorHandler` and `unhandledrejection`)
+already follows this rule and reloads the window when the user dismisses the modal.
+
 ## Component & styling conventions
 
 - **Routed components must have a single element root.** `<router-view>` passes

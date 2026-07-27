@@ -251,7 +251,7 @@ export default {
 				this.poll.proposals.forEach(prop => proposalsById[prop.id] = prop)
 				this.existingBallot = ballot
 				let votedIds = new Set(ballot.voteOrder.map(elem => elem.id))
-				this.proposalsInBallot = ballot.voteOrder.map(elem => proposalsById[elem.id])
+				this.proposalsInBallot = ballot.voteOrder.map(elem => proposalsById[elem.id]).filter(Boolean)
 				this.availableProposals = this.poll.proposals.filter(prop => !votedIds.has(prop.id))
 			} else {
 				// First vote: the drop target starts empty. All proposals are available to be dragged in.
