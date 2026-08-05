@@ -140,6 +140,11 @@ const JQL_POLL = `{ id title status createdAt updatedAt votingStartAt votingEndA
 const JQL_TEAM = `{ id teamName inviteCode ` +
 		`members ${JQL_TEAM_MEMBER} ` +
 		`polls ${JQL_POLL} } `
+
+// POLLY - quick and easy little polls
+const JQL_POLLY = `{ id title status createdAt updatedAt userAlreadyVoted proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `
+
+
 const JQL = {
 	TEAM: JQL_TEAM,
 	PROPOSAL: JQL_PROPOSAL,
@@ -148,6 +153,7 @@ const JQL = {
 		`user ${JQL_LOGIN_USER} ` + 
 		`jwt } `, 
 	POLL: JQL_POLL,
+	POLLY: JQL_POLLY
 }
 
 
@@ -658,6 +664,95 @@ let graphQlApi = {
 				return team
 			})
 	},
+
+	/**********************************************************************
+	 * Polly
+	 **********************************************************************/
+
+	/**
+	 * A Polly is a quick and easy poll.
+	 * @param {Object} polly a polly object with title and proposals[] (each proposal has title, description, icon)
+	 */
+	async savePolly(polly) {
+		const proposalTitles = (polly.proposals || [])
+			.map(proposal => proposal?.title?.trim())
+			.filter(Boolean)
+		let graphQL = `mutation savePolly($title: String!, $proposalTitles: [String!]!) { savePolly(title: $title, proposalTitles: $proposalTitles) ${JQL_POLLY} }`
+		return graphQlQuery(graphQL, {
+			title: polly.title.trim(),
+			proposalTitles,
+		}).then(res => {
+			let polly = res.data.savePolly
+			console.debug("Saved new polly:", polly)
+			return polly
+		})
+	},
+
+	/**
+	 * Edit an existing polly (title and proposals).
+	 * @param {Number} pollId polly ID
+	 * @param {String} title new polly title
+	 * @param {Array} proposalTitles array of proposal title strings
+	 * @returns {Object} the updated polly
+	 */
+	async editPolly(pollId, title, proposalTitles) {
+		let graphQL = `mutation editPolly($pollId: BigInteger!, $title: String!, $proposalTitles: [String!]!) { editPolly(pollId: $pollId, title: $title, proposalTitles: $proposalTitles) ${JQL_POLLY} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId), title: title.trim(), proposalTitles })
+			.then(res => {
+				let polly = res.data.editPolly
+				console.debug("Updated polly:", polly)
+				return polly
+			})
+	},
+
+	/**
+	 * Start the voting phase for a polly.
+	 * Backend will send admin link and share link to the user's email.
+	 * @param {Number} pollId polly ID
+	 * @param {String} userEmail email to send links to
+	 * @returns {Object} the polly in VOTING status
+	 */
+	async startPolly(pollId, userEmail) {
+		let graphQL = `mutation startPolly($pollId: BigInteger!, $userEmail: String!) { startPolly(pollId: $pollId, userEmail: $userEmail) ${JQL_POLLY} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId), userEmail })
+			.then(res => {
+				console.debug("Started polly voting phase:", res.data.startPolly)
+				return res.data.startPolly
+			})
+	},
+
+	/**
+	 * Cast a vote in a polly (sorted proposal order).
+	 * @param {Number} pollId polly ID
+	 * @param {Array} voteOrderIds array of proposal IDs in voter's preferred order
+	 * @param {String} voterToken one-time voter token
+	 * @returns {Object} ballot confirmation with checksum
+	 */
+	async castVoteInPolly(pollId, voteOrderIds, voterToken) {
+		console.debug("Cast vote in polly(id=" + pollId + ") => ", voteOrderIds)
+		let graphQL = `mutation castVoteInPolly($pollId: BigInteger!, $voteOrderIds: [BigInteger]!, $voterToken: String!) { castVoteInPolly(pollId: $pollId, voteOrderIds: $voteOrderIds, voterToken: $voterToken) { voteCount ballot { level checksum voteOrder { id } } } }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId), voteOrderIds: voteOrderIds.map(Number), voterToken })
+			.then(res => {
+				console.debug("Polly vote cast successfully.")
+				return res.data.castVoteInPolly
+			})
+	},
+
+	/**
+	 * Finish the voting phase of a polly and calculate the winner.
+	 * @param {Number} pollId polly ID
+	 * @returns {Object} the winning proposal
+	 */
+	async finishPolly(pollId) {
+		let graphQL = `mutation finishPolly($pollId: BigInteger!) { finishPolly(pollId: $pollId) ${JQL_PROPOSAL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId) })
+			.then(res => {
+				console.debug(`Finished polly voting phase. Winner: polly(id=${pollId})`)
+				return res.data.finishPolly
+			})
+	},
+
+
 
 	/**********************************************************************
 	 * API calls against backend that need to be authenticated with a JWT

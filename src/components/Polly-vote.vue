@@ -9,6 +9,8 @@
 
 import {
 	//ref,
+	getCurrentInstance,
+	ref,
 	reactive,
 	computed,
 	//	watch,
@@ -17,6 +19,7 @@ import {
 import draggable from 'vuedraggable'
 import * as bootstrap from 'bootstrap'
 import config from "config"
+import api from '@/services/liquido-graphql-client.js'
 import liquidoInput from './liquido-input.vue'
 import liquidoHeader from './liquido-header.vue'
 
@@ -39,30 +42,32 @@ const messages = {
     "PollyTitlePlaceholder": "Polly Title",
     "PollyTitleEmptyFeedback": "Please enter a title (at least {minLength} characters).",
     "PollyTitleInvalidFeedback": "Title is too short, minimum {minLength} characters.",
-    "StartPollInfo": "You’ll receive a private admin link to manage your poll, and a public voting link to share with your friends.",
-		"StartPoll": "Start Poll",
-    "FinishPoll": "Finish Poll",
+    "StartPollyInfo": "You’ll receive a private admin link to manage your polly, and a public voting link to share with your friends.",
+		"StartPolly": "Start Polly",
+    "FinishPolly": "Finish Polly",
     "CastVote": "Cast Vote",
     "NewPolly": "New Polly",
-    "PollNotYetStarted": "Poll not yet started",
-    "StartingPoll": "Starting poll ...",
+    "PollyNotYetStarted": "Polly not yet started",
+    "StartingPolly": "Starting polly ...",
     "SortProposals": "Sort proposals",
+		"PollySaveError": "Could not save polly. Please try again.",
     "ThxForVoting": "THX for voting!",
-    "PollFinished": "Poll is finished ({numVoters} voters)"
+    "PollFinished": "Polly is finished ({numVoters} voters)"
   },
   "de": {
     "AddProposalPlaceholder": "Weiteren Vorschlag hinzufügen",
     "PollyTitlePlaceholder": "Polly Titel",
     "PollyTitleEmptyFeedback": "Bitte gib einen Titel ein (mindestens {minLength} Zeichen).",
 		"PollyTitleInvalidFeedback": "Bitte mindestens {minLength} Zeichen.",
-		"StartPollInfo": "Ich schicke dir zwei Links: Einen privaten Admin-Link nur für dich. Und einen öffentlchen Link für deine Freunden, mit dem sie abstimmen können.",
-    "StartPoll": "Abstimmung starten",
-    "FinishPoll": "Abstimmung beenden",
+		"StartPollyInfo": "Ich schicke dir zwei Links: Einen privaten Admin-Link nur für dich. Und einen öffentlchen Link für deine Freunden, mit dem sie abstimmen können.",
+    "StartPolly": "Abstimmung starten",
+    "FinishPolly": "Abstimmung beenden",
     "CastVote": "Abstimmen",
     "NewPolly": "Neues Polly",
-    "PollNotYetStarted": "Noch nicht gestartet",
-    "StartingPoll": "Wird gestartet ...",
+    "PollyNotYetStarted": "Noch nicht gestartet",
+    "StartingPolly": "Wird gestartet ...",
     "SortProposals": "Sortiere jetzt die Vorschläge",
+		"PollySaveError": "Sorry, da ist etwas schief gelaufen. Dein Polly konnte gerade nicht gespeichert werden. Bitte versuche es noch einmal.",
     "ThxForVoting": "Danke für deine Stimme!",
     "PollFinished": "Abstimmung beendet. ({numVoters} Teilnehmer)"
   }
@@ -112,10 +117,10 @@ const POLL_TYPE = {
 }
 */
 
-/* Status flow of a poll */
+/* Status flow of a polly */
 const POLL_STATUS = {
 	NEW: "NEW",
-	ELABORATION: "ELABORATION",
+	ELABORATION: "ELABORATION",			 // saved, but not yet started. The polly is still editable.
 	PREPARE_START: "PREPARE_START",  // this status only exists in the frontend. Here we ask for user's email
 	IN_VOTING: "VOTING",
 	FINISHED: "FINISHED"
@@ -123,9 +128,9 @@ const POLL_STATUS = {
 
 // ============================================================
 
-/** Optional initialPoll property that can be passed. Wll be mereded with default's for required fields. */
+/** Optional initialPolly property that can be passed. Wll be mereded with default's for required fields. */
 const props = defineProps({
-  initialPoll: {
+  initialPolly: {
     type: Object,
     required: false,
     default: () => ({})
@@ -139,7 +144,7 @@ function createEmptyProposal(offset = 0) {
   }
 }
 
-function createDefaultPoll() {
+function createDefaultPolly() {
   return {
     title: "",
     status: POLL_STATUS.NEW,
@@ -152,8 +157,8 @@ function createDefaultPoll() {
   }
 }
 
-function normalizePoll(input = {}) {
-  const base = createDefaultPoll()
+function normalizePolly(input = {}) {
+  const base = createDefaultPolly()
 
   const merged = {
     ...base,
@@ -177,15 +182,20 @@ function normalizePoll(input = {}) {
 }
 
 /** This is the local VUE reactive object that we work with */
-const poll = reactive(
-  normalizePoll(structuredClone(props.initialPoll))
+const polly = reactive(
+  normalizePolly(structuredClone(props.initialPolly))
 )
+const { proxy } = getCurrentInstance()
+const isSaving = ref(false)
+const isStarting = ref(false)
+const isCastingVote = ref(false)
+const isFinishing = ref(false)
 
-// IF  Poll is new 
+// IF  Polly is new 
 // AND last element has a title
 // THEN add another empty proposal input at the bottom.
 // (It will be removed when saving.)
-if (poll.status == POLL_STATUS.NEW && propHasTitle(poll.proposals.length - 1)) addProposal()
+if (polly.status == POLL_STATUS.NEW && propHasTitle(polly.proposals.length - 1)) addProposal()
 
 //TODO: Dummy user for testing
 const user = reactive({
@@ -196,19 +206,19 @@ const user = reactive({
 
 // ========== Computed Properties ===========
 
-const isNew = computed(() => poll.status == POLL_STATUS.NEW);
-const inElaboration = computed(() => poll.status == POLL_STATUS.ELABORATION);
-const prepareStart = computed(() => poll.status == POLL_STATUS.PREPARE_START);
-const inVoting = computed(() => poll.status == POLL_STATUS.IN_VOTING);
-const isFinished = computed(() => poll.status == POLL_STATUS.FINISHED);
+const isNew = computed(() => polly.status == POLL_STATUS.NEW);
+const inElaboration = computed(() => polly.status == POLL_STATUS.ELABORATION);
+const prepareStart = computed(() => polly.status == POLL_STATUS.PREPARE_START);
+const inVoting = computed(() => polly.status == POLL_STATUS.IN_VOTING);
+const isFinished = computed(() => polly.status == POLL_STATUS.FINISHED);
 
-function pollTitleValid() {
-	return typeof poll.title === "string" && poll.title.trim().length >= config.pollTitleMinLength;
+function pollyTitleValid() {
+	return typeof polly.title === "string" && polly.title.trim().length >= config.pollTitleMinLength;
 }
 
-/** A poll needs at least a title and two proposals */
+/** A polly needs at least a title and two proposals */
 const saveIsActive = computed(() => {
-	return pollTitleValid() && propHasTitle(0) && propHasTitle(1);
+	return pollyTitleValid() && propHasTitle(0) && propHasTitle(1);
 });
 
 const userEmailIsValid = computed(() => {
@@ -218,7 +228,7 @@ const userEmailIsValid = computed(() => {
 
 // ========== Methods ===========
 function propHasTitle(index) {
-	const title = poll.proposals?.[index]?.title;
+	const title = polly.proposals?.[index]?.title;
 	return typeof title === "string" && title.trim().length > 0;
 }
 
@@ -226,14 +236,14 @@ function propHasTitle(index) {
 let askEmailModal;
 
 onMounted(() => {
-	console.log("Polly poll", poll)
+	console.log("Polly", polly)
 	askEmailModal = new bootstrap.Modal(document.getElementById('askEmailModal'), {})
 	const pollTitleInput = document.getElementById("pollTitleInput")
 	if (pollTitleInput) pollTitleInput.focus();
 });
 
 function addProposal() {
-	poll.proposals.push({
+	polly.proposals.push({
 		id: Date.now(),  // random unique ID
 		title: "",
 	});
@@ -241,8 +251,8 @@ function addProposal() {
 
 function deleteProposal(index) {
 	console.log("deleteProposal(index=" + index + ")");
-	if (poll.proposals.length <= 2) return; // Must always have at lest two proposal inputs
-	poll.proposals.splice(index, 1);
+	if (polly.proposals.length <= 2) return; // Must always have at lest two proposal inputs
+	polly.proposals.splice(index, 1);
 }
 
 /**
@@ -255,8 +265,8 @@ function deleteProposal(index) {
  *  THEN add another input field at the bottom.
  */
 function onProposalBlurr(evt, index) {
-	let len = poll.proposals.length;
-	if (len >= 2 && poll.proposals[index]) {
+	let len = polly.proposals.length;
+	if (len >= 2 && polly.proposals[index]) {
 		if (index < len - 1 && !propHasTitle(index)) {
 			deleteProposal(index);
 		} else if (index === len - 1 && propHasTitle(index)) {
@@ -273,7 +283,7 @@ function onProposalBlurr(evt, index) {
 function checkForDuplicateTitles() {
 	let pollyProposalInputs = document.getElementsByClassName("polly-proposal-input") || [];
 	// This may happen in some very exceptional cases. But marking is fine.
-	if (pollyProposalInputs.length != poll.proposals.length) {
+	if (pollyProposalInputs.length != polly.proposals.length) {
 		return;
 	}
 
@@ -281,8 +291,8 @@ function checkForDuplicateTitles() {
 	const titleOccurrences = new Map();
 
 	// Step 1: Count occurrences of each non-empty title
-	for (let i = 0; i < poll.proposals.length; i++) {
-		const title = poll.proposals[i].title.trim();
+	for (let i = 0; i < polly.proposals.length; i++) {
+		const title = polly.proposals[i].title.trim();
 		if (title !== "") {
 			if (!titleOccurrences.has(title)) {
 				titleOccurrences.set(title, []);
@@ -292,8 +302,8 @@ function checkForDuplicateTitles() {
 	}
 
 	// Step 2: Mark inputs as valid/invalid based on duplicates
-	for (let i = 0; i < poll.proposals.length; i++) {
-		const title = poll.proposals[i].title.trim();
+	for (let i = 0; i < polly.proposals.length; i++) {
+		const title = polly.proposals[i].title.trim();
 
 		if (title !== "" && titleOccurrences.get(title)?.length > 1) {
 			// If the title is duplicated, add the "is-invalid" class
@@ -312,7 +322,7 @@ function checkForDuplicateTitles() {
  * Then check for duplicate titles.
  */
 function onProposalKeyup(evt, index) {
-	let len = poll.proposals.length;
+	let len = polly.proposals.length;
 	if (index === len - 1 && propHasTitle(index)) {
 		addProposal();
 	} else if (evt.key == "Enter" && len >= 2 && !propHasTitle(index)) {
@@ -322,53 +332,134 @@ function onProposalKeyup(evt, index) {
 	}
 }
 
+function cleanedProposalTitles() {
+	return (polly.proposals || [])
+		.map(proposal => proposal?.title?.trim())
+		.filter(Boolean)
+}
+
 /**
- * Save the edited poll.
+ * Save the edited polly.
  * (Removes the last porposal if its title is empty.)
  */
-function savePoll() {
-	if (!propHasTitle(poll.proposals.length - 1)) poll.proposals.pop()
-	poll.status = POLL_STATUS.ELABORATION
+async function savePolly() {
+	if (isSaving.value) return
+	isSaving.value = true
+	try {
+		const savedPolly = await api.savePolly({
+			title: polly.title,
+			proposals: cleanedProposalTitles().map(title => ({ title })),
+		})
+		Object.assign(polly, normalizePolly(structuredClone(savedPolly)))
+		polly.status = POLL_STATUS.ELABORATION
+	} catch (err) {
+		console.error("Cannot save polly", err)
+		proxy?.$root?.showError(loc('PollySaveError'), "")
+	} finally {
+		isSaving.value = false
+	}
 }
 
 /** Go back to edit mode. This is only allowed if there no votes yet. */
-function editPoll() {
-	poll.status = POLL_STATUS.NEW
-	onProposalKeyup({}, poll.proposals.length - 1) // to add an empty proposal at the end
+async function editPolly() {
+	if (polly.numVoters > 0) {
+		//TODO: Show a modal that says "Cannot edit polly anymore, when there are already votes"
+
+		console.warn("Cannot edit polly with votes")
+		return
+	}
+	if (isSaving.value) return
+	isSaving.value = true
+	try {
+		const updatedPolly = await api.editPolly(
+			polly.id,
+			polly.title,
+			cleanedProposalTitles()
+		)
+		Object.assign(polly, normalizePolly(structuredClone(updatedPolly)))
+		polly.status = POLL_STATUS.NEW
+		onProposalKeyup({}, polly.proposals.length - 1) // to add an empty proposal at the end
+	} catch (err) {
+		console.error("Cannot edit polly", err)
+		proxy?.$root?.showError(loc('PollySaveError'), "")
+	} finally {
+		isSaving.value = false
+	}
 }
 
-function clickStartPollButton() {
-	poll.status = POLL_STATUS.PREPARE_START
+function clickStartPollyButton() {
+	polly.status = POLL_STATUS.PREPARE_START
 	askEmailModal.show()
-	//Debug: poll.status = POLL_STATUS.IN_VOTING
+	//Debug: polly.status = POLL_STATUS.IN_VOTING
 }
 
-function startPoll() {
-	//TODO: call backend, store user, send email, ...
-	askEmailModal.hide()
-	console.log("Sending an email to ", user.email)
-	poll.status = POLL_STATUS.IN_VOTING
+async function startPolly() {
+	if (isStarting.value) return
+	isStarting.value = true
+	try {
+		const updatedPolly = await api.startPolly(polly.id, user.email)
+		Object.assign(polly, normalizePolly(structuredClone(updatedPolly)))
+		askEmailModal.hide()
+		console.log("Polly started, email sent to", user.email)
+		polly.status = POLL_STATUS.IN_VOTING
+	} catch (err) {
+		console.error("Cannot start polly", err)
+		proxy?.$root?.showError(loc('PollySaveError'), "")
+	} finally {
+		isStarting.value = false
+	}
 }
 
-function cancelStartPoll() {
-	poll.status = POLL_STATUS.ELABORATION
+function cancelStartPolly() {
+	polly.status = POLL_STATUS.ELABORATION
 }
 
 /*
-function devReopenPoll() {
-	poll.status = POLL_STATUS.ELABORATION
+function devReopenPolly() {
+	polly.status = POLL_STATUS.ELABORATION
 }
 */
 
-//TODO: send request to backend.
-function castVote() {
-	// will then receive an updated poll with current votes, that we mock here
-	poll.numVoters++
-	poll.alreadyVoted = true
+async function castVoteInPolly() {
+	if (isCastingVote.value) return
+	isCastingVote.value = true
+	try {
+		// Extract proposal IDs in current sorted order
+		const voteOrderIds = polly.proposals.map(p => p.id)
+		// TODO: Retrieve voterToken via getVoterTokenForPolly(polly.id)
+		const voterToken = "mock-voter-token-123" // Placeholder - will be fetched from backend
+		
+		const updatedPolly = await api.castVoteInPolly(polly.id, voteOrderIds, voterToken)
+		Object.assign(polly, normalizePolly(structuredClone(updatedPolly)))
+		polly.alreadyVoted = true
+		console.log("Vote cast successfully")
+	} catch (err) {
+		console.error("Cannot cast vote", err)
+		proxy?.$root?.showError(loc('PollySaveError'), "")
+	} finally {
+		isCastingVote.value = false
+	}
 }
 
-function finishPoll() {
-	poll.status = POLL_STATUS.FINISHED
+async function finishPolly() {
+	if (isFinishing.value) return
+	isFinishing.value = true
+	try {
+		const updatedPolly = await api.finishPolly(polly.id)
+		Object.assign(polly, normalizePolly(structuredClone(updatedPolly)))
+		polly.status = POLL_STATUS.FINISHED
+		console.log("Polly finished, winner:", updatedPolly.winner?.title)
+	} catch (err) {
+		console.error("Cannot finish polly", err)
+		proxy?.$root?.showError(loc('PollySaveError'), "")
+	} finally {
+		isFinishing.value = false
+	}
+}
+
+function shareLinkToPolly() {
+	// TODO: Generate and share public voting link
+	console.log("TODO: Share link to polly", polly.id)
 }
 
 /** Check if a string looks like an email adress */
@@ -384,7 +475,7 @@ function isEmail(s) {
 	<div class="polly">
 		<liquido-header ref="liquido-header"></liquido-header>
 		<div class="card polly-card position-relative user-select-none">
-			<span v-if="inVoting" @click="shareLinkToPoll" class="fa-stack share-poll-icon" title="Share Poll">
+			<span v-if="inVoting" @click="shareLinkToPolly" class="fa-stack share-polly-icon" title="Share Polly">
 				<i class="fa-solid fa-circle fa-stack-2x" style="color:var(--proposal-icon-bg)"></i>
 				<i class="fa-solid fa-arrow-up-from-bracket fa-stack-1x"></i>
 			</span>
@@ -394,8 +485,8 @@ function isEmail(s) {
 				</div>
 				<liquido-input v-if="isNew" 
 					id="pollTitleInput"
-					class="poll-title-input"
-					v-model="poll.title"
+					class="polly-title-input"
+					v-model="polly.title"
 					:minLength=10 
 					:required=true
 					:placeholder="loc('PollyTitlePlaceholder')"
@@ -403,11 +494,11 @@ function isEmail(s) {
 					:invalid-feedback="loc('PollyTitleInvalidFeedback', {minLength: 10})"
 					:feedback-placeholder=false
 					/>
-				<h1 v-else class="poll-title" id="pollTitle">{{ poll.title }}</h1>
+				<h1 v-else class="polly-title" id="pollyTitle">{{ polly.title }}</h1>
 			</div>
 			<div v-if="isNew" class="card-body">
 				<TransitionGroup name="fade" class="polly-proposals-wrapper" tag="ul">
-					<li v-for="(prop, index) in poll.proposals" :key="prop.id" class="polly-proposal">
+					<li v-for="(prop, index) in polly.proposals" :key="prop.id" class="polly-proposal">
 						<input v-model="prop.title" :placeholder="loc('AddProposalPlaceholder')" type="text"
 							class="form-control flex-grow-1 polly-proposal-input" @blur="(evt) => onProposalBlurr(evt, index)"
 							@keyup="(evt) => onProposalKeyup(evt, index)" />
@@ -415,10 +506,10 @@ function isEmail(s) {
 				</TransitionGroup>
 			</div>
 
-			<!-- read-only view of the poll -->
+			<!-- read-only view of the polly -->
 			<div v-if="inElaboration || prepareStart || isFinished" class="card-body">
 				<div class="polly-proposals-wrapper">
-					<div v-for="(proposal, index) in poll.proposals" :key="proposal.id" class="polly-proposal">
+					<div v-for="(proposal, index) in polly.proposals" :key="proposal.id" class="polly-proposal">
 						<div v-if="isFinished" class="text-secondary me-2">
 							{{ index + 1 }}.
 						</div>
@@ -429,15 +520,15 @@ function isEmail(s) {
 				</div>
 			</div>
 
-			<!-- poll inVoting where user can drag proposals up and down -->
+			<!-- polly inVoting where user can drag proposals up and down -->
 			<div v-if="inVoting" class="card-body d-flex flex-row">
 				<div class="me-1">
-					<div v-for="(prop, index) in poll.proposals" :key="prop.id" class="proposal-index-number">
+					<div v-for="(prop, index) in polly.proposals" :key="prop.id" class="proposal-index-number">
 						{{ index + 1 }}.
 					</div>
 				</div>
 				<div class="polly-proposals-wrapper">
-					<draggable id="pollyDraggable" v-model="poll.proposals" class="draggable" item-key="id"
+					<draggable id="pollyDraggable" v-model="polly.proposals" class="draggable" item-key="id"
 							:swap-threshold="0.5" :delay="40" :animation="500" :can-scroll-x="false">
 						<template #item="{ element: prop }">
 							<div class="form-control polly-proposal sortable-proposal user-select-none">
@@ -459,29 +550,29 @@ function isEmail(s) {
 			<div class="card-footer">
 				<div class="d-flex align-items-center justify-content-end">
 					<div v-if="isNew" class="text-end">
-						<button @click="savePoll" :disabled="!saveIsActive" type="button"
+						<button @click="savePolly" :disabled="!saveIsActive || isSaving" type="button"
 							class="btn btn-primary">
 							<i class="fa-regular fa-save"></i>&nbsp;{{loc('Save')}}
 						</button>
 					</div>
 					<div v-if="inElaboration" class="text-end">
-						<button @click="editPoll" type="button" class="btn btn-secondary me-2">
+						<button v-if="polly.numVoters === 0" @click="editPolly" :disabled="isSaving" type="button" class="btn btn-secondary me-2">
 							<i class="fa-regular fa-edit"></i>&nbsp;{{loc('Edit')}}
 						</button>
-						<button @click="clickStartPollButton" type="button" class="btn btn-primary">
-							<i class="fa-solid fa-play"></i>&nbsp;{{loc('StartPoll')}}
+						<button @click="clickStartPollyButton" :disabled="isStarting" type="button" class="btn btn-primary">
+							<i class="fa-solid fa-play"></i>&nbsp;{{loc('StartPolly')}}
 						</button>
 					</div>
 					<div v-if="prepareStart" class="text-end">
 						<button type="button" class="btn btn-primary disabled" disabled>
-							<i class="fa-solid fa-play"></i>&nbsp;{{loc('StartPoll')}}
+							<i class="fa-solid fa-play"></i>&nbsp;{{loc('StartPolly')}}
 						</button>
 					</div>
 					<div v-if="inVoting" class="text-end">
-						<button @click="finishPoll" type="button" class="btn btn-secondary me-2">
-							<i class="fa-regular fa-circle-check"></i>&nbsp;{{loc('FinishPoll')}}
+						<button @click="finishPolly" :disabled="isFinishing" type="button" class="btn btn-secondary me-2">
+							<i class="fa-regular fa-circle-check"></i>&nbsp;{{loc('FinishPolly')}}
 						</button>
-						<button v-if="!poll.alreadyVoted" @click="castVote" type="button" class="btn btn-primary">
+						<button v-if="!polly.alreadyVoted" @click="castVoteInPolly" :disabled="isCastingVote" type="button" class="btn btn-primary">
 							<i class="fa-solid fa-person-booth"></i>&nbsp;{{loc('CastVote')}}
 						</button>
 					</div>
@@ -496,19 +587,19 @@ function isEmail(s) {
 			<div class="modal-dialog modal-dialog-centered">
 				<div class="modal-content">
 					<div class="modal-header bg-secondary-subtle">
-						<h4 class="modal-title" id="askEmailModalLabel">{{ loc('StartPoll') }}</h4>
+						<h4 class="modal-title" id="askEmailModalLabel">{{ loc('StartPolly') }}</h4>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-							@click="cancelStartPoll"></button>
+							@click="cancelStartPolly"></button>
 					</div>
 					<div class="modal-body">
-						{{ loc('StartPollInfo') }}
+						{{ loc('StartPollyInfo') }}
 						<div class="d-flex mt-2">
 							<div class="flex-grow-1">
 								<input id="userEmailInput" type="email" v-model="user.email" class="form-control form-control-sm"
-									placeholder="Your email" @keyup.enter="userEmailIsValid && startPoll()" aria-label="Your Email">
+									placeholder="Your email" @keyup.enter="userEmailIsValid && startPolly()" aria-label="Your Email">
 							</div>
 							<div>
-								<button type="button" class="btn btn-primary btn-sm ms-2" data-bs-dismiss="modal" @click="startPoll"
+								<button type="button" class="btn btn-primary btn-sm ms-2" data-bs-dismiss="modal" @click="startPolly"
 									:disabled="!userEmailIsValid">{{ loc('Send') }}</button>
 							</div>
 						</div>
@@ -530,7 +621,7 @@ function isEmail(s) {
 
 	max-width: 1024px;
 
-	.share-poll-icon {
+	.share-polly-icon {
 		cursor: pointer;
 		color: white;
 		position: absolute;
@@ -542,7 +633,7 @@ function isEmail(s) {
 		}
 	}
 
-	.poll-title-input {
+	.polly-title-input {
 		text-align: center;
 		padding: 0;
 		input {
@@ -552,13 +643,14 @@ function isEmail(s) {
 		}
 	}
 
-	.poll-title {
+	.polly-title {
 		margin: 0;
 		padding: 0;
 		font-size: 1.25rem;
 		font-weight: bold;
 		text-align: center;
 		display: -webkit-box;
+		line-clamp: 2;
 		-webkit-line-clamp: 2;  /* max 2 lines */
 		-webkit-box-orient: vertical;
 		overflow: hidden;
