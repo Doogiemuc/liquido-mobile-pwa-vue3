@@ -1,89 +1,76 @@
 ---
 applyTo: '**/*.{vue,js}'
-description: 'Setup, architecture and conventions for Vue 3 development in the LIQUIDO mobile PWA'
+description: 'LIQUIDO Vue frontend architecture, tooling, routing, state, API gateway, and implementation conventions'
 ---
 
-# LIQUIDO — Vue development guide
+# LIQUIDO — Vue frontend development guide
 
-Practical conventions and hard‑won lessons for working on this Vue 3 mobile PWA.
-For the general project overview see [GEMINI.md](../../GEMINI.md); for the i18n deep‑dive see
-[doc/ai/i18n-usage-notes.md](../../doc/ai/i18n-usage-notes.md).
+This repository is the mobile-first Vue 3 progressive web app for secure and private voting.
+The frontend is a single-page application with a central API gateway, a router guard-based auth flow,
+and a shared design system built on Bootstrap plus LIQUIDO CSS variables.
 
-## Environment & tooling (Windows)
+Use this guide as the default implementation and workflow reference for future frontend work.
 
-- **Use `npm.cmd`, not `npm`.** In this PowerShell environment the `npm` / `yarn` shims are
-  `.ps1` scripts blocked by the execution policy (`UnauthorizedAccess`). Call `npm.cmd …` directly.
-- **This repo uses npm** (there is a `package-lock.json`, no `yarn.lock`) even though
-  `package.json` has a `packageManager: yarn` field. Install deps with `npm.cmd install <pkg>`.
-- **Dev server:** `npm.cmd run dev` (or `start`) — Vite over **HTTPS on port 3001** (self‑signed
-  certs in `tls-certs/`), proxying `/graphql_proxy` to the backend.
-- **Production build gotcha:** `npm.cmd run build` runs in `production` mode and the `config` alias
-  in `vite.config.js` resolves `config/config.<NODE_ENV>` — but only `config.common.js` and
-  `config.development.js` exist. So a plain build **fails** with `Could not load config/config.production`.
-  To compile‑check locally, force dev mode:
-  `$env:NODE_ENV="development"; npm.cmd run build`.
-- **Unit tests:** `npx.cmd vitest run` for a one‑shot run (`npm run test:unit` starts watch mode).
-  One existing test hits a live backend at `https://localhost:8443` and fails offline — that is
-  pre‑existing, not your change.
-- **Indentation is TABS.** Match the surrounding file.
+## 1. Environment and tooling
 
-## High‑level architecture (technical setup)
+- Use `npm` / `npx` on macOS and Linux.
+- Use `npm.cmd` / `npx.cmd` in Windows PowerShell, because the `npm` shim can be blocked by execution policy.
+- The app runs as a Vite HTTPS dev server on port `3001` with self-signed TLS certificates from `tls-certs/`.
+- The backend should be reached through the configured `LIQUIDO_API_URL` in `config/config.development.js`.
+- When running a local build check, force development mode rather than a production build:
+  - macOS/Linux: `NODE_ENV=development npm run build`
+  - Windows PowerShell: `$env:NODE_ENV="development"; npm.cmd run build`
+- A plain production build is not a reliable local compile check in this repo because the environment alias expects the development config to exist.
+- Indentation is tabs. Match the surrounding file exactly.
+- Unit tests use Vitest; a one-shot run is `npx vitest run` or `npx.cmd vitest run` on Windows.
 
-This is a single‑page Vue 3 app; there is no Vuex/Pinia and no SSR.
+## 2. High-level architecture
 
-- **Bootstrap (`src/main.js`)** creates the app from `root-app.vue`, installs the **router** and
-  **vue‑i18n (legacy mode, `allowComposition: true`)**, sets `app.config.globalProperties.$store`,
-  and mounts `#app`. Bootstrap CSS is imported first, then `src/styles/liquido.css` **overrides** it.
-- **Root component (`src/root-app.vue`)** is the app shell: it renders the header, a
-  `<router-view>` wrapped in a `<Transition name="fade">`, the footer area and a shared popup modal.
-  It exposes app‑wide helper methods that every page reaches via **`$root`** (see below) and computes
-  `isHomeScreenPWA`.
-- **Pages (`src/views/`)** are rendered by the router. **Services (`src/services/`)** hold all
-  non‑UI logic. **Reusable UI (`src/components/`)** are the shared building blocks
-  (e.g. `liquido-footer.vue`, `poll-card.vue`, `liquido-header.vue`, `popup-modal.vue`).
-- **Global state** is a tiny `reactive()` object in [src/services/store.js](../../src/services/store.js)
-  — currently just the header title / back‑target / right‑action. Import it directly
-  (`import { store } from "@/services/store.js"`); in Options API it is also `this.$store`.
-- **Data / API:** [src/services/liquido-graphql-client.js](../../src/services/liquido-graphql-client.js)
-  (Axios + a populating‑cache) with a `.mock.js` twin for tests. Prefer `api.getCached*()` reads and
-  the async `api.*` calls; do not fetch GraphQL directly from components.
-- **Cross‑component events:** [src/services/event-bus.js](../../src/services/event-bus.js)
-  (`EventBus.on/emit`, e.g. `POLL_LOADED`).
-- **User feedback:** the single shared modal via `$root.showSuccess/showError/showWarning/showInfo`.
+This is a single-page Vue 3 app with no SSR, no Vuex/Pinia, and a very small reactive UI state layer.
 
-### `$root` helper methods
+- `src/main.js` is the app bootstrap. It reads the environment config, enables full `loglevel` logging in development/test, imports Bootstrap CSS first, and then imports `src/styles/liquido.css` so LIQUIDO design-token overrides win.
+- `src/root-app.vue` is the app shell. It renders the shared header, the routed page content, the footer area, and the shared popup modal.
+- `src/views/` contains route page implementations.
+- `src/components/` contains reusable UI building blocks.
+- `src/services/` contains non-UI logic such as the router, GraphQL client, auth helpers, event bus, store, and WebAuthn service.
+- Global state lives in `src/services/store.js` as a tiny `reactive()` object used for header title, back target, and shared UI actions.
+- The router is in `src/services/router.js` and includes a global authentication navigation guard.
+- All backend access must flow through the single gateway module `src/services/liquido-graphql-client.js`.
+- `src/services/liquido-graphql-client.mock.js` is the mock twin used when `config.mockBackend` is enabled.
 
-`$root` is the `root-app.vue` instance. Available everywhere:
-`gotoPoll(id)`, `gotoPolls()`, `gotoTeam()`, `gotoCreateNewPoll()`,
-`showSuccess/showError/showWarning/showInfo(msg, title, …)`,
-`scrollToTop()`, `scrollToBottom()`, `scrollElemToTop(el)`.
+## 3. Routing and auth lifecycle
 
-- Options API: `this.$root.showError(...)`.
-- `<script setup>`: `const { proxy } = getCurrentInstance(); proxy.$root.showError(...)`.
+The router uses `createWebHistory(config.BASE_URL)` and disables default scroll behavior, leaving scroll management to `root-app.vue`.
 
-## Options API vs `<script setup>`
+Public routes:
+- `/login`
+- `/welcome`
+- `/forgotPassword`
+- `/resetPassword`
+- `/login-via-sms`
+- `/404`
+- any fallback redirect to `/404`
 
-The codebase is **mostly legacy Options API** with a few newer **Composition API `<script setup>`**
-views (`polls.vue`, `team-home.vue`, `cast-vote-v2.vue`). A migration is in progress — see
-[doc/ai/AI-plan migrate to i18n v12.md](../../doc/ai/AI-plan%20migrate%20to%20i18n%20v12.md).
-New components may use `<script setup>`, but respect the legacy‑mode constraints below.
+Protected routes include:
+- `/team`
+- `/userhome`
+- `/polls`
+- `/polls/create`
+- `/polls/:pollId`
+- `/polls/:pollId/add`
+- `/polls/:pollId/castVote`
 
-## Internationalization (i18n)
+Development-only routes can be added for `MODE === "development"` (for example `/devLogin` and `/_design-overview`).
 
-Full details in [doc/ai/i18n-usage-notes.md](../../doc/ai/i18n-usage-notes.md). The essentials:
+The navigation guard runs `tryToAuthenticate()` before allowing navigation:
+1. If the cached session is already present and `api.isAuthenticated()` is true, authentication resolves immediately.
+2. Otherwise the router reads the JWT from `localStorage` and attempts `api.loginWithJwt(jwt)`.
+3. Expired or invalid JWTs are removed from storage.
 
-- vue‑i18n runs in **legacy mode** with `allowComposition: true`. Global messages live in
-  `src/main.js`; component‑local messages use the Options **`i18n:` option**. There are **no
-  `<i18n>` SFC blocks** (the Intlify Vite plugin is not installed).
-- **Template `$t()` works everywhere** (legacy global injection in both Options API and `<script setup>`).
-- **In `<script setup>`:** use `useI18n()` from `vue-i18n` to get a `t` function for use inside script logic:
-  ```js
-  import { useI18n } from "vue-i18n"
-  const { t } = useI18n()
-  // t("myKey") works in both script and template
-  ```
-  See `src/views/team-home.vue` for a working example (`const { t, d } = useI18n()`).
-- **Options API:** use `this.$t("myKey")` as usual. Component‑local messages go in the `i18n:` option.
+Routing behavior is intentionally strict:
+- authenticated users are redirected to `/team` when they visit `/`
+- anonymous users are redirected to `/welcome` for protected routes when targeting `/`
+- anonymous users are redirected to `/login` for other protected targets
 
 ## User-facing error messages
 
@@ -107,69 +94,85 @@ already follows this rule and reloads the window when the user dismisses the mod
 
 ## Component & styling conventions
 
-- **Routed components must have a single element root.** `<router-view>` passes
-  `id="appContent" class="router-view container-lg"` as fallthrough attributes and wraps the page in a
-  `<Transition>`; the page must not have multiple top‑level elements in the `<template>` root.
-- **Styling:** Bootstrap 5 classes + **CSS custom properties** from
-  [src/styles/liquido.css](../../src/styles/liquido.css) — e.g. `--primary`, `--secondary`,
-  `--unit` (1rem base spacing), `--two`, `--liquido-border-radius`, `--header-bg`, `--light-bg`,
-  `--proposal-icon-bg`, `--font-size-small`. Prefer these over hard‑coded values. Use scoped
-  `<style scoped>` per component.
-- **Scoped‑style `:root` pitfall:** Vue rewrites `:root` in a scoped block to `:root[data-v-…]`,
-  which never matches `<html>`, so the variables silently disappear. Declare component‑local CSS
-  variables on the **component root element**, not on `:root`.
-- Reference components in templates with **kebab‑case** (`<poll-card>`, `<liquido-footer>`);
-  imports auto‑resolve in `<script setup>`.
-- Reusable slots: `liquido-footer.vue` exposes `#info`, `#left`, `#primary`; `poll-card.vue` takes
-  `poll`, `showArrowRight`, `showProposals`.
+The API gateway is the only module that should talk to the backend.
 
-## Mock backend (`liquido-graphql-client.mock.js`)
+Responsibilities:
+- GraphQL transport over Axios
+- JWT lifecycle management
+- Storage of JWT in `localStorage` (`LIQUIDO_JWT_KEY`)
+- In-memory caching for team/user/polls data
+- Centralized error handling and auth state hydration
 
-When `config.mockBackend === true` (set in `config/config.development.js`), every GraphQL call is
-intercepted by the mock instead of reaching the real backend. The mock also intercepts specific REST
-endpoints (WebAuthn, `check-login-email`) via an Axios request interceptor.
+Key cached accessors:
+- `api.getCachedUser()`
+- `api.getCachedTeam()`
+- `api.getCachedPolls()`
+- `api.isAdmin()`
+- `api.isAuthenticated()`
 
-### How it works
+The server-side auth lifecycle should be kept consistent:
+- `loginWithJwt(jwt)` populates the in-memory cache and persists session state
+- `logout()` clears JWT and empties caches cleanly
 
-- **Single source of truth:** all mutable state lives in a plain `mockState` object
-  (`team`, `currentUser`, `jwt`, `ballotsByPollAndUser`, `voterTokensByPollAndUser`, …).
-- **Persistence across reloads:** `mockState` is serialised to `sessionStorage` under the key
-  `"LIQUIDO_MOCK_STATE"` after every mutating operation. It is reloaded on page refresh.
-- **Seed data:** initial team, members and polls come from `src/mockdata/teamUserJwt.json`.
-  `createState()` clones this seed and computes the next safe numeric IDs.
-- **Login simulation:** `loginMock(email)` is the single internal function that sets
-  `mockState.currentUser` and `mockState.jwt`, mirroring what the real `graphQlApi.login()` does.
-  All login variants (email/password, JWT, devLogin, SMS token) call it.
-- **Per-user enrichment:** poll responses are passed through `enrichPollForCurrentUser(poll)` before
-  being returned. This computes derived fields (e.g. `userAlreadyVoted`) from `mockState` so they
-  always reflect the current user's actual state rather than a stored flag.
+## 5. Authentication methods
 
-### Guidelines for adding or changing mock handlers
+LIQUIDO supports several login flows and they should all be routed through the central API client:
 
-1. **Add new GraphQL operations to `detectOperation()`** — the operation name list is the only
-   place the mock router looks up which handler to call. Omitting it silently rejects the query.
-2. **Mutations must update `mockState` in place** — mutate the stored object (e.g. `poll.status`),
-   then return the correct shape. `saveMockState()` is called automatically by `graphQlQueryMock`
-   after every handler; you do not need to call it yourself inside a handler.
-3. **Return shapes must match the real GraphQL response** — the real client unwraps `res.data.<operationName>`.
-   The mock's `graphQlQueryMock` wraps the handler's return value in `{ data: { [operation]: payload } }`.
-   Return exactly what the real endpoint would put inside `data.<operation>`.
-4. **Use `enrichPollForCurrentUser()` when returning polls** — never return a raw `deepClone(poll)`
-   from a query/mutation that returns a poll object, because the clone won't have the correct
-   `userAlreadyVoted` value for the logged-in user.
-5. **Use `rejectLiquido(code, message)` for domain errors** — this throws a `MockLiquidoError`
-   which `graphQlQueryMock` converts into the same error envelope the real backend sends, so callers
-   can handle it identically. Use `LiquidoExceptionCodes` constants for the code.
-6. **REST endpoints** are mocked via the Axios request interceptor in `initializeLiquidoGraphQlMock()`.
-   Add new REST mocks there by matching `config.url` and replacing `config.adapter`.
-7. **Cypress e2e tests reset state** by calling
-   `sessionStorage.removeItem("LIQUIDO_MOCK_STATE")` in their `before()` hook. If a new operation
-   stores state outside `mockState` it will not be cleared and tests can bleed into each other.
+- JWT auto-login from local storage
+- Email + password login
+- Email magic-link / token login
+- SMS login
+- WebAuthn / Passkey passwordless login and 2FA registration
+- Forgot / reset password flow
+- Dev login in development mode for testing automation
 
-## Quick gotcha checklist
+## 6. WebAuthn and security expectations
 
-- [ ] If you need to run npm check platform: On Windows use `npm.cmd` / `npx.cmd`. On Mac or Linux use `npm` / `npx`.
-- [ ] Compile‑checked with `$env:NODE_ENV="development"; npm.cmd run build`.
-- [ ] Used liquido.css CSS variables + Bootstrap, scoped styles, tabs for indentation.
-- [ ] New mock handler returns a poll? Use `enrichPollForCurrentUser()`, not `deepClone()`.
-- [ ] New mock handler for a new GraphQL operation? Added the operation name to `detectOperation()`.
+- WebAuthn integration lives in `src/services/webauthn-service.js` and uses `@simplewebauthn/browser`.
+- The frontend must be served over HTTPS on a trusted domain, not only an IP.
+- For local debugging and authentication testing, configure the domain in `hosts` or local DNS so the browser sees a real host name.
+- Backend `quarkus.webauthn.origins` must include the frontend origin including schema, domain, and port.
+- For mobile Safari/iOS and other platform authenticators, test with real hardware where possible.
+
+## 7. Component and styling conventions
+
+- Routed components must have a single top-level root element.
+- Use Bootstrap 5 utility classes together with LIQUIDO design tokens from `src/styles/liquido.css`.
+- Prefer LIQUIDO CSS custom properties such as `--primary`, `--secondary`, `--unit`, `--two`, `--header-bg`, and `--light-bg` over hard-coded values.
+- Scoped styles should not rely on `:root`; in scoped Vue styles, component-level CSS variables must be declared on the component root element.
+- Reusable UI components should be imported with kebab-case names in templates.
+- Use the shared modal feedback helpers exposed through `$root`: `showSuccess`, `showError`, `showWarning`, and `showInfo`.
+- Use the shared `$root` helper methods for navigation and screen scrolling wherever possible.
+
+## 8. Internationalization conventions
+
+- Vue i18n runs in legacy mode with `allowComposition: true`.
+- Global messages are defined in `src/main.js`.
+- Component-local messages should be provided through the Vue `i18n:` option in Options API components.
+- There are no SFC `<i18n>` blocks in this codebase.
+- In `<script setup>`, use `useI18n()` to get a `t` function and use it for both script and template logic.
+- In Options API components, use `this.$t("...")`.
+
+## 9. Mock backend conventions
+
+When `config.mockBackend === true` in `config/config.development.js`, the app replaces the real GraphQL API with the mock implementation.
+
+Mock backend rules:
+- Maintain all mutable state in a single `mockState` object.
+- Persist it to `sessionStorage` under `"LIQUIDO_MOCK_STATE"` after mutating operations.
+- Seed state from `src/mockdata/teamUserJwt.json` and derive new IDs safely.
+- Centralize login state changes through `loginMock(email)` so all login variants stay consistent.
+- When returning poll objects, use `enrichPollForCurrentUser()` rather than a raw deep copy, so derived flags like `userAlreadyVoted` stay accurate.
+- Add new GraphQL operation handlers in `detectOperation()`.
+- Domain errors should use `rejectLiquido(code, message)` with the proper `LiquidoExceptionCodes` constant.
+
+## 10. Quick gotcha checklist
+
+- [ ] On Windows, use `npm.cmd` and `npx.cmd`.
+- [ ] On macOS/Linux, use `npm` and `npx`.
+- [ ] Used `NODE_ENV=development` or `$env:NODE_ENV="development"` for local build checks.
+- [ ] Kept backend access in the GraphQL gateway instead of calling the backend directly from components.
+- [ ] Used LIQUIDO CSS variables and Bootstrap together, not hard-coded colors.
+- [ ] Kept routed page templates to a single root element.
+- [ ] When a new mock GraphQL handler returns a poll, made sure it passes through `enrichPollForCurrentUser()`.
+- [ ] When adding a new mock operation, registered its operation name in `detectOperation()`.
