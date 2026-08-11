@@ -103,17 +103,6 @@ const argFromQuery = (query, key, defaultValue = undefined) => {
 	return stripQuotes(match[1].trim())
 }
 
-const stringArrayArgFromQuery = (query, key) => {
-	const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-	const regex = new RegExp(`${escapedKey}\\s*:\\s*\\[([^\]]*)\\]`, "i")
-	const match = query.match(regex)
-	if (!match) return []
-	return match[1]
-		.split(",")
-		.map(item => stripQuotes(item.trim()))
-		.filter(Boolean)
-}
-
 const voteOrderFromQuery = query => {
 	const match = query.match(/voteOrderIds\s*:\s*\[([^\]]*)\]/i)
 	if (!match) return []
@@ -155,7 +144,7 @@ const mockErrorResponse = err => {
 
 const detectOperation = query => {
 	const operations = [
-		"createNewTeam", "joinTeam", "savePolly", "editPolly", "startPolly", "castVoteInPolly", "finishPolly", "createPoll", "addProposal", "likeProposal", "startVotingPhase",
+		"createNewTeam", "joinTeam", "createPoll", "addProposal", "likeProposal", "startVotingPhase",
 		"finishVotingPhase", "castVote", "loginWithEmailPassword", "googleOneTapLogin", "loginWithAuthToken",
 		"requestPasswordReset", "resetPassword", "requestEmailLoginLink", "teamForInviteCode", "loginWithJwt",
 		"devLogin", "authToken", "voterToken", "verifyBallot", "myBallot", "polls", "poll", "team", "ping",
@@ -172,14 +161,6 @@ const findMemberByEmail = email => (mockState.team.members || []).find(m => m.us
 const findMemberByMobile = mobile => (mockState.team.members || []).find(m => m.user?.mobilephone === mobile)
 const findMemberByUserId = userId => (mockState.team.members || []).find(m => String(m.user?.id) === String(userId))
 const findPoll = pollId => (mockState.team.polls || []).find(p => p.id === pollId)
-const pollyCreatorUser = () => deepClone(mockState.currentUser || {
-	id: 0,
-	name: "Polly Creator",
-	email: "polly@mock.local",
-	mobilephone: null,
-	picture: "Avatar1.png",
-	website: null,
-})
 
 const jwtFromAuthHeader = () => {
 	const authHeader = axios.defaults.headers.common.Authorization || ""
@@ -405,130 +386,6 @@ const mutationHandlers = {
 			user: deepClone(adminUser),
 			jwt: mockState.jwt,
 		}
-	},
-	savePolly: (query, variables = {}) => {
-		const title = get(variables, "title", argFromQuery(query, "title", "New Polly")).trim()
-		const proposalTitles = get(variables, "proposalTitles", stringArrayArgFromQuery(query, "proposalTitles"))
-			.map(proposalTitle => proposalTitle?.trim())
-			.filter(Boolean)
-		if (proposalTitles.length < 2) {
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_CREATE_POLL || LiquidoExceptionCodes.CANNOT_SAVE, "Need at least two proposals")
-		}
-		const createdBy = pollyCreatorUser()
-		const poll = {
-			id: mockState.nextPollId++,
-			title,
-			status: "ELABORATION",
-			createdAt: nowIso(),
-			updatedAt: nowIso(),
-			votingStartAt: null,
-			votingEndAt: null,
-			userAlreadyVoted: false,
-			proposals: proposalTitles.map(proposalTitle => ({
-				id: mockState.nextProposalId++,
-				title: proposalTitle,
-				description: "",
-				icon: "vote-yea",
-				status: "ELABORATION",
-				createdAt: nowIso(),
-				numSupporters: 0,
-				likedByCurrentUser: false,
-				createdBy: deepClone(createdBy),
-			})),
-			winner: null,
-		}
-		mockState.team.polls.unshift(poll)
-		return enrichPollForCurrentUser(poll)
-	},
-	editPolly: (query, variables = {}) => {
-		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
-		const poll = findPoll(pollId)
-		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Polly ${pollId} not found`)
-		const title = get(variables, "title", argFromQuery(query, "title", "")).trim()
-		const proposalTitles = get(variables, "proposalTitles", stringArrayArgFromQuery(query, "proposalTitles"))
-			.map(proposalTitle => proposalTitle?.trim())
-			.filter(Boolean)
-		if (proposalTitles.length < 2) {
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_SAVE, "Need at least two proposals")
-		}
-		poll.title = title
-		poll.proposals = proposalTitles.map((proposalTitle, i) => {
-			const existing = poll.proposals[i]
-			return {
-				id: existing?.id || mockState.nextProposalId++,
-				title: proposalTitle,
-				description: existing?.description || "",
-				icon: existing?.icon || "vote-yea",
-				status: existing?.status || "ELABORATION",
-				createdAt: existing?.createdAt || nowIso(),
-				numSupporters: existing?.numSupporters || 0,
-				likedByCurrentUser: existing?.likedByCurrentUser || false,
-				createdBy: existing?.createdBy || deepClone(pollyCreatorUser()),
-			}
-		})
-		poll.updatedAt = nowIso()
-		return enrichPollForCurrentUser(poll)
-	},
-	startPolly: (query, variables = {}) => {
-		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
-		const userEmail = get(variables, "userEmail", argFromQuery(query, "userEmail"))
-		const poll = findPoll(pollId)
-		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Polly ${pollId} not found`)
-		if (poll.status !== "ELABORATION") {
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_START_VOTING, "Polly is not in ELABORATION status")
-		}
-		console.log("MOCK: Sending admin and share links to " + userEmail)
-		poll.status = "VOTING"
-		poll.votingStartAt = nowIso()
-		poll.updatedAt = nowIso()
-		;(poll.proposals || []).forEach(p => {
-			if (p.status === "ELABORATION") p.status = "VOTING"
-		})
-		return enrichPollForCurrentUser(poll)
-	},
-	castVoteInPolly: (query, variables = {}) => {
-		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
-		const voteOrderIds = variables?.voteOrderIds || voteOrderFromQuery(query)
-		const voterToken = get(variables, "voterToken", argFromQuery(query, "voterToken"))
-		const user = currentUserOrThrow()
-		const poll = findPoll(pollId)
-		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Polly ${pollId} not found`)
-		const expectedToken = get(mockState, `voterTokensByPollAndUser.${ballotKey(pollId, user.id)}`)
-		if (!expectedToken || expectedToken !== voterToken) {
-			rejectLiquido(LiquidoExceptionCodes.INVALID_VOTER_TOKEN, "Invalid voter token")
-		}
-		const proposalIds = new Set((poll.proposals || []).map(p => p.id))
-		if (voteOrderIds.length === 0 || voteOrderIds.some(id => !proposalIds.has(id))) {
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_CAST_VOTE, "Invalid vote order")
-		}
-		const ballot = {
-			level: 0,
-			checksum: `mock-polly-${pollId}-${user.id}-${Date.now()}`,
-			voteOrder: voteOrderIds.map(id => ({ id })),
-		}
-		set(mockState, `ballotsByPollAndUser.${ballotKey(pollId, user.id)}`, ballot)
-		poll.userAlreadyVoted = true
-		poll.updatedAt = nowIso()
-		return {
-			voteCount: countVotesForPoll(pollId),
-			ballot: deepClone(ballot),
-		}
-	},
-	finishPolly: (query, variables = {}) => {
-		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
-		const poll = findPoll(pollId)
-		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Polly ${pollId} not found`)
-		const winner = (poll.proposals || [])
-			.slice()
-			.sort((a, b) => (b.numSupporters || 0) - (a.numSupporters || 0))[0] || null
-		poll.status = "FINISHED"
-		poll.votingEndAt = nowIso()
-		poll.updatedAt = nowIso()
-		poll.winner = winner ? deepClone(winner) : null
-		;(poll.proposals || []).forEach(proposal => {
-			proposal.status = winner && proposal.id === winner.id ? "WINNER" : "LOST"
-		})
-		return deepClone(winner)
 	},
 	joinTeam: (query, variables = {}) => {
 		const inviteCode = get(variables, "inviteCode", argFromQuery(query, "inviteCode"))

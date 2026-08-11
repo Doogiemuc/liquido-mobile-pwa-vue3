@@ -53,6 +53,9 @@ const page_order = {
 	"login": 1,     // welcome and login are on the same level, so they fade instead of sliding sideways
 	"loginSms": 2,
 	"forgotPassword": 2,
+	// Pollys are their own little world, reachable without any login
+	"createPolly": 3,
+	"showPolly": 4,
 	"userhome": 9,
 	"team": 10,
 	"polls": 11,

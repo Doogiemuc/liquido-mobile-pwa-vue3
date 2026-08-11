@@ -14,15 +14,19 @@ export default {
 	LIQUIDO_API_URL: undefined,  						// MUST set this in your env config
 	showDebugLog: false,
 	mockBackend: false,
-	
+	mockPasskey: false,											// DEV only: skip the real WebAuthn browser ceremony (see src/polly/polly-passkey.js)
+
 	//TODO: implement these settings per Team! in the backend!
 	usernameMinLength: 3,
 	inviteCodeLength: 8,			       				// used for validating inviteCodes in welcome-chat.vue
 	minPasswordLength: 10, 									// used in forgot-password.vue
 	allowMembersToInvite: true,
-	pollTitleMinLength: 10,
+	pollTitleMinLength: 5,
 	avatarPath: "./img/avatars",
 	inviteLinkPrefix: "http://app.liquido.vote/welcome?inviteCode=",
+	// Base for the ONE link an admin shares: <prefix><publicId>. There is no separate admin link -
+	// whoever opens it is recognised by their passkey, so the creator sees the admin controls.
+	pollyLinkPrefix: "http://app.liquido.vote/polly/",
 	//TODO: adminMustConfirmNewMembers: ...
 	//TODO: voting algorith: absoluteMajority or margin
 

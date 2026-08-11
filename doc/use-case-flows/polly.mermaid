@@ -1,0 +1,54 @@
+---
+config:
+  theme: neutral
+  layout: elk
+  look: handDrawn
+title: LIQUIDO - Polly
+---
+flowchart TB
+    Create("<pre><b>/polly</b></pre> Enter a question and some options")
+    --> Tap["Tap to confirm<br>(Face-ID / fingerprint / device PIN)"]
+    --> Live(["Polly is live. Friends can vote right away."])
+    Live --> Share["Share ONE link<br>(share sheet / QR / copy)"]
+
+    Open("<pre><b>/polly/:publicId</b></pre> A friend opens the link")
+    --> Known{{"Passkey recognised?"}}
+    Known -- "no, first time" --> Register["Register passkey<br>(one tap)"] --> Sort
+    Known -- yes --> Sort["Sort the options<br>favourite on top"]
+    --> Voted(["Vote counted.<br>One per passkey."])
+
+    Live --> Finish["Owner taps Finish"]
+    --> Winner(["Winner by Ranked Pairs"])
+
+    Owner("<pre><b>/polly</b></pre> Owner returns later")
+    --> MyPollys["myPollys: everything this passkey created"]
+    --> Live
+
+     Tap:::UserInput
+     Register:::UserInput
+     Sort:::UserInput
+     Known:::Decision
+     Live:::Aqua
+     Voted@{ shape: dbl-circ }
+     Winner@{ shape: dbl-circ }
+     Finish@{ shape: trap-t }
+    classDef UserInput fill:#FFF,color:#333
+    classDef Decision fill:#3F3,color:#333
+    classDef Aqua stroke-width:1px, stroke-dasharray:none, stroke:#46EDC8, fill:#DEFFF8, color:#378E7A
+
+%% Notes on the design
+%%
+%% ONE link. There is no separate admin link and nothing secret in the URL: a passkey is a
+%% discoverable credential scoped to the domain, so whoever opens the link is identified by
+%% their own device. The creator sees Edit/Finish, everybody else sees a ballot.
+%%
+%% NO email anywhere. The passkey is both the login and the bookmark - myPollys returns
+%% everything this credential created.
+%%
+%% TWO states only: VOTING -> FINISHED. A polly is live from the moment it exists; there is
+%% no elaboration phase and no start step.
+%%
+%% NO voterTokens. Those exist so a LIQUIDO team poll is *truly* anonymous. A polly instead
+%% stores HMAC(serverSecret, credentialId + pollyId) with UNIQUE(polly_id, voter_key), which
+%% gives one vote per passkey. That makes a polly ballot pseudonymous, not anonymous - the
+%% right trade for "where shall we go for dinner", the wrong one for a real election.

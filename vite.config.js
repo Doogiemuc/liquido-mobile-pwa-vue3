@@ -39,7 +39,7 @@ export default defineConfig({
 		proxy: {      							
 			"/graphql_proxy": {  		// Only proxy API requests. There are others, eg. Webservice "/ws" that sould stay		
 				//ignorePath: true,
-				target: "https://macbookpro.fritz.box:8443",    			// the full matched path will be appended to this!
+				target: "https://shadow.fritz.box:8443",    			// the full matched path will be appended to this!
 				rewrite: (path) => path.replace(/^\/graphql_proxy/, '/'),  
 				secure: false   // allow self-signed backend certificate
 				//ws: true,     // also proxy-websockets

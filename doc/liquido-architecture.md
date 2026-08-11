@@ -122,7 +122,8 @@ Router: `src/services/router.js` using `createWebHistory(config.BASE_URL)`.
 | `/polls/:pollId` | showPoll | 🔒 | poll-show.vue |
 | `/polls/:pollId/add` | addProposal | 🔒 | proposal-add.vue |
 | `/polls/:pollId/castVote` | castVote | 🔒 | cast-vote.vue |
-| `/polly/create` | createPolly | ✅ | polly-create.vue |
+| `/polly` | createPolly | ✅ | polly-page.vue |
+| `/polly/:publicId` | showPolly | ✅ | polly-page.vue |
 | `/forgotPassword` | forgotPassword | ✅ | forgot-password.vue |
 | `/resetPassword` | resetPassword | ✅ | forgot-password.vue |
 | `/login-via-sms` | loginSms | ✅ | login-via-sms.vue |
@@ -223,6 +224,41 @@ stateDiagram-v2
 2. Navigates to `cast-vote.vue` (`/polls/:pollId/castVote`).
 3. Orders proposals into a preference ballot and submits.
 4. Admin later finishes the voting phase; results become visible.
+
+---
+
+## 8b. Polly — the small sibling
+
+A **Polly** is a quick poll with no team, no account and no login screen. It is a
+**separate module** (`src/polly/`) that shares the app shell and nothing else — its own
+client, its own session key, its own mock. See `doc/use-case-flows/polly.mermaid`.
+
+```mermaid
+stateDiagram-v2
+    [*] --> VOTING: Creator taps their passkey
+    VOTING --> FINISHED: Owner finishes
+    FINISHED --> [*]
+```
+
+Only two states: a polly is live from the moment it exists. No elaboration phase, no
+start step.
+
+| Concern | Polly | LIQUIDO poll |
+|---|---|---|
+| Identity | A passkey (WebAuthn discoverable credential) | Team membership + JWT |
+| Session key | `LIQUIDO_POLLY_JWT` | `LIQUIDO_JWT` |
+| One vote per voter | `UNIQUE(polly_id, voter_key)` where `voter_key = HMAC(secret, credentialId ‖ pollyId)` | one-time `voterToken` |
+| Ballot privacy | **Pseudonymous** — the server can link a passkey to its ballot | **Anonymous** — the ballot carries only a checksum |
+| Links | One public link, opaque `publicId`; no admin link | Team-scoped routes |
+| Shared with polls | The Ranked Pairs winner calculation, and nothing else | — |
+
+The privacy difference is deliberate and must stay visible in the UI: a polly is
+*private among friends*; a LIQUIDO poll is *anonymous*.
+
+**Module boundary:** nothing under `src/polly/` imports `liquido-graphql-client.js`, and
+nothing outside it imports the polly client. An earlier version shared the poll table and
+the `pollsCache`, and a polly leaked into the team's poll list. `tests/unit/polly-flow.spec.js`
+asserts the two import graphs stay disjoint.
 
 ---
 

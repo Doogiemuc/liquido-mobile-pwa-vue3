@@ -52,10 +52,25 @@ const routes = [
 		name: "userhome",
 		component: () => import("@/views/user-home.vue"),
 	},
+	// ========= Polly - little polls, no team, no account ============
+	// Both routes are public: a polly has no login screen. Identity comes from a passkey,
+	// and only when the visitor actually creates or votes. See src/polly/polly-passkey.js.
 	{
-		path: "/polly/create",
+		path: "/polly",
 		name: "createPolly",
-		component: () => import("@/views/polly-create.vue"),
+		component: () => import("@/views/polly-page.vue"),
+		meta: {
+			public: true
+		}
+	},
+	{
+		// The ONE link the creator shares. There is no separate admin link and no secret in
+		// the URL - whoever opens it is recognised by their own passkey, so the creator gets
+		// the admin buttons and everybody else gets a ballot.
+		path: "/polly/:publicId",
+		name: "showPolly",
+		component: () => import("@/views/polly-page.vue"),
+		props: route => ({ publicId: route.params.publicId }),
 		meta: {
 			public: true
 		}
