@@ -108,7 +108,27 @@ const showInvite = ref(false)
 const qrCodeDataUrl = ref("")
 
 // Computed properties that might dynamically change their values
-const members = computed(() => team.value?.members || [])
+
+/**
+ * Team members in a STABLE order: admins first, then longest-serving first, then by id.
+ *
+ * The backend serialises TeamEntity.members from an unordered java.util.HashSet, so the order
+ * differs from request to request. Since the template only renders members.slice(0,6), an
+ * unsorted list means the visible six shuffle on every page load - and in a team with more than
+ * six members, whether any given member (e.g. the admin) is shown at all was pure chance.
+ * That also made the "Login via email & password" e2e test flaky, since it looks for the admin
+ * among the member circles.
+ */
+const members = computed(() => {
+	const list = [...(team.value?.members || [])]
+	return list.sort((a, b) => {
+		const adminDiff = (b.role === "ADMIN") - (a.role === "ADMIN")   // admins first
+		if (adminDiff !== 0) return adminDiff
+		const joinedDiff = new Date(a.joinedAt || 0) - new Date(b.joinedAt || 0)  // then longest-serving
+		if (joinedDiff !== 0) return joinedDiff
+		return (a.user?.id || 0) - (b.user?.id || 0)                    // then a stable tie-breaker
+	})
+})
 const pollsInVoting = computed(() => api.getCachedPolls().filter(p => p.status === "VOTING" && !p.userAlreadyVoted) || [])
 const inviteLinkURL = computed(() => config.inviteLinkPrefix + team.value?.inviteCode)
 

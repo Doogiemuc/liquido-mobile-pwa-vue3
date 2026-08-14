@@ -122,6 +122,7 @@ Router: `src/services/router.js` using `createWebHistory(config.BASE_URL)`.
 | `/polls/:pollId` | showPoll | 🔒 | poll-show.vue |
 | `/polls/:pollId/add` | addProposal | 🔒 | proposal-add.vue |
 | `/polls/:pollId/castVote` | castVote | 🔒 | cast-vote.vue |
+| `/polls/:pollId/winner` | pollWinner | 🔒 | poll-winner.vue |
 | `/polly` | createPolly | ✅ | polly-page.vue |
 | `/polly/:publicId` | showPolly | ✅ | polly-page.vue |
 | `/forgotPassword` | forgotPassword | ✅ | forgot-password.vue |
@@ -300,6 +301,12 @@ src/
     local-user-photo-db.js    Dexie / IndexedDB
     login-rest-client.js      REST auth calls
   views/                      Pages (one per route)
+  polly/                      Self-contained Polly module (see §8b)
+    polly-client.js           Own GraphQL client + axios instance (+ .mock.js twin)
+    polly-session.js          Own session key (LIQUIDO_POLLY_JWT)
+    polly-passkey.js          WebAuthn discoverable credential
+    polly-i18n.js             Own translations + usePollyI18n()
+    polly-constants.js        Status + error codes
   styles/liquido.css          Design tokens + Bootstrap overrides
 config/                       Env-specific config (mapped to bare "config" import)
 public/                       Static assets (Font Awesome, icons, manifest)

@@ -155,10 +155,13 @@ if (import.meta.env.MODE === "development") {
 		path: "/devLogin",
 		name: "devLogin",
 		component: () => import("@/views/dev-login.vue"),
-		props: route => ({ 
+		props: route => ({
 			email: route.query.email,
 			teamName: route.query.teamName,
-			emailToken: route.query.emailToken
+			// dev-login.vue declares this prop as `token`, and cy.devLogin() sends ?token=...
+			// Mapping it to `emailToken` here meant the prop was never set and devLogin always
+			// failed with "Need email and devLoginToken!".
+			token: route.query.token
 		}),
 		meta: {
 			public: true

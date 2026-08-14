@@ -55,7 +55,7 @@ const messages = {
 		PollyTitleInvalidFeedback: "Bitte etwas länger, mindestens {minLength} Zeichen.",
 		AddProposalPlaceholder: "Weitere Option hinzufügen",
 		CreatePolly: "Erstellen",
-		CreatePollyHint: "Dein Gerät wird für dich einen biometrischen Passkey (Face-ID/Fingerprint) erstellen. So wirst du zum Polly Admin - ganz ohne Passwort. Ich schicke dir den Link für deine Freunde auch per E-Mail.",
+		CreatePollyHint: "Das ist dein Polly. Stelle eine Frage über die ihr Abstimmen wollt und füge Antwortoptionen hinzu. Wenn du den Button klickst, erstellt dein Gerät dann einen biometrischen Passkey (Face-ID/Fingerprint). So wirst du zum Polly Admin - ganz ohne Passwort. Ich schicke dir den Link für deine Freunde auch per E-Mail.",
 
 		// voting
 		SortProposals: "Zieh deinen Favoriten nach oben",

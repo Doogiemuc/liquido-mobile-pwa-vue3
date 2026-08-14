@@ -5,7 +5,14 @@ import vue from '@vitejs/plugin-vue'
 import path from "path"
 
 // TLS certificates
-// Can be created with mkcert for SANs: liquido.local localhost 127.0.0.1 192.168.178.134
+// Created with mkcert. The SANs must cover every name the app is reached by - the dev host name
+// (quarkus.webauthn.origins in the backend must match it exactly), localhost, and the LAN IP:
+//   mkcert -cert-file tls-certs/liquido-local-cert.pem -key-file tls-certs/liquido-local-key.pem \
+//          shadow.fritz.box liquido.local localhost 127.0.0.1 ::1 192.168.178.10
+// The LAN IP only matters for browsing by IP (e.g. a phone with no DNS). Reaching the app by
+// hostname needs only the DNS:shadow.fritz.box entry, so a changed IP does not require a new cert.
+// Run `mkcert -install` once per machine so the local CA is trusted (needs your password).
+// Copy the same pair to the backend at src/main/resources/liquido-local-{cert,key}.pem.
 const key = fs.readFileSync(path.resolve(__dirname, 'tls-certs/liquido-local-key.pem'), 'utf8');
 const cert = fs.readFileSync(path.resolve(__dirname, 'tls-certs/liquido-local-cert.pem'), 'utf8');
 

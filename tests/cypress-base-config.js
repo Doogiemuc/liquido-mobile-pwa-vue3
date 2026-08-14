@@ -10,10 +10,14 @@ export default {
   },
   
 	// confidentail credentials
+	// These MUST match the local backend's dev profile (liquido-backend-quarkus/config/application-dev.properties):
+	//   liquido.dev-login-token           -> devLoginToken
+	//   liquido.test-password-reset-token -> testPasswordResetToken
+	// This file is the DEFAULT (local) config. The INT values live in cypress.config.INT.js.
 	env: {
 		passwordSuffix: "_PWD",  // passwords of test users = email + passwordSuffix
-		devLoginToken: "DEV_LOGIN_TOKEN_INT",
-		testPasswordResetToken: "DEV_PASSWORD_RESET_TOKEN",
+		devLoginToken: "devLoginTokenDev",
+		testPasswordResetToken: "PASSWORD_RESET_TOKEN_DEV",
 		mailtrap: {
 			messagesUrl: "https://mailtrap.io/api/accounts/1416880/inboxes/1983138/messages",
 			apiToken: "13d57536b61611395106a3992fc32bec"

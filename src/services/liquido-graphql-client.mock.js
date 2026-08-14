@@ -33,8 +33,13 @@ const createState = () => {
 			const randomDuration = (7 + Math.random()*7) * msInDay							// 7-14 days duration for voting
 			poll.votingStartAt = new Date(randomPast).toISOString()
 			poll.votingEndAt   = new Date(randomPast + randomDuration).toISOString();
-			poll.numBallots    = Math.floor(Math.random() * 12)									// 0-11 fake ballots
-
+		}
+		// Ballots that "other team members" already cast. The real backend counts rows in the
+		// ballots table, so a poll that is being voted on or is already finished must show a
+		// number in both states - not just in VOTING. Ballots cast by the mock user during the
+		// session are added on top of this baseline, see enrichPollForCurrentUser().
+		if (poll.status == 'VOTING' || poll.status == 'FINISHED') {
+			poll.numBallots = Math.floor(Math.random() * 12)										// 0-11 fake ballots
 		}
 		console.debug("MOCK: created new mockstate")
 	})
@@ -227,6 +232,9 @@ const hasCurrentUserVoted = pollId => {
 const enrichPollForCurrentUser = poll => ({
 	...deepClone(poll),
 	userAlreadyVoted: hasCurrentUserVoted(poll.id),
+	// The backend derives numBallots live from the ballots table (PollEntity.getNumBallots()).
+	// Mirror that here: the seeded baseline plus every ballot cast during this mock session.
+	numBallots: (poll.numBallots || 0) + countVotesForPoll(poll.id),
 })
 
 const enrichTeamForCurrentUser = team => ({

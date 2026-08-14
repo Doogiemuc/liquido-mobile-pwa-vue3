@@ -136,7 +136,7 @@ const JQL_LOGIN_USER = `{ id name email mobilephone picture website hasWebauthn 
 const JQL_USER = `{ id name email mobilephone picture website  } `
 const JQL_TEAM_MEMBER = `{ role joinedAt user ${JQL_USER} } `
 const JQL_PROPOSAL =  `{ id title description icon status createdAt numSupporters likedByCurrentUser createdBy ${JQL_USER} } `   // no "is" before likedByCurrentUser!
-const JQL_POLL = `{ id title status createdAt updatedAt votingStartAt votingEndAt userAlreadyVoted proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `  //TODO: duelMatrix { data }
+const JQL_POLL = `{ id title status createdAt updatedAt votingStartAt votingEndAt userAlreadyVoted numBallots proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `  //TODO: duelMatrix { data }
 const JQL_TEAM = `{ id teamName inviteCode ` +
 		`members ${JQL_TEAM_MEMBER} ` +
 		`polls ${JQL_POLL} } `
@@ -415,13 +415,19 @@ let graphQlApi = {
 				*/
 	},
 
+	/**
+	 * Set a new password with the one-time token from the reset email.
+	 *
+	 * POST with a JSON body, NOT a GET with query params: this carries a one-time token and a
+	 * plaintext password, and query strings end up in server access logs, proxy logs and browser
+	 * history. The backend only accepts POST here (LoginRestAPI.resetPassword) - a GET answers 405.
+	 * The body keys must match the ResetPasswordRequest record field-for-field.
+	 */
 	resetPassword(email, resetPasswordToken, newPassword) {
-		return axios.get('/login/resetPassword', {
-			params: { 
-				email: email,
-				resetPasswordToken: resetPasswordToken,
-				newPassword: newPassword
-			}
+		return axios.post('/login/resetPassword', {
+			email: email,
+			resetPasswordToken: resetPasswordToken,
+			newPassword: newPassword
 		}).then(res => res.data)
 		/*
 		let graphQL = `query { resetPassword(email: "${email}", resetPasswordToken: "${resetPasswordToken}", newPassword: "${newPassword}") }`

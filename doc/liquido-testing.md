@@ -16,8 +16,14 @@ If the backend is running on another machine you can configure a path proxy in v
 
 ## Additional requirements for WebAuthn
 
- * Frontend must be served on a real domain not just an IP address, Tip: Configure a domain in your local `/etc/hosts` or in your local DNS, e.g. `liquido.local`. 
- * That domain must be configured in backend `application-dev.properties`: `quarkus.webauthn.origins=https://liquido.local:3001`. With schema, domain and port!
+ * Frontend must be served on a real domain not just an IP address, Tip: Configure a domain in your local `/etc/hosts` or in your local DNS. The current dev host is `shadow.fritz.box` (resolved by the Fritz!Box DNS).
+ * That domain must be configured in backend `application-dev.properties` — **three** settings, and all of them must agree:
+   * `quarkus.webauthn.origins=https://shadow.fritz.box:3001` — with schema, domain **and** port!
+   * `quarkus.webauthn.relying-party.id=shadow.fritz.box` — domain only, no schema, no port
+   * `LIQUIDO_API_URL` in `./config/config.development.js` must point at the same host
+ * The TLS certificate must list that domain in its SANs, and the mkcert CA must be installed on
+   *this* machine (`mkcert -install`). See `liquido-backend-quarkus/docs/README-tech.md` — moving to a
+   new laptop breaks both of these at once.
  * And obviously your hardware device must support WebAuthN (iOS Safari with Face ID, Chrome on Android with fingerprint, or desktop with platform authenticators)
 
 

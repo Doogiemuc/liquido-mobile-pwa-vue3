@@ -13,7 +13,7 @@
 - **Global** messages live in `main.js` (`globalTranslations`, `de` + `en`).
 - **Component-local** messages use the legacy **`i18n:` component option** (NOT `<i18n>` SFC blocks — the Vite plugin for those is not installed).
 - Most components are **Options API** and use `this.$t()` / `$t()`.
-- A few newer files are **Composition API `<script setup>`** and currently rely on **global** messages via `useI18n()` — except `Polly-vote.vue`, which rolls its own `loc()` helper.
+- A few newer files are **Composition API `<script setup>`** and currently rely on **global** messages via `useI18n()` — except the Polly module, which ships its own `polly-i18n.js` to stay self-contained.
 - To keep **component-local** messages in a **`<script setup>`** file while still in legacy mode, use **two script blocks**: a plain `<script>` exporting `{ i18n: { messages } }` next to `<script setup>`. Template `$t()` sees the merged messages; there are caveats for script-side lookups (below).
 
 ---
@@ -142,30 +142,30 @@ Files: `src/views/polls.vue`, `src/views/team-home.vue`.
 
 ---
 
-## 4. Pattern C — hand-rolled `loc()` (no vue-i18n) in `Polly-vote.vue`
+## 4. Pattern C — Polly's own translator in `src/polly/polly-i18n.js`
 
-[`src/components/Polly-vote.vue`](../../src/components/Polly-vote.vue) is `<script setup>` but does
-**not** use vue-i18n for its own strings. It defines plain JS objects and a custom lookup helper:
+The Polly module keeps its own translations, on purpose: `src/polly/` is self-contained and must not
+depend on the rest of the app (see §8b of `doc/liquido-architecture.md`). Messages live in
+[`src/polly/polly-i18n.js`](../../src/polly/polly-i18n.js), and components get a `t()` from
+`usePollyI18n()`:
 
 ```js
+// src/components/polly-vote.vue
 <script setup>
-const globalTranslations = { en: { Save:"Save", … }, de: { Save:"Speichern", … } }
-const messages = { en: { StartPoll:"Start Poll", … }, de: { StartPoll:"Abstimmung starten", … } }
-
-// custom translator: hard-codes "de", falls back en → global, and does {param} replacement
-function loc(key, params = {}) {
-  const lang = "de"
-  let message = messages[lang]?.[key] ?? messages.en?.[key]
-             ?? globalTranslations[lang]?.[key] ?? globalTranslations.en?.[key]
-  if (!message) { console.warn("Missing translation for key '" + key + "'"); return key }
-  return message.replace(/\{(\w+)\}/g, (m, p) =>
-    Object.prototype.hasOwnProperty.call(params, p) ? params[p] : m)
-}
+import { usePollyI18n } from '@/polly/polly-i18n.js'
+const t = usePollyI18n()
+// template: t('SortProposals'), t('NumBallots', { count: polly.numBallots })
 </script>
 ```
 
-> This is a self-contained workaround, independent of the global i18n instance. Useful to know it
-> exists, but **not** the recommended direction — it duplicates what vue-i18n already provides.
+`usePollyI18n()` reads the **app's current locale** from `useI18n().locale` (the global composer, which
+works in legacy mode) and falls back to `en` when the i18n plugin isn't installed — so it still works in
+a unit test that mounts the component bare. Placeholders are interpolated with the same `{param}` syntax
+vue-i18n uses.
+
+> Historical note: an earlier `Polly-vote.vue` had an inline `loc()` helper that **hard-coded** `"de"`.
+> That is gone — `usePollyI18n()` follows the real locale. This pattern is only appropriate because of
+> Polly's deliberate module isolation; for everything else use Pattern A or B.
 
 ---
 
@@ -245,12 +245,12 @@ import { ref, computed, onMounted, getCurrentInstance } from "vue"
 | Options API translate | `this.$t()`, `$t()`, `$tc()` |
 | `<script setup>` translate (current) | `useI18n()` → global `t`/`d`; template `$t()` |
 | Local messages in `<script setup>` | **Two blocks**: `<script>{ i18n:{messages} }</script>` + `<script setup>`, use `$t()` in template |
-| Custom/manual approach | `Polly-vote.vue` `loc()` helper (avoid for new code) |
+| Custom/manual approach | `src/polly/polly-i18n.js` → `usePollyI18n()` (Polly module only, for isolation) |
 | Future migration | `legacy: false` + `globalInjection: true` + `useI18n({ useScope:'local', messages })` |
 
 ### Files referenced
 - Global config: `src/main.js`, `vite.config.js`
 - Options `i18n:` examples: `src/components/poll-card.vue`, `src/views/cast-vote.vue`
 - `<script setup>` + global `useI18n()`: `src/views/polls.vue`, `src/views/team-home.vue`
-- Manual `loc()`: `src/components/Polly-vote.vue`
+- Polly's own translator: `src/polly/polly-i18n.js`, used by `src/components/polly-vote.vue`
 - Migration notes: `doc/ai/AI-plan migrate to i18n v12.md`
