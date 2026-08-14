@@ -447,7 +447,7 @@ export default {
 			this.loginErrorMessage = null
 			try {
 				const teamData = await webauthnService.loginWithWebAuthn(this.emailInputVal)
-				api.login(teamData.team, teamData.user, teamData.jwt)
+				api.login(teamData.team, teamData.user, teamData.jwt, teamData.teams)
 				this.$root.gotoTeam()
 			} catch (err) {
 				console.error("WebAuthn login failed:", err)
