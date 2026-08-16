@@ -806,12 +806,23 @@ let graphQlApi = {
 	/**
 	 * Admin creates a new poll.
 	 * @param {String} pollTitle title of the new poll
+	 * @param {Date|String} pollStartDate poll start timestamp (Date or ISO string)
+	 * @param {Date|String} pollEndDate poll end timestamp (Date or ISO string)
 	 * @param {Boolean} membersCanAddProposals when true, team members may add proposals to this poll.
 	 *        Default false: only the admin may. Chosen at creation and not changeable afterwards.
 	 */
-	async createPoll(pollTitle, membersCanAddProposals = false) {
-		let graphQL = `mutation createPoll($title: String!, $membersCanAddProposals: Boolean, $startDate: DateTime!, $endDate: DateTime!) { createPoll(title: $title, membersCanAddProposals: $membersCanAddProposals) ${JQL.POLL} }`
-		return graphQlQuery(graphQL, { title: pollTitle, membersCanAddProposals })
+	async createPoll(pollTitle, pollStartDate, pollEndDate, membersCanAddProposals = false) {
+		if (!pollStartDate || !pollEndDate) throw new Error("Need pollStartDate and pollEndDate to create poll")
+		let startDate = new Date(pollStartDate)
+		let endDate = new Date(pollEndDate)
+
+		let graphQL = `mutation createPoll($title: String!, $membersCanAddProposals: Boolean, $startDate: DateTime!, $endDate: DateTime!) { createPoll(title: $title, membersCanAddProposals: $membersCanAddProposals, startDate: $startDate, endDate: $endDate) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, {
+			title: pollTitle,
+			membersCanAddProposals,
+			startDate: startDate.toISOString(),
+			endDate: endDate.toISOString(),
+		})
 			.then(res => {
 				let poll = res.data.createPoll
 				this.pollsCache.put("polls/"+poll.id, poll)

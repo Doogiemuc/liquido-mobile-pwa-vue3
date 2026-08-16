@@ -21,6 +21,7 @@ export default {
 	minPasswordLength: 10, 									// used in forgot-password.vue
 	allowMembersToInvite: true,
 	pollTitleMinLength: 10,
+	pollDefaultRuntimeDays: 7,
 	avatarPath: "./img/avatars",
 	inviteLinkPrefix: "http://app.liquido.vote/welcome?inviteCode=",
 	//TODO: adminMustConfirmNewMembers: ...

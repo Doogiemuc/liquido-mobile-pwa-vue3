@@ -46,7 +46,7 @@
  * NO configuration. Only defaults!
  */
 import { defineComponent } from 'vue'
-//import config from "config"
+import config from "config"
 //import liquidoInput from "@/components/liquido-input.vue"
 import polly from '@/components/polly-vote.vue'
 import api from "@/services/liquido-graphql-client.js"
@@ -155,7 +155,13 @@ export default defineComponent({
 			this.$router.go(-1)
 		},
 		createNewPoll() {
-			return api.createPoll(this.poll.title)
+			let pollRuntimeInDays = Number(config.pollDefaultRuntimeDays) || 7
+			let pollStartDate = new Date()
+			pollStartDate.setHours(0, 0, 0, 0)
+			let pollEndDate = new Date(pollStartDate)
+			pollEndDate.setDate(pollEndDate.getDate() + pollRuntimeInDays)
+			pollEndDate.setHours(23, 59, 59, 999)
+			return api.createPoll(this.poll.title, pollStartDate, pollEndDate)
 				.then(createdPoll => {
 					console.log("New poll created", createdPoll)
 					this.$router.push({name: "showPoll", params: {pollId: createdPoll.id} })

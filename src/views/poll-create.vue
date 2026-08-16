@@ -43,6 +43,7 @@
 
 			</div>
 		</div>
+		</div>
 
 		<div class="alert alert-admin my-5">
 			<p>{{ $t('createPollInfo1') }}</p>
@@ -108,7 +109,7 @@ export default {
 				pollTitleInvalid: "Titel ist zu kurz. Bitte mind. {minLen} Zeichen.",
 				// Per-poll setting, chosen here and not changeable later.
 				membersCanAddProposals: "Teammitglieder dürfen Vorschläge hinzufügen",
-				membersCanAddProposalsHint: "Wenn du das nicht aktivierst, legst nur du als Admin fest, worüber abgestimmt wird. Diese Einstellung kann später nicht mehr geändert werden."
+				membersCanAddProposalsHint: "Wenn du das nicht aktivierst, legst nur du als Admin fest, worüber abgestimmt wird. Diese Einstellung kann später nicht mehr geändert werden.",
 				createPoll: "Abstimmung anlegen",
 				votesAreAlwaysAnonymous: "Abstimmungen sind immer anonym.",
 				votesCannotBeChangedOnceCast: "Nachdem eine Stimme einmal abgegeben wurde, kann sie nicht mehr geändert werden.",
@@ -122,7 +123,7 @@ export default {
 			pollTitle: "",
 			// Off by default, matching the backend: the admin opts in deliberately.
 			membersCanAddProposals: false,
-			pollRuntimeInDays: 7,
+			pollRuntimeInDays: config.pollDefaultRuntimeDays || 7,
 			allowAddProposals: false,
 			creating: false,
 		}
