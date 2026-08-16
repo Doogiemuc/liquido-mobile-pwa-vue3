@@ -8,7 +8,7 @@
 			<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;{{ $t('Loading') }}
 		</div>
 	
-		<poll-card v-if="poll.id && !loadingPoll" :poll="poll" :show-arrow-right="false" :show-proposals="true" :proposals-expanded="true" class="shadow-sm mb-4" />
+		<poll-card v-if="poll.id && !loadingPoll" :poll="poll" :show-arrow-right="false" :show-proposals="true" :proposals-expanded="true" class="shadow-sm mb-4" @edit-proposal="gotoEditProposal" />
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
 			<div v-html="$t('cannotFindPoll', {pollId: pollId})" />
@@ -61,8 +61,8 @@
 
 		<liquido-footer>
 			<template #info>
-				<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && !userAlreadyHasProposal" v-html="$t('canAddProposal')" />	
-				<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && userAlreadyHasProposal" v-html="$t('alreadyAddedProposal')" />
+				<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && poll.membersCanAddProposals" v-html="$t('canAddProposal')" />
+				<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && !poll.membersCanAddProposals" v-html="$t('onlyAdminAddsProposals')" />
 			</template>
 			<template #primary>
 				<button v-if="poll.status === 'VOTING' && !hasAlreadyVoted" id="goToCastVoteButton" type="button" class="btn btn-primary" @click="clickCastVote()">
@@ -123,11 +123,11 @@ export default {
 				pollInElaborationInfo: 
 					"<p>Diese Abstimmung ist gerade neu angelegt worden. Es können auch noch weitere Vorschläge hinzugefügt werden.</p>" +
 					"<p>Sobald die Wahl startet, kannst du hier anonym und sicher deine Stimme abgeben.</p>",
-				canAddProposal: 
-					"Du kannst einen eigenen Vorschlag zu dieser Abstimmung hinzufügen.",
+				canAddProposal:
+					"Du kannst eigene Vorschläge zu dieser Abstimmung hinzufügen.",
 				yourBallot: "Dein Stimmzettel",
-				alreadyAddedProposal: 
-					"Du hast deinen Vorschlag bereits zu dieser Abstimmung hinzugefügt.",
+				onlyAdminAddsProposals:
+					"In dieser Abstimmung legt nur der Admin die Vorschläge fest.",
 				addProposal: "Vorschlag hinzufügen",
 				startVotingPhaseInfo: 
 					"Hallo Admin! Möchstest du die diese Abstimmung starten? Dann sind die Vorschläge fixiert und dein Team kann abstimmen.",
@@ -186,24 +186,15 @@ export default {
 		hasAlreadyVoted() {
 			return this.poll.status === "VOTING" && !!this.existingBallot
 		},
-		userAlreadyHasProposal() {
-			let currentUser = api.getCachedUser()
-			if (!this.poll || !this.poll.proposals || !currentUser) return false
-			return this.poll.proposals.filter((prop) => prop.createdBy.id === currentUser.id).length > 0
-		},
-
-		/** 
-		 * A user can add his own proposal
-		 * if the poll is in status ELABORATION and he did not add a proposal to this poll yet 
-		 * or he is an admin. (Admin can also add multiple proposals.) 
+		/**
+		 * Proposals can be added while the poll is in ELABORATION.
+		 * The admin always may. Ordinary members only when the admin allowed it for this poll
+		 * (the "Teammitglieder dürfen Vorschläge hinzufügen" checkbox on poll creation),
+		 * and then as many as they like - there is no longer a one-proposal-per-member cap.
 		 */
 		showAddProposal() {
 			if (this.poll.status !== "ELABORATION") return false
-			if (this.userIsAdmin) return true
-			if (!this.poll.proposals || this.poll.proposals.length === 0) {
-				return true
-			}
-			return !this.userAlreadyHasProposal
+			return this.userIsAdmin || !!this.poll.membersCanAddProposals
 		},
 		/** The voting phase can be started by the admin when there are at least two proposals */
 		showStartVotingPhase() {
@@ -289,6 +280,11 @@ export default {
 		
 		clickAddProposal() {
 			this.$router.push({name: "addProposal", params: {pollId: this.poll.id}})
+		},
+
+		/** Edit one of your own proposals. Emitted by the pencil in poll-card.vue. */
+		gotoEditProposal(proposalId) {
+			this.$router.push({name: "editProposal", params: {pollId: this.poll.id, proposalId: proposalId}})
 		},
 
 		clickCastVote() {

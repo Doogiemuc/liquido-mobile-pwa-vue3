@@ -7,7 +7,9 @@ export default mergeConfig(
   defineConfig({
     test: {
       environment: 'jsdom',
-      exclude: [...configDefaults.exclude, 'e2e/*'],
+      // config/config.test.js is the MODE=test environment config, not a spec file. Its name
+      // accidentally matches vitest's default include glob, so exclude the whole config dir.
+      exclude: [...configDefaults.exclude, 'e2e/*', 'config/**'],
       root: fileURLToPath(new URL('./', import.meta.url))
     }
   })

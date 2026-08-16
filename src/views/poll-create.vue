@@ -16,35 +16,31 @@
 						<div class="num-proposals"><i class="far fa-lightbulb"></i>&nbsp;0</div>
 					</div>
 
-					<liquido-input
-						id="pollTitleInput"
-						v-model="pollTitle"
-						class="mt-2"
-						:label="$t('pollTitle')"
-						:valid-func="isPollTitleValid"
-						:invalid-feedback="pollTitleInvalidFeedback"
-						:feedback-placeholder="true"
-						:required="true"
-						@blur="pollTitleValidated = true"
-					>
-					</liquido-input>
+				<liquido-input
+					id="pollTitleInput"
+					v-model="pollTitle"
+					class="mt-2"
+					:label="$t('pollTitle')"
+					:valid-func="isPollTitleValid"
+					:invalid-feedback="pollTitleInvalidFeedback"
+					@blur="pollTitleValidated = true"
+				>
+				</liquido-input>
 
-					<div>
-						{{$t('pollRuntime') }}: <input type="number" min="1" v-model="pollRuntimeInDays" class="form-control form-control-sm poll-runtime-days d-inline-block" />{{ $t('days') }}
-					</div>
+				<!-- Who may put options on the ballot. Off by default: the admin opts in deliberately. -->
+				<div class="form-check mt-4">
+					<input
+						id="membersCanAddProposalsInput"
+						v-model="membersCanAddProposals"
+						class="form-check-input"
+						type="checkbox"
+					/>
+					<label class="form-check-label" for="membersCanAddProposalsInput">
+						{{ $t('membersCanAddProposals') }}
+					</label>
+					<div class="form-text">{{ $t('membersCanAddProposalsHint') }}</div>
+				</div>
 
-					
-
-					<div class="poll-footer">
-						<div class="d-flex justify-content-between">
-							<!-- span>{{ $t('newlyCreatedPoll') }}</span -->
-						</div>
-						<div class="poll-progress-bar">
-							<!-- no progress yet-->
-						</div>
-					</div>
-
-				</div>			
 			</div>
 		</div>
 
@@ -110,8 +106,10 @@ export default {
 
 				newlyCreatedPoll: "Neue Abstimmung",
 				pollTitleInvalid: "Titel ist zu kurz. Bitte mind. {minLen} Zeichen.",
+				// Per-poll setting, chosen here and not changeable later.
+				membersCanAddProposals: "Teammitglieder dürfen Vorschläge hinzufügen",
+				membersCanAddProposalsHint: "Wenn du das nicht aktivierst, legst nur du als Admin fest, worüber abgestimmt wird. Diese Einstellung kann später nicht mehr geändert werden."
 				createPoll: "Abstimmung anlegen",
-
 				votesAreAlwaysAnonymous: "Abstimmungen sind immer anonym.",
 				votesCannotBeChangedOnceCast: "Nachdem eine Stimme einmal abgegeben wurde, kann sie nicht mehr geändert werden.",
 			},
@@ -122,6 +120,8 @@ export default {
 	data() {
 		return {
 			pollTitle: "",
+			// Off by default, matching the backend: the admin opts in deliberately.
+			membersCanAddProposals: false,
 			pollRuntimeInDays: 7,
 			allowAddProposals: false,
 			creating: false,
@@ -164,7 +164,7 @@ export default {
 			let pollEndDate = new Date(pollStartDate)
 			pollEndDate.setDate(pollEndDate.getDate() + this.pollRuntimeInDays)
 			pollEndDate.setHours(23, 59, 59, 999) // end of last day
-			return api.createPoll(this.pollTitle, pollStartDate, pollEndDate)
+			return api.createPoll(this.pollTitle, pollStartDate, pollEndDate, this.membersCanAddProposals)
 				.then(createdPoll => {
 					log.info("New poll created", createdPoll)
 					this.$router.push({name: "showPoll", params: { pollId: createdPoll.id } })

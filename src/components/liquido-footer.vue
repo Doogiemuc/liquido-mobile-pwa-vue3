@@ -1,6 +1,9 @@
 <template>
 	<footer ref="footer" class="liquido-footer" :class="{ 'footer-margin-bottom' : isHomeScreenPWA }">
-		<div v-if="infoText" class="liquido-footer-info">
+		<!-- Render the info area when EITHER the infoText prop is set OR a parent filled the
+		     #info slot. Guarding on the prop alone silently swallowed slot content: poll-show.vue
+		     has been passing an #info slot without an infoText prop, so its message never showed. -->
+		<div v-if="infoText || $slots.info" class="liquido-footer-info">
 			<slot name="info">
 				<span v-if="infoText !== undefined">{{ infoText }}</span>
 			</slot>

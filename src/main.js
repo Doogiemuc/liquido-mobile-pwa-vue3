@@ -89,6 +89,8 @@ const globalTranslations = {
 		User: "Profil",
 		gotoPolls: "Abstimmungen",  // Link to /polls page  short!
 		inviteNewMembers: "Teammitglieder einladen",
+		SwitchTeam: "Team wechseln",   // only shown to users who are in more than one team
+		TeamHome: "Team",
 
 		// Global error messages 
 		unexpectedError: "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.",

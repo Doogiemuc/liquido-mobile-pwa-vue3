@@ -136,10 +136,12 @@ const JQL_LOGIN_USER = `{ id name email mobilephone picture website hasWebauthn 
 const JQL_USER = `{ id name email mobilephone picture website  } `
 const JQL_TEAM_MEMBER = `{ role joinedAt user ${JQL_USER} } `
 const JQL_PROPOSAL =  `{ id title description icon status createdAt numSupporters likedByCurrentUser createdBy ${JQL_USER} } `   // no "is" before likedByCurrentUser!
-const JQL_POLL = `{ id title status createdAt updatedAt votingStartAt votingEndAt userAlreadyVoted proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `  //TODO: duelMatrix { data }
+const JQL_POLL = `{ id title status createdAt updatedAt votingStartAt votingEndAt userAlreadyVoted numBallots membersCanAddProposals proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `  //TODO: duelMatrix { data }
 const JQL_TEAM = `{ id teamName inviteCode ` +
 		`members ${JQL_TEAM_MEMBER} ` +
 		`polls ${JQL_POLL} } `
+/** All teams of the logged in user, for the team switcher. Just enough to label and switch. */
+const JQL_TEAM_SUMMARY = `{ id teamName } `
 
 // POLLY - quick and easy little polls
 const JQL_POLLY = `{ id title status createdAt updatedAt userAlreadyVoted proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `
@@ -150,8 +152,9 @@ const JQL = {
 	PROPOSAL: JQL_PROPOSAL,
 	CREATE_OR_JOIN_TEAM_RESULT: `{ ` +
 		`team ${JQL_TEAM} ` +
-		`user ${JQL_LOGIN_USER} ` + 
-		`jwt } `, 
+		`user ${JQL_LOGIN_USER} ` +
+		`teams ${JQL_TEAM_SUMMARY} ` +
+		`jwt } `,
 	POLL: JQL_POLL,
 	POLLY: JQL_POLLY
 }
@@ -256,11 +259,13 @@ let graphQlApi = {
 	 * @param {Object} team Team with members[] and polls[]
 	 * @param {Object} user currently logged in user
 	 * @param {String} jwt JsonWebToken received from server
+	 * @param {Array} teams (optional) all teams this user is a member of, for the team switcher
 	 */
-	login(team, user, jwt) {
+	login(team, user, jwt, teams) {
 		this.teamCache.put(this.TEAM_KEY, team)
 		this.teamCache.put(this.CURRENT_USER_KEY, user)
 		this.teamCache.put(this.JWT_KEY, jwt)
+		this.teamCache.put(this.ALL_USER_TEAMS_KEY, teams || [])
 		this.putPollsIntoCache(team.polls)
 		if (localStorage != null) localStorage.setItem(this.LIQUIDO_JWT_KEY, jwt)
 		axios.defaults.headers.common["Authorization"] = "Bearer " + jwt
@@ -279,7 +284,30 @@ let graphQlApi = {
 		EventBus.emit(EventBus.Event.LOGOUT, userEmail)
 	},
 
-	//TODO: changeTeam / login into another team
+	/**
+	 * Switch the current session into another team of the same user.
+	 * The user MUST already be logged in, and MUST be a member of that team. The backend checks both.
+	 * On success this replaces the whole login state, including the JWT, exactly like a fresh login.
+	 *
+	 * @param {Number} teamId id of another team of the currently logged in user
+	 * @returns {Object} login data with the new team, user and jwt
+	 */
+	async switchTeam(teamId) {
+		let graphQL = `mutation switchTeam($teamId: BigInteger!) { switchTeam(teamId: $teamId) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
+		return graphQlQuery(graphQL, { teamId: Number(teamId) })
+			.then(response => {
+				let res = response.data.switchTeam
+				// MUST empty the polls cache BEFORE login() refills it.
+				// putPollsIntoCache() only ever puts under "polls/<id>", it never removes. Without this
+				// the previous team's polls would stay behind and getCachedPolls() would hand back a
+				// mix of two teams' polls - in a voting app. We cannot just call logout() instead,
+				// because that also drops the JWT and emits LOGOUT.
+				this.pollsCache.emptyCache()
+				this.login(res.team, res.user, res.jwt, res.teams)
+				console.debug("Switched into team:", res.team.teamName)
+				return res
+			})
+	},
 
 	/**
 	 * This sets a special header `jwtTokenString` which is used by the
@@ -321,6 +349,18 @@ let graphQlApi = {
 	 */
 	getCachedTeam() {
 		return this.teamCache.getSync(this.TEAM_KEY, false)
+	},
+
+	/**
+	 * Synchronously get ALL teams that the logged in user is a member of.
+	 * Note the deliberately different name: getCachedTeam() above returns the ONE team the user is
+	 * currently logged into, this returns EVERY team they belong to. Two very different things, so
+	 * they do not get two near-identical names.
+	 *
+	 * @returns {Array} array of { id, teamName }, or an empty array when no one is logged in
+	 */
+	getAllUserTeams() {
+		return this.teamCache.getSync(this.ALL_USER_TEAMS_KEY, false) || []
 	},
 
 	/** 
@@ -367,7 +407,7 @@ let graphQlApi = {
 		axios.defaults.headers.common["Authorization"] = "Bearer " + jwt
 		return graphQlQuery(graphQL)
 			.then(res => {
-				this.login(res.data.loginWithJwt.team, res.data.loginWithJwt.user, res.data.loginWithJwt.jwt)
+				this.login(res.data.loginWithJwt.team, res.data.loginWithJwt.user, res.data.loginWithJwt.jwt, res.data.loginWithJwt.teams)
 				return res.data.loginWithJwt
 			})
 	},
@@ -395,7 +435,7 @@ let graphQlApi = {
 		let graphQL = `query loginWithEmailPassword($email: String!, $password: String!) { loginWithEmailPassword(email: $email, password: $password) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		return graphQlQuery(graphQL, { email, password }).then(response => {
 			let res = response.data.loginWithEmailPassword
-			this.login(res.team, res.user, res.jwt)
+			this.login(res.team, res.user, res.jwt, res.teams)
 			return res
 		})
 	},
@@ -420,13 +460,16 @@ let graphQlApi = {
 				*/
 	},
 
+	/**
+	 * Set a new password with the one-time token from the reset email.
+	 * POST with a JSON body, not GET with query params - a one-time token and a plaintext password
+	 * must not land in access logs or browser history. The backend only accepts POST; GET answers 405.
+	 */
 	resetPassword(email, resetPasswordToken, newPassword) {
-		return axios.get('/login/resetPassword', {
-			params: { 
-				email: email,
-				resetPasswordToken: resetPasswordToken,
-				newPassword: newPassword
-			}
+		return axios.post('/login/resetPassword', {
+			email: email,
+			resetPasswordToken: resetPasswordToken,
+			newPassword: newPassword
 		}).then(res => res.data)
 		/*
 		let graphQL = `query { resetPassword(email: "${email}", resetPasswordToken: "${resetPasswordToken}", newPassword: "${newPassword}") }`
@@ -445,7 +488,7 @@ let graphQlApi = {
 		let graphQL = `query googleOneTapLogin($googleIdToken: String!) { googleOneTapLogin(googleIdToken: $googleIdToken) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		return graphQlQuery(graphQL, { googleIdToken }).then(response => {
 			let res = response.data.googleOneTapLogin
-			this.login(res.team, res.user, res.jwt)
+			this.login(res.team, res.user, res.jwt, res.teams)
 			return res
 		})
 	},
@@ -471,7 +514,7 @@ let graphQlApi = {
 		let graphQL = `query loginWithAuthToken($mobilephone: String!, $authToken: String!) { loginWithAuthToken(mobilephone: $mobilephone, authToken: $authToken) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		return graphQlQuery(graphQL, { mobilephone, authToken }).then(response => {
 			let res = response.data.loginWithAuthToken
-			this.login(res.team, res.user, res.jwt)
+			this.login(res.team, res.user, res.jwt, res.teams)
 			return res
 		})
 	},
@@ -589,7 +632,7 @@ let graphQlApi = {
 		return graphQlQuery(graphQL, { email, devLoginToken })
 			.then(res => {
 				console.log("API: devLogin <"+email+">")
-				this.login(res.data.devLogin.team, res.data.devLogin.user, res.data.devLogin.jwt)
+				this.login(res.data.devLogin.team, res.data.devLogin.user, res.data.devLogin.jwt, res.data.devLogin.teams)
 				return res.data.devLogin
 			})
 	},
@@ -616,7 +659,8 @@ let graphQlApi = {
 				this.login(
 					team,
 					res.data.createNewTeam.user,  // admin
-					res.data.createNewTeam.jwt
+					res.data.createNewTeam.jwt,
+					res.data.createNewTeam.teams
 				)
 				console.debug("Created new team:", team)
 				return team
@@ -658,7 +702,8 @@ let graphQlApi = {
 				this.login(
 					team,
 					res.data.joinTeam.user,
-					res.data.joinTeam.jwt
+					res.data.joinTeam.jwt,
+					res.data.joinTeam.teams
 				)
 				console.debug("Joined team:", team)
 				return team
@@ -759,15 +804,14 @@ let graphQlApi = {
 	 **********************************************************************/
 
 	/**
-	 * Create a new poll. The poll will be in "PROPOSAL" status and can be edited by the team members.
-	 * @param {String} pollTitle title of poll
-	 * @param {Date} startDate exact timestamp when poll starts and voters can cast votes. (is set to start of day by default in poll-create.vue)
-	 * @param {Date} endDate exact timestamp when poll voting phase will finish. (Is set to midnight after last day of voting phase by default)
-	 * @returns the newly created poll as returned by the backend
+	 * Admin creates a new poll.
+	 * @param {String} pollTitle title of the new poll
+	 * @param {Boolean} membersCanAddProposals when true, team members may add proposals to this poll.
+	 *        Default false: only the admin may. Chosen at creation and not changeable afterwards.
 	 */
-	async createPoll(pollTitle, startDate, endDate) {
-		let graphQL = `mutation createPoll($title: String!, $startDate: DateTime!, $endDate: DateTime!) { createPoll(title: $title, startDate: $startDate, endDate: $endDate) ${JQL.POLL} }`
-		return graphQlQuery(graphQL, { title: pollTitle, startDate, endDate })
+	async createPoll(pollTitle, membersCanAddProposals = false) {
+		let graphQL = `mutation createPoll($title: String!, $membersCanAddProposals: Boolean, $startDate: DateTime!, $endDate: DateTime!) { createPoll(title: $title, membersCanAddProposals: $membersCanAddProposals) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { title: pollTitle, membersCanAddProposals })
 			.then(res => {
 				let poll = res.data.createPoll
 				this.pollsCache.put("polls/"+poll.id, poll)
@@ -831,6 +875,28 @@ let graphQlApi = {
 				let poll = res.data.addProposal
 				this.pollsCache.put("polls/"+poll.id, poll)
 				console.debug("Added proposal to poll:", poll)
+				return poll
+			})
+	},
+
+	/**
+	 * Edit your OWN proposal. Only possible while the poll has not started yet.
+	 * The backend refuses anything else: somebody else's proposal, or a poll already in VOTING.
+	 *
+	 * @param {Number} pollId the poll containing the proposal
+	 * @param {Number} proposalId the proposal to edit. Must be your own.
+	 * @param {String} title new title. Must be unique within the poll.
+	 * @param {String} description new description
+	 * @param {String} icon name of a fontawesome icon (without any "fa-" prefix)
+	 * @returns {Object} the updated poll
+	 */
+	async updateProposal(pollId, proposalId, title, description, icon) {
+		let graphQL = `mutation updateProposal($pollId: BigInteger!, $proposalId: BigInteger!, $title: String!, $description: String!, $icon: String!) { updateProposal(pollId: $pollId, proposalId: $proposalId, title: $title, description: $description, icon: $icon) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId), proposalId: Number(proposalId), title, description, icon })
+			.then(res => {
+				let poll = res.data.updateProposal
+				this.pollsCache.put("polls/"+poll.id, poll)
+				console.debug("Updated proposal in poll:", poll)
 				return poll
 			})
 	},
@@ -938,7 +1004,8 @@ let graphQlApi = {
 	/** Keys for the above caches */
 	JWT_KEY: "jwt",
 	CURRENT_USER_KEY: "currentUser",       // key for current user object in teamCache
-	TEAM_KEY: "team",
+	TEAM_KEY: "team",                      // the ONE team the user is currently logged into
+	ALL_USER_TEAMS_KEY: "allUserTeams",    // ALL teams the user is a member of (for the team switcher)
 	VOTER_TOKEN_KEY: "voterToken",
 	LIQUIDO_JWT_KEY: "LIQUIDO_JWT",        // JWT in localStorage
 

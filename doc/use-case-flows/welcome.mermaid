@@ -2,7 +2,6 @@
 config:
   theme: neutral
   layout: elk
-  look: handDrawn
 title: LIQUIDO - Use Cases
 ---
 flowchart TB
@@ -31,28 +30,37 @@ Password"]
     IsAuthenticated == Yes ==> TeamHome
     IsAuthenticated -- No --> Login
     TeamHome("<pre><b>/team</b></pre> Team Homepage")
-    ==> Polls("<pre><b>/polls</b></pre> List of pollys and polls")
+    ==> Polls("<pre><b>/polls</b></pre> List of polls of this team")
     ==> PollShow("<pre><b>/polls/:id</b></pre> Show one poll")
+    ==> PollStatus{{"Poll status?"}}
+
+    PollStatus -- FINISHED --> ShowWinner["Finished poll\nShow winner"]
+    PollStatus -- IN_ELABORATION --> PollInElaboration
+    PollStatus -- IN VOTING --> PollInVoting
+    
+
+    PollInVoting
     ==> CastVote("<pre><b>/polls/:id/castVote</b></pre> Cast vote in a poll")
     ==> CastVoteInput["User sorts all proposals into his preferred order and then casts his vote."]
     ==> BallotCasted
     
-    PollCreate("<pre><b>/create</b></pre> Create a new poll(y)") 
-    --> ChoosePollType{{"Choose type of poll"}} -- Full Poll with descriptions 
-    --> CreatePoll("<pre><b>/polls/create</b></pre>")
-    --> PollTitleInput("Enter poll title")
-    --> AddProposal("<pre><b>/polls/:id/add</b></pre> Add a proposals with descriptions to a poll") 
+    PollCreate("<pre><b>/poll/create</b></pre>Create a new poll") 
+    --> PollTitleInput("Admin sets a poll title\nand saves poll.")
     --> PollInElaboration(["Poll in ELABORATION"])
-    --> AddFurtherProposals("Further proposals can be added")
+    --> AddProposal("<pre><b>/polls/:id/add</b></pre> Every Team member can add a proposals with descriptions") 
     --> StartVoting
     --> PollInVoting(["Poll in VOTING<br>Team members can now cast their votes"])
     --> EndVoting
     --> PollFinished
 
-    ChoosePollType -- Small Polly 
-    --> CreatePolly("<pre><b>/polly/create</b></pre>")
-    --> AddPollyOptions["Add some options to polly"]
-    --> PollyCreated(["New polly created. Members can immideately cast votes."])
+    CreatePolly("<pre><b>/polly</b></pre>")
+    --> AddPollyOptions["Polly Admin sets title\nand adds options"]
+    --> ClickCreatePasskey["Admin creates his Passkey"]
+    --> PollyCreated(["New polly is created and started. Members can immideately cast votes."])
+    --> SharePollyLink["Admin share polly link\nto friends"]
+    --> FriendsVoteInPolly["<pre><b>/polly/:id</b></pre>Friends and admin\nvote in Polly"]
+    --> AdminClosesPolly["Admin closes polly"]
+    --> PollyFinished
 
      NickNameInput:::UserInput
      CreateOrJoinTeam:::Decision
@@ -64,17 +72,17 @@ Password"]
      TeamHome:::Aqua
      Polls:::Aqua
      PollShow:::Aqua
+     PollStatus:::Decision
      CastVoteInput:::UserInput
-     ChoosePollType:::Decision
      PollTitleInput:::UserInput
      AddPollyOptions:::UserInput
-     AddFurtherProposals:::UserInput
      NewUserRegistered@{ shape: dbl-circ, label: "New user<bR>registered" }
      LoggedIn@{ shape: dbl-circ, label: "Logged In" }
      StartVoting@{ shape: trap-b, label: "Admin starts voting phase" }
      EndVoting@{ shape: trap-t, label: "Admin ends voting phase" }
      PollFinished@{ shape: dbl-circ, label: "Poll FINSIHED" }
      BallotCasted@{ shape: dbl-circ, label: "Ballot counted<bR>successfully" }
+     PollyFinished@{ shape: dbl-circ, label: "Polly is finished.\nWinner is\nshown" }
     classDef UserInput fill:#FFF,color:#333
     classDef Decision fill:#3F3,color:#333
     classDef Peach stroke-width:1px, stroke-dasharray:none, stroke:#FBB35A, fill:#FFEFDB, color:#8F632D

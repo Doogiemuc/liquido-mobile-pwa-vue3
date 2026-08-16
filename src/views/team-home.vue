@@ -59,6 +59,25 @@
 		</section>
 
 
+		<!-- Switch team. Only shown at all when the user actually is in more than one team. -->
+		<section v-if="canSwitchTeam" id="switchTeamSection" class="text-center mt-5">
+			<button id="switchTeamButton" type="button" class="btn btn-outline-secondary"
+				:aria-expanded="showTeamList" @click="showTeamList = !showTeamList">
+				<i class="fas fa-right-left me-2" />{{ t("SwitchTeam") }}
+				<i class="fas fa-angle-down ms-2" :class="{ 'team-list-caret--open': showTeamList }" />
+			</button>
+
+			<ul v-if="showTeamList" id="switchTeamList" class="team-list list-unstyled mt-2">
+				<li v-for="userTeam in allUserTeams" :key="userTeam.id">
+					<button type="button" class="team-list-item" :class="{ 'team-list-item--current': userTeam.id === team.id }"
+						:data-teamid="userTeam.id" :disabled="userTeam.id === team.id" @click="selectTeam(userTeam.id)">
+						<span>{{ userTeam.teamName }}</span>
+						<i v-if="userTeam.id === team.id" class="fas fa-check ms-2" />
+					</button>
+				</li>
+			</ul>
+		</section>
+
 		<section class="text-center mt-5">
 			<button type="button" class="btn btn-outline-secondary" @click="logout">
 				Logout
@@ -101,23 +120,73 @@ const { t, d } = useI18n()
 
 const team = ref({})
 
-const currentUserName = api.getCachedUser()?.name
-const userIsAdmin = api.isAdmin()
-const userHasWebauthn = api.getCachedUser()?.hasWebauthn
+// These all describe "the team I am currently in", so they MUST be refs, not values read once at
+// setup: switching team replaces every one of them without the component ever unmounting. userIsAdmin
+// especially - a user can be admin of one team and a plain member of the next, and it gates the
+// invite circle and the whole admin section below.
+const currentUserName = ref(undefined)
+const userIsAdmin = ref(false)
+const userHasWebauthn = ref(false)
 const showInvite = ref(false)
 const qrCodeDataUrl = ref("")
 
+// All teams this user belongs to, and whether to offer switching at all.
+const allUserTeams = ref([])
+const showTeamList = ref(false)
+const canSwitchTeam = computed(() => allUserTeams.value.length > 1)   // progressive disclosure
+
 // Computed properties that might dynamically change their values
-const members = computed(() => team.value?.members || [])
-const pollsInVoting = computed(() => api.getCachedPolls().filter(p => p.status === "VOTING" && !p.userAlreadyVoted) || [])
+/**
+ * Team members, in a stable order: admins first, then by join date, then by id as a tie-breaker.
+ * The backend serves members from a HashSet, ie. in no particular order, and the template only
+ * shows the first six. Without sorting, which six appear changes between reloads - which made
+ * the Cypress team-home assertions fail about one run in four.
+ */
+const members = computed(() => {
+	return [...(team.value?.members || [])].sort((a, b) => {
+		if (a.role !== b.role) return a.role === "ADMIN" ? -1 : 1
+		if (a.joinedAt !== b.joinedAt) return a.joinedAt < b.joinedAt ? -1 : 1
+		return Number(a.user.id) - Number(b.user.id)
+	})
+})
+const pollsInVoting = ref([])
 const inviteLinkURL = computed(() => config.inviteLinkPrefix + team.value?.inviteCode)
 
 let passkeyLabel = ref("passkeylabel")
 
 onMounted(() => {
-	team.value = api.getCachedTeam() || {}
-	store.setHeaderTitle(team.value?.teamName || t("TeamHome"))
+	refreshFromCache()
 })
+
+/**
+ * (Re)read everything this page shows out of the api's local cache.
+ * Called on mount, and again after switching team - which is why pollsInVoting is a ref filled here
+ * rather than a computed: it reads api.getCachedPolls(), a plain function call with no reactive
+ * dependency, so as a computed it would be evaluated once and then never update again.
+ */
+function refreshFromCache() {
+	team.value = api.getCachedTeam() || {}
+	allUserTeams.value = api.getAllUserTeams()
+	currentUserName.value = api.getCachedUser()?.name
+	userIsAdmin.value = api.isAdmin()
+	userHasWebauthn.value = api.getCachedUser()?.hasWebauthn
+	pollsInVoting.value = api.getCachedPolls().filter(p => p.status === "VOTING" && !p.userAlreadyVoted)
+	store.setHeaderTitle(team.value?.teamName || t("TeamHome"))
+}
+
+/** Switch into another team of this user. Closes the list either way. */
+async function selectTeam(teamId) {
+	showTeamList.value = false
+	if (teamId === team.value?.id) return
+	showInvite.value = false     // the invite code belongs to the team we are leaving
+	qrCodeDataUrl.value = ""
+	try {
+		await api.switchTeam(teamId)
+		refreshFromCache()
+	} catch (err) {
+		console.error("Could not switch team", err)
+	}
+}
 
 function getImgUrl(imgFile) {
 	return config.avatarPath + "/" + imgFile
@@ -184,6 +253,7 @@ async function setupPasskey() {
 	if (!passkeyLabel.value) passkeyLabel.value = currentUserName.value + "-Passkey"
 	webauthnService.registerWebauthn(passkeyLabel.value).then(() => {
 		api.getCachedUser().hasWebauthn = true
+		userHasWebauthn.value = true
 		console.log("setupPasskey SUCCESSFULL")
 	}).catch(err => {
 		//this.$root?.$refs?.mobileDebugLogRef?.info("setupPasskey: ERROR")
@@ -259,6 +329,38 @@ section {
 	transition: color 0.2s;
 }
 .add-member-icon--open { color: var(--primary); }
+
+/*
+ * Team switcher. Styled by hand rather than with Bootstrap's .dropdown JS component: only
+ * bootstrap's CSS is imported globally (main.js), its JS is pulled in per component, so a
+ * data-bs-toggle="dropdown" here would silently do nothing.
+ */
+.team-list-caret--open {
+	transform: rotate(180deg);
+}
+.team-list {
+	display: inline-flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	margin: 0 auto;
+	min-width: 12rem;
+}
+.team-list-item {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	padding: 0.5rem 1rem;
+	border: 1px solid var(--state-new);
+	border-radius: 0.25rem;
+	background-color: white;
+	color: var(--text-color);
+}
+.team-list-item--current {
+	background-color: var(--state-new-bg);
+	font-weight: bold;
+	opacity: 1;      /* :disabled would otherwise grey out the team you are actually in */
+}
 
 .invite-panel {
 	border-top: 1px solid var(--liquido-info-border-color);
