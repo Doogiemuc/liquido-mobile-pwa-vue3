@@ -128,7 +128,7 @@ export default {
 		id: { type: String, required: true },
 
 		/** Vue3 reactive value that can be bound as v-model. NEW NAME "modelValue" IN VUE3!!! */
-		modelValue: { type: String, required: false, default: undefined },
+		modelValue: { type: null, required: false, default: undefined },
 
 		/** 
 		 * Type of the input: (default: text)
@@ -368,8 +368,8 @@ export default {
 		},
 
 		defaultValidFunc(val) {
-
-			if (this.required && (!val || val.trim() === ""))
+			// Keep in mind that val is not necessarily a string!
+			if (this.required && (!val))
 				return false
 
 			if (val && val.length < this.minLength)
@@ -407,67 +407,67 @@ export default {
 
 </script>
 
-<style>
+<style scoped>
 .liquido-input {
 	position: relative;
 	padding-top: 12px;
-}
 
-.liquido-input .form-control::placeholder {
-	color: var(--secondary, #959cab);
-	opacity: 0.5;
-}
+	.form-control::placeholder {
+		color: var(--secondary, #959cab);
+		opacity: 0.5;
+	}
 
-label {
-	position: absolute;
-	color: grey;
-	font-size: 12px;
-	font-weight: normal;
-	top: 3px;
-	left: 10px;
-	padding: 0 3px;
-	background: white;
-	border-radius: 5px;
+	label {
+		position: absolute;
+		color: grey;
+		font-size: 12px;
+		font-weight: normal;
+		top: 3px;
+		left: 10px;
+		padding: 0 3px;
+		background: white;
+		border-radius: 5px;
+
+		/*
+		&.disabled {
+			background-color: var(--light-bg);
+		}
+		*/
+	}
+
+	.iconRight {
+		position: absolute;
+		top: 18px;
+		right: 0;
+		user-select: none;
+	}
+
+	.password-toggle {
+		position: absolute;
+		top: 17px;
+		right: 2em;
+		color: lightgrey;
+		user-select: none;
+	}
+
+	.counter {
+		position: absolute;
+		top: 18px;
+		right: 10px;
+		color: grey;
+	}
+
+	.invalid-feedback-placeholder {
+		/* same as bootstraps invalid-feedback */
+		width: 100%;
+		margin-top: 0.25rem;
+		font-size: 0.875em;
+	}
 
 	/*
-	&.disabled {
-		background-color: var(--light-bg);
+	.liquido-input .form-control:disabled {
+		background-color: var(--disabled-bg);
 	}
 	*/
 }
-
-.iconRight {
-	position: absolute;
-	top: 18px;
-	right: 0;
-	user-select: none;
-}
-
-.password-toggle {
-	position: absolute;
-	top: 17px;
-	right: 2em;
-	color: lightgrey;
-	user-select: none;
-}
-
-.counter {
-	position: absolute;
-	top: 18px;
-	right: 10px;
-	color: grey;
-}
-
-.invalid-feedback-placeholder {
-	/* same as bootstraps invalid-feedback */
-	width: 100%;
-	margin-top: 0.25rem;
-	font-size: 0.875em;
-}
-
-/*
-.liquido-input .form-control:disabled {
-	background-color: var(--disabled-bg);
-}
-*/
 </style>

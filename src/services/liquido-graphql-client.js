@@ -758,9 +758,16 @@ let graphQlApi = {
 	 * API calls against backend that need to be authenticated with a JWT
 	 **********************************************************************/
 
-	async createPoll(pollTitle) {
-		let graphQL = `mutation createPoll($title: String!) { createPoll(title: $title) ${JQL.POLL} }`
-		return graphQlQuery(graphQL, { title: pollTitle })
+	/**
+	 * Create a new poll. The poll will be in "PROPOSAL" status and can be edited by the team members.
+	 * @param {String} pollTitle title of poll
+	 * @param {Date} startDate exact timestamp when poll starts and voters can cast votes. (is set to start of day by default in poll-create.vue)
+	 * @param {Date} endDate exact timestamp when poll voting phase will finish. (Is set to midnight after last day of voting phase by default)
+	 * @returns the newly created poll as returned by the backend
+	 */
+	async createPoll(pollTitle, startDate, endDate) {
+		let graphQL = `mutation createPoll($title: String!, $startDate: DateTime!, $endDate: DateTime!) { createPoll(title: $title, startDate: $startDate, endDate: $endDate) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { title: pollTitle, startDate, endDate })
 			.then(res => {
 				let poll = res.data.createPoll
 				this.pollsCache.put("polls/"+poll.id, poll)

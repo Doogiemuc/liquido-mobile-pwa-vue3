@@ -1,34 +1,67 @@
 <template>
 	<div>
 		<h1 id="poll-create" class="page-title">
-			{{ $t("newPoll") }}
+			{{ $t("createNewPoll") }}
 		</h1>
 
 		<div class="card">
 			<div class="card-body">
-				<span class="badge rounded-pill poll-status-pill elaboration-pill">{{ $t('New') }}</span>
+				<div class="flex-grow-1 d-flex flex-column justify-content-between">
 
-				<liquido-input
-					id="pollTitleInput"
-					v-model="pollTitle"
-					class="mt-2"
-					:label="$t('pollTitle')"
-					:valid-func="isPollTitleValid"
-					:invalid-feedback="pollTitleInvalidFeedback"
-					@blur="pollTitleValidated = true"
-				>
-				</liquido-input>
-				
+					<!-- similar to poll panel -->
+					<div class="poll-eyebrow">
+						<div class="poll-pill-group">
+							<span class="badge rounded-pill text-bg-primary">{{ $t('New') }}</span>
+						</div>
+						<div class="num-proposals"><i class="far fa-lightbulb"></i>&nbsp;0</div>
+					</div>
+
+					<liquido-input
+						id="pollTitleInput"
+						v-model="pollTitle"
+						class="mt-2"
+						:label="$t('pollTitle')"
+						:valid-func="isPollTitleValid"
+						:invalid-feedback="pollTitleInvalidFeedback"
+						:feedback-placeholder="true"
+						:required="true"
+						@blur="pollTitleValidated = true"
+					>
+					</liquido-input>
+
+					<div>
+						{{$t('pollRuntime') }}: <input type="number" min="1" v-model="pollRuntimeInDays" class="form-control form-control-sm poll-runtime-days d-inline-block" />{{ $t('days') }}
+					</div>
+
+					
+
+					<div class="poll-footer">
+						<div class="d-flex justify-content-between">
+							<!-- span>{{ $t('newlyCreatedPoll') }}</span -->
+						</div>
+						<div class="poll-progress-bar">
+							<!-- no progress yet-->
+						</div>
+					</div>
+
+				</div>			
 			</div>
 		</div>
 
 		<div class="alert alert-admin my-5">
 			<p>{{ $t('createPollInfo1') }}</p>
 			<ol class='fa-ul'>
-				<li><span class='fa-li'><i class='fas fa-comments'></i></span> {{ $t('createPollInfo2') }} {{ $t('createPollInfo3') }}</li>
-				<li><span class='fa-li'><i class='fas fa-person-booth'></i></span> <span v-html="$t('createPollInfo4')"></span></li>
-				<li><span class='fa-li'><i class='fas fa-check-circle'></i></span> {{ $t('createPollInfo5') }}</li>
+				<li class="mb-3"><span class='fa-li'><i class='fas fa-comments'></i></span> {{ $t('createPollInfo2') }} {{ $t('createPollInfo3') }}</li>
+				<li class="mb-3"><span class='fa-li'><i class='fas fa-person-booth'></i></span> <span v-html="$t('createPollInfo4')"></span></li>
+				<li class="mb-3"><span class='fa-li'><i class='fas fa-check-circle'></i></span> {{ $t('createPollInfo5') }}</li>
 			</ol>
+		</div>
+
+		<div class="page-subtitle mt-5">
+			<ul class='fa-ul'>
+				<li class="mb-3"><span class='fa-li'><i class='fas fa-shield-alt'></i></span> {{ $t('votesAreAlwaysAnonymous') }}</li>
+				<li class="mb-3"><span class='fa-li'><i class='fas fa-person-booth'></i></span>{{ $t('votesCannotBeChangedOnceCast') }} </li>
+			</ul>
 		</div>
 
 		<liquido-footer>
@@ -61,18 +94,26 @@ export default {
 		messages: {
 			en: {},
 			de: {
-				newPoll: "Neue Abstimmung anlegen",
+				createNewPoll: "Neue Abstimmung anlegen",
 
 				// This info is for the admin, and only shown to him.
 				createPollInfo1: "Du bist der Admin dieses Teams.",
 				createPollInfo2: "Eine neue Abstimmung wird erst einmal debatiert.",
 				createPollInfo3: "Du kannst festlegen ob Teammitglieder eigene Vorschläge hinzufügen dürfen oder nicht.",
-				createPollInfo4: "Du, als Admin, startest die Abstimmung. In LIQUIDO stimmt man nicht nur für einen Vorschlag, sondern jeder im Team ordnet alle Vorschläge anonym in seine persönliche Reihenfolge.",
+				createPollInfo4: "Du, als Admin, startest die Abstimmung. In <span class='liquido'></span> stimmt man nicht nur für einen Vorschlag, sondern jeder im Team ordnet alle Vorschläge anonym in seine persönliche Reihenfolge.",
 				createPollInfo5: "Wenn du die Abstimmung abschliest, wird der Vorschlag mit der größten Zustimmung durch einen cleveren Algorithmus berechnet.",
 
 				pollTitle: "Titel der Abstimmung",
+				pollRuntime: "Laufzeit der Abstimmung",
+				days: "Tage",
+				allowTeamMembersToAddProposals: "Teammitglieder können eigene Vorschläge hinzufügen",
+
+				newlyCreatedPoll: "Neue Abstimmung",
 				pollTitleInvalid: "Titel ist zu kurz. Bitte mind. {minLen} Zeichen.",
-				createPoll: "Abstimmung anlegen"
+				createPoll: "Abstimmung anlegen",
+
+				votesAreAlwaysAnonymous: "Abstimmungen sind immer anonym.",
+				votesCannotBeChangedOnceCast: "Nachdem eine Stimme einmal abgegeben wurde, kann sie nicht mehr geändert werden.",
 			},
 		},
 	},
@@ -81,6 +122,8 @@ export default {
 	data() {
 		return {
 			pollTitle: "",
+			pollRuntimeInDays: 7,
+			allowAddProposals: false,
 			creating: false,
 		}
 	},
@@ -113,10 +156,15 @@ export default {
 			this.$root.gotoPolls()
 		},
 
-		/** Create a new poll with the given title */
+		/** Create a new poll with the given title and runtime */
 		clickCreateNewPoll() {
 			this.creating = true
-			return api.createPoll(this.pollTitle)
+			let pollStartDate = new Date()
+			pollStartDate.setHours(0, 0, 0, 0) // start of today
+			let pollEndDate = new Date(pollStartDate)
+			pollEndDate.setDate(pollEndDate.getDate() + this.pollRuntimeInDays)
+			pollEndDate.setHours(23, 59, 59, 999) // end of last day
+			return api.createPoll(this.pollTitle, pollStartDate, pollEndDate)
 				.then(createdPoll => {
 					log.info("New poll created", createdPoll)
 					this.$router.push({name: "showPoll", params: { pollId: createdPoll.id } })
@@ -134,9 +182,52 @@ export default {
 </script>
 
 <style>
+
+.poll-eyebrow {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+	font-size: var(--font-size-small);
+}
+
+.poll-pill-group {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	min-width: 0;
+}
+
+.poll-runtime-days {
+	width: 3rem;
+	margin-left: 1rem;
+	margin-right: 0.5rem;
+}
+
 .poll-footer {
 	margin-top: var(--unit);
-	font-size: 0.7rem;
+	color: var(--secondary);
+	font-size: 0.8rem; /* needs to be smaller than our standard  var(---font-size-small);  0.9rem */
 	color: var(--secondary);
 }
+
+.poll-progress-bar {
+	width: 100%;
+	height: 4px;
+	margin-top: 0.25rem;
+	background-color: #eee;
+	z-index: 100;
+	border-radius: 999px;
+	
+	.poll-progress-bar-inner {
+		width: 80%;
+		height: 4px;
+		background-color: var(--state-voting);
+		z-index: 101;
+		border-radius: 999px;
+	}
+}
 </style>
+
+
