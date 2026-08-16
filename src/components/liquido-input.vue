@@ -418,7 +418,13 @@ export default {
 	opacity: 0.5;
 }
 
-label {
+/*
+ * This <style> block is NOT scoped, so a bare "label" selector styled every <label> in the whole
+ * app as a floating input label - including checkbox labels, which then jumped to the top-left
+ * corner of their nearest positioned ancestor. Scoped to .liquido-input, which is the class this
+ * component puts on its wrapper; proposal-add.vue's description field opts in the same way.
+ */
+.liquido-input label {
 	position: absolute;
 	color: grey;
 	font-size: 12px;

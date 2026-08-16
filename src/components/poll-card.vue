@@ -74,6 +74,10 @@
 						<span v-else class="like-button">
 							<i class="far fa-heart"></i>&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
 						</span>
+						<span v-if="canEditProposal(prop)" class="edit-button" :title="$t('editProposal')"
+							@click.stop="$emit('edit-proposal', prop.id)">
+							<i class="fas fa-pencil-alt"></i>
+						</span>
 						<span class="createdby-user">
 							{{ $t('createdBy') }}&nbsp;{{ prop.createdBy.name }}
 						</span>
@@ -99,7 +103,7 @@ dayjs.locale('de')
 
 export default {
 	name: "PollCard",
-	emits: ["click"],
+	emits: ["click", "edit-proposal"],
 	i18n: {
 		messages: {
 			de: {
@@ -110,7 +114,8 @@ export default {
 				endsIn: "endet",
 				awaitingStart: "wird bald gestartet",
 				voted: "abgestimmt",
-				createdBy: "von"
+				createdBy: "von",
+				editProposal: "Deinen Vorschlag bearbeiten"
 			},
 			en: {
 				// Poll related translations (singular|dual|plural style)
@@ -217,6 +222,14 @@ export default {
 		},
 		clickLike(pollId, prop) {
 			if (this.canLike(prop)) api.likeProposal(pollId, prop.id)
+		},
+		/**
+		 * You may edit your OWN proposal, and only as long as the poll has not started.
+		 * Same rule as the backend enforces in PollService.updateProposalInPoll - there is
+		 * deliberately no admin override: rewriting someone else's words is a trust problem.
+		 */
+		canEditProposal(prop) {
+			return this.poll.status === "ELABORATION" && this.isCreatedByCurrentUser(prop)
 		}
 	},
 }
@@ -313,56 +326,8 @@ export default {
 }
 
 /*********** Rounded pills for poll status *****************/
-/* Used in poll-card.vue and more places */
-
-.poll-status-pill {
-	font-family: system-ui, 'Segoe UI', sans-serif;
-	text-transform: uppercase;
-	padding: 5px 10px;
-	letter-spacing: .1em;
-	font-size: 0.7rem;
-	font-weight: normal;
-}
-
-.elaboration-pill {
-	color: var(--state-new);
-	background-color: var(--state-new-bg);
-}
-
-.in-voting-pill {
-	color: var(--state-voting);
-	background-color: var(--state-voting-bg);
-	& .fa-circle {
-		animation: in-voting-circle-pulse 2s linear infinite;
-	}
-}
-
-.finished-pill {
-	color: var(--state-finished);
-	background-color: var(--state-finished-bg);
-}
-
-.voted-chip {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	background-color: var(--state-voting-bg);
-	color: var(--state-voting);
-	vertical-align: middle;
-}
-
-@keyframes in-voting-circle-pulse {
-	0%, 100% {
-		color: var(--state-voting);
-		filter: opacity(0.2);
-		transform: scale(0.5);
-	}
-
-	50% {
-		filter: opacity(1.0);
-		transform: scale(0.8);
-	}
-}
+/* Moved to src/styles/liquido.css - poll-create.vue uses the same pills, and this <style> block
+   is scoped, so they never reached it. Do not re-add them here. */
 
 /* Toggle bar between the summary and the proposal list */
 .proposals-toggle-bar {
@@ -449,6 +414,22 @@ export default {
 
 .poll-card .proposal-subtitle .can-like {
 	cursor: pointer;
+}
+
+/* Pencil sits next to the like button; the author's name stays pushed to the right,
+   which space-between alone would no longer do with three children. */
+.poll-card .proposal-subtitle .edit-button {
+	padding: 1px 6px;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+.poll-card .proposal-subtitle .edit-button:hover {
+	color: var(--primary);
+}
+
+.poll-card .proposal-subtitle .createdby-user {
+	margin-left: auto;
 }
 
 .poll-card .proposal-subtitle .can-like:hover {

@@ -136,7 +136,7 @@ const JQL_LOGIN_USER = `{ id name email mobilephone picture website hasWebauthn 
 const JQL_USER = `{ id name email mobilephone picture website  } `
 const JQL_TEAM_MEMBER = `{ role joinedAt user ${JQL_USER} } `
 const JQL_PROPOSAL =  `{ id title description icon status createdAt numSupporters likedByCurrentUser createdBy ${JQL_USER} } `   // no "is" before likedByCurrentUser!
-const JQL_POLL = `{ id title status createdAt updatedAt votingStartAt votingEndAt userAlreadyVoted proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `  //TODO: duelMatrix { data }
+const JQL_POLL = `{ id title status createdAt updatedAt votingStartAt votingEndAt userAlreadyVoted numBallots membersCanAddProposals proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `  //TODO: duelMatrix { data }
 const JQL_TEAM = `{ id teamName inviteCode ` +
 		`members ${JQL_TEAM_MEMBER} ` +
 		`polls ${JQL_POLL} } `
@@ -460,13 +460,16 @@ let graphQlApi = {
 				*/
 	},
 
+	/**
+	 * Set a new password with the one-time token from the reset email.
+	 * POST with a JSON body, not GET with query params - a one-time token and a plaintext password
+	 * must not land in access logs or browser history. The backend only accepts POST; GET answers 405.
+	 */
 	resetPassword(email, resetPasswordToken, newPassword) {
-		return axios.get('/login/resetPassword', {
-			params: { 
-				email: email,
-				resetPasswordToken: resetPasswordToken,
-				newPassword: newPassword
-			}
+		return axios.post('/login/resetPassword', {
+			email: email,
+			resetPasswordToken: resetPasswordToken,
+			newPassword: newPassword
 		}).then(res => res.data)
 		/*
 		let graphQL = `query { resetPassword(email: "${email}", resetPasswordToken: "${resetPasswordToken}", newPassword: "${newPassword}") }`
@@ -800,9 +803,15 @@ let graphQlApi = {
 	 * API calls against backend that need to be authenticated with a JWT
 	 **********************************************************************/
 
-	async createPoll(pollTitle) {
-		let graphQL = `mutation createPoll($title: String!) { createPoll(title: $title) ${JQL.POLL} }`
-		return graphQlQuery(graphQL, { title: pollTitle })
+	/**
+	 * Admin creates a new poll.
+	 * @param {String} pollTitle title of the new poll
+	 * @param {Boolean} membersCanAddProposals when true, team members may add proposals to this poll.
+	 *        Default false: only the admin may. Chosen at creation and not changeable afterwards.
+	 */
+	async createPoll(pollTitle, membersCanAddProposals = false) {
+		let graphQL = `mutation createPoll($title: String!, $membersCanAddProposals: Boolean) { createPoll(title: $title, membersCanAddProposals: $membersCanAddProposals) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { title: pollTitle, membersCanAddProposals })
 			.then(res => {
 				let poll = res.data.createPoll
 				this.pollsCache.put("polls/"+poll.id, poll)
@@ -866,6 +875,28 @@ let graphQlApi = {
 				let poll = res.data.addProposal
 				this.pollsCache.put("polls/"+poll.id, poll)
 				console.debug("Added proposal to poll:", poll)
+				return poll
+			})
+	},
+
+	/**
+	 * Edit your OWN proposal. Only possible while the poll has not started yet.
+	 * The backend refuses anything else: somebody else's proposal, or a poll already in VOTING.
+	 *
+	 * @param {Number} pollId the poll containing the proposal
+	 * @param {Number} proposalId the proposal to edit. Must be your own.
+	 * @param {String} title new title. Must be unique within the poll.
+	 * @param {String} description new description
+	 * @param {String} icon name of a fontawesome icon (without any "fa-" prefix)
+	 * @returns {Object} the updated poll
+	 */
+	async updateProposal(pollId, proposalId, title, description, icon) {
+		let graphQL = `mutation updateProposal($pollId: BigInteger!, $proposalId: BigInteger!, $title: String!, $description: String!, $icon: String!) { updateProposal(pollId: $pollId, proposalId: $proposalId, title: $title, description: $description, icon: $icon) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId), proposalId: Number(proposalId), title, description, icon })
+			.then(res => {
+				let poll = res.data.updateProposal
+				this.pollsCache.put("polls/"+poll.id, poll)
+				console.debug("Updated proposal in poll:", poll)
 				return poll
 			})
 	},

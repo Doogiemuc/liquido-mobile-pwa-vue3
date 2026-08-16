@@ -136,7 +136,19 @@ const showTeamList = ref(false)
 const canSwitchTeam = computed(() => allUserTeams.value.length > 1)   // progressive disclosure
 
 // Computed properties that might dynamically change their values
-const members = computed(() => team.value?.members || [])
+/**
+ * Team members, in a stable order: admins first, then by join date, then by id as a tie-breaker.
+ * The backend serves members from a HashSet, ie. in no particular order, and the template only
+ * shows the first six. Without sorting, which six appear changes between reloads - which made
+ * the Cypress team-home assertions fail about one run in four.
+ */
+const members = computed(() => {
+	return [...(team.value?.members || [])].sort((a, b) => {
+		if (a.role !== b.role) return a.role === "ADMIN" ? -1 : 1
+		if (a.joinedAt !== b.joinedAt) return a.joinedAt < b.joinedAt ? -1 : 1
+		return Number(a.user.id) - Number(b.user.id)
+	})
+})
 const pollsInVoting = ref([])
 const inviteLinkURL = computed(() => config.inviteLinkPrefix + team.value?.inviteCode)
 

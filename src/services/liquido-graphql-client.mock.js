@@ -36,8 +36,13 @@ const createState = () => {
 			poll.numBallots    = Math.floor(Math.random() * 12)									// 0-11 fake ballots
 
 		}
+		// Seeded polls let members add proposals, EXCEPT the last one - so the mock shows both
+		// variants of the per-poll setting without needing to create a poll by hand.
+		poll.membersCanAddProposals = true
 		console.debug("MOCK: created new mockstate")
 	})
+	const lastSeededPoll = (seed.team.polls || [])[seed.team.polls.length - 1]
+	if (lastSeededPoll) lastSeededPoll.membersCanAddProposals = false
 
 	const nextPollId = Math.max(0, ...pollIds) + 1
 	const nextProposalId = Math.max(0, ...proposalIds) + 1
@@ -233,7 +238,7 @@ const detectOperation = query => {
 	// misrouted to them. That is why switchTeam sits at the very front.
 	const operations = [
 		"switchTeam",
-		"createNewTeam", "joinTeam", "savePolly", "editPolly", "startPolly", "castVoteInPolly", "finishPolly", "createPoll", "addProposal", "likeProposal", "startVotingPhase",
+		"createNewTeam", "joinTeam", "savePolly", "editPolly", "startPolly", "castVoteInPolly", "finishPolly", "createPoll", "updateProposal", "addProposal", "likeProposal", "startVotingPhase",
 		"finishVotingPhase", "castVote", "loginWithEmailPassword", "googleOneTapLogin", "loginWithAuthToken",
 		"requestPasswordReset", "resetPassword", "requestEmailLoginLink", "teamForInviteCode", "loginWithJwt",
 		"devLogin", "authToken", "voterToken", "verifyBallot", "myBallot", "polls", "poll", "team", "ping",
@@ -700,6 +705,8 @@ const mutationHandlers = {
 			votingStartAt: null,
 			votingEndAt: null,
 			userAlreadyVoted: false,
+			// Same default as the backend: closed unless the admin ticked the box.
+			membersCanAddProposals: get(variables, "membersCanAddProposals", false) === true,
 			proposals: [],
 			winner: null,
 		}
@@ -722,6 +729,36 @@ const mutationHandlers = {
 			likedByCurrentUser: false,
 			createdBy: deepClone(user),
 		})
+		poll.updatedAt = nowIso()
+		return deepClone(poll)
+	},
+
+	/**
+	 * Edit your own proposal. Mirrors the backend's rules closely enough to exercise the UI:
+	 * only while the poll is in ELABORATION, and only a proposal the mock user created.
+	 */
+	updateProposal: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
+		const proposalId = asInt(get(variables, "proposalId", argFromQuery(query, "proposalId", "-1")))
+		const poll = findPoll(pollId)
+		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
+		if (poll.status !== "ELABORATION")
+			rejectLiquido(LiquidoExceptionCodes.CANNOT_EDIT_PROPOSAL, `Poll ${pollId} has already started`)
+
+		const user = currentUserOrThrow()
+		const proposal = (poll.proposals || []).find(p => p.id === proposalId)
+		if (!proposal) rejectLiquido(LiquidoExceptionCodes.CANNOT_EDIT_PROPOSAL, `No proposal ${proposalId} in poll ${pollId}`)
+		if (String(proposal.createdBy?.id) !== String(user.id))
+			rejectLiquido(LiquidoExceptionCodes.CANNOT_EDIT_PROPOSAL, "You may only edit your own proposals")
+
+		const title = get(variables, "title", argFromQuery(query, "title", proposal.title))
+		// Unique within the poll - but a proposal never collides with itself.
+		if ((poll.proposals || []).some(p => p.id !== proposalId && p.title === title))
+			rejectLiquido(LiquidoExceptionCodes.CANNOT_EDIT_PROPOSAL, `Poll already has a proposal titled '${title}'`)
+
+		proposal.title = title
+		proposal.description = get(variables, "description", argFromQuery(query, "description", proposal.description))
+		proposal.icon = get(variables, "icon", argFromQuery(query, "icon", proposal.icon))
 		poll.updatedAt = nowIso()
 		return deepClone(poll)
 	},

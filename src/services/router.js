@@ -83,6 +83,14 @@ const routes = [
 		props: true,
 	},
 	{
+		// Edit your OWN proposal, while the poll has not started yet.
+		// Same component as addProposal: it switches to edit mode when a proposalId is present.
+		path: "/polls/:pollId/editProposal/:proposalId",
+		name: "editProposal",
+		component: () => import("@/views/proposal-add.vue"),
+		props: true,
+	},
+	{
 		path: "/polls/:pollId/castVote",
 		name: "castVote",
 		component: () => import("@/views/cast-vote.vue"),
@@ -140,10 +148,13 @@ if (import.meta.env.MODE === "development") {
 		path: "/devLogin",
 		name: "devLogin",
 		component: () => import("@/views/dev-login.vue"),
-		props: route => ({ 
+		props: route => ({
 			email: route.query.email,
 			teamName: route.query.teamName,
-			emailToken: route.query.emailToken
+			// dev-login.vue declares this prop as `token`, and cy.devLogin() sends ?token=...
+			// Mapping it to `emailToken` here meant the prop was never set and devLogin always
+			// failed with "Need email and devLoginToken!".
+			token: route.query.token
 		}),
 		meta: {
 			public: true

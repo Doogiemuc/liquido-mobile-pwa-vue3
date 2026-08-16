@@ -18,7 +18,21 @@
 					@blur="pollTitleValidated = true"
 				>
 				</liquido-input>
-				
+
+				<!-- Who may put options on the ballot. Off by default: the admin opts in deliberately. -->
+				<div class="form-check mt-4">
+					<input
+						id="membersCanAddProposalsInput"
+						v-model="membersCanAddProposals"
+						class="form-check-input"
+						type="checkbox"
+					/>
+					<label class="form-check-label" for="membersCanAddProposalsInput">
+						{{ $t('membersCanAddProposals') }}
+					</label>
+					<div class="form-text">{{ $t('membersCanAddProposalsHint') }}</div>
+				</div>
+
 			</div>
 		</div>
 
@@ -72,7 +86,11 @@ export default {
 
 				pollTitle: "Titel der Abstimmung",
 				pollTitleInvalid: "Titel ist zu kurz. Bitte mind. {minLen} Zeichen.",
-				createPoll: "Abstimmung anlegen"
+				createPoll: "Abstimmung anlegen",
+
+				// Per-poll setting, chosen here and not changeable later.
+				membersCanAddProposals: "Teammitglieder dürfen Vorschläge hinzufügen",
+				membersCanAddProposalsHint: "Wenn du das nicht aktivierst, legst nur du als Admin fest, worüber abgestimmt wird. Diese Einstellung kann später nicht mehr geändert werden."
 			},
 		},
 	},
@@ -81,6 +99,8 @@ export default {
 	data() {
 		return {
 			pollTitle: "",
+			// Off by default, matching the backend: the admin opts in deliberately.
+			membersCanAddProposals: false,
 			creating: false,
 		}
 	},
@@ -116,7 +136,7 @@ export default {
 		/** Create a new poll with the given title */
 		clickCreateNewPoll() {
 			this.creating = true
-			return api.createPoll(this.pollTitle)
+			return api.createPoll(this.pollTitle, this.membersCanAddProposals)
 				.then(createdPoll => {
 					log.info("New poll created", createdPoll)
 					this.$router.push({name: "showPoll", params: { pollId: createdPoll.id } })

@@ -1,13 +1,13 @@
 <template>
 	<div>
 		<h2 id="addProposalTitle" class="page-title">
-			{{ $t("addProposal") }}
+			{{ pageTitle }}
 		</h2>
 
 		<div class="card shadow-sm mb-5">
 			<div class="card-body">
 				<div class="card-title">
-					{{ $t("yourProposal") }}
+					{{ editMode ? $t("yourProposalEdit") : $t("yourProposal") }}
 				</div>
 				<liquido-input
 					id="propTitle"
@@ -90,7 +90,7 @@
 		</div>
 
 		<div v-if="poll && poll.proposals && poll.proposals.length > 0">
-			<p class="">{{ $t('previousProposalsInPoll') }}</p>
+			<p class="">{{ editMode ? $t('proposalsInPoll') : $t('previousProposalsInPoll') }}</p>
 			<poll-card
 				:poll="poll"
 				:showArrowRight="false"
@@ -126,7 +126,9 @@ export default {
 			en: {},
 			de: {
 				addProposal: "Vorschlag hinzufügen",
+				editProposal: "Vorschlag bearbeiten",
 				yourProposal: "Dein neuer Vorschlag",
+				yourProposalEdit: "Dein Vorschlag",
 				saveProposal: "Vorschlag speichern",
 				title: "Titel",
 				titleInvalid: "Titel zu kurz: Bitte mindestens {minChars} Zeichen!",
@@ -138,8 +140,12 @@ export default {
 				noIconsMatchSearch: "Kein passendes Icon gefunden.",
 				noProposalYet: "Dein Vorschlag ist der erste in dieser Abstimmung.",
 				previousProposalsInPoll: "Bisherige Vorschläge in dieser Abstimmung:",
+				proposalsInPoll: "Vorschläge in dieser Abstimmung:",
 				createdSuccessfully: "Ok, dein Vorschlag wurde zur Abstimmung mit aufgenommen.",
 				proposalAddError: "Es gab einen Fehler beim Hinzufügen deines Vorschlages.",
+				updatedSuccessfully: "Ok, dein Vorschlag wurde geändert.",
+				proposalUpdateError: "Es gab einen Fehler beim Ändern deines Vorschlages. Vielleicht wurde die Abstimmung inzwischen gestartet?",
+				cannotFindProposal: "Dieser Vorschlag konnte nicht gefunden werden.",
 				gotoPoll: "Zur Abstimmung",
 			},
 		},
@@ -147,6 +153,9 @@ export default {
 	components: { pollCard, liquidoInput, liquidoFooter },
 	props: {
 		pollId: { type: String, required: true },
+		// Present only on the "editProposal" route. Then this page edits that existing proposal
+		// instead of creating a new one. See router.js
+		proposalId: { type: String, required: false, default: undefined },
 	},
 	data() {
 		return {
@@ -162,6 +171,13 @@ export default {
 		}
 	},
 	computed: {
+		/** This page has two modes: add a new proposal, or edit one of your own. */
+		editMode() {
+			return !!this.proposalId
+		},
+		pageTitle() {
+			return this.editMode ? this.$t("editProposal") : this.$t("addProposal")
+		},
 		descriptionCharCounter() {
 			if (this.proposal.description) {
 				return this.proposal.description.length + "/" + this.descriptionMinLength
@@ -187,8 +203,11 @@ export default {
 		},
 	},
 	created() {
-		api.getPollById(this.pollId, true).then(poll => this.poll = poll)
-		this.$store.setHeaderTitle(this.$t("addProposal"))
+		api.getPollById(this.pollId, true).then(poll => {
+			this.poll = poll
+			if (this.editMode) this.prefillFromExistingProposal()
+		})
+		this.$store.setHeaderTitle(this.pageTitle)
 		this.$store.setHeaderBackTarget({name: "showPoll", params: {pollId: this.pollId} })
 	},
 	mounted() {
@@ -230,16 +249,38 @@ export default {
 			this.chosenIcon = iconName
 		},
 
-		/** Save newly added proposal in backend. */
+		/**
+		 * In edit mode: copy the existing proposal into the form.
+		 * The proposal is looked up inside *this* poll - the backend does the same, and it also
+		 * checks that you are its author. Here we only need enough to render the form.
+		 */
+		prefillFromExistingProposal() {
+			let prop = (this.poll.proposals || []).find(p => String(p.id) === String(this.proposalId))
+			if (!prop) {
+				console.error("Cannot find proposal(id=" + this.proposalId + ") in poll(id=" + this.pollId + ")")
+				this.$root.showError(this.$t('cannotFindProposal'), "")
+				return
+			}
+			this.proposal = { title: prop.title, description: prop.description }
+			this.chosenIcon = prop.icon || this.chosenIcon
+			// The loaded description is already valid, so mark it valid right away.
+			// Otherwise the save button stays disabled until the user touches the textarea.
+			this.descriptionState = true
+		},
+
+		/** Save the proposal: create a new one, or update your own existing one. */
 		saveProposal() {
-			return api.addProposal(this.poll.id, this.proposal.title, this.proposal.description, this.chosenIcon)
+			let save = this.editMode
+				? api.updateProposal(this.poll.id, this.proposalId, this.proposal.title, this.proposal.description, this.chosenIcon)
+				: api.addProposal(this.poll.id, this.proposal.title, this.proposal.description, this.chosenIcon)
+			return save
 				.then(() => {// Set up one-time listener before showing the modal
 					EventBus.once(EventBus.Event.ROOT_POPUP_CLICK_PRIMARY, this.gotoPoll)
-					this.$root.showSuccess(this.$t('createdSuccessfully'), "", this.$t('gotoPoll'))
+					this.$root.showSuccess(this.$t(this.editMode ? 'updatedSuccessfully' : 'createdSuccessfully'), "", this.$t('gotoPoll'))
 				})
 				.catch(err => {
-					console.error("Cannot add proposal", err)
-					this.$root.showError(this.$t('proposalAddError'), "")
+					console.error(this.editMode ? "Cannot update proposal" : "Cannot add proposal", err)
+					this.$root.showError(this.$t(this.editMode ? 'proposalUpdateError' : 'proposalAddError'), "")
 				})
 		},
 
