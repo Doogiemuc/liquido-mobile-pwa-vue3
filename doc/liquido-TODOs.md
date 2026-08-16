@@ -39,26 +39,32 @@ Do I need a tool for managing my own backlog? => No just, this .md file
 
 #### Settings
 
+ * Frontend shall load settings from the backend, e.g. poll- and proposalTitleMinLength.
+
 Settings per Team
  * Can team members invite other team members?
  * Can team members create polls themselves?
- * Can team members add their own proposals to a poll?
- * How to tally a voting? Absolut majoritis or winning margins?
+ * How to tally a voting? Absolut majoritis or winning margins? 
 
-Do I need any setting per poll? Wouldn't know of any yet.
+Settings per poll
+ * Can team members add their own proposals to a poll?   [done]
 
-# Three level of polls
 
- * Three levels of polls:
-	 1. Polly (e.g. for kids): a super intelligent wobbling funny Polly
-	 2. Polls (with proposals/options) and Elections (with candidates) and descriptions for each option
-	 3. Full blown liqudid proxy voting with delegations.
+# LIQUIDO "small, medium and large"
+
+There are three variants of liquido. A very fun small one, our standard web based mobile app and a (future planed) premium version
+
+	 1. **Polly** (e.g. for kids): a super intelligent wobbling funny Polly
+	 2. **Polls** with proposals and elections with candidates and a descriptions for each option
+	 3. **Full blown** liqudid democracy **with delegations** to a proxy and more:
 
 ## Full blown LIQUIDO with ideas that need to get support
 
+LIQUIDO premium  is a decentralized implementation of a new liquid, proxy voting, democratic voting system. It does not need any central authorizty. Comparable to the implementation of Bitcoin.
+
  * Ideas, that become proposals when they have enough supporters
  * Alternative ideas that can be suggested, and then become alternative proposals if they gather enough supporters.
- * Polls that can be started when there are at least two proposals.
+ * Polls that can be started when there are at least two proposals. Open question: Who decides when to start a poll without a central authority? The majority (or min 2/3rd? -> config) of the  proposal creators say so? => that could mean we need a third to break a tie between only two.... mmhhh ... Maybe: a poll start at least n days after there are two proposals if the creators cannot decide.
 
 ## Code cleanup, small stuff
  

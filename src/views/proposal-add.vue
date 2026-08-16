@@ -116,6 +116,7 @@
 import pollCard from "@/components/poll-card.vue"
 import liquidoInput from "@/components/liquido-input.vue"
 import liquidoFooter from "../components/liquido-footer.vue"
+import config from "config"
 import api from "@/services/liquido-graphql-client.js"
 import EventBus from "@/services/event-bus.js"
 import faSolidIconsFree from "@/styles/fontawesome-solid-icons-free.json"  // List of free fontawesome icon names
@@ -161,9 +162,9 @@ export default {
 		return {
 			poll: {},
 			proposal: {},
-			titleMinLength: 10,
+			titleMinLength: config.proposalTitleMinLength || 3,
 			descriptionValidated: false,
-			descriptionMinLength: 20,
+			descriptionMinLength: config.proposalDescriptionMinLength || 10,
 			descriptionState: null,
 			iconSearch: "",
 			chosenIcon: "atom",

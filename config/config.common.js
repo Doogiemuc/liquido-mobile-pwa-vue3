@@ -20,8 +20,10 @@ export default {
 	inviteCodeLength: 8,			       				// used for validating inviteCodes in welcome-chat.vue
 	minPasswordLength: 10, 									// used in forgot-password.vue
 	allowMembersToInvite: true,
-	pollTitleMinLength: 10,
+	pollTitleMinLength: 5,									// Can be short. But should possibly be longer than 3 chars to avoid spam. Used in poll-create.vue
 	pollDefaultRuntimeDays: 7,
+	proposalTitleMinLength: 3,							// Used in proposal-add.vue
+	proposalDescriptionMinLength: 10,
 	avatarPath: "./img/avatars",
 	inviteLinkPrefix: "http://app.liquido.vote/welcome?inviteCode=",
 	//TODO: adminMustConfirmNewMembers: ...
