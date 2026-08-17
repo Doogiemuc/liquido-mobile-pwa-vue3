@@ -8,7 +8,7 @@
 		<!-- What's your name? -->
 		<div :class="{ 'hide-left': !FLOW.WhatsYourName }" class="card chat-bubble chat-left">
 			<div class="card-body">
-				<p v-if="FLOW.InviteCodeValid" v-html="$t('hasInviteCodeForTeam', { teamName: team.teamName })"></p>
+				<p v-if="FLOW.InviteCodeValid" v-html="$t('hasInviteCodeForTeam', { adminName: adminName, teamName: team.teamName })"></p>
 				<p>{{ $t('whatsYourName') }}</p>
 			</div>
 		</div>
@@ -129,7 +129,7 @@
 					<div class="d-flex justify-content-between align-items-center">
 						<a href="#" tabindex="4" 
 							class="cancel-link"
-							:class="{ 'invisible' : FLOW.JoinTeamSuccessfull }"
+							:class="{ 'invisible' : FLOW.JoinTeamSuccessfull || FLOW.InviteCodeValid }"
 							@click="cancelCreateOrJoinTeam()">
 							{{ $t("Cancel") }}
 						</a>
@@ -396,7 +396,7 @@ export default {
 					"<p>Sichere, anonyme, faire und <em>liquide</em> Abstimmungen für alle.</p>"+
 					"<p>Hier stimmst du nicht nur für <em>einen</em> Vorschlag, sondern jeder in eurem Team sortiert Vorschläge nach der eigenen Präferenz. " + 
 					"Ein cleverer Algorithmus berechnet daraus dann den Vorschlag mit der größten Zustimmung.</p>",
-				hasInviteCodeForTeam: "Hey, du wurdest in das Team <b>{teamName}</b> eingeladen.",
+				hasInviteCodeForTeam: "Hey, du wurdest von <b>{adminName}</b> in das Team <b>{teamName}</b> eingeladen.",
 				whatsYourName: "Darf ich fragen wie du heißt?",
 				yourNickname: "Dein Spitzname",
 				userNameInvalid: "Bitte mindestens " + config.usernameMinLength + " Zeichen!",
@@ -533,6 +533,10 @@ export default {
 		}
 	},
 	computed: {
+		adminName() {
+			const firstAdmin = this.team?.members?.find(member => member.role === 'ADMIN')
+			return firstAdmin?.user?.name ?? "Admin"
+		},
 		showLoginButton() {
 			return !this.FLOW.NiceToMeetYou
 		},
@@ -562,7 +566,7 @@ export default {
 			api.getTeamForInviteCode(this.inviteCodeInputField)
 				.then(team => {
 					this.FLOW.InviteCodeValid = true
-					log.debug("Invite code is valid for team", team)
+					log.debug("Valid invite code for team", team.teamName)
 					this.team = team
 				}).catch(err => {
 					console.warn("Cannot find team for invite code", this.inviteCodeQueryParam, err)
@@ -949,7 +953,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
 .date-pill {
 	font-size: 0.7rem;

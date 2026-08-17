@@ -91,6 +91,7 @@ const globalTranslations = {
 		inviteNewMembers: "Teammitglieder einladen",
 		SwitchTeam: "Team wechseln",   // only shown to users who are in more than one team
 		TeamHome: "Team",
+		JoinTeam: "Team beitreten",   // page title of join-team-v2.vue, also used as its header title
 
 		// Global error messages 
 		unexpectedError: "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.",

@@ -4,10 +4,13 @@ import api from "@/services/liquido-graphql-client.js"
 import config from "config"
 import log from 'loglevel'
 import welcomeChat from "@/views/welcome-chat.vue"
+import joinTeamV2 from '../views/join-team-v2.vue'
 //import { route } from 'fontawesome'
 if (import.meta.env.MODE === "development") log.enableAll()
 
 const routes = [
+	
+	// ========= public routes ============
 	{
 		path: "/",
 		name: "index",
@@ -38,6 +41,20 @@ const routes = [
 			public: true
 		}
 	},
+	{
+		path: "/join-v2",
+		name: "joinTeamV2",
+		component: joinTeamV2,
+		// `props: true` would only pass route.params, and this path has none.
+		// The inviteCode arrives as a query parameter: /join-v2?inviteCode=ABC123
+		props: route => ({
+			inviteCodeQueryParam: route.query.inviteCode
+		}),
+		meta: {
+			public: true
+		}
+	},
+
 
 	// ========= authenticated pages ============
 

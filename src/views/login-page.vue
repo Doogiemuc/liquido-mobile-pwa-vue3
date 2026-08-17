@@ -9,7 +9,7 @@
 				<div class="text-center mb-3">
 					<i v-if="step === 2 && webAuthnAvailable" class="fa-solid fa-fingerprint fa-3x"
 						style="color: var(--primary)"></i>
-					<i v-else class="fas fa-envelope fa-3x" style="color: var(--primary)"></i>
+					<i v-else class="fas fa-user-lock fa-3x" style="color: var(--primary)"></i>
 				</div>
 
 				<div class="text-center mb-3">
