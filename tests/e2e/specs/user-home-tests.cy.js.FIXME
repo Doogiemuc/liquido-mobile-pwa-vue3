@@ -1,6 +1,8 @@
 
 
 //FIXME: TESTDATA: Which user should I use to rename?   Need to create one?
+// NOTE: there is deliberately no mobilephone field on this page any more - a mobilephone is
+// optional in LIQUIDO and is not collected anywhere in the UI.
 context('User Home - Edit User Data', () => {
 	beforeEach(() => {
 		localStorage.setItem("LIQUIDO_JWT", teamUserJwtMock.jwt)
@@ -16,12 +18,10 @@ context('User Home - Edit User Data', () => {
 		const newName = 'Test User'
 		const newEmail = 'test@example.com'
 		const newWebsite = 'https://example.com'
-		const newMobile = '+49123456789'
 
 		cy.get('#userNameInput').clear().type(newName)
 		cy.get('#userEmailInput').clear().type(newEmail)
 		cy.get('#userWebsiteInput').clear().type(newWebsite)
-		cy.get('#userMobilephoneInput').clear().type(newMobile)
 
 		cy.get('#saveUserDataButton').click()
 
@@ -31,6 +31,5 @@ context('User Home - Edit User Data', () => {
 		cy.get('#userNameInput').should('have.value', newName)
 		cy.get('#userEmailInput').should('have.value', newEmail)
 		cy.get('#userWebsiteInput').should('have.value', newWebsite)
-		cy.get('#userMobilephoneInput').should('have.value', newMobile)
 	})
 })

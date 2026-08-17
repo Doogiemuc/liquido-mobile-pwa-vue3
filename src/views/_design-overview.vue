@@ -64,7 +64,6 @@ const pages = [
 	{ name: 'Create a new poll', route: '/polls/create' },
 	{ name: 'Add a proposal', route: `/polls/${firstPollId}/add` },
 	{ name: 'Cast a vote', route: `/polls/${pollInVotingId}/castVote` },
-	{ name: 'Login via SMS', route: '/login-via-sms' },
 	{ name: 'Forgot password', route: '/forgotPassword' },
 	{ name: '404 - not found', route: '/404' },
 	{ name: 'Polly', route: '/polly/create' },

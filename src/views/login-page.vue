@@ -89,6 +89,10 @@
 						</div>
 					</div>
 
+					<!-- NOTE: the SMS button below needs a 'loginSms' route, which no longer exists - a
+					     mobilephone is optional in LIQUIDO and is not collected anywhere in the UI. Restore
+					     the route in router.js (and the backend's requestSmsToken/loginWithSmsToken, which
+					     are commented out) before uncommenting this. -->
 					<!-- div class="row">
 						<div class="col">
 							<button type="button" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"

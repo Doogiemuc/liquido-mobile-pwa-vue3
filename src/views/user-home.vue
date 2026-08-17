@@ -97,19 +97,6 @@
 					:feedback-placeholder="true"
 				/>
 
-				<liquido-input
-					id="userMobilephoneInput"
-					ref="userMobilephoneInput"
-					v-model="userForm.mobilephone"
-					v-model:state="userMobilephoneInputState"
-					type="mobilephone"
-					:label="$t('Mobilephone')"
-					:disabled="!isEditingUserData"
-					:valid-func="isOptionalMobilephoneValid"
-					:invalid-feedback="$t('MobilephoneInvalid')"
-					:feedback-placeholder="true"
-				/>
-
 				<div class="d-flex justify-content-end gap-2 mt-3">
 					<button
 						v-if="!isEditingUserData"
@@ -162,7 +149,6 @@ import localUserPhotoDb from "@/services/local-user-photo-db.js"
 
 const INPUT_INVALID = 3
 const urlRegEx = /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)/
-const mobilephoneRegEx = /\+?[0-9/\- ]{6,50}$/
 
 export default {
 	i18n: {
@@ -175,7 +161,6 @@ export default {
 				Username: "Username",
 				EMail: "E-mail",
 				Website: "Website",
-				Mobilephone: "Mobilephone",
 				Edit: "Edit",
 				Save: "Save",
 				YourTeam: "Your team",
@@ -185,7 +170,6 @@ export default {
 				EmailRequired: "Please enter an e-mail address.",
 				EmailInvalid: "Please enter a valid e-mail address.",
 				WebsiteInvalid: "Please enter a valid website URL.",
-				MobilephoneInvalid: "Please enter a valid mobilephone number.",
 				UserDataSaved: "Your user data was updated locally on this device.",
 				PhotoSavedLocally: "Your profile picture was saved locally on this device.",
 				PhotoSaveError: "Your profile picture could not be saved locally.",
@@ -200,7 +184,6 @@ export default {
 				Username: "Benutzername",
 				EMail: "E-Mail",
 				Website: "Website",
-				Mobilephone: "Mobiltelefon",
 				Edit: "Bearbeiten",
 				Save: "Speichern",
 				YourTeam: "Dein Team",
@@ -210,7 +193,6 @@ export default {
 				EmailRequired: "Bitte gib eine E-Mail-Adresse ein.",
 				EmailInvalid: "Bitte gib eine gültige E-Mail-Adresse ein.",
 				WebsiteInvalid: "Bitte gib eine gültige Website-URL ein.",
-				MobilephoneInvalid: "Bitte gib eine gültige Mobiltelefonnummer ein.",
 				UserDataSaved: "Ok, deine Daten wurden aktualisiert.",
 				PhotoSavedLocally: "Ok, dein Profilbild wurde gespeichert.",
 				PhotoSaveError: "Ups, sorry. Dein Profilbild konnte gerade nicht gespeichert werden.",
@@ -229,12 +211,10 @@ export default {
 			userNameInputState: undefined,
 			userEmailInputState: undefined,
 			userWebsiteInputState: undefined,
-			userMobilephoneInputState: undefined,
 			userForm: {
 				name: "",
 				email: "",
 				website: "",
-				mobilephone: "",
 			},
 		}
 	},
@@ -247,8 +227,7 @@ export default {
 				!this.userForm.email?.trim() ||
 				this.userNameInputState === INPUT_INVALID ||
 				this.userEmailInputState === INPUT_INVALID ||
-				this.userWebsiteInputState === INPUT_INVALID ||
-				this.userMobilephoneInputState === INPUT_INVALID
+				this.userWebsiteInputState === INPUT_INVALID
 		},
 	},
 	watch: {
@@ -282,12 +261,10 @@ export default {
 				name: user.name ?? "",
 				email: user.email ?? "",
 				website: user.website ?? "",
-				mobilephone: user.mobilephone ?? "",
 			}
 			this.userNameInputState = undefined
 			this.userEmailInputState = undefined
 			this.userWebsiteInputState = undefined
-			this.userMobilephoneInputState = undefined
 		},
 
 		startEditingUserData() {
@@ -305,21 +282,14 @@ export default {
 			return urlRegEx.test(value)
 		},
 
-		isOptionalMobilephoneValid(value) {
-			if (!value || value.trim() === "") return true
-			return mobilephoneRegEx.test(value)
-		},
-
 		validateUserDataForm() {
 			this.$refs.userNameInput?.validateField(true)
 			this.$refs.userEmailInput?.validateField(true)
 			this.$refs.userWebsiteInput?.validateField(true)
-			this.$refs.userMobilephoneInput?.validateField(true)
 
 			return this.userNameInputState !== INPUT_INVALID &&
 				this.userEmailInputState !== INPUT_INVALID &&
-				this.userWebsiteInputState !== INPUT_INVALID &&
-				this.userMobilephoneInputState !== INPUT_INVALID
+				this.userWebsiteInputState !== INPUT_INVALID
 		},
 
 		saveUserData() {
@@ -330,7 +300,6 @@ export default {
 				cachedUser.name = this.userForm.name
 				cachedUser.email = this.userForm.email
 				cachedUser.website = this.userForm.website
-				cachedUser.mobilephone = this.userForm.mobilephone
 			}
 
 			this.isEditingUserData = false

@@ -57,8 +57,11 @@ context('Login Test', () => {
 		cy.get("#notFoundCard")
 	})
 
-	// The SMS use case can completely and transparently be tested. 
+	// The SMS use case can completely and transparently be tested.
 	// Mocking is purely done in the backend.
+	// Still skipped, and now doubly so: a mobilephone is optional in LIQUIDO and is not collected in
+	// the UI, so the /login-via-sms route was removed and the backend's requestSmsToken /
+	// loginWithSmsToken are commented out. Restore all three before un-skipping this.
 	it.skip('(Simulate) Login via SMS', function() {
 		//GIVEN on login page
 		cy.visit("/login")

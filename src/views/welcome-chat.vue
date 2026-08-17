@@ -369,8 +369,6 @@ import webauthnService from "@/services/webauthn-service"
 
 const eMailRegEx = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,64}$/
 
-//Kinda relaxed check for mobilephone number. But see https://github.com/google/libphonenumber/blob/master/FALSEHOODS.md    :-)
-const mobilephoneRegEx = /(^\+[1-9]{2}[0-9 ]{1,20}$)|(^0[0-9]{3,5} *[-/]? *[0-9 ]{1,50}$)/
 
 export default {
 	i18n: {
@@ -419,9 +417,6 @@ export default {
 				inviteCode: "Einladungscode",
 				inviteCodePlaceholder: "AB12CD34",
 				inviteCodeInvalid: "Einladungscode muss genau 6 Zeichen lang sein.",
-				yourMobilephone: "Deine Handynummer",
-				mobilephonePlaceholder: "+49 555 111111",
-				mobilephoneInvalid: "Keine gültige Handynummer",
 				YourEMail: "Deine E-Mail",
 				emailPlaceholder: "info{'@'}domain.de",
 				emailInvalid: "E-Mail Adresse ungültig",
@@ -474,8 +469,7 @@ export default {
 			// user data from input fields
 			user: {
 				name: undefined,
-				email: undefined,
-				mobilephone: undefined
+				email: undefined
 			},
 			plainPassword: undefined,
 
@@ -548,8 +542,7 @@ export default {
 		createNewTeamOkButtonDisabled() {
 			return this.FLOW.CreateTeamClicked || 
 					!this.isTeamNameValid(this.team.teamName) || 
-					//!this.isMobilephoneValid(this.user.mobilephone) || 
-					!this.isAdminEmailValid(this.user.email)  || 
+						!this.isAdminEmailValid(this.user.email)  || 
 					!this.isPasswordValid(this.plainPassword)	
 		},
 		inviteLinkURL() {
@@ -619,10 +612,6 @@ export default {
 		/* invite must be ast least 6 chars */
 		isInviteCodeSyntaxValid(val) {
 			return val !== undefined && val !== null && val.trim().length === config.inviteCodeLength
-		},
-
-		isMobilephoneValid(val) {
-			return val !== undefined && val !== null && mobilephoneRegEx.test(val)
 		},
 
 		/* user's email must match regex */
@@ -712,9 +701,8 @@ export default {
 			this.FLOW.CreateTeamSuccessfull = false
 			let admin = {
 				name: this.user.name,
-				mobilephone: this.user.mobilephone,
 				email: this.user.email,
-				picture: "Avatar1.png",      //TODO: let user change his data later (Avatar, website but also change mobilephone or email)
+				picture: "Avatar1.png",      //TODO: let user change his data later (Avatar, website but also change email)
 				//website: ...
 			}
 			api.createNewTeam(this.team.teamName, admin, this.plainPassword)
@@ -773,7 +761,6 @@ export default {
 			log.info(this.user.name + " <" + this.user.email + "> joins team with invite code " + this.inviteCodeInputField)
 			let newMember = {
 				name: this.user.name,
-				mobilephone: this.user.mobilephone,
 				email: this.user.email,
 				picture: "Avatar1.png",      //TODO: let user change his Avatar later
 				//website: ...
@@ -910,8 +897,7 @@ export default {
 		_debugDesignMode() {
 			this.user = {
 				name: "Debug User",
-				email: "debugtestr@liquido.vote",
-				mobilephone: "123 " + Math.round(Math.random()*1000000)
+				email: "debugtestr@liquido.vote"
 			},
 			this.team = {
 				teamName: "DummyDesign Team",

@@ -319,9 +319,9 @@ async function submitJoinTeamForm() {
 		name: nickname.value.trim(),
 		email: email.value.trim(),
 		picture: "Avatar1.png",   //TODO: let the user pick an avatar later
-		// Deliberately no mobilephone: this flow does not ask for one. Do NOT send an empty string
-		// instead - the backend looks up users by mobilephone, and "" matches other users who also
-		// have none, while null matches nobody.
+		// No mobilephone: it is optional in LIQUIDO and no longer collected anywhere in the UI.
+		// Omit the key rather than sending "" - the backend now normalises a blank number to null on
+		// write, but omitting it is what this page means, and it keeps the payload honest.
 	}
 
 	try {

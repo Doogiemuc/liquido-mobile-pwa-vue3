@@ -51,7 +51,6 @@ const page_order = {
 	"index": 0,
 	"welcome": 1,
 	"login": 1,     // welcome and login are on the same level, so they fade instead of sliding sideways
-	"loginSms": 2,
 	"forgotPassword": 2,
 	"userhome": 9,
 	"team": 10,

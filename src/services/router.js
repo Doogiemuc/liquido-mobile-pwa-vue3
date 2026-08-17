@@ -127,14 +127,10 @@ const routes = [
 			public: true
 		}
 	},
-	{
-		path: "/login-via-sms",
-		name: "loginSms",
-		component: () => import("@/views/login-via-sms.vue"),
-		meta: {
-			public: true
-		}
-	},
+	// No "/login-via-sms" route: a mobilephone is optional in LIQUIDO and is no longer collected
+	// anywhere in the UI, and the backend's requestSmsToken/loginWithSmsToken are commented out, so
+	// the page's api calls hit operations that do not exist in the schema. login-via-sms.vue is kept
+	// in the repo on purpose as the starting point for when SMS login is actually built.
 	{	
 		path: "/resetPassword",
 		name: "resetPassword",
