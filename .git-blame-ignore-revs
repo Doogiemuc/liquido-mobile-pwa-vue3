@@ -1,0 +1,7 @@
+# Commits that only reformat, never change behaviour. git blame skips these.
+# Enable locally with:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# (GitHub and GitLab honour this file automatically.)
+
+# Normalise line endings to LF, add .gitattributes
+542c2b0e61d6da0321299dcf755bc3b6d3a04b60
