@@ -10,6 +10,18 @@
 	
 		<poll-card v-if="poll.id && !loadingPoll" :poll="poll" :show-arrow-right="false" :show-proposals="true" :proposals-expanded="true" class="shadow-sm mb-4" @edit-proposal="gotoEditProposal" />
 
+		<!--
+			Add proposal sits ON the page, next to the proposals it adds to - not in the footer bar.
+			The footer is reserved for the poll's main action, which for a poll in ELABORATION is
+			"start the voting phase".
+		-->
+		<div v-if="showAddProposal" class="text-center mb-4">
+			<button id="addProposalButton" type="button" class="btn btn-outline-primary" @click="clickAddProposal()">
+				<i class="fas fa-plus me-2" />
+				{{ $t("addProposal") }}
+			</button>
+		</div>
+
 		<div v-if="showError"	class="alert alert-danger mb-3">
 			<div v-html="$t('cannotFindPoll', {pollId: pollId})" />
 			<button type="button" class="btn btn-primary float-end" @click="$root.gotoPolls">
@@ -75,23 +87,37 @@
 					{{ $t("alreadyVotedButton") }}
 				</button>
 	
-				<button v-else-if="showAddProposal" id="addProposalButton" type="button" class="btn btn-primary" @click="clickAddProposal()">
-					{{ $t("addProposal") }}
-					<i class="fas fa-angle-double-right" />
+				<button v-else-if="showStartVotingPhase" id="startVoteButton" type="button" :disabled="startVoteLoading"
+					class="btn btn-primary" @click="clickStartVote()">
+					<span v-if="startVoteLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+					<i v-else class="fas fa-user-shield me-2" />
+					{{ $t("startVotingPhase") }}
 				</button>
 			</template>
 		</liquido-footer>
 
 		<!-- Admin only functions -->
 
-		<div v-if="showStartVotingPhase" class="alert alert-admin mt-5">
-			<p v-html="$t('startVotingPhaseInfo')" />
-			<button id="startVoteButton" type="button" :disabled="startVoteLoading" class="btn btn-primary float-end" @click="clickStartVote()">
-				<span v-if="startVoteLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-				<i v-else class="fas fa-user-shield" />
-				{{ $t("startVotingPhase") }}
-			</button>
-		</div>
+		<!--
+			Its own popup-modal rather than the shared root one, because this dialog needs a body of its
+			own: the warning AND an input for the runtime. Same approach cast-vote.vue takes for its
+			ballot confirmation.
+		-->
+		<popup-modal id="startPollModal" ref="startPollModal">
+			<template #modal-body>
+				<p>{{ $t("startPollConfirmMessage") }}</p>
+				<liquido-input
+					id="pollDurationInput"
+					v-model="pollDurationDays"
+					type="number"
+					:label="$t('pollDurationLabel')"
+					:min="1"
+					:max="365"
+					:invalid-feedback="$t('pollDurationInvalid')"
+					required
+				/>
+			</template>
+		</popup-modal>
 
 		<div v-if="showFinishVotingPhase" class="alert alert-admin mt-5">
 			<p v-html="$t('finishVotingPhaseInfo', {numBallots: poll.numBallots})" />
@@ -108,6 +134,9 @@
 import PollCard from "@/components/poll-card.vue"
 import liquidoFooter from "@/components/liquido-footer.vue"
 import liquidoBallot from "@/components/liquido-ballot.vue"
+import popupModal from "@/components/popup-modal.vue"
+import liquidoInput from "@/components/liquido-input.vue"
+import config from "config"
 // import polly from '@/components/polly.vue'
 import EventBus from "@/services/event-bus.js"
 import api from "@/services/liquido-graphql-client.js"
@@ -132,6 +161,12 @@ export default {
 				startVotingPhaseInfo: 
 					"Hallo Admin! Möchstest du die diese Abstimmung starten? Dann sind die Vorschläge fixiert und dein Team kann abstimmen.",
 				startVotingPhase: "Abstimmung starten",
+				startPollConfirmTitle: "Abstimmung starten?",
+				startPollConfirmMessage: "Bist du sicher? Sobald die Abstimmung gestartet ist, können keine Vorschläge mehr hinzugefügt werden.",
+				startPollConfirmButton: "Jetzt starten",
+				pollDurationLabel: "Laufzeit in Tagen",
+				pollDurationInvalid: "Bitte gib eine Laufzeit zwischen 1 und 365 Tagen an.",
+				cancel: "Abbrechen",
 				finishVotingPhaseInfo: "Hallo Admin! Bisher wurden in dieser Abstimmung {numBallots} Stimmen abgegeben.",
 				finishVotingPhase: "Abstimmung beenden",
 				votingPhaseStartedSuccessfully: "Die Abstimmung ist jetzt gestartet.",
@@ -151,7 +186,7 @@ export default {
 			},
 		},
 	},
-	components: { PollCard, liquidoFooter, liquidoBallot },
+	components: { PollCard, liquidoFooter, liquidoBallot, popupModal, liquidoInput },
 	props: {
 		// Allow number or string that contains an integer. Url parameter is passed as String, 
 		// but $router.push({name: "pollShow", params: {pollId: 4711 }}) can be passed as number. We'll accept both
@@ -165,6 +200,8 @@ export default {
 			showError: false,
 			loadingPoll: true,
 			startVoteLoading: false,
+			/** Runtime the admin picks in the start-poll dialog. Prefilled from the frontend config. */
+			pollDurationDays: Number(config.pollDefaultRuntimeDays) || 7,
 			finishVoteLoading: false,
 			existingBallot: undefined,
 			proposalsInBallot: [],
@@ -306,10 +343,27 @@ export default {
 			})
 		},
 
+		/**
+		 * Starting a poll freezes its proposals, so ask before doing it - and take the chance to let
+		 * the admin choose how long it runs, instead of silently applying a server default.
+		 */
 		clickStartVote() {
 			if (this.startVoteLoading) return  // do not allow double click
+			this.pollDurationDays = Number(config.pollDefaultRuntimeDays) || 7   // reset on every open
+			this.$refs.startPollModal.showInfo(
+				undefined,   // body comes from the #modal-body slot
+				this.$t("startPollConfirmTitle"),
+				this.$t("startPollConfirmButton"),
+				this.$t("cancel"),
+				this.confirmStartVote
+			)
+		},
+
+		/** The admin confirmed: start the voting phase for the number of days he chose. */
+		confirmStartVote() {
+			if (this.startVoteLoading) return  // do not allow double click
 			this.startVoteLoading = true
-			api.startVotingPhase(this.poll.id).then(poll => {
+			api.startVotingPhase(this.poll.id, this.pollDurationDays).then(poll => {
 				this.startVoteLoading = false
 				this.poll = poll  // startVotingPhase returns updated poll in new status
 				this.$root.showSuccess(this.$t("votingPhaseStartedSuccessfully"), "")

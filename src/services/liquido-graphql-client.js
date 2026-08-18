@@ -828,17 +828,20 @@ let graphQlApi = {
 	 * @param {Boolean} membersCanAddProposals when true, team members may add proposals to this poll.
 	 *        Default false: only the admin may. Chosen at creation and not changeable afterwards.
 	 */
-	async createPoll(pollTitle, pollStartDate, pollEndDate, membersCanAddProposals = false) {
-		if (!pollStartDate || !pollEndDate) throw new Error("Need pollStartDate and pollEndDate to create poll")
-		let startDate = new Date(pollStartDate)
-		let endDate = new Date(pollEndDate)
-
-		let graphQL = `mutation createPoll($title: String!, $membersCanAddProposals: Boolean, $startDate: DateTime!, $endDate: DateTime!) { createPoll(title: $title, membersCanAddProposals: $membersCanAddProposals, startDate: $startDate, endDate: $endDate) ${JQL.POLL} }`
+	/**
+	 * Create a new poll in the caller's current team.
+	 *
+	 * Deliberately no start/end date: the backend owns the poll's runtime (LiquidoConfig
+	 * durationOfVotingPhase) and its createPoll mutation accepts only `title` and
+	 * `membersCanAddProposals`. This used to send startDate/endDate as well, which the server
+	 * rejected with "Validation error (UnknownArgument@[createPoll])" - so creating a poll from the
+	 * app failed outright while the same call worked from anywhere that had the right arguments.
+	 */
+	async createPoll(pollTitle, membersCanAddProposals = false) {
+		let graphQL = `mutation createPoll($title: String!, $membersCanAddProposals: Boolean) { createPoll(title: $title, membersCanAddProposals: $membersCanAddProposals) ${JQL.POLL} }`
 		return graphQlQuery(graphQL, {
 			title: pollTitle,
 			membersCanAddProposals,
-			startDate: startDate.toISOString(),
-			endDate: endDate.toISOString(),
 		})
 			.then(res => {
 				let poll = res.data.createPoll
@@ -949,9 +952,15 @@ let graphQlApi = {
 			})
 	},
 
-	async startVotingPhase(pollId) {
-		let graphQL = `mutation startVotingPhase($pollId: BigInteger!) { startVotingPhase(pollId: $pollId) ${JQL.POLL} }`
-		return graphQlQuery(graphQL, { pollId: Number(pollId) })
+	/**
+	 * Start the voting phase of a poll.
+	 * @param durationInDays (optional) how many days voting stays open. The backend falls back to its
+	 *        own configured default when this is omitted. Only the DURATION is sent - the start time
+	 *        is always "now" on the server, so a poll cannot be backdated by a client.
+	 */
+	async startVotingPhase(pollId, durationInDays) {
+		let graphQL = `mutation startVotingPhase($pollId: BigInteger!, $durationInDays: Int) { startVotingPhase(pollId: $pollId, durationInDays: $durationInDays) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId), durationInDays: durationInDays != null ? Number(durationInDays) : null })
 			.then(res => {
 				let poll = res.data.startVotingPhase
 				//TODO: invalidate cache for pollId

@@ -14,7 +14,7 @@
 
 				<div class="text-center mb-3">
 					<p>{{ $t('loginWelcomeText1') }}</p>
-					<p>{{ $t('loginWelcomeText2') }}</p>
+					<p>{{ isJoiningTeam ? $t('loginToJoinTeam') : $t('loginWelcomeText2') }}</p>
 				</div>
 
 				<!-- Email input — always visible for iOS autofill -->
@@ -165,6 +165,7 @@ export default {
 			de: {
 				loginWelcomeText1: "Willkommen zurück!",
 				loginWelcomeText2: "Hier kannst du dich bei LIQUIDO einloggen",
+				loginToJoinTeam: "Log dich hier ein, um dem neuen Team beizutreten",
 				Continue: "Weiter",
 				LoginWithPassword: "Login mit Passwort",
 				orUsePassword: "oder mit Passwort",
@@ -196,6 +197,7 @@ export default {
 				DevLoginMember: "devLogin: Member",
 			},
 			en: {
+				loginToJoinTeam: "Log in here to join the new team",
 				Continue: "Continue",
 				LoginWithPassword: "Login with password",
 				orUsePassword: "or use password",
@@ -250,6 +252,20 @@ export default {
 		}
 	},
 	computed: {
+		/**
+		 * Did the user get here from an invite link, i.e. are they logging in in order to JOIN a team?
+		 *
+		 * join-team-v2.vue forwards an already-registered invitee here with the inviteCode in the query,
+		 * and root-app's gotoTeam() completes the join once they are authenticated. All this flag does
+		 * is say so in the intro text, so the login screen does not look like an unexplained detour.
+		 *
+		 * Deliberately read-only and nowhere near the email/password handling on this page: the input
+		 * wiring here is tuned for iOS autofill and is not to be disturbed.
+		 */
+		isJoiningTeam() {
+			return !!this.$route.query.inviteCode
+		},
+
 		showDevLogin() {
 			return import.meta.env.MODE === "development" || import.meta.env.MODE === "test"
 		},

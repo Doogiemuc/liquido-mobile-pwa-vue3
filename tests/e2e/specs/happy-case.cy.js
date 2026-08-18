@@ -36,9 +36,9 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		fix.userName   = 'Cypress User-'+now
 		fix.userEmail  = 'cypressUser-'+now+'@liquido.me'
 		fix.userPassword = fix.userEmail + "pwd"
-		fix.userMobilePhone = '+49 555 '+now
+		// No mobilephone fixtures: a mobilephone is optional in LIQUIDO and no screen collects one,
+		// so asserting on one here would only pretend to cover something.
 		fix.adminName  = 'Cypress Admin-'+now
-		fix.adminMobilephone = '+49 666 '+now
 		fix.adminEmail = 'cypressAdmin-'+now+'@liquido.me'
 		fix.adminPassword = fix.adminEmail + "pwd"
 		fix.teamName   = 'Cypress Team '+now
@@ -85,10 +85,17 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get('#teamNameInput').type(fix.teamName)
 		cy.get('#adminEmailInput').type(fix.adminEmail)
 		cy.get('#adminPasswordInput').type(fix.adminPassword)
+		cy.intercept('POST', '**/login/welcomeMail').as('adminWelcomeMail')
 		cy.get('#createNewTeamOkButton').click()
 
-		//THEN new team is created successfully 
-		cy.get('#welcomeChatErrorModal').should('not.exist')   // no error modal is shown
+		//THEN new team is created successfully
+		// #welcomeChatErrorModal does not exist anywhere in the app, so asserting it is absent could
+		// never fail. The real error surface is the shared root popup.
+		cy.get('#rootPopupModal').should('not.be.visible')
+
+		// AND the admin got his welcome mail (fire-and-forget from welcome-chat.vue, so we only
+		// assert that the backend was actually asked - the user is not blocked on it)
+		cy.wait('@adminWelcomeMail').its('response.statusCode').should('eq', 200)
 		cy.get('#newTeamCreatedBubble').should(() => {
 			// AND a JWT was put into the browser's localStorage
 			// (Cypress is async and crazy: This should()-block is retried until jwt is there.)
@@ -127,7 +134,11 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		// AND there is an invite link with inviteCode
 		// Here we extract the inviteCode, because we need it later to join this team.
 		cy.get('#inviteCodeButton').invoke("attr", "data-invitecode").then(inviteCode => {   // "data-invitecode" attribute in lowercase!
-			expect(inviteCode).to.have.lengthOf.at.least(2, "InviteCode should have at least 2 characters")  // Bugfix: We do not want to import "config" just for inviceCodeLength
+			// Assert the real shape rather than "at least 2 chars", which would also accept "  " or "a-".
+			// 8 alphanumerics mirrors config.inviteCodeLength on BOTH sides (frontend config.common.js
+			// and backend LiquidoConfig) - deliberately duplicated here instead of importing config, so
+			// that a silent change to either one is caught by this test.
+			expect(inviteCode).to.match(/^[A-Za-z0-9]{8}$/, "InviteCode should be 8 alphanumeric characters")
 			fix.inviteCode = inviteCode
 			console.log("New team inviteCode=", fix.inviteCode)
 			cy.log("InviteCode="+fix.inviteCode)
@@ -151,6 +162,12 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 
 		// AND his name is shown in the list of team membres
 		cy.get("#memberCircles").contains(fix.adminName)
+
+		// AND being the team's admin, he sees the admin-only section.
+		// This is the positive counterpart to the "should not exist" check in "[User] Join team": without
+		// it, that negative assertion would still pass if the section vanished for everyone, and would
+		// quietly stop proving anything about roles.
+		cy.contains("Admin Einstellungen").should("be.visible")
 
 		// AND his avatar image is loaded successfully
 		//TODO: needs to be fixed with new teams homepage
@@ -202,7 +219,6 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		//GIVEN inviteCode and data for new member
 		assert.isString(fix.inviteCode, "Need inviteCode to test joinTeam")
 		assert.isString(fix.userName)
-		assert.isString(fix.userMobilePhone)
 		assert.isString(fix.userPassword)	
 		assert.isString(fix.userEmail)
 		assert.isString(fix.pollTitle, "Need existing poll to test joinTeam")
@@ -218,7 +234,13 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get('#inviteCodeInput').type(fix.inviteCode)
 		cy.get('#userEmailInput').type(fix.userEmail)
 		cy.get('#userPasswordInput').type(fix.userPassword)
+		cy.intercept('POST', '**/login/welcomeMail').as('memberWelcomeMail')
 		cy.get('#joinTeamOkButton').click()
+
+		//THEN the join succeeded without any error surfacing
+		cy.get('#rootPopupModal').should('not.be.visible')
+		// AND the new member was sent his welcome mail
+		cy.wait('@memberWelcomeMail').its('response.statusCode').should('eq', 200)
 
 		// AND trying to register a passkey, after joining a team
 		cy.get('#setupPasskeyCard').should('be.visible')
@@ -236,12 +258,24 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get("#team-home")
 			.should("have.attr", "data-teamname", fix.teamName)
 			.should("have.attr", "data-username", fix.userName)
-			
+
+		// AND the team now has exactly the two of them - the admin who created it and this new member.
+		// A member sees one circle per member; only an admin additionally gets the "einladen" circle.
+		cy.get("#memberCircles .member-circle").should("have.length", 2)
+		cy.get("#memberCircles").contains(fix.userName)
+		cy.get("#memberCircles").contains(fix.adminName)
+
+		// AND he joined as an ordinary MEMBER, not as an admin: the admin-only section is not there
+		cy.contains("Admin Einstellungen").should("not.exist")
+
 		cy.should(() => {
 			// AND a JWT was put into the browser's localStorage
 			// (Cypress is async and crazy: This should()-block is retried until jwt is there.)
 			fix.userJWT = localStorage.getItem("LIQUIDO_JWT")
 			expect(fix.userJWT, "Expected to find a JWT in localStorage!").to.have.length.of.at.least(10)
+			// AND it is genuinely a different session than the admin's - otherwise every later
+			// "[User] ..." step would silently be re-testing the admin.
+			expect(fix.userJWT, "member JWT must differ from the admin's").to.not.equal(fix.adminJWT)
 		})
 
 		//WHEN navigating to team's polls
@@ -250,6 +284,11 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 
 		//THEN our poll should be shown
 		cy.get('.poll-title').should('contain.text', fix.pollTitle)
+
+		//  AND as a plain member he cannot start the voting phase - that is the admin's job
+		cy.contains(".poll-title", fix.pollTitle).click()
+		cy.get('#poll-show')
+		cy.get('#startVoteButton').should('not.exist')
 	})
 
 	
@@ -406,13 +445,55 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get('#gotoPollsButton').click()
 		cy.contains(".poll-title", fix.pollTitle).click()
 
-		// WHEN admin stars voting phase
+		// THEN the admin can STILL add a proposal, even though the poll already has several and is
+		// ready to start. An admin may add proposals for as long as the poll is in ELABORATION - the
+		// existing "[Admin] Poll with the checkbox left off is admin-only" step only covers a brand new
+		// poll with no proposals yet, so this is the case that state does not reach.
+		cy.get('#addProposalButton').should('be.visible')
+
+		// WHEN admin starts the voting phase (the main action in the footer for a poll in ELABORATION)
+		// Every GraphQL call shares one URL, so alias by inspecting the query body.
+		cy.intercept('POST', '**/graphql', req => {
+			if (req.body && req.body.query && req.body.query.includes('startVotingPhase')) {
+				req.alias = 'startVotingPhase'
+			}
+		})
 		cy.get("#startVoteButton").click()
 
+		// THEN he must confirm first, because starting freezes the proposals
+		// (scoped to this modal - the shared root popup uses the same button ids)
+		cy.get('#startPollModal').should('be.visible')
+		cy.get('#startPollModal').contains('keine Vorschläge mehr').should('be.visible')
+
+		//  AND the runtime is prefilled from config.pollDefaultRuntimeDays
+		cy.get('#pollDurationInput').should('have.value', '7')
+
+		// WHEN he shortens it and confirms
+		cy.get('#pollDurationInput').clear().type('3')
+		cy.get('#startPollModal').find('#modalPrimaryButton').click()
+
 		// THEN sucessModal is shown and poll is in status voting
-		cy.get('#modalPrimaryButton').click()
+		cy.get('#rootPopupModal').find('#modalPrimaryButton').click()
 		cy.get(".poll-card[data-poll-status='VOTING']")
-			.should("have.attr", "data-poll-status", "VOTING")  
+			.should("have.attr", "data-poll-status", "VOTING")
+
+		//  AND the runtime he chose really reached the backend and was applied.
+		//  Asserted on the intercepted call, because votingEndAt is not rendered anywhere on the page.
+		cy.wait('@startVotingPhase').then(interception => {
+			expect(interception.request.body.variables.durationInDays,
+				"the duration from the dialog must be sent to the backend").to.equal(3)
+
+			// votingEndAt is midnight of (today + days), so only the date part is meaningful.
+			// Built from local date parts on purpose: toISOString() would convert to UTC and could
+			// land on the neighbouring day depending on the timezone and the hour the test runs.
+			const end = interception.response.body.data.startVotingPhase.votingEndAt
+			const d = new Date()
+			d.setDate(d.getDate() + 3)
+			const pad = n => String(n).padStart(2, "0")
+			const expectedDate = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+			expect(end.slice(0, 10), "poll must end 3 days from today, not after the 7 day default")
+				.to.equal(expectedDate)
+		})
 	})
 
 	

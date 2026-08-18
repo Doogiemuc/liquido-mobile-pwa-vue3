@@ -71,6 +71,7 @@
 					:disabled="joining"
 					required
 					feedback-placeholder
+					@blur="onEmailBlur"
 				/>
 
 				<!-- Password -->
@@ -114,7 +115,7 @@
 		-->
 		<div v-if="pageState !== PAGE.LOADING" class="already-registered">
 			<p>{{ $t("alreadyRegistered1") }}<br>{{ $t('alreadyRegistered2') }}</p>
-			<button id="loginButton" type="button" class="btn btn-outline-secondary" @click="goToLogin">
+			<button id="loginButton" type="button" class="btn btn-outline-secondary" @click="goToLogin()">
 				{{ $t("Login") }}
 			</button>
 		</div>
@@ -155,6 +156,9 @@ export default {
 				noInviteCodeError: "Willkommen bei LIQUIDO! Um einem Team beizutreten, brauchst du eine Einladung. Klicke auf den Link, den du per E-Mail bekommen hast. Dann geht's weiter.",
 				inviteCodeInvalid: "Tut mir leid, dieser Einladungscode ist ungültig. Bitte überprüfe den Link oder frag deinen Team-Admin nach einer neuen Einladung.",
 				emailAlreadyRegistered: "Diese E-Mail ist schon bei LIQUIDO registriert. Bitte logge dich ein.",
+				emailAlreadyRegisteredPopupTitle: "Du bist schon dabei",
+				// Plain text, not HTML: popup-modal renders its message with {{ }}, not v-html.
+				emailAlreadyRegisteredPopup: "Diese E-Mail Adresse ist bereits registriert. Bitte log dich zuerst ein. Dann kannst du dem neuen Team beitreten.",
 				passwordTooWeak: "Dieses Passwort ist zu schwach. Bitte wähle ein längeres.",
 				cannotJoinTeam: "Der Beitritt hat leider nicht geklappt. Bitte versuche es noch einmal.",
 			},
@@ -176,6 +180,8 @@ export default {
 				noInviteCodeError: "Welcome to LIQUIDO! You need an invitation to join a team. Please click the link you received by email.",
 				inviteCodeInvalid: "Sorry, this invite code is invalid. Please check the link or ask your team admin for a new invitation.",
 				emailAlreadyRegistered: "This email is already registered with LIQUIDO. Please log in instead.",
+				emailAlreadyRegisteredPopupTitle: "You are already with us",
+				emailAlreadyRegisteredPopup: "This email address is already registered. Please log in first. Then you can join the new team.",
 				passwordTooWeak: "This password is too weak. Please choose a longer one.",
 				cannotJoinTeam: "Could not join the team. Please try again.",
 			}
@@ -186,7 +192,7 @@ export default {
 
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from "vue"
+import { ref, computed, onMounted, nextTick, getCurrentInstance } from "vue"
 import { useRouter } from "vue-router"
 import { useI18n } from "vue-i18n"
 import log from "loglevel"
@@ -201,6 +207,9 @@ const props = defineProps({
 })
 
 const router = useRouter()
+// <script setup> has no `this`, so the shared popup on root-app is reached through the instance
+// proxy. Same pattern Polly-vote.vue uses.
+const { proxy } = getCurrentInstance()
 // The GLOBAL composer, i.e. the translations from main.js. Component local messages are not reachable
 // from <script setup> in legacy mode - which is why only the header title is translated here.
 const { t } = useI18n()
@@ -227,6 +236,8 @@ const nickname = ref("")
 const email = ref("")
 const password = ref("")
 const joining = ref(false)
+/** Guards against overlapping check-login-email requests while the user tabs around. */
+const checkingEmail = ref(false)
 
 // Exposed to the template so that the input constraints and their error messages cannot drift apart.
 const usernameMinLength = config.usernameMinLength
@@ -371,8 +382,61 @@ function handleJoinTeamError(err) {
 	}
 }
 
-function goToLogin() {
-	router.push({ name: "login" })
+/**
+ * Hand over to the login page, carrying the inviteCode so the join can be finished automatically the
+ * moment the user is authenticated - see gotoTeam() in root-app.vue.
+ *
+ * The code rides in the URL rather than in session storage: login-page.vue never rewrites the route,
+ * so the query survives the whole login, and gotoTeam() is called while the router is still on
+ * /login and can simply read it back.
+ *
+ * @param prefillEmail (optional) email to prefill on the login page, so that the login page can offer
+ *        the passkey button for that account instead of asking the user to type their address again.
+ */
+function goToLogin(prefillEmail) {
+	const query = {}
+	if (props.inviteCodeQueryParam) query.inviteCode = props.inviteCodeQueryParam.trim()
+	if (prefillEmail) query.email = prefillEmail
+	router.push({ name: "login", query })
+}
+
+/**
+ * As soon as the user has typed a syntactically valid email, ask the backend whether that address is
+ * already registered - and if it is, send them to the login page instead of letting them fill in the
+ * rest of this form.
+ *
+ * This form cannot serve a registered user at all: an anonymous joinTeam with a known email is
+ * rejected outright, and their real proof of identity is a login - which may be a passkey, which no
+ * amount of fields here could collect. Catching it on blur means they never type a password that we
+ * would only throw away.
+ */
+async function onEmailBlur() {
+	const address = email.value.trim()
+	// Nothing worth asking about until the address is at least well-formed.
+	if (!EMAIL_REG_EX.test(address) || checkingEmail.value) return
+
+	checkingEmail.value = true
+	try {
+		const res = await api.checkLoginEmail(address)
+		if (res?.status === "REGISTERED") {
+			// Explain BEFORE navigating. Silently replacing the page the moment they tab out of the
+			// email field looks like the form crashed - the user has no idea why they are suddenly
+			// somewhere else, or that they are still on their way to joining this team.
+			proxy.$root.showInfo(
+				proxy.$t("emailAlreadyRegisteredPopup"),
+				proxy.$t("emailAlreadyRegisteredPopupTitle"),
+				undefined,   // default "Ok" button
+				undefined,   // no secondary button - there is nothing else to do here
+				() => goToLogin(address)
+			)
+		}
+	} catch (err) {
+		// Deliberately swallowed: this check is an optimisation, not a gate. If it fails the user can
+		// still submit, and the join attempt itself returns USER_EMAIL_EXISTS for exactly this case.
+		log.warn("join-team: could not check whether the email is already registered", err)
+	} finally {
+		checkingEmail.value = false
+	}
 }
 </script>
 

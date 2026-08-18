@@ -160,12 +160,9 @@ export default {
 		/** Create a new poll with the given title and runtime */
 		clickCreateNewPoll() {
 			this.creating = true
-			let pollStartDate = new Date()
-			pollStartDate.setHours(0, 0, 0, 0) // start of today
-			let pollEndDate = new Date(pollStartDate)
-			pollEndDate.setDate(pollEndDate.getDate() + this.pollRuntimeInDays)
-			pollEndDate.setHours(23, 59, 59, 999) // end of last day
-			return api.createPoll(this.pollTitle, pollStartDate, pollEndDate, this.membersCanAddProposals)
+			// No dates: the backend decides how long a poll runs, and its createPoll mutation does not
+			// accept startDate/endDate at all.
+			return api.createPoll(this.pollTitle, this.membersCanAddProposals)
 				.then(createdPoll => {
 					log.info("New poll created", createdPoll)
 					this.$router.push({name: "showPoll", params: { pollId: createdPoll.id } })

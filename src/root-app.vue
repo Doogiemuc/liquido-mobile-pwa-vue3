@@ -42,6 +42,14 @@ import api from "@/services/liquido-graphql-client.js"
 import EventBus from "@/services/event-bus.js"
 import config from "config"
 
+/**
+ * joinTeam's `password` argument is non-null in the schema but is only used to CREATE a new user.
+ * On the authenticated path the JWT identifies the caller and this value is never looked at, so a
+ * placeholder is correct here - and necessary, because a user who logs in with a passkey has no
+ * password for us to pass on.
+ */
+const PENDING_JOIN_PLACEHOLDER_PASSWORD = "unused-jwt-authenticates-this-join"
+
 /** 
  * Pages will slide from right to left in this order 
  * Login and welcome page only do not slide, but fade in/out.
@@ -71,7 +79,9 @@ export default {
 				// We carefully distinguish between these two cases!
 				NetworkOffline: "Du bist offline. Bitte schalte dein WLAN ein.",
 				BackendNotReachable: "Ich kann den LIQUIDO Server gerade nicht erreichen. Bitte prüfe ob du onlien bist.",
-				DEV_OpenGraphQL: "DEV HINT: Open /graphql/schema.graphql"
+				DEV_OpenGraphQL: "DEV HINT: Open /graphql/schema.graphql",
+				// Shown when a user logged in to accept an invite, but the join itself then failed.
+				cannotJoinInvitedTeam: "Bitte entschuldige. Du bist erfolgreich eingeloggt, aber es gab gerade einen Fehler beim Beitreten in das neue Team. Bitte öffne den Einladungslink aus deiner Email noch einmal oder frag deinen Team-Admin."
 			}
 		},
 	},
@@ -205,7 +215,54 @@ export default {
 			this.$router.push({name: "createPoll"})
 		},
 
+		/**
+		 * Go to the user's team after a successful login.
+		 *
+		 * If an inviteCode is sitting in the current route, the user got here from an invite link, found
+		 * they were already registered, and logged in to prove it. Their JWT is exactly the identity
+		 * proof that joinTeam wants, so finish that join first - otherwise they would land back in
+		 * their OLD team and the invite would silently have done nothing.
+		 *
+		 * This is called while the router is still on /login, which is why the query is readable here
+		 * and nothing had to be stored anywhere. Every login method funnels through this one method
+		 * (password, passkey, Google, email token), so passkey users are covered too - which is the
+		 * whole reason the join happens after login rather than on the join form.
+		 */
 		gotoTeam() {
+			const inviteCode = this.$route.query.inviteCode
+			if (inviteCode) {
+				this.joinInvitedTeamThenGoToTeam(inviteCode)
+			} else {
+				this.$router.push({name: "team"})
+			}
+		},
+
+		/**
+		 * Complete a pending invite for the user who has just logged in, then show them the team.
+		 *
+		 * Navigates to /team either way. A failed join must not strand the user on the login page: the
+		 * login itself succeeded, so they belong in the app. Only the invite is lost, and that is what
+		 * the error message is for.
+		 */
+		async joinInvitedTeamThenGoToTeam(inviteCode) {
+			const user = api.getCachedUser() || {}
+			const member = { name: user.name, email: user.email }
+			try {
+				// joinTeam declares password as non-null, but the authenticated branch never reads it -
+				// the JWT is the proof. Passing a placeholder is what lets a passkey user, who has no
+				// password at all, join this way.
+				const team = await api.joinTeam(inviteCode, member, PENDING_JOIN_PLACEHOLDER_PASSWORD)
+				log.info("Joined invited team after login:", team?.teamName)
+			} catch (err) {
+				const errCode = err?.liquidoException?.liquidoErrorCode ?? err?.response?.data?.liquidoErrorCode
+				if (errCode === api.err.CANNOT_JOIN_TEAM_ALREADY_MEMBER) {
+					// Nothing went wrong - they were already in it. Not worth interrupting them for.
+					log.info("Already a member of the invited team")
+				} else {
+					log.error("Could not join the invited team after login", err)
+					this.showError(this.$t("cannotJoinInvitedTeam"), this.$t("Error"))
+				}
+			}
 			this.$router.push({name: "team"})
 		},
 
