@@ -23,7 +23,7 @@
 					class="mb-2"
 					:label="$t('yourNickname')"
 					:valid-func="isUsernameValid"
-					:maxlength="100"
+					:max-length="100"
 					:invalid-feedback="$t('userNameInvalid')"
 					:disabled="FLOW.NiceToMeetYou"
 					@keyup.enter="userNameSubmit()"
@@ -92,7 +92,7 @@
 						:label="$t('inviteCode')"
 						:placeholder="$t('inviteCodePlaceholder')"
 						:valid-func="isInviteCodeSyntaxValid"
-						:maxlength="100"
+						:max-length="100"
 						:invalid-feedback="$t('inviteCodeInvalid')"
 						:disabled="FLOW.JoinTeamSuccessfull"
 						tabindex="1"
@@ -105,7 +105,7 @@
 						class="mb-3"
 						:label="$t('YourEMail')"
 						:valid-func="isEmailValid"
-						:maxlength="200"
+						:max-length="200"
 						:invalid-feedback="$t('emailInvalid')"
 						:disabled="FLOW.JoinTeamSuccessfull"
 						tabindex="3"
@@ -119,7 +119,7 @@
 						class="mb-3"
 						:label="$t('Password')"
 						:valid-func="isPasswordValid"
-						:maxlength="200"
+						:max-length="200"
 						:invalid-feedback="$t('passwordInvalid')"
 						:disabled="FLOW.JoinTeamSuccessfull"
 						tabindex="4"
@@ -173,7 +173,7 @@
 						class="mb-3"
 						:label="$t('teamName')"
 						:valid-func="isTeamNameValid"
-						:maxlength="100"
+						:max-length="100"
 						:invalid-feedback="$t('teamNameInvalid')"
 						:disabled="FLOW.CreateTeamSuccessfull"
 						tabindex="1"
@@ -186,7 +186,7 @@
 						class="mb-3"
 						:label="$t('YourEMail')"
 						:valid-func="isAdminEmailValid"
-						:maxlength="200"
+						:max-length="200"
 						:invalid-feedback="$t('emailInvalid')"
 						:disabled="FLOW.CreateTeamSuccessfull"
 						tabindex="2"
@@ -201,7 +201,7 @@
 						:label="$t('Password')"
 						:placeholder=undefined
 						:valid-func="isPasswordValid"
-						:maxlength="200"
+						:max-length="200"
 						:invalid-feedback="$t('passwordInvalid')"
 						:disabled="FLOW.CreateTeamSuccessfull"
 						tabindex="3"
@@ -257,8 +257,8 @@
 					v-model="passkeyLabel"
 					class="mb-3"
 					:label="$t('PasskeyLabel')"
-					:minlength="3"
-					:maxlength="200"
+					:min-length="3"
+					:max-length="200"
 					:invalid-feedback="$t('PasskeyLabelInvalid')"
 					:disabled="FLOW.RegistrationFinished"
 				/>
@@ -694,6 +694,21 @@ export default {
 			}
 		},
 
+		/**
+		 * Ask the backend to send the welcome mail, after the user has successfully registered.
+		 *
+		 * Deliberately fire-and-forget: not awaited, and a failure is only logged. The registration
+		 * has already succeeded at this point, so a mail problem must not block the chat from moving
+		 * on or show the user an error about something they cannot act on.
+		 *
+		 * The backend picks the admin or member variant itself from the JWT, so both the createNewTeam
+		 * and the joinTeam path call this the same way.
+		 */
+		sendWelcomeMail() {
+			api.sendWelcomeMail()
+				.catch(err => log.warn("Could not send welcome mail (registration itself was fine)", err))
+		},
+
 		/** Create a new team */
 		createNewTeam() {
 			if (this.createNewTeamOkButtonDisabled) return
@@ -709,6 +724,7 @@ export default {
 				.then((team) => {
 					//Keep in mind: From this point on the user is already logged in! And has a JWT in its browser's localStorage.
 					this.team = team
+					this.sendWelcomeMail()
 					this.newTeamCreatedSuccessfully()
 				})
 				.catch((err) => {			//TODO: Error handling: What to do if createTeam call to backend does not work.  Try again?
@@ -769,6 +785,7 @@ export default {
 				.then(team => {
 					this.FLOW.JoinTeamSuccessfull = true
 					this.team = team
+					this.sendWelcomeMail()
 					this.$nextTick(() => {
 						this.$root.scrollElemToTop(document.getElementById("JoinTeamForm"))
 						setTimeout(() => {

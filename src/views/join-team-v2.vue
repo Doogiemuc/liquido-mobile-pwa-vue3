@@ -38,6 +38,8 @@
 				<liquido-input
 					id="joinTeamNicknameInput"
 					v-model="nickname"
+					:floating-label="true"
+					:show-empty-as-error="false"
 					type="text"
 					name="nickname"
 					autocomplete="nickname"
@@ -56,6 +58,8 @@
 				<liquido-input
 					id="joinTeamEmailInput"
 					v-model="email"
+					:floating-label="true"
+					:show-empty-as-error="false"
 					type="email"
 					name="email"
 					autocomplete="email"
@@ -73,6 +77,8 @@
 				<liquido-input
 					id="joinTeamPasswordInput"
 					v-model="password"
+					:floating-label="true"
+					:show-empty-as-error="false"
 					type="password"
 					name="password"
 					autocomplete="new-password"
@@ -106,8 +112,8 @@
 			Offered in every state except while loading: an invalid invite link is a dead end that needs a way out,
 			and someone who already has an account should log in instead of registering a second time.
 		-->
-		<div v-if="pageState !== PAGE.LOADING" class="text-center text-muted mt-5">
-			<p>{{ $t("alreadyRegistered") }}</p>
+		<div v-if="pageState !== PAGE.LOADING" class="already-registered">
+			<p>{{ $t("alreadyRegistered1") }}<br>{{ $t('alreadyRegistered2') }}</p>
 			<button id="loginButton" type="button" class="btn btn-outline-secondary" @click="goToLogin">
 				{{ $t("Login") }}
 			</button>
@@ -142,7 +148,8 @@ export default {
 				passwordPlaceholder: "Passwort",
 				passwordTooShort: "Mindestens {minLength} Zeichen!",
 				JoinTeamButton: "Team beitreten",
-				alreadyRegistered: "Bist du bereits bei LIQUIDO registriert?",
+				alreadyRegistered1: "Bist du bereits bei LIQUIDO registriert?",
+				alreadyRegistered2: "Dann logge dich bitte zuerst ein.",
 
 				// Errors
 				noInviteCodeError: "Willkommen bei LIQUIDO! Um einem Team beizutreten, brauchst du eine Einladung. Klicke auf den Link, den du per E-Mail bekommen hast. Dann geht's weiter.",
@@ -326,6 +333,11 @@ async function submitJoinTeamForm() {
 
 	try {
 		await api.joinTeam(props.inviteCodeQueryParam.trim(), newMember, password.value)
+		// Fire-and-forget: deliberately NOT awaited. The user is registered and logged in already, so
+		// a slow or failing mail server must not delay the redirect or surface an error they cannot
+		// act on. The backend derives the recipient from the JWT that joinTeam just returned.
+		api.sendWelcomeMail()
+			.catch(err => log.warn("Could not send welcome mail (join itself was fine)", err))
 		router.push({ name: "team" })
 	} catch (err) {
 		handleJoinTeamError(err)
@@ -371,5 +383,13 @@ function goToLogin() {
 	font-size: 1.5rem;
 	font-weight: 600;
 	margin-bottom: 0.25rem;
+}
+
+.already-registered {
+	text-align: center;
+	margin-top: 3rem;
+	text-align: center;
+	color: var(--secondary);
+	font-size: var(--font-size-small);
 }
 </style>

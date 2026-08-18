@@ -1,12 +1,12 @@
 <template>
 	<div class="liquido-input">
 
-		<label v-if="label" :for="id" :class="{ disabled }">
+		<label v-if="label" :for="id" :class="{ disabled, 'floating-inside': labelIsInsideField }">
 			{{ label }}
 		</label>
 
 		<input ref="input" :id="id" :name="name" :value="modelValue" :class="validClass" :type="inputType"
-			:placeholder="placeholder" :disabled="disabled" :required="required" :minlength="minLength" :maxlength="maxLength"
+			:placeholder="inputPlaceholder" :disabled="disabled" :required="required" :minlength="minLength" :maxlength="maxLength" :min="min" :max="max"
 			:autocomplete="autocomplete" :pattern="pattern" class="form-control" @focus="onFocus" @input="onInput"
 			@blur="onBlur" @keyup="$emit('keyup', $event)" @change="onChange" />
 
@@ -14,11 +14,11 @@
 			<slot name="iconRight" />
 		</div>
 
-		<!-- password eye icon that toggles -->
-		<div v-if="type === 'password'" class="password-toggle" @mousedown.prevent="showPassword = true"
-			@mouseup.prevent="showPassword = false" @mouseleave="showPassword = false"
-			@touchstart.prevent="showPassword = true" @touchend.prevent="showPassword = false"
-			@touchcancel.prevent="showPassword = false">
+		<!-- Press and HOLD the eye to reveal the password. Releasing hides it again. Never a toggle. -->
+		<div v-if="type === 'password'" class="password-toggle"
+			@pointerdown.prevent="revealPassword"
+			@pointerup="hidePassword"
+			@pointercancel="hidePassword">
 
 			<svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
 				viewBox="0 0 24 24" stroke="currentColor">
@@ -93,6 +93,16 @@
  * 
  * An error message will only be shown after a field has been validated.
  *
+ * <h3>An empty field is not always a mistake</h3>
+ * Pass <pre>:show-empty-as-error="false"</pre> on a required field to keep it looking untouched while it
+ * is still empty. It stays INVALID - so a form cannot be submitted - but gets no red border and no
+ * emptyFeedback. A non-empty but wrong value is still shown in red.
+ *
+ * <h3>Floating labels</h3>
+ * With <pre>:floating-label="true"</pre> the label starts inside the field, looking like placeholder
+ * text, and animates up onto the border on first focus. It never animates back. The placeholder prop
+ * is ignored in that mode - the label already plays that role.
+ *
  * <h3>Example Usage</h3> 
  *
  * <liquido-input v-model="postTitle" id="postTitleInput" label="Post title" :validFunc="isTitleValid"></liquido-input>
@@ -111,6 +121,22 @@ const urlRegEx = /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9
 // If you need even more sophisticated validations, consider using validator-js
 const mobilephoneRegEx = /\+?[0-9/\- ]{6,50}$/
 
+
+/**
+ * Is this value "nothing"? Only null, undefined and "" are.
+ *
+ * Deliberately NOT a falsy test. This component supports Number values as well as Strings, and the
+ * number 0 is a perfectly good value - as is the string "0". A plain `!val` check reports both as an
+ * empty field, which then makes a required field with a legitimate 0 in it fail validation.
+ */
+function isEmptyValue(val) {
+	return val === undefined || val === null || val === ""
+}
+
+/** The value as text, for the length checks and the character counter. "" for an empty value. */
+function asText(val) {
+	return isEmptyValue(val) ? "" : String(val)
+}
 
 export const STATE = Object.freeze({
 	INIT: 0,
@@ -148,6 +174,22 @@ export default {
 		/** Placeholder text shown dimmed inside the input (optional) */
 		placeholder: { type: String, default: undefined },
 
+		/**
+		 * Show the label INSIDE the field until it is first focused? (default: false)
+		 *
+		 * A floating label starts out looking exactly like placeholder text, sitting in the field. On
+		 * the first focus it animates up into its resting position on the border and shrinks. That is
+		 * a ONE-WAY trip: it never drops back in, not even after the user clears the field again. A
+		 * label that bounced in and out on every focus would be far more distracting than useful, and
+		 * once the user has seen the field there is nothing left to explain.
+		 *
+		 * While the label is still inside the field it IS the placeholder, so the `placeholder` prop is
+		 * silently ignored to avoid printing two texts on top of each other. The prop itself stays
+		 * available for ordinary (non-floating) fields, where a label and a placeholder say different
+		 * things - e.g. label "Handynummer" with placeholder "+49 555 111111" to show the format.
+		 */
+		floatingLabel: { type: Boolean, default: false },
+
 		/** Native HTML autocomplete hint, e.g. username/current-password/email */
 		autocomplete: { type: String, default: undefined },
 
@@ -160,11 +202,43 @@ export default {
 		/** Is form value required? (default: false) If true then value must not be empty */
 		required: { type: Boolean, default: false },
 
-		/** Maximum character length of input */
+		/**
+		 * Should an EMPTY value be shown to the user as an error? (default: true)
+		 *
+		 * Set this to false for a required field that the user simply has not filled in yet. The field
+		 * still counts as INVALID - it still emits update:state INVALID, so a form gating its submit
+		 * button on the field states stays un-submittable - but it is not painted red and no
+		 * emptyFeedback is shown. Only the *view* changes, never the validity.
+		 *
+		 * This exists because "you have not typed anything yet" is not a mistake worth shouting about.
+		 * A field the user has merely tabbed through should look untouched, not failed. An actually
+		 * WRONG value (too short, malformed email, ...) is still shown in red as usual, because there
+		 * the user did something they need to correct.
+		 */
+		showEmptyAsError: { type: Boolean, default: true },
+
+		/**
+		 * Minimum number of CHARACTERS (default: 0).
+		 *
+		 * Note the capitalisation: in a template this is `:min-length` or `:minLength`. An all-lowercase
+		 * `:minlength` is neither, so Vue does not recognise it as a prop - it silently falls through
+		 * onto the wrapper div and the limit never reaches the input. Same for maxLength.
+		 */
 		minLength: { type: Number, default: 0 },
 
-		/** Maximum character length of input (default: 1024)*/
+		/** Maximum number of CHARACTERS (default: 1024). See the capitalisation note on minLength. */
 		maxLength: { type: Number, default: 1024 },
+
+		/**
+		 * Minimum / maximum numeric VALUE, for type="number". Also set as the native min/max attributes.
+		 *
+		 * These are about the value, minLength/maxLength are about how many characters it is written
+		 * with - a distinction the native attributes make too, where minlength/maxlength are ignored
+		 * on a number input entirely.
+		 */
+		min: { type: Number, default: undefined },
+
+		max: { type: Number, default: undefined },
 
 		/** 
 		 * Regular expression pattern for format of input for type=text|password|tel
@@ -204,10 +278,46 @@ export default {
 			showPassword: false,
 			isEditing: false,
 			validationRunId: 0,
+
+			/**
+			 * Has a floatingLabel already moved out of the field? Latches to true and never back.
+			 * Starts true when the field already has a value, because a label parked on top of existing
+			 * text would be unreadable - that happens with a prefilled v-model and with browser autofill.
+			 */
+			hasFloated: !isEmptyValue(this.modelValue),
 		}
 	},
 
 	computed: {
+
+		/** A floatingLabel that has not been focused yet, i.e. still parked inside the input. */
+		labelIsInsideField() {
+			return this.floatingLabel && !!this.label && !this.hasFloated
+		},
+
+		/**
+		 * A floating label stands in for the placeholder, so showing both would print two texts over
+		 * each other. Only suppressed when there is actually a label to float.
+		 */
+		inputPlaceholder() {
+			return this.floatingLabel && this.label ? undefined : this.placeholder
+		},
+
+		/**
+		 * Is there no value at all? Deliberately the same falsy test the required check in
+		 * defaultValidFunc() uses, so that "empty" means one single thing across this component.
+		 */
+		isEmpty() {
+			return isEmptyValue(this.modelValue)
+		},
+
+		/**
+		 * The field is invalid ONLY because it is still empty, and the caller asked us not to make a
+		 * fuss about that. Suppresses the red border and the message - never the INVALID state itself.
+		 */
+		suppressEmptyError() {
+			return this.isEmpty && !this.showEmptyAsError
+		},
 
 		/**
 		 * Compute wether to add the is-valid or is-invalid pseudo class depending on the input's "state"
@@ -216,7 +326,8 @@ export default {
 		validClass() {
 			return {
 				"is-valid": this.state === STATE.VALID && !this.disabled,
-				"is-invalid": this.state === STATE.INVALID,  // bootstrap will then show red frame and icon at the right
+				// Still INVALID in state, just not painted red - see suppressEmptyError.
+				"is-invalid": this.state === STATE.INVALID && !this.suppressEmptyError,  // bootstrap will then show red frame and icon at the right
 				// all other states do not show any pseudo class
 			}
 		},
@@ -224,13 +335,14 @@ export default {
 		showEmptyFeedback() {
 			return this.state === STATE.INVALID &&
 				this.emptyFeedback &&
-				!this.modelValue
+				this.isEmpty &&
+				!this.suppressEmptyError
 		},
 
 		showInvalidFeedback() {
 			return this.state === STATE.INVALID &&
 				this.invalidFeedback &&
-				this.modelValue
+				!this.isEmpty
 		},
 
 		showFeedbackPlaceholder() {
@@ -240,10 +352,8 @@ export default {
 		},
 
 		counterVal() {
-			const len = this.modelValue
-				? this.modelValue.length
-				: 0
-			return `${len}/${this.maxLength}`
+			// Via asText, so a Number value counts its digits instead of reading "undefined/1024".
+			return `${asText(this.modelValue).length}/${this.maxLength}`
 		},
 
 		showCounterIfValid() {
@@ -262,6 +372,9 @@ export default {
 	watch: {
 
 		modelValue(newVal) {
+			// A value can arrive without any focus - prefilled v-model, browser autofill, paste via the
+			// context menu. The label has to get out of its way even though onFocus never ran.
+			if (!isEmptyValue(newVal)) this.hasFloated = true
 			this.validateField(false, newVal)
 		},
 
@@ -308,20 +421,74 @@ export default {
 			}
 		},
 
+		/**
+		 * Reveal the password for as long as the eye is held down.
+		 *
+		 * Pointer events rather than separate mouse+touch handlers, because the important part is
+		 * setPointerCapture: it guarantees this element receives the matching pointerup even if the
+		 * user drifts off the icon - or off the window entirely - before letting go. Without capture,
+		 * pointerup lands on whatever is under the cursor instead, the reveal is never undone, and the
+		 * password stays on screen until the next click. That stuck state is exactly what made this
+		 * read as a toggle.
+		 *
+		 * preventDefault stops the pointerdown from moving focus out of the input.
+		 */
+		revealPassword(evt) {
+			// Reveal FIRST, so that a capture that cannot be established still shows the password.
+			this.showPassword = true
+			try {
+				// Optional-chained for engines without pointer capture, e.g. jsdom in the unit tests.
+				evt.currentTarget?.setPointerCapture?.(evt.pointerId)
+			} catch (err) {
+				// setPointerCapture THROWS NotFoundError when the id is not an active pointer - which
+				// happens if the pointer was already released, and for synthetic events. Capture is only
+				// a robustness measure here; failing to get it degrades to the old "released elsewhere
+				// leaves it revealed" behaviour, which is not worth taking down the handler for.
+				console.debug("liquido-input: could not capture pointer for password reveal", err)
+			}
+		},
+
+		/** Hide it again on release, and on pointercancel - the browser fires that if the gesture is
+		 *  interrupted, e.g. by switching away mid-press. */
+		hidePassword() {
+			this.showPassword = false
+		},
+
 		onFocus() {
-			if (!this.disabled) this.isEditing = true
+			if (this.disabled) return
+			this.isEditing = true
+			// The one-way trip out of the field. Never set back to false anywhere.
+			this.hasFloated = true
 		},
 
 		onInput(evt) {
 			if (!this.disabled) this.isEditing = true
-			this.$emit("update:modelValue", evt.target.value)
+			this.emitValue(evt.target.value)
 		},
 
 		onChange(evt) {
 			if (!this.disabled) this.isEditing = true
 			// Safari/iOS autofill may update on change without firing the expected input sequence.
-			this.$emit("update:modelValue", evt.target.value)
+			this.emitValue(evt.target.value)
 			this.$emit("change", evt)
+		},
+
+		/**
+		 * Emit the new value, as a Number for type="number" and as a String otherwise.
+		 *
+		 * evt.target.value is ALWAYS a String, even on a number input. Emitting it raw means a parent
+		 * that binds a Number gets a String back after the first keystroke, and its own comparisons
+		 * (v === 0, v > 10) quietly start behaving differently.
+		 */
+		emitValue(raw) {
+			if (this.type === "number" && raw !== "") {
+				const num = Number(raw)
+				// Number("") is 0, which would turn a cleared field into a real zero - hence the guard
+				// above. A non-numeric leftover is passed through untouched rather than becoming NaN.
+				this.$emit("update:modelValue", Number.isNaN(num) ? raw : num)
+			} else {
+				this.$emit("update:modelValue", raw)
+			}
 		},
 
 		onBlur(evt) {
@@ -368,32 +535,59 @@ export default {
 		},
 
 		defaultValidFunc(val) {
-			// Keep in mind that val is not necessarily a string!
-			if (this.required && (!val))
+			// Keep in mind that val is not necessarily a string! It may be a Number.
+
+			// An EMPTY field is valid exactly when it is not required. Getting this wrong in either
+			// direction is expensive: returning false for an optional empty field means every typed
+			// field (email, url, mobilephone) calls "nothing entered" a mistake, which is why callers
+			// ended up writing their own isOptionalXValid() wrappers.
+			if (isEmptyValue(val))
+				return !this.required
+
+			// From here on there IS a value. Measure lengths on its text form, so that a Number is
+			// counted by its digits rather than reading `undefined` off a non-string.
+			const text = asText(val)
+
+			if (text.length < this.minLength)
 				return false
 
-			if (val && val.length < this.minLength)
+			if (text.length > this.maxLength)
 				return false
 
-			if (val && val.length > this.maxLength)
-				return false
+			// Numeric range. Separate from the length checks above on purpose - min/max constrain the
+			// VALUE, minLength/maxLength constrain how many characters it is written with.
+			if (this.min !== undefined || this.max !== undefined) {
+				// text.trim(), not Number(val) alone: Number("  ") is 0, so a whitespace-only value would
+				// otherwise sail past a min of 0 as if the user had typed a zero.
+				const num = text.trim() === "" ? NaN : Number(text)
+				if (Number.isNaN(num)) return false
+				if (this.min !== undefined && num < this.min) return false
+				if (this.max !== undefined && num > this.max) return false
+			}
 
 			if (this.pattern)
-				return new RegExp(this.pattern).test(val)
+				// Anchored, because that is what the native `pattern` attribute does: the browser
+				// compiles it as ^(?:...)$ and matches the WHOLE value. An unanchored test here would
+				// call "abc123xyz" valid for pattern="[0-9]{3}" while the browser rejected it, so the
+				// component and the browser would disagree about the same field.
+				return new RegExp(`^(?:${this.pattern})$`).test(text)
 
 			switch (this.type.toLowerCase()) {
 
 				case "email":
-					return eMailRegEx.test(val)
+					return eMailRegEx.test(text)
 
 				case "mobilephone":
-					return mobilephoneRegEx.test(val)
+					return mobilephoneRegEx.test(text)
 
 				case "number":
-					return !isNaN(val)
+					// Two guards, both needed. Number.isNaN rather than the global isNaN, which coerces
+					// its argument first; and an explicit blank check, because Number("  ") is 0 rather
+					// than NaN, so whitespace alone would otherwise validate as the number zero.
+					return text.trim() !== "" && !Number.isNaN(Number(text))
 
 				case "url":
-					return urlRegEx.test(val)
+					return urlRegEx.test(text)
 
 				default:
 					return true
@@ -407,7 +601,7 @@ export default {
 
 </script>
 
-<style scoped>
+<style>
 .liquido-input {
 	position: relative;
 	padding-top: 12px;
@@ -417,28 +611,87 @@ export default {
 		opacity: 0.5;
 	}
 
-/*
- * This <style> block is NOT scoped, so a bare "label" selector styled every <label> in the whole
- * app as a floating input label - including checkbox labels, which then jumped to the top-left
- * corner of their nearest positioned ancestor. Scoped to .liquido-input, which is the class this
- * component puts on its wrapper; proposal-add.vue's description field opts in the same way.
- */
-.liquido-input label {
-	position: absolute;
-	color: grey;
-	font-size: 12px;
-	font-weight: normal;
-	top: 3px;
-	left: 10px;
-	padding: 0 3px;
-	background: white;
-	border-radius: 5px;
+	/*
+	 * Floating label: sits in the wrapper's 12px top padding so it overlaps the input's top border.
+	 *
+	 * Written as a bare "label" because CSS nesting already prefixes it with .liquido-input. Writing
+	 * ".liquido-input label" here instead compiles to ".liquido-input .liquido-input label" - a
+	 * wrapper nested inside itself - which matches nothing, and the labels drop back to static and
+	 * stack above their input.
+	 *
+	 * This block is deliberately NOT scoped, and the .liquido-input prefix is what makes that safe: a
+	 * bare unscoped "label" would style every <label> in the app, including checkbox labels, which
+	 * then jump to the top-left corner of their nearest positioned ancestor. Keeping it unscoped is
+	 * what lets other components opt in by putting the class on their own markup - proposal-add.vue's
+	 * description field does exactly that.
+	 */
+	label {
+		position: absolute;
+		color: grey;
+		font-size: 12px;
+		font-weight: normal;
+		top: 3px;
+		left: 10px;
+		padding: 0 3px;
+		background: white;
+		border-radius: 5px;
+
+		/*
+		 * Only ever plays in one direction: .floating-inside is removed on first focus and never put
+		 * back, so this animates the label OUT of the field exactly once. Transform rather than
+		 * top/font-size because those two cannot be composited and would jitter on a phone.
+		 */
+		transform-origin: left center;
+		transition:
+			transform 0.15s ease-out,
+			color 0.15s ease-out,
+			opacity 0.15s ease-out,
+			background-color 0.15s ease-out;
 
 		/*
 		&.disabled {
 			background-color: var(--light-bg);
 		}
 		*/
+	}
+
+	/*
+	 * A floatingLabel before its first focus: parked inside the field, dressed exactly like the
+	 * placeholder it stands in for (same colour and opacity as .form-control::placeholder above), and
+	 * with no white pill, since it is sitting on the input's background rather than over its border.
+	 *
+	 * scale(1.3333) takes the 12px resting label to the 16px of Bootstrap's .form-control, and the
+	 * translateY drops it onto the input's text line. Both values are tuned to the real rendered
+	 * metrics - if .form-control's font-size or padding ever change, re-measure them.
+	 */
+	label.floating-inside {
+		transform: translateY(19px) scale(1.3333);
+		color: var(--secondary, #959cab);
+		opacity: 0.5;
+		background: transparent;
+
+		/*
+		 * A label parked inside the field has to stay inside it. Without a cap a long label runs past
+		 * the right edge, and on a password field it collides with the eye toggle.
+		 *
+		 * The cap is a PRE-transform width, because max-width applies to the untransformed box: the
+		 * label is then scaled by 4/3, so a rendered budget of B px needs max-width: 0.75 * B. That is
+		 * where the 75% comes from - it is 100% of the wrapper reduced by the same 4/3.
+		 * Budget here: full width minus the 10px left offset and the input's ~12px right padding.
+		 */
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: calc(75% - 17px);
+	}
+
+	/*
+	 * A password field also has the eye toggle at right:2em, roughly 52px of occupied space all in.
+	 * Only these fields pay for that reserve - :has() keeps every other field on the wider budget
+	 * above, so nothing truncates earlier than it must.
+	 */
+	&:has(> .password-toggle) label.floating-inside {
+		max-width: calc(75% - 56px);
 	}
 
 	.iconRight {
@@ -454,6 +707,9 @@ export default {
 		right: 2em;
 		color: lightgrey;
 		user-select: none;
+		/* Holding the eye must reveal the password, not start scrolling the page on a touch screen.
+		   This replaces the @touchstart.prevent the old mouse/touch handler pair relied on. */
+		touch-action: none;
 	}
 
 	.counter {

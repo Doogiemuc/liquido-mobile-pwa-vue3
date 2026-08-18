@@ -18,7 +18,7 @@
 					:label="$t('title')"
 					:valid-func="isProposalTitleValid"
 					:invalid-feedback="$t('titleInvalid', {minChars: titleMinLength})"
-					:maxlength="500"
+					:max-length="500"
 				/>
 
 				<div class="description liquido-input mb-3">
@@ -52,7 +52,7 @@
 							name="iconSearch"
 							:placeholder="chosenIcon"
 							:label="$t('ChooseIcon')"
-							:maxlength="100"
+							:max-length="100"
 							:valid-func="isIconSearchValid"
 							autocomplete="off"
 							@blur="iconSearch=''"

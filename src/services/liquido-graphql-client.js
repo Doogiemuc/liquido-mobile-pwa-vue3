@@ -461,6 +461,23 @@ let graphQlApi = {
 	},
 
 	/**
+	 * Ask the backend to send the welcome mail to the user who just registered.
+	 *
+	 * Takes no arguments on purpose: the backend derives recipient, team and admin/member role from
+	 * the JWT, which api.login() has already put into the default Authorization header by the time
+	 * createNewTeam/joinTeam resolves. So a client can only ever trigger a mail to itself.
+	 *
+	 * Call this fire-and-forget. A welcome mail that does not arrive must never make a successful
+	 * registration look like a failure, so callers swallow the rejection and just log it.
+	 *
+	 * Lives on REST rather than GraphQL because sending mail from a GraphQL resolver deadlocks on the
+	 * backend's current Quarkus version - the same reason the other /login/* calls above are REST.
+	 */
+	sendWelcomeMail() {
+		return axios.post('/login/welcomeMail').then(res => res.data)
+	},
+
+	/**
 	 * Set a new password with the one-time token from the reset email.
 	 * POST with a JSON body, not GET with query params - a one-time token and a plaintext password
 	 * must not land in access logs or browser history. The backend only accepts POST; GET answers 405.

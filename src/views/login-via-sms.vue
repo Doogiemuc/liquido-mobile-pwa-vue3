@@ -13,6 +13,7 @@
 					id="mobilephoneInput"
 					v-model="mobilephone"
 					v-model:state="mobilephoneInputState"
+					required
 					@keyup="mobilephoneInputKeyUp"
 					type="mobilephone"
 					class="mb-3"
