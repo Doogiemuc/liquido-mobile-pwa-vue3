@@ -1,0 +1,17 @@
+# Line endings
+#
+# Normalise every text file to LF, both in the repository and in the working tree.
+#
+# Why: this repo carried a pocket of ~20 CRLF files left over from the original 2021 scaffold, while
+# everything written since is LF. Editors faithfully preserve whatever a file already has, so the mix
+# never healed on its own - and any tool that rewrites a whole file (a codemod, a script, a formatter)
+# silently converted those files and produced diffs of hundreds of phantom lines.
+#
+# `text=auto` still lets git detect binary content on its own, so images, keystores and fonts are
+# left untouched.
+* text=auto eol=lf
+
+# Windows-only scripts must keep CRLF - there are none here today, but this keeps that true if one
+# ever arrives (the backend repo has mvnw.cmd for exactly this reason).
+*.bat text eol=crlf
+*.cmd text eol=crlf
