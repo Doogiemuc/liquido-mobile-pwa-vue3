@@ -7,33 +7,27 @@ Do I need a tool for managing my own backlog? => No just, this .md file
  * Header that scrolls away? Or no header at all? Other native apps in modern iOS have the rounded bubbles with transparent background. I don't like this.
 
 
-# Canaries for public instance
-
- * Let the happy case run against INT every 5 mins.  => From which host?
-
-# [TEST] Write further Tests
- * Create a second team when already registered
- * Switch between own teams
-
 # Technical Dept
 
  * Detail: Make all components pass the page-title into liquido-header via normal properties
  * OR Larger refactoring: Go through state store. Make rootApp include the header. (Do I have a header on all pages?)
-               What about side scrolling? 
+               What about side scrolling?
+ * Scroll to top: Do this with  https://router.vuejs.org/guide/advanced/scroll-behavior.html#Delaying-the-scroll     "scrollBehaviour" in router!!!
+ * Timeout for backend requests
 
 ## Use Case features
  
 ### Registration
 
  * Verify a user's email
- * Verify phone number
+ * Verify phone number - DEPRECATED. Phone numbers are optional. Not used in the frontend anymore at all.
 
 ### Login
 
  * Finally finalize the final login flow :-) Login via
-   * Login via Email
+   * Login via Email - 
 	 * Google - DONE
-	 * [Login with Apple](https://developer.apple.com/documentation/signinwithapple/configuring-your-webpage-for-sign-in-with-apple)
+	 * [Login with Apple](https://developer.apple.com/documentation/signinwithapple/configuring-your-webpage-for-sign-in-with-apple). - still TODO
 	 * Authy App: Need good docu and UX guide.
 	 * SMS - Not possible due to costs :-(
 
@@ -66,11 +60,8 @@ LIQUIDO premium  is a decentralized implementation of a new liquid, proxy voting
  * Alternative ideas that can be suggested, and then become alternative proposals if they gather enough supporters.
  * Polls that can be started when there are at least two proposals. Open question: Who decides when to start a poll without a central authority? The majority (or min 2/3rd? -> config) of the  proposal creators say so? => that could mean we need a third to break a tie between only two.... mmhhh ... Maybe: a poll start at least n days after there are two proposals if the creators cannot decide.
 
-## Code cleanup, small stuff
+#
  
- * Timeout for backend requests
- * mobile-debug-log: Drag "L" handle. Configurable: at the right screen edge, drag'n'drop
-
 
 ## Bigger technical lifts
 
@@ -80,7 +71,20 @@ LIQUIDO premium  is a decentralized implementation of a new liquid, proxy voting
  * Capacitorjs.com A cross platform native runtime for web apps.
  * split liquido-graphql-client.js  into authentication, cache-service and pure backend HTTP clients
 
+# Smaller planned features
+
+ * mobile-debug-log: Drag "L" handle. Configurable: at the right screen edge, drag'n'drop
+
 # Deployment
+
+# Canaries for public instance
+
+ * Let the happy case run against INT every 5 mins.  => From which host?
+
+# [TEST] Write further Tests
+ * Create a second team when already registered
+ * Switch between own teams
+
 
 # Database for free
  * https://supabase.com/
@@ -88,7 +92,6 @@ LIQUIDO premium  is a decentralized implementation of a new liquid, proxy voting
 
 ## Smaller fixes
 
- * Scroll to top: Do this with  https://router.vuejs.org/guide/advanced/scroll-behavior.html#Delaying-the-scroll     "scrollBehaviour" in router!!!
  * Test on real devices, eg. with https://www.browserstack.com/    => This does already work on real hardware locally.
 
 # DONE - Implemented Features 
