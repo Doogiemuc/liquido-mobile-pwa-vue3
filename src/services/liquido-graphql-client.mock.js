@@ -1,4 +1,5 @@
 import axios from "axios"
+import { decodeJwtPayload } from "@/services/jwt-util.js"
 import { get, isValidString, set } from "@kubric/litedash"
 import config from "config"
 import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
@@ -238,7 +239,7 @@ const detectOperation = query => {
 	// misrouted to them. That is why switchTeam sits at the very front.
 	const operations = [
 		"switchTeam",
-		"createNewTeam", "joinTeam", "savePolly", "editPolly", "startPolly", "castVoteInPolly", "finishPolly", "createPoll", "updateProposal", "addProposal", "likeProposal", "startVotingPhase",
+		"createNewTeam", "joinTeam", "savePolly", "editPolly", "startPolly", "castVoteInPolly", "finishPolly", "createPoll", "updatePoll", "updateProposal", "addProposal", "deleteProposal", "likeProposal", "startVotingPhase",
 		"finishVotingPhase", "castVote", "loginWithEmailPassword", "googleOneTapLogin", "loginWithAuthToken",
 		"requestPasswordReset", "resetPassword", "requestEmailLoginLink", "teamForInviteCode", "loginWithJwt",
 		"devLogin", "authToken", "voterToken", "verifyBallot", "myBallot", "polls", "poll", "team", "ping",
@@ -253,6 +254,30 @@ const detectOperation = query => {
 
 /** The team the mock session is currently scoped to. This replaced the old single currentTeam(). */
 const currentTeam = () => mockState.teams[mockState.currentTeamIndex]
+
+/**
+ * Mint a structurally real JWT: header.payload.signature, base64url encoded, carrying the same
+ * "groups" claim the backend mints in JwtTokenUtils.generateToken.
+ *
+ * It is NOT signed - the signature segment is a constant, and nothing in the mock ever verifies it.
+ * But it has to have the right SHAPE, because api.isAdmin() reads the admin role out of this claim.
+ * The old `mock-jwt-<id>` string had no payload at all, so with a JWT-based isAdmin() the mock
+ * backend would have had no admins anywhere.
+ *
+ * Deterministic for a given user and team: the token is compared by string equality on reload.
+ */
+const mockJwt = (user, team) => {
+	const isAdmin = (team?.members || [])
+		.some(m => m.role === "ADMIN" && String(m.user?.id) === String(user.id))
+	const groups = isAdmin ? ["LIQUIDO_USER", "LIQUIDO_ADMIN"] : ["LIQUIDO_USER"]
+	// UTF-8 before base64: a JWT segment encodes BYTES. Handing btoa() a string with non-ASCII in it
+	// encodes Latin-1, which decodeJwtPayload would then read back as mojibake - and btoa throws
+	// outright above U+00FF, which would take the whole mock login down for one unusual address.
+	const b64url = obj => btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(obj))))
+		.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
+	return b64url({ alg: "none", typ: "JWT" }) + "." +
+		b64url({ sub: user.email, teamId: String(team?.id), groups }) + ".mocksignature"
+}
 
 /** Every team the given email is a member (or admin) of - the mock's TeamMemberEntity.findTeamsByMember. */
 const teamsOfMember = email =>
@@ -289,9 +314,9 @@ const jwtFromAuthHeader = () => {
 
 const findMemberByJwt = jwt => {
 	if (jwt === teamUserJwtMock.jwt) return findMemberByUserId(teamUserJwtMock.user.id)
-	const match = (jwt || "").match(/^mock-jwt-(.+)$/)
-	if (!match) return undefined
-	return findMemberByUserId(match[1])
+	// mockJwt() puts the email in "sub", the same claim the backend uses.
+	const sub = decodeJwtPayload(jwt)?.sub
+	return sub ? findMemberByEmail(sub) : undefined
 }
 
 const currentUserOrThrow = () => {
@@ -299,6 +324,14 @@ const currentUserOrThrow = () => {
 		rejectLiquido(LiquidoExceptionCodes.UNAUTHORIZED, "Mock user is not authenticated")
 	}
 	return mockState.currentUser
+}
+
+/** Is the currently logged in mock user the ADMIN of the current team? Mirrors JwtTokenUtils.isAdmin(). */
+const currentUserIsAdmin = () => {
+	const user = mockState.currentUser
+	if (!user) return false
+	return (currentTeam()?.members || [])
+		.some(m => m.role === "ADMIN" && String(m.user?.id) === String(user.id))
 }
 
 /**
@@ -341,7 +374,7 @@ const loginMock = (email, teamId) => {
 
 	// Simulate the cache initialization that happens in graphQlApi.login()
 	mockState.currentUser = deepClone(user)
-	mockState.jwt = `mock-jwt-${user.id}`
+	mockState.jwt = mockJwt(user, team)
 	saveMockState(mockState)
 
 	console.log("Mock login successful for <" + user.email + "> into team '" + team.teamName + "'")
@@ -526,7 +559,7 @@ const mutationHandlers = {
 			teams: [newTeam],
 			currentTeamIndex: 0,
 			currentUser: adminUser,
-			jwt: `mock-jwt-${userId}`,
+			jwt: mockJwt(adminUser, newTeam),
 			issuedAuthTokensByMobile: {},
 			voterTokensByPollAndUser: {},
 			ballotsByPollAndUser: {},
@@ -759,6 +792,49 @@ const mutationHandlers = {
 		proposal.title = title
 		proposal.description = get(variables, "description", argFromQuery(query, "description", proposal.description))
 		proposal.icon = get(variables, "icon", argFromQuery(query, "icon", proposal.icon))
+		poll.updatedAt = nowIso()
+		return deepClone(poll)
+	},
+	/**
+	 * Rename a poll. Admin only, and only while the poll is in ELABORATION.
+	 */
+	updatePoll: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
+		const poll = findPoll(pollId)
+		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
+		if (poll.status !== "ELABORATION")
+			rejectLiquido(LiquidoExceptionCodes.CANNOT_UPDATE_POLL, `Poll ${pollId} has already started`)
+		if (!currentUserIsAdmin())
+			rejectLiquido(LiquidoExceptionCodes.CANNOT_UPDATE_POLL, "Only the admin may rename a poll")
+
+		const title = get(variables, "title", argFromQuery(query, "title", poll.title))
+		// Unique within the team - but a poll never collides with itself.
+		if ((currentTeam().polls || []).some(p => p.id !== pollId && p.title === title))
+			rejectLiquido(LiquidoExceptionCodes.CANNOT_UPDATE_POLL, `Team already has a poll titled '${title}'`)
+
+		poll.title = title
+		poll.updatedAt = nowIso()
+		return deepClone(poll)
+	},
+
+	/**
+	 * Delete a proposal from a poll. Admin only, and only while the poll is in ELABORATION.
+	 * Note the asymmetry with updateProposal: the admin may remove any proposal, but may not
+	 * rewrite one that is not their own.
+	 */
+	deleteProposal: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
+		const proposalId = asInt(get(variables, "proposalId", argFromQuery(query, "proposalId", "-1")))
+		const poll = findPoll(pollId)
+		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
+		if (poll.status !== "ELABORATION")
+			rejectLiquido(LiquidoExceptionCodes.CANNOT_DELETE_PROPOSAL, `Poll ${pollId} has already started`)
+		if (!currentUserIsAdmin())
+			rejectLiquido(LiquidoExceptionCodes.CANNOT_DELETE_PROPOSAL, "Only the admin may delete proposals")
+		if (!(poll.proposals || []).some(p => p.id === proposalId))
+			rejectLiquido(LiquidoExceptionCodes.CANNOT_DELETE_PROPOSAL, `No proposal ${proposalId} in poll ${pollId}`)
+
+		poll.proposals = (poll.proposals || []).filter(p => p.id !== proposalId)
 		poll.updatedAt = nowIso()
 		return deepClone(poll)
 	},

@@ -32,11 +32,12 @@
 		<section>
 			<h2>{{ team.teamName }}</h2>
 			<div id="memberCircles" class="member-grid mt-3 mb-3">
-				<div v-for="member in members.slice(0,6)" :key="member.user.id" class="member-circle">
+				<div v-for="member in members.slice(0,6)" :key="member.user.id" class="member-circle"
+					:data-member-name="member.user.name" :data-member-role="member.role">
 					<img :src="getImgUrl(member.user.picture)" class="member-avatar" alt="Member Avatar" />
 					<div class="member-name">{{ member.user.name }}</div>
 				</div>
-				<div v-if="userIsAdmin" class="member-circle" @click="toggleInvite">
+				<div v-if="userIsAdmin" id="inviteMemberCircle" class="member-circle" @click="toggleInvite">
 					<i class="fas fa-plus-circle add-member-icon" :class="{ 'add-member-icon--open': showInvite }" />
 					<div class="member-name">einladen</div>
 				</div>
@@ -53,7 +54,7 @@
 			</div>
 		</section>
 
-		<section v-if="userIsAdmin">
+		<section v-if="userIsAdmin" id="adminSettingsSection">
 			<h2>Admin Einstellungen</h2>
 			<p>Nur du kannst <router-link to="/new-poll">neue Abstimmungen erstellen</router-link>.</p>
 		</section>

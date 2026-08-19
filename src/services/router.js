@@ -88,11 +88,25 @@ const routes = [
 		component: () => import("@/views/poll-create.vue"),
 	},
 	{
+		// The all-in-one editor: create a poll and its proposals on one page.
+		// MUST stay above "/polls/:pollId", or the param route swallows "new".
+		path: "/polls/new",
+		name: "newPoll",
+		component: () => import("@/views/poll-edit.vue"),
+	},
+	{
 		path: "/polls/:pollId",
 		name: "showPoll",
 		component: () => import("@/views/poll-show.vue"),
 		props: true,
 	}, 
+	{
+		// The same editor again, now editing a poll that already exists (ELABORATION only).
+		path: "/polls/:pollId/edit",
+		name: "editPoll",
+		component: () => import("@/views/poll-edit.vue"),
+		props: true,
+	},
 	{
 		path: "/polls/:pollId/add",
 		name: "addProposal",

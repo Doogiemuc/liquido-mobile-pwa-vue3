@@ -23,7 +23,7 @@ export default {
 	pollTitleMinLength: 5,									// Can be short. But should possibly be longer than 3 chars to avoid spam. Used in poll-create.vue
 	pollDefaultRuntimeDays: 7,
 	proposalTitleMinLength: 3,							// Used in proposal-add.vue
-	proposalDescriptionMinLength: 10,
+	proposalDescriptionMinLength: 20,				// MUST match ProposalEntity.description's @Size(min=20) in the backend, or the server rejects what the client accepted
 	avatarPath: "./img/avatars",
 	inviteLinkPrefix: "http://app.liquido.vote/welcome?inviteCode=",
 	//TODO: adminMustConfirmNewMembers: ...

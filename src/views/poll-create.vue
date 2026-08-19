@@ -63,7 +63,7 @@
 
 		<liquido-footer>
 			<template #primary>
-				<button id="createPollButton" type="button" class="btn btn-lg w-100 btn-primary" 
+				<button id="createPollButton" type="button" class="btn btn-primary" 
 				  :disabled="createPollButtonDisabled"
 				  @click="clickCreateNewPoll">
 					<span v-if="creating" class="spinner-border spinner-border-sm" role="status">
@@ -181,33 +181,10 @@ export default {
 
 <style>
 
-.poll-eyebrow {
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
-	align-items: center;
-	width: 100%;
-	font-size: var(--font-size-small);
-}
-
-.poll-pill-group {
-	display: flex;
-	align-items: center;
-	gap: 0.35rem;
-	min-width: 0;
-}
-
 .poll-runtime-days {
 	width: 3rem;
 	margin-left: 1rem;
 	margin-right: 0.5rem;
-}
-
-.poll-footer {
-	margin-top: var(--unit);
-	color: var(--secondary);
-	font-size: 0.8rem; /* needs to be smaller than our standard  var(---font-size-small);  0.9rem */
-	color: var(--secondary);
 }
 
 .poll-progress-bar {

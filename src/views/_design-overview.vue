@@ -62,6 +62,8 @@ const pages = [
 	{ name: 'New Poll', route: `/polls/${newPollId}` },
 	{ name: 'Poll in Voting', route: `/polls/${pollInVotingId}` },
 	{ name: 'Create a new poll', route: '/polls/create' },
+	{ name: 'Poll editor (new)', route: '/polls/new' },
+	{ name: 'Poll editor (edit)', route: `/polls/${newPollId}/edit` },
 	{ name: 'Add a proposal', route: `/polls/${firstPollId}/add` },
 	{ name: 'Cast a vote', route: `/polls/${pollInVotingId}/castVote` },
 	{ name: 'Forgot password', route: '/forgotPassword' },

@@ -64,8 +64,10 @@ const page_order = {
 	"team": 10,
 	"polls": 11,
 	"createPoll": 12,
+	"newPoll": 12,      // the all-in-one editor sits at the same depth as createPoll
 	"showPoll": 13,
 	"addProposal": 14,
+	"editPoll": 14,     // ...and its edit mode at the same depth as addProposal
 	"castVote": 15,
 }
 
@@ -212,7 +214,7 @@ export default {
 		},
 
 		gotoCreateNewPoll() {
-			this.$router.push({name: "createPoll"})
+			this.$router.push({name: "newPoll"})
 		},
 
 		/**

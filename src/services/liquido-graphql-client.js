@@ -7,6 +7,7 @@
  */
 
 import axios from "axios"
+import { LIQUIDO_ADMIN_ROLE, jwtHasRole } from "@/services/jwt-util.js"
 import config from "config"
 import PopulatingCache from "populating-cache"
 import EventBus from "@/services/event-bus.js"
@@ -363,15 +364,25 @@ let graphQlApi = {
 		return this.teamCache.getSync(this.ALL_USER_TEAMS_KEY, false) || []
 	},
 
-	/** 
-	 * Check if currently logged in user is the admin of his team. 
-	 * @return false if no one is logged in or currently logged in user is not the admin
+	/**
+	 * Is the currently logged in user the admin of the team they are currently in?
+	 *
+	 * Read straight out of the JWT's "groups" claim - the very same claim the backend authorises on
+	 * (JwtTokenUtils.isAdmin). That makes frontend and backend agree by construction. It also has
+	 * exactly one failure mode: no token, no admin.
+	 *
+	 * The previous implementation instead re-derived the answer by looking for the cached user's id
+	 * among the cached team's ADMIN members. That needed two caches to be populated and the two ids
+	 * to match under strict equality, and it silently answered "not an admin" whenever any of that
+	 * did not hold. Admin-ness is per team, and the backend mints a fresh token on every login and
+	 * every switchTeam, so the claim always describes the team the user is actually in.
+	 *
+	 * Not a security boundary - see decodeJwtPayload. It decides what to show, never what to allow.
+	 *
+	 * @return true only if the current JWT carries the admin role
 	 */
 	isAdmin() {
-		let cachedUser = this.getCachedUser()
-		let team        = this.getCachedTeam()
-		if (!cachedUser || !team) return false
-		return team.members.filter(tm => tm.role == "ADMIN").map(admin => admin.user.id).includes(cachedUser.id)
+		return jwtHasRole(this.teamCache.getSync(this.JWT_KEY, false), LIQUIDO_ADMIN_ROLE)
 	},
 
 	/**
@@ -928,6 +939,50 @@ let graphQlApi = {
 				let poll = res.data.updateProposal
 				this.pollsCache.put("polls/"+poll.id, poll)
 				console.debug("Updated proposal in poll:", poll)
+				return poll
+			})
+	},
+
+	/**
+	 * Rename a poll. Admin only, and only while the poll is still in ELABORATION.
+	 * The backend refuses everything else: a member calling this, a poll that already started,
+	 * or a title that another poll in the team already uses.
+	 *
+	 * There is deliberately no way to change membersCanAddProposals here. That is fixed when the
+	 * poll is created.
+	 *
+	 * @param {Number} pollId the poll to rename
+	 * @param {String} title the new title. Must be unique within the team.
+	 * @returns {Object} the updated poll
+	 */
+	async updatePoll(pollId, title) {
+		let graphQL = `mutation updatePoll($pollId: BigInteger!, $title: String!) { updatePoll(pollId: $pollId, title: $title) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId), title })
+			.then(res => {
+				let poll = res.data.updatePoll
+				this.pollsCache.put("polls/"+poll.id, poll)
+				console.debug("Renamed poll:", poll)
+				return poll
+			})
+	},
+
+	/**
+	 * Delete a proposal from a poll. Admin only, and only while the poll is still in ELABORATION.
+	 *
+	 * Note the deliberate asymmetry with updateProposal: the admin may take any proposal off the
+	 * ballot, but may not rewrite one that is not their own.
+	 *
+	 * @param {Number} pollId the poll containing the proposal
+	 * @param {Number} proposalId the proposal to delete
+	 * @returns {Object} the updated poll, without that proposal
+	 */
+	async deleteProposal(pollId, proposalId) {
+		let graphQL = `mutation deleteProposal($pollId: BigInteger!, $proposalId: BigInteger!) { deleteProposal(pollId: $pollId, proposalId: $proposalId) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId), proposalId: Number(proposalId) })
+			.then(res => {
+				let poll = res.data.deleteProposal
+				this.pollsCache.put("polls/"+poll.id, poll)
+				console.debug(`Deleted proposal.id=${proposalId} from poll.id=${pollId}`)
 				return poll
 			})
 	},

@@ -1,5 +1,5 @@
 <template>
-	<div class="poll-card card border-opacity-25" :data-poll-status="poll.status">
+	<div class="poll-card card border-opacity-25" :data-poll-status="poll.status" :data-poll-id="poll.id">
 		<div class="card-body d-flex flex-nowrap" :class="{ clickable: !showProposals }" @click="$emit('click', poll.id)">
 			<div class="flex-grow-1 d-flex flex-column justify-content-between">
 				<div class="poll-eyebrow">
@@ -57,6 +57,7 @@
 		<ul class="list-group list-group-flush proposal-list">
 			<li v-for="prop in sortedProposals" :key="prop.id"
 				class="list-group-item proposal-list-group-item"
+				:data-proposal-id="prop.id"
 				:class="proposalListGroupItemClasses(prop.id)">
 				<div class="proposal-icon">
 					<i class="fas fa-fw" :class="'fa-' + prop.icon"></i>

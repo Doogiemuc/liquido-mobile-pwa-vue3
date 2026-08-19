@@ -27,10 +27,10 @@
 				</div>
 				<div class="modal-footer">
 					<slot name="modal-footer">
-						<button v-if="mySecondaryButtonText" id="modalSecondaryButton" type="button" class="btn btn-secondary flex-grow-1" @click="clickSecondary">
+						<button v-if="mySecondaryButtonText" :id="id + 'SecondaryButton'" type="button" class="btn btn-secondary flex-grow-1" @click="clickSecondary">
 							{{ mySecondaryButtonText }}
 						</button>
-						<button id="modalPrimaryButton" type="button" class="btn btn-primary flex-grow-1" @click="clickPrimary">
+						<button :id="id + 'PrimaryButton'" type="button" class="btn btn-primary flex-grow-1" @click="clickPrimary">
 							<i v-if="myPrimaryButtonIcon" class="me-2" :class="myPrimaryButtonIcon"></i>
 							{{ myPrimaryButtonText }}
 						</button>
@@ -53,6 +53,10 @@
  * 
  * And then open e.g. like this
  * this.$refs["successModal"].open()
+ * 
+ * The footer buttons get ids derived from the modal's own id, e.g. "successModalPrimaryButton"
+ * and "successModalSecondaryButton", so that several modals can be mounted at once without
+ * clashing (root-app.vue always mounts #rootPopupModal on top of whatever the page mounts).
  * 
  * Will emit an event "clickPrimary", when primary button is clicked
  */

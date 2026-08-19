@@ -423,6 +423,42 @@ body {
 }
 
 
+/***************** Poll panel: the row above the title, and the row below it *****************/
+/*
+ * Shared by poll-card.vue, poll-create.vue and poll-card-edit.vue. These used to be declared in
+ * poll-create.vue's unscoped <style> block, which made every other view depend on poll-create.vue
+ * happening to be loaded - and routes are lazy-loaded, so that only held by luck. Same reasoning as
+ * the status pills above. poll-card.vue keeps its own `.poll-card ...`-prefixed copies.
+ */
+
+.poll-eyebrow {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+	font-size: var(--font-size-small);
+}
+
+.poll-pill-group {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	min-width: 0;
+}
+
+.num-proposals {
+	color: var(--secondary);
+	font-size: 0.8rem;
+	white-space: nowrap;
+}
+
+.poll-footer {
+	margin-top: var(--unit);
+	color: var(--secondary);
+	font-size: 0.8rem;   /* needs to be smaller than our standard var(--font-size-small) = 0.9rem */
+}
+
 /***************** Bootstrap component overrides *****************/
 /*
  * Bootstrap 5.2+ drives button appearance entirely through CSS custom properties.

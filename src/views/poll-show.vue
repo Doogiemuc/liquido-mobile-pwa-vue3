@@ -29,10 +29,16 @@
 			</button>
 		</div>
 
+		<div v-if="!showError && poll.status === 'ELABORATION' && userIsAdmin" class="alert alert-admin">
+			<p v-html="$t('PollInElaboration_Admin')" />
+		</div>
+
 		<div v-if="!showError && !hasAlreadyVoted" class="alert liquido-info">
-			<p v-if="poll.status === 'ELABORATION'" v-html="$t('pollInElaborationInfo')" />
+			<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && poll.membersCanAddProposals" v-html="$t('PollInElaboration_CanAddProposal')" />
+			<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && !poll.membersCanAddProposals" id="onlyAdminAddsProposalsInfo" v-html="$t('PollInElaboration_OnlyAdminAddsProposals')" />
+
 			<p v-if="poll.status === 'VOTING' && !hasAlreadyVoted">
-				{{ $t('votingPhaseIsRunngin') }}
+				{{ $t('votingPhaseIsRunning') }}	
 				<router-link :to="{name: 'castVote'}">{{ $t('votingPhaseInfo') }}</router-link>
 			</p>
 			<p v-if="poll.status === 'FINISHED'" id="finishedPollInfo">
@@ -72,11 +78,12 @@
 		</div>
 
 		<liquido-footer>
-			<template #info>
-				<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && poll.membersCanAddProposals" v-html="$t('canAddProposal')" />
-				<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && !poll.membersCanAddProposals" v-html="$t('onlyAdminAddsProposals')" />
-			</template>
 			<template #primary>
+				<button v-if="poll.status === 'ELABORATION'" id="backToPollsButton" type="button" class="btn btn-outline-secondary" @click="gotoPolls()">
+					<i class="fas fa-angle-double-left" />
+					{{ $t("Back") }}
+				</button>
+
 				<button v-if="poll.status === 'VOTING' && !hasAlreadyVoted" id="goToCastVoteButton" type="button" class="btn btn-primary" @click="clickCastVote()">
 					<i class="fas fa-person-booth" />
 					{{ $t("goToCastVote") }}
@@ -105,7 +112,7 @@
 		-->
 		<popup-modal id="startPollModal" ref="startPollModal">
 			<template #modal-body>
-				<p>{{ $t("startPollConfirmMessage") }}</p>
+				<p id="startPollConfirmMessage">{{ $t("startPollConfirmMessage") }}</p>
 				<liquido-input
 					id="pollDurationInput"
 					v-model="pollDurationDays"
@@ -137,11 +144,9 @@ import liquidoBallot from "@/components/liquido-ballot.vue"
 import popupModal from "@/components/popup-modal.vue"
 import liquidoInput from "@/components/liquido-input.vue"
 import config from "config"
-// import polly from '@/components/polly.vue'
 import EventBus from "@/services/event-bus.js"
 import api from "@/services/liquido-graphql-client.js"
 import log from 'loglevel'
-import { RouterLink } from "vue-router"
 
 export default {
 	i18n: {
@@ -149,11 +154,16 @@ export default {
 			en: {},
 			de: {
 				cannotFindPoll: "<h4>Fehler</h4><hr/><p>Diese Abstimmung konnte nicht gefunden werden.</p>",
-				pollInElaborationInfo: 
-					"<p>Diese Abstimmung ist gerade neu angelegt worden. Es können auch noch weitere Vorschläge hinzugefügt werden.</p>" +
-					"<p>Sobald die Wahl startet, kannst du hier anonym und sicher deine Stimme abgeben.</p>",
-				canAddProposal:
-					"Du kannst eigene Vorschläge zu dieser Abstimmung hinzufügen.",
+				PollInElaboration_Admin:
+					"<p>Du hast diese Abstimmung neu angelegt. Jetzt kannst noch weitere Vorschläge hinzufügen.</p>" +
+					"<p>Sobald du die Abstimmung startest, können deine Teammitglieder dann hier anonym und sicher ihre Stimme abgeben.</p>",
+				PollInElaboration_CanAddProposal:
+					"<p>Diese Abstimmung ist gerade neu angelegt worden. Du kannst noch weitere Vorschläge hinzufügen.</p>" +
+					"<p>Sobald euer Admin die Abstimmung startet, kannst du dann hier anonym und sicher deine Stimme abgeben.</p>",
+				PollInElaboration_OnlyAdminAddsProposals:
+					"<p>Diese Abstimmung ist gerade neu angelegt worden. In dieser Abstimmung kann nur euer Admin Vorschläge hinzufügen.</p>" +
+					"<p>Sobald euer Admin die Abstimmung startet, kannst du dann hier anonym und sicher deine Stimme abgeben.</p>",
+
 				yourBallot: "Dein Stimmzettel",
 				onlyAdminAddsProposals:
 					"In dieser Abstimmung legt nur der Admin die Vorschläge fest.",
@@ -170,7 +180,7 @@ export default {
 				finishVotingPhaseInfo: "Hallo Admin! Bisher wurden in dieser Abstimmung {numBallots} Stimmen abgegeben.",
 				finishVotingPhase: "Abstimmung beenden",
 				votingPhaseStartedSuccessfully: "Die Abstimmung ist jetzt gestartet.",
-				votingPhaseIsRunngin: "Diese Abstimmung läuft gerade.",
+				votingPhaseIsRunning: "Diese Abstimmung läuft gerade.",
 				votingPhaseInfo: "Du kannst jetzt deine Stimme abgeben.",
 				goToCastVote: "Zur Abstimmung",
 				editOwnVote: "Stimmzettel ändern",
@@ -316,12 +326,14 @@ export default {
 		},
 		
 		clickAddProposal() {
-			this.$router.push({name: "addProposal", params: {pollId: this.poll.id}})
+			// The editor shows the whole poll with an empty row at the bottom, so "add a proposal"
+			// and "edit my own" are the same page now.
+			this.$router.push({name: "editPoll", params: {pollId: this.poll.id}})
 		},
 
 		/** Edit one of your own proposals. Emitted by the pencil in poll-card.vue. */
 		gotoEditProposal(proposalId) {
-			this.$router.push({name: "editProposal", params: {pollId: this.poll.id, proposalId: proposalId}})
+			this.$router.push({name: "editPoll", params: {pollId: this.poll.id}, query: {edit: proposalId}})
 		},
 
 		clickCastVote() {
@@ -391,7 +403,12 @@ export default {
 				log.error("Cannot finish voting phase of poll(id="+this.poll.id+")", err)
 			})
 		},
-	},
+
+		gotoPolls() {
+			this.$root.gotoPolls()
+		}
+
+	}
 }
 </script>
 

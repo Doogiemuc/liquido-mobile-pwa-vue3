@@ -235,7 +235,8 @@ function goToPoll(id) {
 }
 
 function gotoCreateNewPoll() {
-	router.push({ name: "createPoll" })
+	// The all-in-one editor: title and the first proposals on one page.
+	router.push({ name: "newPoll" })
 }
 
 function scrollToTop() {
