@@ -433,6 +433,27 @@ export default {
 	overflow: hidden;
 }
 
+/*
+ * Bootstrap finishes a card's list-group through `.card > .list-group:first-child` / `:last-child`:
+ * it drops the borders the list inherits from the card, and rounds the card's bottom corners.
+ * NEITHER selector matches here - the summary .card-body comes first, and the icon-picker modal
+ * renders as the card's last child. So we got the inherited 1px borders doubling up (a 2px divider
+ * under the summary panel, a stray hairline above the card's own bottom border), and the last row's
+ * opaque white background painted square corners over the card's rounded ones. Do it by hand.
+ */
+.poll-card-edit .proposal-list {
+	border-top-width: 0;      /* .proposal-row brings its own 1px divider */
+	border-bottom-width: 0;   /* the card's own border already closes the list */
+}
+
+/* Round whatever ends up last - the "add proposal" row while creating, else the last proposal.
+   overflow: hidden clips the full-width button inside .add-row to the same arc. */
+.poll-card-edit .proposal-list > .list-group-item:last-child {
+	border-bottom-left-radius: calc(var(--liquido-border-radius) - 1px);
+	border-bottom-right-radius: calc(var(--liquido-border-radius) - 1px);
+	overflow: hidden;
+}
+
 .poll-card-edit .proposal-row {
 	display: flex;
 	align-items: flex-start;

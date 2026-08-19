@@ -352,6 +352,18 @@ export default {
 }
 
 /* List of proposals shown at the bottom of the card (only when showProposals is true) */
+
+/* Bootstrap rounds a card's bottom corners via `.card > .list-group:last-child`. Our .list-group
+   is NOT a direct child of the card - it sits inside .proposal-list-wrapper (which owns the
+   max-height transition) - so that rule never matches, and the last proposal row's opaque white
+   background painted square corners over the card's rounded ones. Round the wrapper instead: it
+   already clips (overflow: hidden, set inline for the transition), so the row gets cut to shape.
+   Minus the card's 1px border, exactly like Bootstrap's own --bs-card-inner-border-radius. */
+.poll-card .proposal-list-wrapper {
+	border-bottom-left-radius: calc(var(--liquido-border-radius) - 1px);
+	border-bottom-right-radius: calc(var(--liquido-border-radius) - 1px);
+}
+
 .poll-card .proposal-list-group-item {
 	display: flex;
 	align-items: stretch;   /* let .proposal-body stretch to the full, fixed row height */
