@@ -1,7 +1,7 @@
 <template>
 	<div class="card shadow-sm proposal-panel d-flex flex-row align-items-center user-select-none">
 		<!-- In the ballot a rank number is shown (pass :rank); in the available pool the proposal icon. -->
-		<div v-if="rank > 0" class="rank-circle">
+		<div v-if="rank > 0" class="proposal-icon">
 			{{ rank }}
 		</div>
 		<div v-else class="proposal-icon">

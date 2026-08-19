@@ -2,7 +2,7 @@
 	<div class="the-ballot" :class="{ 'ballot-drag-over': isDraggingOver }">
 		<div v-if="showEmptySlots" class="empty-slots-behind">
 			<div v-for="index in proposalCount" :key="`empty-${index}`" class="empty-slot d-flex flex-row align-items-center user-select-none" aria-hidden="true">
-				<div class="rank-circle">{{ index }}</div>
+				<div class="proposal-icon">{{ index }}</div>
 				<div class="d-flex"><p class="mb-0">{{ emptySlotTitle(index - 1) }}</p></div>
 			</div>
 		</div>
@@ -30,9 +30,9 @@
 			</template>
 		</draggable>
 
-		<div v-if="showEmptySlots" class="proposals-counter">
+		<!-- div v-if="showEmptySlots" class="proposals-counter">
 			{{ proposals?.length }}/{{ proposalCount }}
-		</div>
+		</div -->
 	</div>
 </template>
 
@@ -94,13 +94,33 @@ export default {
 	overflow: hidden;
 }
 
+/* Empty placeholder slot in the ballot: a proposal panel with no content yet.
+   Dimmed and dashed, styled to read on the bluish --ballot-bg. */
+.empty-slot {
+	--empty-slot-color: rgba(255, 255, 255, 0.5);
+	height: var(--polly-proposal-height, 4rem);
+	margin-bottom: var(--polly-proposal-margin-bottom, 0.5rem);
+	padding: 0 var(--half);
+	border: 1px dashed var(--empty-slot-color);
+	border-radius: var(--liquido-border-radius);
+	background-color: rgba(0, 0, 0, 0.02); /* just a tiny little bit darker */
+	color: var(--empty-slot-color);
+}
+
+.empty-slot .proposal-icon {
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	background-color: rgba(0, 0, 0, 0.1);
+	color: var(--empty-slot-color);
+}
+
 .draggable {
 	position: relative;
-	min-height: calc(2 * (4rem + 0.5rem) + var(--unit));
+	min-height: calc(2 * (4rem + 0.5rem) + var(--two));
 	padding-bottom: var(--unit);
 	z-index: 1;
 }
 
-/* The proposal-panel, empty-slot, rank-circle, proposal-title, proposal-subtitle, liked and
-   drag-handle styles are defined globally in src/styles/liquido.css and shared with liquido-proposal.vue. */
+/* The proposal-panel, proposal-icon, proposal-title, proposal-subtitle, liked and drag-handle
+	styles are defined globally in src/styles/liquido.css and shared with liquido-proposal.vue.
+	Empty-slot styling is local to this component because empty slots are only rendered here. */
 </style>

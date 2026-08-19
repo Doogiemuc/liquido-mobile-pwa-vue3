@@ -63,7 +63,7 @@
 				</div>
 				<div class="proposal-body flex-grow-1">
 					<h3 class="proposal-title">{{ prop.title }}</h3>
-					<div class="proposal-description">{{ prop.description }}</div>
+					
 					<div class="proposal-subtitle">
 						<span v-if="prop.likedByCurrentUser" class="like-button liked">
 							<i class="fas fa-heart"></i>&nbsp;<span class="numLikes">{{ prop.numSupporters }}</span>
@@ -82,6 +82,8 @@
 							{{ $t('createdBy') }}&nbsp;{{ prop.createdBy.name }}
 						</span>
 					</div>
+
+					<div class="proposal-description">{{ prop.description }}</div>
 					
 				</div>
 			</li>
@@ -243,7 +245,7 @@ export default {
    so the variables would be undefined and the fixed heights would silently break. */
 .poll-card {
 	--poll-card-height: 10rem;   /* This is crucial for list animations to work correctly. The card must have a fixed height, otherwise the animation will be jumpy. */
-	--proposal-height: 10rem;		 /* Each proposal has the same height. */
+	--proposal-height: 10rem;	   /* Each proposal has the same height. These 10rem lead to exactly four lines of description. */
 }
 
 
@@ -352,8 +354,8 @@ export default {
 .poll-card .proposal-list-group-item {
 	display: flex;
 	align-items: stretch;   /* let .proposal-body stretch to the full, fixed row height */
-	gap: 0.75rem;
-	padding: var(--unit);
+	gap: var(--unit);				/* gap between icon and (title, subtitle) */
+	/*padding: var(--unit);  we use bootstrap default padding */
 	border: none;
 	height: var(--proposal-height);
 	max-height: var(--proposal-height);
@@ -366,7 +368,7 @@ export default {
 /* The proposal icon, centered in a fixed-width column on the left */
 .poll-card .proposal-icon {
 	flex: 0 0 auto;
-	align-self: center;   /* vertically center the icon within the fixed-height row */
+	margin: 0.5rem 0 0 0;   /* vertically centered left of proposal title and subtitle */
 	width: 2.5rem;
 	height: 2.5rem;
 	border-radius: 50%;
@@ -391,7 +393,7 @@ export default {
 .poll-card .proposal-title {
 	flex: 0 0 auto;   /* one line high; never shrink */
 	color: var(--primary);
-	margin: 0 0 0.5rem 0;
+	margin: 0;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -404,11 +406,11 @@ export default {
 	justify-content: space-between;
 	font-size: var(--font-size-small);
 	color: var(--secondary);
-	margin-top: 0.5rem;
+	margin: 0;
 }
 
 .poll-card .proposal-subtitle .like-button {
-	padding: 1px 6px;
+	padding: 1px 10px 1px 0;   /* little bit bigger click are */
 	border-radius: 5px;
 }
 
@@ -445,10 +447,11 @@ export default {
 }
 
 .poll-card .proposal-description {
-	flex: 1 1 auto;    /* take the remaining height between the title and the subtitle */
+	flex: 1 1 auto;    /* take the remaining height */
+	margin-top: 0.25rem;
 	min-height: 0;     /* allow it to shrink below its content height so it can be clipped */
 	font-size: var(--font-size-small);
-	color: var(--text-color);
+	color: var(--secondary);
 	overflow: hidden;  /* truncate longer descriptions so every proposal stays the same height */
 }
 

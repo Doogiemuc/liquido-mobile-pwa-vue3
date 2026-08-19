@@ -323,45 +323,30 @@ body {
 	color: var(--secondary);
 }
 
-/* Ranking number at the left of a proposal in the ballot (replaces the proposal icon).
+/* Rank number (ballot) or proposal icon (available pool) on the left of a proposal panel.
    Also used inside the dashed empty placeholder slots. */
-.proposal-panel .rank-circle,
-.empty-slot .rank-circle {
+.proposal-icon {
+	--proposal-icon-size: 32px;
 	position: relative;
-	--rank-circle-size: 32px;
 	flex: 0 0 auto;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	margin: 0 var(--half);
-	width: var(--rank-circle-size);
-	height: var(--rank-circle-size);
+	padding: 0;
+	margin: 0;   /* poll-card and proposal-card set their own margins between icon and text */
+	width: var(--proposal-icon-size);
+	min-width: var(--proposal-icon-size);
+	max-width: var(--proposal-icon-size);
+	height: var(--proposal-icon-size);
+	min-height: var(--proposal-icon-size);
+	max-height: var(--proposal-icon-size);
+	border: none;
 	border-radius: 50%;
-	background-color: var(--primary);
+	background-color: var(--proposal-icon-bg);
 	color: white;
 	font-family: var(--sans-serif-font);
 	font-size: 1rem;
-	line-height: 1;
 	z-index: 30;
-}
-
-/* Proposal icon at the left of an available proposal (replaces the rank number). */
-.proposal-panel .proposal-icon {
-	--proposal_icon_size: 32px;
-	padding: 0;
-	margin-right: var(--half);
-	color: white;
-	background-color: var(--proposal-icon-bg);
-	border: none;
-	border-radius: 50%;
-	text-align: center;
-	line-height: var(--proposal_icon_size);
-	min-width: var(--proposal_icon_size);
-	max-width: var(--proposal_icon_size);
-	width: var(--proposal_icon_size);
-	min-height: var(--proposal_icon_size);
-	max-height: var(--proposal_icon_size);
-	height: var(--proposal_icon_size);
 }
 
 .proposal-panel .liked {
@@ -374,25 +359,6 @@ body {
 	color: var(--secondary);
 	opacity: 0.5;
 }
-
-/* Empty placeholder slot in the ballot: a proposal panel with no content yet.
-   Dimmed and dashed, styled to read on the bluish --ballot-bg. */
-.empty-slot {
-	--empty-slot-color: rgba(255, 255, 255, 0.5);
-	height: var(--polly-proposal-height, 4rem);
-	margin-bottom: var(--polly-proposal-margin-bottom, 0.5rem);
-	border: 1px dashed var(--empty-slot-color);
-	border-radius: var(--liquido-border-radius);
-	background-color: rgba(0, 0, 0, 0.02); /* just a tiny little bit darker */
-	color: var(--empty-slot-color);
-}
-
-.empty-slot .rank-circle {
-	border: 1px solid rgba(0, 0, 0, 0.2);
-	background-color: rgba(0, 0, 0, 0.1);
-	color: var(--empty-slot-color);
-}
-
 
 /***************** Rounded pills for poll status *****************/
 /*

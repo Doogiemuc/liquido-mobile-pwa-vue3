@@ -143,7 +143,7 @@ export default {
 				// User can cast a vote
 				castVotePageTitle: "Stimme abgeben",
 				castVoteBallotTitle: "Dein Stimmzettel",
-				castVoteSubtitle: "Ziehe die Vorschläge, welche du unterstützen möchtest, in die Slots und ordne sie nach deiner Präferenz.",
+				castVoteSubtitle: "Ziehe die Vorschläge, welche du unterstützen möchtest, von unten hoch in die Slots und ordne sie nach deiner Präferenz.",
 				castVoteButton: "Diese Stimme abgeben",
 
 				// User has already voted
@@ -512,8 +512,7 @@ let showDraggingHint = async function () {
 
 </script>
 
-<style>
-
+<style scoped>
 
  /* Hero below liquido-header with same white background as header */
 .liquido-hero {
@@ -522,6 +521,10 @@ let showDraggingHint = async function () {
 	margin-right: calc(-1*var(--unit)) !important;
 	margin-left: calc(-1*var(--unit)) !important;
 	background-color: var(--header-bg);
+
+	#cast-vote-page.page-title {
+		margin-top: 0;
+	}
 }
 
 /* Poll-card.vue needs a wrapper to define its height. */
@@ -565,6 +568,7 @@ let showDraggingHint = async function () {
 			overflow: hidden;
 			z-index: 1;
 		}
+		
 		/* Must also position the draggable absolute with a higher z-index *before* the .empty-slots-behind */
 		#ballot-draggable {
 			position: absolute;
@@ -616,12 +620,16 @@ let showDraggingHint = async function () {
 		}
 	}
 
+	/** Also valid in child components (ballot, empty-slots and proposals and available proposals) */
+	:deep(.proposal-icon) {
+		margin-right: var(--unit);
+	}
 
 	/*  UX idea - connect the order-numbers in the ballot, to emphasize order. not yet perfect
-	#ballotDraggable .proposal-panel:not(:last-child) .rank-circle:after {
+	#ballotDraggable .proposal-panel:not(:last-child) .proposal-icon:after {
 		content: "";
 		position: absolute;
-		top: var(--rank-circle-size);
+		top: var(--proposal-icon-size);
 		background-color: var(--primary);
 		width: 2px;
 		height: var(--polly-proposal-height);
@@ -631,7 +639,6 @@ let showDraggingHint = async function () {
 
 	/* Info text that the user can still add further proposals into the ballot. */
 	.ballot-footer-info {
-		
 		color: var(--secondary);
 		text-align: center;
 		position: absolute;
