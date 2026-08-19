@@ -25,7 +25,9 @@
 
 		<div class="overview">
 			<section v-for="page in pages" :key="page.name" class="overview-section">
-				<h2 class="ms-2">{{ page.name }}</h2>
+				<h2 class="ms-2">
+					<a :href="page.route" target="_blank" rel="noopener" class="page-link">{{ page.name }}</a>
+				</h2>
 				<div class="page-preview-container">
 					<iframe 
 						:src="page.route" 
@@ -134,6 +136,15 @@ const logout = () => {
   grid-template-columns: repeat(auto-fill, minmax(375px, 1fr));
   gap: 2rem;
 	
+}
+
+.page-link {
+	color: inherit;
+	text-decoration: none;
+}
+
+.page-link:hover {
+	text-decoration: underline;
 }
 
 .page-preview-container {

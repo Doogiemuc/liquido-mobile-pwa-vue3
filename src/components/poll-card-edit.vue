@@ -16,7 +16,6 @@
 			<liquido-input
 				v-if="titleEditable"
 				id="pollTitleInput"
-				class="mt-2"
 				:model-value="pollTitle"
 				:label="$t('pollTitle')"
 				:valid-func="isPollTitleValid"
@@ -208,9 +207,10 @@
 /**
  * An editable poll card - poll-card.vue in edit mode.
  *
- * This is deliberately a separate component and not a mode of poll-card.vue: that one pins
- * --poll-card-height and --proposal-height to 10rem, because its list animations go jumpy without a
- * fixed height. Input fields and a variable number of rows cannot live inside that.
+ * This is deliberately a separate component and not a mode of poll-card.vue: that one pins its
+ * proposals to --proposal-height, because its list animations go jumpy without a fixed height.
+ * A variable number of proposal rows with input fields cannot live inside that. The summary panel
+ * on top however does share --poll-card-height with poll-card.vue - see the <style> block.
  *
  * The component renders and validates. It never talks to the backend - the page above it owns all
  * persistence and passes the permissions in, so the same card serves the admin creating a poll and a
@@ -404,17 +404,21 @@ export default {
 
 <style scoped>
 /* Unlike poll-card.vue this card must GROW: it holds input fields and a variable number of rows.
-   So there is deliberately no --poll-card-height / --proposal-height here, and no max-height
-   transition on the list. */
+   So there is deliberately no --proposal-height here, and no max-height transition on the list. */
 .poll-card-edit {
 	height: auto;
 	border-radius: var(--liquido-border-radius);
 	border-color: rgba(0, 0, 0, 0.1);
 }
 
+/* The summary part on top is the exception: it must look exactly like poll-card.vue, same global
+   --poll-card-height, same flex column, so that what you edit here is what you will get. */
 .poll-card-edit .card-body {
 	padding: var(--unit);
-	height: auto;
+	height: var(--poll-card-height);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
 }
 
 .poll-card-edit .poll-title {
@@ -422,6 +426,11 @@ export default {
 	font-weight: normal;
 	margin: 0;
 	padding: 0;
+	display: -webkit-box;
+	line-clamp: 2;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 
 .poll-card-edit .proposal-row {

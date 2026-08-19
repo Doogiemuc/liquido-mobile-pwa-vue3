@@ -104,7 +104,11 @@ export default {
 
 /* card wrapper keeps layout stable for transitions */
 .poll-card-wrapper {
-  height: 10rem;                 /* <==== THIS IS CRUCIAL !!!! YOU MUST DEFINE A FIXED HEIGHT FOR THE poll-card! Otherwise all list transition animations don't work. ======== */
+  /* <==== THIS IS CRUCIAL !!!! YOU MUST DEFINE A FIXED HEIGHT FOR THE poll-card! Otherwise all list transition animations don't work. ========
+     --poll-card-height is the height of the poll summary panel itself (the .card-body). The +2px
+     adds the card's 1px top and bottom border on top of it, so that the panel really ends up
+     --poll-card-height high here - exactly as tall as the one in poll-card-edit.vue. */
+  height: calc(var(--poll-card-height) + 2px);
 	margin-bottom: var(--unit);
 }
 

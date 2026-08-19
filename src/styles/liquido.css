@@ -80,6 +80,13 @@
 	/* Icon for a proposal */
   --proposal-icon-bg: #c8dcf5;		/* background for proposal icon in poll-card.vue. A bit darker than --light */
 
+	/* Height of the poll summary panel (the .card-body holding eyebrow + title + footer), WITHOUT
+	   the card's 1px border. Shared by poll-card.vue and poll-card-edit.vue, so that the poll looks
+	   exactly the same while you edit it as afterwards. poll-list-section.vue sizes its wrapper to
+	   this + 2px border, which is also crucial for the list animations: the card must have a fixed
+	   height, otherwise the animation gets jumpy. */
+	--poll-card-height: 10rem;
+
 	/****************** Info, Warning and Error messages *************/
 
 	/* Info text in .alert on --app-background */
@@ -453,8 +460,10 @@ body {
 	white-space: nowrap;
 }
 
+/* Deliberately NO margin-top here: the poll panel is a flex column with `justify-content:
+   space-between`, which only centers the title exactly between eyebrow and footer when the
+   gaps above and below it are free to be equal. */
 .poll-footer {
-	margin-top: var(--unit);
 	color: var(--secondary);
 	font-size: 0.8rem;   /* needs to be smaller than our standard var(--font-size-small) = 0.9rem */
 }

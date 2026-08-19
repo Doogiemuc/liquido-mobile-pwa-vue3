@@ -241,11 +241,11 @@ export default {
 <style scoped>
 
 
-/* Component-local sizing variables. They must live on .poll-card (the component root), NOT on
+/* Component-local sizing variable. It must live on .poll-card (the component root), NOT on
    :root — Vue scoped styles rewrite ":root" to ":root[data-v-xxx]", which never matches <html>,
-   so the variables would be undefined and the fixed heights would silently break. */
+   so the variable would be undefined and the fixed height would silently break.
+   --poll-card-height is global (src/styles/liquido.css), because poll-card-edit.vue uses it too. */
 .poll-card {
-	--poll-card-height: 10rem;   /* This is crucial for list animations to work correctly. The card must have a fixed height, otherwise the animation will be jumpy. */
 	--proposal-height: 10rem;	   /* Each proposal has the same height. These 10rem lead to exactly four lines of description. */
 }
 
