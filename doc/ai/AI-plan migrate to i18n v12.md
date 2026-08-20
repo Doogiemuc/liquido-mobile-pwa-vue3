@@ -1,3 +1,11 @@
+> ## ⚠️ SUPERSEDED — this upgrade was never carried out
+>
+> This was a plan to upgrade **vue-i18n** from 9 to 12. It was overtaken: vue-i18n was replaced
+> wholesale by **liqui-loc** (`src/services/liqui-loc.js`) instead of being upgraded, which solved
+> the same `<script setup>` problem without the migration.
+>
+> Kept for history only. Do not execute it.
+
 Updated todo list
 
 Recommended migration path: do it in two stages, not a big-bang jump.
