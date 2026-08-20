@@ -34,6 +34,7 @@ const globalTranslations = {
 		Yes: "Yes",
 		No: "No",
 		Cancel: "Cancel",
+		Password: "Password",
 	},
 	de: {
 		HelloWorld: "Hallo Welt!",
@@ -54,6 +55,7 @@ const globalTranslations = {
 		Attention: "Achtung",
 		Error: "Fehler",
 		Login: "Login",
+		Password: "Passwort",
 		Loading: "Lade ...",
 
 		// Singular and plural form
