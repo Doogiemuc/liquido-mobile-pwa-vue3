@@ -242,7 +242,7 @@ const detectOperation = query => {
 		"createNewTeam", "joinTeam", "savePolly", "editPolly", "startPolly", "castVoteInPolly", "finishPolly", "createPoll", "updatePoll", "updateProposal", "addProposal", "deleteProposal", "likeProposal", "startVotingPhase",
 		"finishVotingPhase", "castVote", "loginWithEmailPassword", "googleOneTapLogin", "loginWithAuthToken",
 		"requestPasswordReset", "resetPassword", "requestEmailLoginLink", "teamForInviteCode", "loginWithJwt",
-		"devLogin", "authToken", "voterToken", "verifyBallot", "myBallot", "polls", "poll", "team", "ping",
+		"devLogin", "authToken", "voterToken", "verifyBallot", "myBallot", "liquidoConfig", "polls", "poll", "team", "ping",
 	]
 	for (const name of operations) {
 		if (new RegExp(`\\b${name}\\s*\\(`).test(query) || new RegExp(`\\b${name}\\b`).test(query)) {
@@ -838,6 +838,22 @@ const mutationHandlers = {
 		poll.updatedAt = nowIso()
 		return deepClone(poll)
 	},
+	/**
+	 * The settings the real backend serves from LiquidoConfig. Same values as its @WithDefault
+	 * annotations, so mock mode validates exactly like the real thing.
+	 */
+	liquidoConfig: () => ({
+		usernameMinLength: 3,
+		inviteCodeLength: 8,
+		minPasswordLength: 10,
+		allowMembersToInvite: true,
+		pollTitleMinLength: 5,
+		pollDefaultRuntimeDays: 7,
+		proposalTitleMinLength: 3,
+		proposalDescriptionMinLength: 20,
+		inviteLinkPrefix: config.inviteLinkPrefix,
+	}),
+
 	likeProposal: (query, variables = {}) => {
 		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
 		const proposalId = asInt(get(variables, "proposalId", argFromQuery(query, "proposalId", "-1")))

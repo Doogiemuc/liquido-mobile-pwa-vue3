@@ -182,6 +182,7 @@ export default {
 			.then(() => {
 				console.log("We are online and backend is reachable at "+config.LIQUIDO_API_URL)
 				this.$refs.rootPopupModal.hide()
+				return this.loadLiquidoConfig()
 			})
 			.catch(res => {
 				if (res.response && res.response.status === 401) {
@@ -211,6 +212,29 @@ export default {
 		
 		gotoPolls() {
 			this.$router.push({name: "polls"})
+		},
+
+		/**
+		 * Fetch the validation rules from the backend and merge them over our own defaults.
+		 *
+		 * The values in config.common.js are FALLBACKS, not the truth: if the backend is unreachable
+		 * the app keeps working with the numbers it shipped with. When the backend does answer, its
+		 * numbers win, because it is the side that actually enforces them - a frontend that disagrees
+		 * lets a user fill in a form the server then rejects.
+		 *
+		 * Merged into the config module object in place. Nothing here is reactive, which is fine
+		 * because this runs once at startup, before any page that validates input is reachable.
+		 */
+		loadLiquidoConfig() {
+			return api.getLiquidoConfig()
+				.then(settings => {
+					Object.assign(config, settings)
+					log.debug("Loaded settings from backend", settings)
+				})
+				.catch(err => {
+					// Deliberately not shown to the user: the app is fully usable on the fallbacks.
+					console.warn("Cannot load settings from backend, keeping local defaults", err)
+				})
 		},
 
 		gotoCreateNewPoll() {

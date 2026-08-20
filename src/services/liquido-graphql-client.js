@@ -244,6 +244,20 @@ let graphQlApi = {
 	},
 
 	/**
+	 * Fetch the validation rules and limits that the frontend shares with the backend.
+	 *
+	 * Fetched once at startup (see root-app.vue) and merged over the fallback values in
+	 * config.common.js, so there is one source of truth. Anonymous on purpose: the welcome, join and
+	 * login screens need these rules before anybody is logged in.
+	 *
+	 * @returns {Object} the settings, with the same key names config.common.js already used
+	 */
+	async getLiquidoConfig() {
+		let graphQL = `query { liquidoConfig { usernameMinLength inviteCodeLength minPasswordLength allowMembersToInvite pollTitleMinLength pollDefaultRuntimeDays proposalTitleMinLength proposalDescriptionMinLength inviteLinkPrefix } }`
+		return graphQlQuery(graphQL).then(res => res.data.liquidoConfig)
+	},
+
+	/**
 	 * get GraphQL schema.
 	 * This can also be used to check if the backend GraphQL API is up and running.
 	 * @returns the GraphQL schema
