@@ -195,7 +195,14 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		// This is the positive counterpart to the "should not exist" check in "[User] Join team": without
 		// it, that negative assertion would still pass if the section vanished for everyone, and would
 		// quietly stop proving anything about roles.
-		cy.get("#adminSettingsSection").should("be.visible")
+		// scrollIntoView: team-home is taller than a phone screen (polls in voting, the passkey alert
+		// and the verify-email reminder all sit above this), and should('be.visible') never scrolls.
+		cy.get("#adminSettingsSection").scrollIntoView().should("be.visible")
+
+		// AND because he has just registered, his address is not confirmed yet, so the reminder is
+		// there - with the inline "send me a new one" link rather than a button.
+		cy.get("#verifyEmailReminder").scrollIntoView().should("be.visible")
+		cy.get("#resendEmailVerificationLink").should("exist")
 
 		// AND his avatar image is loaded successfully
 		//TODO: needs to be fixed with new teams homepage
@@ -373,6 +380,9 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get(`[data-poll-id="${fix.pollId}"]`).click()
 		cy.get('#poll-show')
 		cy.get('#startVoteButton').should('not.exist')
+		//  AND a poll in ELABORATION offers exactly ONE footer action. For a member that is Back:
+		//  there is nothing else for them to do there, and two competing primary buttons is a bug.
+		cy.get('#backToPollsButton').should('exist')
 	})
 
 	
@@ -574,7 +584,14 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		// ready to start. An admin may add proposals for as long as the poll is in ELABORATION - the
 		// existing "[Admin] Poll with the checkbox left off is admin-only" step only covers a brand new
 		// poll with no proposals yet, so this is the case that state does not reach.
-		cy.get('#addProposalButton').should('be.visible')
+		// scrollIntoView first: the poll card with several proposals is taller than a 375x667 phone
+		// screen, so this button starts below the fold. should('be.visible') never scrolls by itself.
+		cy.get('#addProposalButton').scrollIntoView().should('be.visible')
+
+		// AND the footer offers exactly one action - starting the vote. The admin must NOT also get a
+		// Back button next to it: one poll state, one primary action.
+		cy.get('#startVoteButton').should('exist')
+		cy.get('#backToPollsButton').should('not.exist')
 
 		// WHEN admin starts the voting phase (the main action in the footer for a poll in ELABORATION)
 		// Every GraphQL call shares one URL, so alias by inspecting the query body.
@@ -635,11 +652,13 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get(`.polls-in-voting-container [data-poll-id="${fix.pollId}"]`).click()
 		cy.get("#cast-vote-page")
 
-		// AND both proposals have loaded into the "available proposals" pool.
+		// AND all three proposals have loaded into the "available proposals" pool:
+		// the admin's two from the create page, plus the one this member added. (The admin also added
+		// a fourth earlier and deleted it again, which is why the count is three and not four.)
 		// We only check that they exist in the DOM (not that they are visible): the test helper below
 		// is data-driven (it mutates Vue state, not the DOM), and an existence check is not affected
 		// by the page slide transition or by the panel sitting below the fold.
-		cy.get("#availableDraggable .proposal-panel").should("have.length", 2)
+		cy.get("#availableDraggable .proposal-panel").should("have.length", 3)
 
 		// AND user drags a proposal into his ballot.
 		// Native drag'n'drop (vuedraggable/SortableJS) is unreliable to simulate in Cypress,
@@ -666,12 +685,12 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get('#rootPopupModalPrimaryButton').click()
 		
 		//  AND user is informed, that he can updated his ballot
-		cy.get("#isUpdateableBallotInfo").should("be.visible")
+		cy.get("#isUpdateableBallotInfo").scrollIntoView().should("be.visible")
 
 		//WHEN verifing checksum
 		cy.get("#verifyBallotButton").scrollIntoView().click({force: true})
 		//THEN ballot is valid
-		cy.get("#ballotIsVerifiedInfo").should("be.visible")
+		cy.get("#ballotIsVerifiedInfo").scrollIntoView().should("be.visible")
 	})
 	
 	it("[Admin] Admin finishes voting phase", function() {
@@ -687,7 +706,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get("#finishVoteButton").click()
 
 		// THEN poll is FINISHED
-		cy.get("#finishedPollInfo").should("be.visible")
+		cy.get("#finishedPollInfo").scrollIntoView().should("be.visible")
 		cy.get(".poll-card[data-poll-status='FINISHED']")
 			.should("have.attr", "data-poll-status", "FINISHED")  
 		//  AND there is exactly one winner (because we casted exactly one vote)

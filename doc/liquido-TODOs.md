@@ -19,7 +19,8 @@ Do I need a tool for managing my own backlog? => No just, this .md file
  
 ### Registration
 
- * Verify a user's email
+ * Verify a user's email   [done] Optional, never blocks registration. The welcome mail carries a
+   ?verifyToken link to /verifyEmail, which flips UserEntity.emailVerified and grants nothing else.
  * Verify phone number - DEPRECATED. Phone numbers are optional. Not used in the frontend anymore at all.
 
 ### Login
@@ -33,7 +34,10 @@ Do I need a tool for managing my own backlog? => No just, this .md file
 
 #### Settings
 
- * Frontend shall load settings from the backend, e.g. poll- and proposalTitleMinLength.
+ * Frontend shall load settings from the backend, e.g. poll- and proposalTitleMinLength.   [done]
+   query liquidoConfig, fetched in root-app alongside the startup ping. The values in
+   config.common.js are now only FALLBACKS for when the backend is unreachable.
+   Still open: per-TEAM settings. These are global backend config for now.
 
 Settings per Team
  * Can team members invite other team members?
