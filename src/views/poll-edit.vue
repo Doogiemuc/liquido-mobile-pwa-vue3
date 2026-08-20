@@ -242,6 +242,7 @@ export default {
 					next(vm => {
 						vm.applyPoll(poll)
 						vm.loaded = true
+						vm.openRequestedRow()
 					})
 				}
 			})
@@ -346,14 +347,26 @@ export default {
 				editing: false,
 			}))
 			if (this.canAddProposal()) this.rows.push(newRow())
+		},
 
-			// poll-show.vue's pencil links here as ?edit=<proposalId>. Open that row straight away, so
-			// clicking the pencil lands you in the field rather than on a page you have to click again.
+		/**
+		 * poll-show.vue's pencil links here as ?edit=<proposalId>. Open that row straight away, so
+		 * clicking the pencil lands you in the field rather than on a page you have to click again.
+		 *
+		 * Called once, on entering the page - NOT from applyPoll(). applyPoll runs again after every
+		 * save, and re-reading the query there reopened the row the user had just saved, which also
+		 * made it look like the poll had lost a proposal. Consuming the parameter (replacing the URL
+		 * without it) keeps a later reload honest too: the row is open because you opened it, not
+		 * because the address bar still says so.
+		 */
+		openRequestedRow() {
 			const editId = this.$route.query.edit
-			if (editId) {
-				const row = this.rows.find(r => String(r.id) === String(editId))
-				if (row && this.canEditProposal(row)) this.startEditingRow(row)
-			}
+			if (!editId) return
+			const row = this.rows.find(r => String(r.id) === String(editId))
+			if (row && this.canEditProposal(row)) this.startEditingRow(row)
+			let query = Object.assign({}, this.$route.query)
+			delete query.edit
+			this.$router.replace({ query })
 		},
 
 		/** Same as the card's own pencil handler - see poll-card-edit.vue startEditing(). */
