@@ -253,7 +253,7 @@ let graphQlApi = {
 	 * @returns {Object} the settings, with the same key names config.common.js already used
 	 */
 	async getLiquidoConfig() {
-		let graphQL = `query { liquidoConfig { usernameMinLength inviteCodeLength minPasswordLength allowMembersToInvite pollTitleMinLength pollDefaultRuntimeDays proposalTitleMinLength proposalDescriptionMinLength inviteLinkPrefix } }`
+		let graphQL = `query { liquidoConfig { usernameMinLength inviteCodeLength minPasswordLength pollTitleMinLength pollDefaultRuntimeDays proposalTitleMinLength proposalDescriptionMinLength inviteLinkPrefix } }`
 		return graphQlQuery(graphQL).then(res => res.data.liquidoConfig)
 	},
 

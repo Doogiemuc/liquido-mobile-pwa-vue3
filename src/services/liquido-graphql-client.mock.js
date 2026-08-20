@@ -849,7 +849,6 @@ const mutationHandlers = {
 		usernameMinLength: 3,
 		inviteCodeLength: 8,
 		minPasswordLength: 10,
-		allowMembersToInvite: true,
 		pollTitleMinLength: 5,
 		pollDefaultRuntimeDays: 7,
 		proposalTitleMinLength: 3,
