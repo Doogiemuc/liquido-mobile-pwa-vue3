@@ -1,3 +1,13 @@
+> ## ⚠️ SUPERSEDED — vue-i18n is no longer used
+>
+> This document describes **vue-i18n**, which was removed from the app. Localisation is now handled
+> by **liqui-loc** (`src/services/liqui-loc.js`), which is documented in `CLAUDE.md` §i18n.
+>
+> Kept for history: it records *why* vue-i18n was hard to live with here, which is the reasoning
+> behind liqui-loc. Everything below describes the old library — do not follow it as guidance.
+> In particular, the "two `<script>` blocks" pattern is no longer required for new files: in
+> `<script setup>`, `useLoc()` sees component-local messages directly.
+
 # i18n Usage in liquido-mobile-pwa-vue3 — Analysis & Patterns
 
 > Research notes gathered before building `cast-vote-v2.vue`. Describes how this repo

@@ -12,7 +12,7 @@
 | UI framework | Vue | `^3.5.21` | **Target: `<script setup>` Composition API.** 6 of 32 SFCs use it today; the remaining Options API pages are legacy and will be migrated (see §12) |
 | Build tool / dev server | Vite | `^8.0.10` | HTTPS dev server, env-based config alias |
 | Router | vue-router | `^4.2.5` | `createWebHistory`, global auth navigation guard |
-| i18n | vue-i18n | `^9.7.1` | Legacy mode with `allowComposition: true` |
+| i18n | **liqui-loc** (own) | — | `src/services/liqui-loc.js`; replaced vue-i18n. Global + component-local messages, `Intl` dates |
 | CSS framework | Bootstrap | `^5.3.8` | Imported via npm in `main.js`; overridden by `liquido.css` design tokens |
 | Icons | Font Awesome | 6.5.2 (free) | Static files under `public/fontawesome-free-6.5.2-web/` |
 | HTTP transport | axios | `^1.16.0` | Used by the GraphQL client |
@@ -23,7 +23,7 @@
 | QR codes | qrcode | `^1.5.3` | Team invite links |
 | Animation | gsap | `^3.12.2` | |
 | Logging | loglevel | `^1.9.2` | Full logging enabled in dev/test |
-| Date/time | dayjs | `^1.11.10` | |
+| Date/time | `Intl` (native) | — | `$d` / `$fromNow` in liqui-loc; dayjs was removed |
 | Unit tests | vitest | `^3.2.4` | + `@vue/test-utils`, jsdom |
 | E2E tests | cypress | `^15.17.0` | |
 
@@ -77,7 +77,7 @@ Entry point: `src/main.js`
    `@/styles/liquido.css` — the LIQUIDO stylesheet must load *after* Bootstrap so its
    design-token overrides win.
 5. Creates the Vue app from `root-app.vue`.
-6. Installs plugins: `router`, `vue-i18n` (`createI18n`), and the reactive `store`.
+6. Installs plugins: `router`, liqui-loc (`createLoc`), and the reactive `store`.
 7. Mounts the app.
 
 ### i18n configuration
@@ -467,14 +467,17 @@ State today: 6 of 32 SFCs already use it (`polls.vue`, `team-home.vue`, `join-te
 
 **New components should be written as `<script setup>`.**
 
-**The blocker to finishing it is i18n, not the components.** vue-i18n runs in legacy mode here, so
-`$t` is not callable in `<script setup>` and `useI18n()` returns the *global* composer, which cannot
-see component-local messages. `Polly-vote.vue` worked around this with a hand-rolled `loc()` helper —
-which is exactly the kind of divergence the migration should remove, not spread. A component-local
-message catalogue needs either the i18n upgrade planned in `doc/ai/AI-plan migrate to i18n v12.md` or
-its strings moved into the global catalogue in `main.js`.
+**The i18n blocker is gone.** It used to be the thing standing in the way: vue-i18n's legacy mode
+made `$t` uncallable in `<script setup>`, and `useI18n()` returned the global composer, which could
+not see component-local messages. That is why `Polly-vote.vue` hand-rolled a `loc()` helper.
 
-Sequencing that i18n work first would make the component migration mostly mechanical.
+liqui-loc removed the obstacle - `useLoc()` resolves the component's own messages as well as the
+global ones, in either API style - so the remaining migration is now mechanical, component by
+component, with no library work in front of it.
+
+Two follow-ups belong to that migration rather than to the library swap: folding `Polly-vote.vue`'s
+hand-rolled `loc()` into `useLoc()`, and de-duplicating message keys that several components define
+separately (`createdBy` in four files, `createPollInfo1..5` in two with different German).
 
 ---
 

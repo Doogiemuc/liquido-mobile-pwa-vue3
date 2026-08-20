@@ -43,7 +43,7 @@
 			<!-- Edit mode, and this member is not allowed to add anything. Say so instead of showing
 			     an input field that the backend would refuse. -->
 			<div v-if="!createMode && !canAddProposal()" id="onlyAdminAddsProposalsInfo" class="alert liquido-info mt-4">
-				<p v-html="$t('PollInElaboration_OnlyAdminAddsProposals')" />
+				<liqui-loc-html tag="p" msg-key="PollInElaboration_OnlyAdminAddsProposals" />
 			</div>
 
 			<div v-if="submitError" id="submitError" class="alert alert-danger mt-4" :data-error-code="submitErrorCode">

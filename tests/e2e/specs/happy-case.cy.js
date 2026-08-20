@@ -526,7 +526,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		//THEN he has no way to add a proposal, and is told why
 		cy.get('#poll-show')
 		cy.get('#addProposalButton').should('not.exist')
-		cy.get('#onlyAdminAddsProposalsInfo').should('be.visible')
+		cy.get('#onlyAdminAddsProposalsInfo').scrollIntoView().should('be.visible')
 
 		//AND even reaching the editor by URL gives him no row to type in
 		cy.then(() => {
@@ -535,7 +535,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get('#poll-edit')
 		cy.get(NEW_ROW).should('not.exist')
 		cy.get(OPENED_ROW).should('not.exist')
-		cy.get('#onlyAdminAddsProposalsInfo').should('be.visible')
+		cy.get('#onlyAdminAddsProposalsInfo').scrollIntoView().should('be.visible')
 	})
 
 	it("[User] User likes proposal", function() {
@@ -685,7 +685,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get('#rootPopupModalPrimaryButton').click()
 		
 		//  AND user is informed, that he can updated his ballot
-		cy.get("#isUpdateableBallotInfo").scrollIntoView().should("be.visible")
+		cy.get("#alreadyVotedInfo").scrollIntoView().should("be.visible")
 
 		//WHEN verifing checksum
 		cy.get("#verifyBallotButton").scrollIntoView().click({force: true})

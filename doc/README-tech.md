@@ -181,4 +181,4 @@ Create an empty directory and run
 
 Install (answer yes) Vue Router, Vitest, End-2-End Test with Cypress and optionally ESLint and Prettier.
 
-    npm install /* axios bootstrap dayjs fontawesome gsap loglevel populating-cache vue-i18n vuedraggable */
+    npm install /* axios bootstrap fontawesome gsap loglevel populating-cache vuedraggable */

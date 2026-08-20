@@ -126,13 +126,14 @@
 
 <script>
 /*
- * Page local translations. They have to live in a plain <script> block rather than in <script setup>,
- * because vue-i18n still runs in legacy mode here (see main.js), where component local messages are an
- * Options API option. Both blocks are merged into one component by the SFC compiler.
+ * Page local translations. They live in a plain <script> block rather than in <script setup>, because
+ * liqui-loc reads component local messages from the `i18n` component option, i.e. from $options (see
+ * src/services/liqui-loc.js). Both blocks are merged into one component by the SFC compiler.
  *
- * Consequence for <script setup> below: the local $t only exists in the template. So the script never
- * translates anything itself - it stores i18n *keys* in pageErrorKey / formErrorKey and the template
- * resolves them.
+ * The <script setup> below keeps storing i18n *keys* in pageErrorKey / formErrorKey and lets the
+ * template resolve them. That is no longer a hard constraint - liqui-loc's useLoc() can translate from
+ * script and does see these local messages - but the key-passing shape is left as it is here, since
+ * this branch only swaps the library.
  */
 export default {
 	i18n: {
@@ -194,7 +195,7 @@ export default {
 <script setup>
 import { ref, computed, onMounted, nextTick, getCurrentInstance } from "vue"
 import { useRouter } from "vue-router"
-import { useI18n } from "vue-i18n"
+import { useLoc } from "@/services/liqui-loc.js"
 import log from "loglevel"
 import config from "config"
 import api from "@/services/liquido-graphql-client.js"
@@ -212,7 +213,7 @@ const router = useRouter()
 const { proxy } = getCurrentInstance()
 // The GLOBAL composer, i.e. the translations from main.js. Component local messages are not reachable
 // from <script setup> in legacy mode - which is why only the header title is translated here.
-const { t } = useI18n()
+const { t } = useLoc()
 
 /** The three things this page can show. Exactly one of them at a time. */
 const PAGE = Object.freeze({

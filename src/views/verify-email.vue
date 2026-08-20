@@ -12,7 +12,7 @@
 		</div>
 
 		<div v-else-if="state === 'verified'" id="verifyEmailSuccess" class="alert liquido-info">
-			<p><i class="fas fa-check-circle" />&nbsp;<span v-html="$t('verifyEmailSuccess')" /></p>
+			<p><i class="fas fa-check-circle" />&nbsp;<liqui-loc-html tag="span" msg-key="verifyEmailSuccess" /></p>
 			<p v-if="verifiedEmail" class="page-subtitle">{{ verifiedEmail }}</p>
 		</div>
 
@@ -23,7 +23,7 @@
 			team page instead, where the caller is authenticated. Here we just point at the login.
 		-->
 		<div v-else id="verifyEmailError" class="alert alert-danger" :data-error-code="errorCode">
-			<p><i class="fas fa-exclamation-circle" />&nbsp;<span v-html="$t('verifyEmailError')" /></p>
+			<p><i class="fas fa-exclamation-circle" />&nbsp;<liqui-loc-html tag="span" msg-key="verifyEmailError" /></p>
 		</div>
 
 		<div class="page-subtitle mt-4">

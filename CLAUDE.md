@@ -168,23 +168,25 @@ Match the surrounding file. Broadly:
   `vue/multi-word-component-names` is off).
 - `.then()/.catch()` chains are preferred over `async/await` in views — except where a genuine
   sequential loop makes `await` clearer.
-- Run `npx eslint src --ext .vue,.js` before finishing. Two pre-existing errors are expected
-  (`liquido-graphql-client.mock.js` no-useless-escape, `team-home.vue` unused `inviteMembers`).
+- Run `npx eslint src --ext .vue,.js` before finishing. One pre-existing error is expected
+  (`liquido-graphql-client.mock.js` no-useless-escape).
 
 ### i18n
 
-Legacy vue-i18n mode. German is the only complete locale; `en: {}` is normal.
+Handled by **liqui-loc**, our own library in `src/services/liqui-loc.js`. vue-i18n was removed.
+German is the only complete locale; `en: {}` is normal.
 
-- Component-local messages go in the `i18n: { messages: { en: {}, de: {…} } }` **component option**,
-  not an `<i18n>` SFC block (no custom-block plugin is configured).
-- **`$t` is not callable in `<script setup>`** with this setup — `useI18n()` returns the *global*
-  composer and cannot see component-local keys. `Polly-vote.vue` hand-rolled a `loc()` helper to work
-  around this; do not copy that.
-  **This is the main thing standing between the app and a full `<script setup>` migration**, and it is
-  a vue-i18n configuration problem, not a reason to keep writing Options API. Until it is resolved,
-  a new `<script setup>` component that needs its own strings can put them in the global catalogue in
-  `main.js` (which `useI18n()` *can* see) rather than falling back to Options API.
-- See `doc/ai/i18n-usage-notes.md`, and `doc/ai/AI-plan migrate to i18n v12.md` for the planned fix.
+- Component-local messages stay in the `i18n: { messages: { en: {}, de: {…} } }` **component
+  option**, not an `<i18n>` SFC block. liqui-loc reads them from `$options`.
+- `$t` / `$tc` / `$d` / `$fromNow` are global properties, so they work in templates and in Options API
+  `this`. In `<script setup>`, call `useLoc()` — unlike vue-i18n's `useI18n()`, it sees the
+  component's **own** messages as well as the global ones. **i18n is no longer a blocker for the
+  `<script setup>` migration**; that was the main reason for writing liqui-loc.
+- Never write `v-html="$t(…)"`. Messages containing HTML go through `<liqui-loc-html>`, which
+  escapes each parameter, interpolates, then sanitises — the one place message HTML is allowed.
+- A missing key logs a warning once per key and renders the key itself. Do not ignore those warnings;
+  they are real gaps (the German UI showed an English "Password" for a long time this way).
+- `doc/english-translation-gaps.md` lists the keys English is missing.
 
 ---
 

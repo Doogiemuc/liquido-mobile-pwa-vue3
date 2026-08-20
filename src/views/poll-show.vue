@@ -23,21 +23,28 @@
 		</div>
 
 		<div v-if="showError"	class="alert alert-danger mb-3">
-			<div v-html="$t('cannotFindPoll', {pollId: pollId})" />
+			<liqui-loc-html tag="div" msg-key="cannotFindPoll" :params="{pollId: pollId}" />
 			<button type="button" class="btn btn-primary float-end" @click="$root.gotoPolls">
 				{{ $t("Back") }}
 			</button>
 		</div>
 
 		<div v-if="!showError && poll.status === 'ELABORATION' && userIsAdmin()" class="alert alert-admin">
-			<p v-html="$t('PollInElaboration_Admin')" />
+			<liqui-loc-html tag="p" msg-key="PollInElaboration_Admin" />
 		</div>
 
-		<div v-if="!showError && !hasAlreadyVoted" class="alert liquido-info">
-			<p v-if="poll.status === 'ELABORATION' && !userIsAdmin() && poll.membersCanAddProposals" v-html="$t('PollInElaboration_CanAddProposal')" />
-			<p v-if="poll.status === 'ELABORATION' && !userIsAdmin() && !poll.membersCanAddProposals" id="onlyAdminAddsProposalsInfo" v-html="$t('PollInElaboration_OnlyAdminAddsProposals')" />
+		<!-- Every child below is status specific, so the alert must not render when none of them would:
+		     an admin looking at an ELABORATION poll already has the alert-admin box above, and this one
+		     would be an empty coloured box under it. -->
+		<div v-if="!showError && !hasAlreadyVoted && !(poll.status === 'ELABORATION' && userIsAdmin())" class="alert liquido-info">
+			<template v-if="poll.status === 'ELABORATION' && !userIsAdmin()">
+				<p>{{ $t('PollInElaboration_MemberInfo') }}</p>
+				<p v-if="poll.membersCanAddProposals">{{ $t('MembersCanAddProposals') }}</p>
+				<p v-if="!poll.membersCanAddProposals" id="onlyAdminAddsProposalsInfo">{{ $t('OnlyAdminCanAddProposals') }}</p>
+				<p>{{$t('MemberCanCastVote_WhenStarted')}}</p>
+			</template>
 
-			<p v-if="poll.status === 'VOTING' && !hasAlreadyVoted">
+			<p v-if="poll.status === 'VOTING'">
 				{{ $t('votingPhaseIsRunning') }}	
 				<router-link :to="{name: 'castVote'}">{{ $t('votingPhaseInfo') }}</router-link>
 			</p>
@@ -49,7 +56,7 @@
 			</p>
 		</div>
 
-		<div v-if="hasAlreadyVoted" id="isUpdateableBallotInfo" class="already-voted-ballot">
+		<div v-if="hasAlreadyVoted" id="alreadyVotedInfo" class="already-voted-ballot">
 			<h2 class="page-title mt-5">{{ $t('yourBallot') }}</h2>
 			<p class="page-subtitle text-center">{{ $t('alreadyVotedSubtitle') }}</p>
 			<liquido-ballot
@@ -138,7 +145,7 @@
 		</popup-modal>
 
 		<div v-if="showFinishVotingPhase" class="alert alert-admin mt-5">
-			<p v-html="$t('finishVotingPhaseInfo', {numBallots: poll.numBallots})" />
+			<liqui-loc-html tag="p" msg-key="finishVotingPhaseInfo" :params="{numBallots: poll.numBallots}" />
 			<button id="finishVoteButton" type="button" :disabled="finishVoteLoading" class="btn btn-primary float-end" @click="clickFinishVote()">
 				<span v-if="finishVoteLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
 				<i v-else class="fas fa-user-shield" />
@@ -166,14 +173,16 @@ export default {
 			de: {
 				cannotFindPoll: "<h4>Fehler</h4><hr/><p>Diese Abstimmung konnte nicht gefunden werden.</p>",
 				PollInElaboration_Admin:
-					"<p>Du hast diese Abstimmung neu angelegt. Jetzt kannst noch weitere Vorschläge hinzufügen.</p>" +
+					"<p>Du hast diese Abstimmung neu angelegt. Jetzt kannst du noch weitere Vorschläge hinzufügen.</p>" +
 					"<p>Sobald du die Abstimmung startest, können deine Teammitglieder dann hier anonym und sicher ihre Stimme abgeben.</p>",
-				PollInElaboration_CanAddProposal:
-					"<p>Diese Abstimmung ist gerade neu angelegt worden. Du kannst noch weitere Vorschläge hinzufügen.</p>" +
-					"<p>Sobald euer Admin die Abstimmung startet, kannst du dann hier anonym und sicher deine Stimme abgeben.</p>",
-				PollInElaboration_OnlyAdminAddsProposals:
-					"<p>Diese Abstimmung ist gerade neu angelegt worden. In dieser Abstimmung kann nur euer Admin Vorschläge hinzufügen.</p>" +
-					"<p>Sobald euer Admin die Abstimmung startet, kannst du dann hier anonym und sicher deine Stimme abgeben.</p>",
+				PollInElaboration_MemberInfo:
+					"Diese Abstimmung ist gerade neu angelegt worden.",
+				MembersCanAddProposals:  // for member and admin
+					"Jeder im Team kann noch weitere Vorschläge zur dieser Abstimmung hinzufügen.",
+				OnlyAdminCanAddProposals:
+					"Nur euer Admin kann noch weitere Vorschläge zu dieser Abstimmung hinzufügen.",
+				MemberCanCastVote_WhenStarted:
+					"Sobald euer Admin die Abstimmung startet, kannst du dann hier anonym und sicher deine Stimme abgeben.",
 
 				yourBallot: "Dein Stimmzettel",
 				onlyAdminAddsProposals:

@@ -49,7 +49,7 @@
 			<p>{{ $t('createPollInfo1') }}</p>
 			<ol class='fa-ul'>
 				<li class="mb-3"><span class='fa-li'><i class='fas fa-comments'></i></span> {{ $t('createPollInfo2') }} {{ $t('createPollInfo3') }}</li>
-				<li class="mb-3"><span class='fa-li'><i class='fas fa-person-booth'></i></span> <span v-html="$t('createPollInfo4')"></span></li>
+				<li class="mb-3"><span class='fa-li'><i class='fas fa-person-booth'></i></span> <liqui-loc-html tag="span" msg-key="createPollInfo4" /></li>
 				<li class="mb-3"><span class='fa-li'><i class='fas fa-check-circle'></i></span> {{ $t('createPollInfo5') }}</li>
 			</ol>
 		</div>

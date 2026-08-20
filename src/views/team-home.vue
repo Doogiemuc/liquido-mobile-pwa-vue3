@@ -9,7 +9,6 @@
 				<div v-for="poll in pollsInVoting" :key="poll.id" class="poll-card-wrapper user-select-none">
 					<poll-card
 						:poll="poll"
-						:date-text="d(new Date(poll.createdAt), 'shortDate')"
 						@click="$root.gotoPoll"
 					/>
 				</div>
@@ -128,7 +127,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue"
 import { useRouter } from "vue-router"
-import { useI18n } from "vue-i18n"
+import { useLoc } from "@/services/liqui-loc.js"
 import config from "config"
 import api from "@/services/liquido-graphql-client"
 import LiquidoFooter from "@/components/liquido-footer.vue"
@@ -139,7 +138,7 @@ import loginAPI from "@/services/login-rest-client.js"
 import { store } from "@/services/store"
 
 const router = useRouter()
-const { t, d } = useI18n()
+const { t } = useLoc()
 
 const team = ref({})
 
