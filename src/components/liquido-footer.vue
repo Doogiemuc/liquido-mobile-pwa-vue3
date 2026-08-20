@@ -8,12 +8,15 @@
 				<span v-if="infoText !== undefined">{{ infoText }}</span>
 			</slot>
 		</div>
-		<div class="liquido-footer-actions">
+		<div class="liquido-footer-actions" :class="{ 'no-nav-icons': hideNavIcons }">
 			<slot name="left">
-				<RouterLink to="/team" class="footer-icon-container" aria-label="Team">
+				<RouterLink v-if="!hideNavIcons" to="/team" class="footer-icon-container" aria-label="Team">
 					<div class="footer-icon"><i class="fas fa-users"></i></div>
 					<div class="footer-icon-title">Team</div>
 				</RouterLink>
+				<!-- Empty, but still a .footer-icon-container: it keeps its flex: 1 1 0 share, so the
+				     centered action button stays exactly as wide as it is on every other page. -->
+				<div v-else class="footer-icon-container" aria-hidden="true"></div>
 			</slot>
 			<div class="footer-center">
 				<slot name="primary">
@@ -23,7 +26,7 @@
 					</button>
 				</slot>
 			</div>
-			<div class="footer-icon-container" @click="$root.gotoPolls">
+			<div v-if="!hideNavIcons" class="footer-icon-container" @click="$root.gotoPolls">
 				<!-- div class="footer-icon"><i class="fas fa-balance-scale"></i></div> -->
 				<!-- LIQUIDO Balance-scale icon for polls -->
 				<svg xmlns="http://www.w3.org/2000/svg" 
@@ -54,6 +57,8 @@
 				</svg>
 				<div class="footer-icon-title">Polls</div>
 			</div>
+			<!-- Same placeholder on the right, for the same reason. -->
+			<div v-else class="footer-icon-container" aria-hidden="true"></div>
 		</div>
 	</footer>
 </template>
@@ -71,6 +76,12 @@ export default {
 		infoText: { type: String, default: undefined },
 		primaryText: { type: String, default: undefined },
 		primaryDisabled: { type: Boolean, default: false },
+		/**
+		 * Hide the Team and Polls icons, keeping their space so the centered action button does not
+		 * change width. For pages reached without a login - /verifyEmail is opened straight from a
+		 * mail - where both destinations would just bounce the visitor to the login screen.
+		 */
+		hideNavIcons: { type: Boolean, default: false },
 	},
 	emits: ["primary"],
 	data() {
@@ -135,6 +146,24 @@ export default {
 	min-width: 0;
 	margin: 0;
 	padding: 0;
+}
+
+/*
+ * With the nav icons hidden, it is their icon+label stack that stops setting the bar's height, and
+ * the footer collapses from ~56px to ~39px. Pad the BUTTON to make up the difference rather than
+ * pinning a height on the footer: the height still comes from the content, it is just the button's
+ * content now, so the bar keeps growing normally if a label ever wraps.
+ *
+ * Margin, not padding: the button keeps its normal 38px size and simply gets breathing room around
+ * it, rather than growing into a chunky tall button. The bar was losing ~17px without the icons, so
+ * ~8.5px above and below restores it.
+ *
+ * Margins here do not collapse away: .footer-center is a flex item of .liquido-footer-actions, and a
+ * flex item's children never margin-collapse through it.
+ */
+.liquido-footer-actions.no-nav-icons .footer-center .btn {
+	margin-top: 0.55rem;
+	margin-bottom: 0.55rem;
 }
 
 .footer-center {

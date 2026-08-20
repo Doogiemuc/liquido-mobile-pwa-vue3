@@ -133,7 +133,7 @@ const graphQlQuery = function(query, variables) {
 
 
 /** Shorthands for JQL return values */
-const JQL_LOGIN_USER = `{ id name email mobilephone picture website hasWebauthn } `
+const JQL_LOGIN_USER = `{ id name email mobilephone picture website hasWebauthn emailVerified } `
 const JQL_USER = `{ id name email mobilephone picture website  } `
 const JQL_TEAM_MEMBER = `{ role joinedAt user ${JQL_USER} } `
 const JQL_PROPOSAL =  `{ id title description icon status createdAt numSupporters likedByCurrentUser createdBy ${JQL_USER} } `   // no "is" before likedByCurrentUser!

@@ -28,6 +28,27 @@
 			</div>
 		</section>
 
+		<!--
+			Reminder to confirm the email address. Only shown while it is actually unverified.
+
+			The "neue schicken" link is real markup with a real @click, NOT part of a v-html string:
+			Vue does not bind event handlers inside v-html, so a @click written in there would render
+			as an inert attribute and silently do nothing.
+		-->
+		<section v-if="showVerifyEmailReminder">
+			<div id="verifyEmailReminder" class="alert liquido-info" role="alert">
+				<p v-if="verifyMailSent" id="verifyEmailReminderSent">
+					Ok, ich habe dir eine neue E-Mail geschickt. Bitte schau in dein Postfach.
+				</p>
+				<p v-else>
+					Deine Email Adresse ist noch nicht verifiziert. Ich hatte dir eine Email mit einem
+					Bestätigen Link geschickt. Bitte klicke einmal auf diesen Link. Falls du die Email nicht
+					mehr findest, kann ich dir auch noch eine
+					<span id="resendEmailVerificationLink" class="inline-link" @click="sendNewEmailVerificationMail">neue schicken</span>.
+				</p>
+			</div>
+		</section>
+
 		<!-- Team members as circles -->
 		<section>
 			<h2>{{ team.teamName }}</h2>
@@ -114,6 +135,7 @@ import LiquidoFooter from "@/components/liquido-footer.vue"
 import PollCard from "@/components/poll-card.vue"
 import QRCode from "qrcode"
 import webauthnService from '@/services/webauthn-service.js'
+import loginAPI from "@/services/login-rest-client.js"
 import { store } from "@/services/store"
 
 const router = useRouter()
@@ -126,6 +148,11 @@ const team = ref({})
 // especially - a user can be admin of one team and a plain member of the next, and it gates the
 // invite circle and the whole admin section below.
 const currentUserName = ref(undefined)
+
+// Whether to nag about the unconfirmed address, and whether we already sent a fresh link.
+// A ref, not a value read once: switching team re-runs loadTeam() without unmounting this component.
+const emailVerified = ref(true)   // assume verified until we know otherwise, so the alert never flashes
+const verifyMailSent = ref(false)
 const userIsAdmin = ref(false)
 const userHasWebauthn = ref(false)
 const showInvite = ref(false)
@@ -171,6 +198,9 @@ function refreshFromCache() {
 	currentUserName.value = api.getCachedUser()?.name
 	userIsAdmin.value = api.isAdmin()
 	userHasWebauthn.value = api.getCachedUser()?.hasWebauthn
+	// Only nag when the backend actually told us it is unverified. If the field is missing (an older
+	// cached login that predates it) treat it as verified rather than nagging on no evidence.
+	emailVerified.value = api.getCachedUser()?.emailVerified !== false
 	pollsInVoting.value = api.getCachedPolls().filter(p => p.status === "VOTING" && !p.userAlreadyVoted)
 	store.setHeaderTitle(team.value?.teamName || t("TeamHome"))
 }
@@ -246,6 +276,25 @@ async function shareLink() {
 	}
 }
 
+/** Nag only while the address really is unconfirmed. Hidden again as soon as it is verified. */
+const showVerifyEmailReminder = computed(() => !emailVerified.value)
+
+/**
+ * Ask the backend for a fresh confirmation mail.
+ *
+ * Only reachable from here, where the user is logged in - the backend derives the recipient from the
+ * JWT and there is deliberately no anonymous variant. Sending a new link invalidates the old one.
+ */
+async function sendNewEmailVerificationMail() {
+	if (verifyMailSent.value) return   // already sent one; do not let an impatient double click spam
+	verifyMailSent.value = true
+	loginAPI.resendEmailVerification()
+		.catch(err => {
+			console.error("Cannot resend the email verification mail", err)
+			verifyMailSent.value = false   // let them try again
+		})
+}
+
 /**
  * Register a new WebAuthn authenticator device.
  * Only a logged user is allowed to do this for his own account!
@@ -269,6 +318,14 @@ async function setupPasskey() {
 <style scoped>
 section {
 	margin-top: var(--two);  /* more relaxed space between sections on the team home page */
+}
+
+/* The "neue schicken" link inside the verify-email reminder. A span, not a button: it sits mid
+   sentence, so it has to read as a link rather than interrupt the text with a control. */
+.inline-link {
+	color: var(--primary);
+	text-decoration: underline;
+	cursor: pointer;
 }
 
 .passkey-icon { font-size: 2.5rem; color: var(--primary); flex-shrink: 0; }

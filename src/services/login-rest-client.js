@@ -36,6 +36,35 @@ const loginAPI = {
 		}).then(res => res.data)
 	},
 
+	/**
+	 * Confirm an email address with the token from the welcome mail's "verify your email" link.
+	 *
+	 * POST with a JSON body for the same reason as resetPassword: a token in a query string ends up
+	 * in access logs, proxy logs and browser history. The body key must match VerifyEmailRequest.
+	 *
+	 * Note this is NOT the magic-link login ("emailToken"): confirming an address returns no session
+	 * and no JWT. The user still signs in normally afterwards.
+	 */
+	verifyEmail(verifyToken) {
+		if (!verifyToken) throw new Error("Need verifyToken to verify an email address!")
+		return axios.post("/login/verifyEmail", {
+			verifyToken: verifyToken
+		}).then(res => res.data)
+	},
+
+	/**
+	 * Ask the backend to send a fresh "confirm your address" mail to the CURRENT user.
+	 *
+	 * Takes no arguments: the backend reads the recipient from the JWT, so this can only ever mail
+	 * you. There is deliberately no anonymous variant that accepts an email address - that would let
+	 * anyone make LIQUIDO send mail to a stranger. So this is only callable while logged in.
+	 *
+	 * Sending a new link invalidates the previous one.
+	 */
+	resendEmailVerification() {
+		return axios.post("/login/resendEmailVerification").then(res => res.data)
+	},
+
 	err: liquidoExceptionCodes
 }
 

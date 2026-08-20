@@ -374,6 +374,9 @@ const loginMock = (email, teamId) => {
 
 	// Simulate the cache initialization that happens in graphQlApi.login()
 	mockState.currentUser = deepClone(user)
+	// Mock users start out unverified on purpose: it makes the "confirm your address" reminder on
+	// team-home visible in mock mode and in the design overview. Nothing in the mock ever verifies.
+	if (mockState.currentUser.emailVerified === undefined) mockState.currentUser.emailVerified = false
 	mockState.jwt = mockJwt(user, team)
 	saveMockState(mockState)
 
@@ -1018,6 +1021,32 @@ export const initializeLiquidoGraphQlMock = function(graphQlApi, teamCache) {
 					})
 				}
 			}
+		} else if (config.url.includes("/login/resendEmailVerification")) {
+			console.log("MOCK: /login/resendEmailVerification -> pretending to send a mail")
+			config.adapter = cfg => Promise.resolve({
+				data: { message: "Verification mail sent." },
+				status: 200, statusText: "OK",
+				headers: { "Content-Type": "application/json" }, config: cfg, request: {},
+			})
+		} else if (config.url.includes("/login/verifyEmail")) {
+			// Mock mode has no mail, so there is no real nonce to check. Treat any non-empty token as
+			// valid, so the confirmation page can be seen in the design overview, and an empty one as
+			// invalid, so the error branch is reachable too.
+			const token = (config.data && JSON.parse(config.data).verifyToken) || ""
+			console.log("MOCK: /login/verifyEmail with token '" + token + "'")
+			config.adapter = cfg => token
+				? Promise.resolve({
+					data: { message: "Email verified.", email: mockState.currentUser?.email || "mock@liquido.vote" },
+					status: 200, statusText: "OK",
+					headers: { "Content-Type": "application/json" }, config: cfg, request: {},
+				})
+				: Promise.reject(Object.assign(new Error("Invalid token"), {
+					config: cfg, request: {},
+					response: {
+						status: 400,
+						data: { liquidoException: { liquidoErrorCode: LiquidoExceptionCodes.EMAIL_VERIFICATION_TOKEN_INVALID } },
+					},
+				}))
 		} else if (
 			config.url.includes("/webauthn/register-options-challenge") ||
 			config.url.includes("/webauthn/register") ||
