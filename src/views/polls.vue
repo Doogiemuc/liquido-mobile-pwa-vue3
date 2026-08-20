@@ -40,11 +40,7 @@
 
 		</div>
 
-		<p
-			v-if="polls.length === 0"
-			class="text-center"
-			v-html="$t('noPollYet')"
-		/>
+		<liqui-loc-html v-if="polls.length === 0" class="text-center" tag="p" msg-key="noPollYet" />
 
 		<div
 			v-if="polls.length > 0 && filteredCount === 0"
@@ -76,7 +72,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue"
-import { useI18n } from 'vue-i18n'
+import { useLoc } from "@/services/liqui-loc.js"
 import EventBus from "@/services/event-bus"
 import api from "@/services/liquido-graphql-client"
 import { store } from "@/services/store"
@@ -86,7 +82,7 @@ import { useRouter} from 'vue-router'
 const router = useRouter()
 
 
-const { t } = useI18n()
+const { t } = useLoc()
 
 
 /* -----------------------

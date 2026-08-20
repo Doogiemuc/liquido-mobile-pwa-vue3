@@ -9,14 +9,14 @@
 			:poll="poll">
 		</polly>
 
-		<div v-if="poll.status === 'NEW'" class="alert liquido-info" v-html="$t('PollIsNewInfo')"></div>
+		<liqui-loc-html v-if="poll.status === 'NEW'" class="alert liquido-info" tag="div" msg-key="PollIsNewInfo" />
 		<div v-if="poll.status === 'ELABORATION'" class="alert liquido-info">
 			{{ $t('PollInElaborationInfo') }}
 		</div>
 		<div v-if="poll.status == 'VOTING'" class="alert liquido-info mt-5">
-			<p v-html="$t('PollInVotingInfo1')"></p>
+			<liqui-loc-html tag="p" msg-key="PollInVotingInfo1" />
 			<ol class='fa-ul'>
-				<li><span class='fa-li'><i class='fas fa-person-booth'></i></span> <span v-html="$t('PollInVotingInfo2')"></span></li>
+				<li><span class='fa-li'><i class='fas fa-person-booth'></i></span> <liqui-loc-html tag="span" msg-key="PollInVotingInfo2" /></li>
 				<li><span class='fa-li'><i class='fas fa-check-circle'></i></span> {{ $t('PollInVotingInfo3') }}</li>
 			</ol>			
 		</div>
@@ -32,7 +32,7 @@
 			<p>{{ $t('createPollInfo1') }}</p>
 			<ol class='fa-ul'>
 				<li><span class='fa-li'><i class='fas fa-comments'></i></span> {{ $t('createPollInfo2') }} {{ $t('createPollInfo3') }}</li>
-				<li><span class='fa-li'><i class='fas fa-person-booth'></i></span> <span v-html="$t('createPollInfo4')"></span></li>
+				<li><span class='fa-li'><i class='fas fa-person-booth'></i></span> <liqui-loc-html tag="span" msg-key="createPollInfo4" /></li>
 				<li><span class='fa-li'><i class='fas fa-check-circle'></i></span> {{ $t('createPollInfo5') }}</li>
 			</ol>
 		</div>

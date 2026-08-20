@@ -2,13 +2,13 @@
 	<div>
 		<!-- Welcome -->
 		<div id="welcome-chat" :class="{ 'hide-left': !FLOW.Welcome }" class="card chat-bubble chat-left mt-3">
-			<div class="card-body" v-html="$t('welcome')"></div>
+			<liqui-loc-html class="card-body" tag="div" msg-key="welcome" />
 		</div>
 
 		<!-- What's your name? -->
 		<div :class="{ 'hide-left': !FLOW.WhatsYourName }" class="card chat-bubble chat-left">
 			<div class="card-body">
-				<p v-if="FLOW.InviteCodeValid" v-html="$t('hasInviteCodeForTeam', { adminName: adminName, teamName: team.teamName })"></p>
+				<liqui-loc-html v-if="FLOW.InviteCodeValid" tag="p" msg-key="hasInviteCodeForTeam" :params="{ adminName: adminName, teamName: team.teamName }" />
 				<p>{{ $t('whatsYourName') }}</p>
 			</div>
 		</div>
@@ -39,12 +39,12 @@
 
 		<!-- Nice to meet you bubble -->
 		<div :class="{ 'hide-left': !FLOW.NiceToMeetYou }" class="card chat-bubble chat-left">
-			<div class="card-body" v-html="$t('niceToMeetYou', { nickname: user.name })" />
+			<liqui-loc-html class="card-body" tag="div" msg-key="niceToMeetYou" :params="{ nickname: user.name }" />
 		</div>
 
 		<!-- create or join a team bubble -->
 		<div id="createOrJoinBubble" :class="{ 'hide-left': !FLOW.CreateOrJoinTeam, 'collapse-max-height': FLOW.InviteCodeValid }" class="card chat-bubble chat-left">
-			<div class="card-body" v-html="$t('createOrJoin')" />
+			<liqui-loc-html class="card-body" tag="div" msg-key="createOrJoin" />
 		</div>
 
 		<!-- create or join a team buttons -->
@@ -151,7 +151,7 @@
 		<!--Joined team successfully -->
 		<div id="joinedTeamBubble" :class="{ 'collapse-max-height': !FLOW.JoinTeamSuccessfull }" class="card chat-bubble chat-left">
 			<div class="card-body">
-				<p v-html="$t('JoinedTeamSuccessfully', { teamName: team.teamName })" />
+				<liqui-loc-html tag="p" msg-key="JoinedTeamSuccessfully" :params="{ teamName: team.teamName }" />
 			</div>
 		</div>
 
@@ -243,8 +243,8 @@
 		<!-- Setup Passkey Info -->
 		<div id="setupPasskeyInfoCard" :class="{ 'collapse-max-height': !FLOW.SetupPasskey }" class="card chat-bubble chat-left">
 			<div class="card-body">
-				<h3 v-html="$t('SetupPasskeyTitle')"></h3>
-				<p v-html="$t('SetupPasskeyInfo')" />
+				<liqui-loc-html tag="h3" msg-key="SetupPasskeyTitle" />
+				<liqui-loc-html tag="p" msg-key="SetupPasskeyInfo" />
 			</div>
 		</div>
 
@@ -282,7 +282,7 @@
 		<!-- JoinTeam and Passkey successfull: GoToTeam Button -->
 		<div id="JoinTeamFinishedCard" :class="{ 'collapse-max-height': !(FLOW.RegistrationFinished && FLOW.JoinTeamSuccessfull) }" class="card chat-bubble chat-left">
 			<div class="card-body">
-				<p v-html="$t('JoinTeamFinished', { teamName: team.teamName })"></p>
+				<liqui-loc-html tag="p" msg-key="JoinTeamFinished" :params="{ teamName: team.teamName }" />
 				<button
 					id="joinedTeamGoToTeamButton"
 					class="btn btn-primary w-100"
@@ -314,7 +314,7 @@
 				<div class="text-center mb-3">
 					<img id="qrCodeImg" src="" class="qr-code">
 				</div>
-				<p v-html="$t('teamInfo')" />
+				<liqui-loc-html tag="p" msg-key="teamInfo" />
 				<button
 					id="gotoTeamButton"
 					class="btn btn-primary float-end mb-3"
@@ -331,7 +331,7 @@
 		<!-- Admin can create a first poll -->
 		<div :class="{ 'collapse-max-height': !(FLOW.RegistrationFinished && FLOW.CreateTeamSuccessfull) }" class="card chat-bubble chat-left">
 			<div class="card-body">
-				<p v-html="$t('pollInfo')" />
+				<liqui-loc-html tag="p" msg-key="pollInfo" />
 				<button
 					id="gotoCreatePollButton"
 					class="btn btn-primary float-end mb-3"
@@ -418,7 +418,7 @@ export default {
 				inviteCodePlaceholder: "AB12CD34",
 				inviteCodeInvalid: "Einladungscode muss genau 6 Zeichen lang sein.",
 				YourEMail: "Deine E-Mail",
-				emailPlaceholder: "info{'@'}domain.de",
+				emailPlaceholder: "info@domain.de",
 				emailInvalid: "E-Mail Adresse ungültig",
 				passwordInvalid: "Bitte mindestens " + config.minPasswordLength + " Zeichen!",
 

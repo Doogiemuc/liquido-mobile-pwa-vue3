@@ -88,7 +88,7 @@ export default {
 		},
 	},
 	name: "LiquidoApp",
-	// Remark: vue-i18n is configured in main.js! Do not overwrite it here by setting the i18n: property
+	// Remark: liqui-loc is configured in main.js! Do not overwrite it here by setting the i18n: property
 	components: { liquidoHeader, popupModal, mobileDebugLog },
 	data() { 
 		// These data attributes are reactive and available in EVERY sub-component as this.$root.<attributeName>

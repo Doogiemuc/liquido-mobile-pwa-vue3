@@ -40,7 +40,7 @@
  *
  * All styling lives globally in src/styles/liquido.css (shared with liquido-ballot.vue).
  * The "created by" label is supplied by the parent (createdByLabel prop) so this component
- * needs no i18n of its own — handy since vue-i18n's legacy $t is not callable in <script setup>.
+ * needs no i18n of its own, which keeps this component purely presentational.
  */
 defineProps({
 	// the proposal to render (id, title, icon, numSupporters, likedByCurrentUser, createdBy…)

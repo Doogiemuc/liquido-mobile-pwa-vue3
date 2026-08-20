@@ -8,7 +8,7 @@
 						<span v-if="poll.status === 'VOTING'" class="badge rounded-pill poll-status-pill in-voting-pill">
 							<i class="fas fa-circle"></i>&nbsp;{{ $t('InVoting') }}
 						</span>
-						<span v-if="poll.status === 'VOTING' && poll.userAlreadyVoted" class="badge rounded-pill poll-status-pill voted-chip" :title="$t('votes', 1)">
+						<span v-if="poll.status === 'VOTING' && poll.userAlreadyVoted" class="badge rounded-pill poll-status-pill voted-chip" :title="$tc('votes', 1)">
 							<i class="fas fa-check"></i>&nbsp;{{ $t('voted') }}
 						</span>
 						<span v-if="poll.status === 'FINISHED'" class="badge rounded-pill poll-status-pill finished-pill">{{ $t('Finished') }}</span>
@@ -95,14 +95,7 @@
 
 <script>
 import api from "@/services/liquido-graphql-client.js"
-import dayjs from "dayjs"
-import 'dayjs/locale/de'
-//import 'dayjs/locale/en'
-import localizedFormat from "dayjs/plugin/localizedFormat"
-import relativeTime from 'dayjs/plugin/relativeTime'
-dayjs.extend(localizedFormat) // https://day.js.org/docs/en/plugin/localized-format
-dayjs.extend(relativeTime)    // for flexible display of relative distance to a point in time in the future (votingEndsAt)
-dayjs.locale('de')
+import { formatDate, fromNow } from "@/services/liqui-loc.js"
 
 export default {
 	name: "PollCard",
@@ -113,7 +106,6 @@ export default {
 				// Poll related translations (zero|singular|plural style)
 				numProposals: "0 Vorschläge | 1 Vorschlag | {n} Vorschläge",
 				votes: "Noch keine Stimmen | 1 Stimme abgegeben | {n} Stimmen abgegeben",
-				daysLeft: "Beendet | noch ein Tag | noch {n} Tage",
 				endsIn: "endet",
 				awaitingStart: "wird bald gestartet",
 				voted: "abgestimmt",
@@ -124,7 +116,6 @@ export default {
 				// Poll related translations (singular|dual|plural style)
 				numProposals: "No proposals | 1 proposal | {n} proposals",
 				votes: "0 votes | 1 vote | {n} votes",
-				daysLeft: "Voting finished | 1 day left | {n} days left",
 				endsIn: "ends",
 				awaitingStart: "awaiting start",
 				voted: "voted",
@@ -162,24 +153,24 @@ export default {
 	},
 	computed: {
 		votingEndAtDateLoc() {
-			return dayjs(this.poll.votingEndAt).format("L")
+			return formatDate(this.poll.votingEndAt)
 		},
 		timeLeft() {
 			if (this.poll?.votingEndAt && this.poll?.status === "VOTING") {
-				let end = dayjs(this.poll.votingEndAt)
-				if (dayjs().isAfter(end)) {
+				let end = new Date(this.poll.votingEndAt)
+				if (Date.now() > end.getTime()) {
 					return ""  // this should not happen
 				}
-				return end.fromNow()  // e.g. "in 5 days" https://day.js.org/docs/en/display/from-now#list-of-breakdown-range
+				return fromNow(end)  // e.g. "in 5 Tagen" - see liqui-loc's unit breakdown table
 			} 
 			return ""  // BUGFIX must not return undefined
 		},
 		/** Calculate the percentage of the time between votingStartAt and votingEndAt that has already elapsed. */
 		progressBarWidth() {
-			let start = dayjs(this.poll.votingStartAt)
-			let end   = dayjs(this.poll.votingEndAt)
-			let durationMs = end.diff(start)       // mind order
-			let elapsedMs  = dayjs().diff(start)
+			let start = new Date(this.poll.votingStartAt).getTime()
+			let end   = new Date(this.poll.votingEndAt).getTime()
+			let durationMs = end - start           // mind order
+			let elapsedMs  = Date.now() - start
 			let widthPercent = elapsedMs / durationMs * 100
 			widthPercent = Math.min(100, Math.max(0, widthPercent))  // clamp between 0..100
 			return { "width": widthPercent+"%" };

@@ -11,19 +11,19 @@
 
 import { beforeEach, describe, expect, test, vi } from "vitest"
 import { mount } from "@vue/test-utils"
-import { createI18n } from "vue-i18n"
+import { createLoc } from "@/services/liqui-loc.js"
 import TeamHome from "@/views/team-home.vue"
 import api from "@/services/liquido-graphql-client"
 
-// team-home.vue is <script setup>, so it calls useRouter() / useI18n() directly rather than reaching
-// for `this`. Neither can be supplied through mount()'s `mocks` option, which only patches the
-// options-API context - they need a real plugin and a module mock respectively.
+// team-home.vue is <script setup>, so it calls useRouter() / useLoc() directly rather than reaching
+// for `this`. useRouter needs a module mock; useLoc needs the plugin installed so $t and the message
+// catalogue exist. (useLoc itself would survive without it - it just resolves nothing.)
 vi.mock("vue-router", () => ({ useRouter: () => ({ push: vi.fn() }) }))
 
-// Same shape as main.js: legacy mode with allowComposition, which is what makes useI18n() work
-// inside <script setup> in this project.
-const i18n = createI18n({
-	locale: "de", fallbackLocale: "de", allowComposition: true, silentFallbackWarn: true,
+// Same shape as main.js. No allowComposition flag: liqui-loc's useLoc() works in both API styles by
+// construction, which is the reason it replaced vue-i18n.
+const i18n = createLoc({
+	locale: "de", fallbackLocale: "de",
 	messages: { de: { TeamHome: "Team", SwitchTeam: "Team wechseln", gotoPolls: "Abstimmungen", User: "Profil" } },
 })
 

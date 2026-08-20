@@ -63,7 +63,7 @@
 			</div>
 			<div v-if="!hasAlreadyVoted || availableProposals.length > 0" class="available-proposals">	
 				
-				<p v-if="availableProposals.length === 0" class="available-proposals-empty" v-html="$t('youVotedForAllProposals')"></p>
+				<liqui-loc-html v-if="availableProposals.length === 0" class="available-proposals-empty" tag="p" msg-key="youVotedForAllProposals" />
 
 				<draggable v-if="!hasAlreadyVoted" id="availableDraggable" v-model="availableProposals" class="draggable" group="proposals" item-key="id"
 					:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
@@ -78,7 +78,7 @@
 		</div>
 
 		<div class="page-subtitle mt-5">
-			<p v-html="$t('castVoteInfo')"></p>
+			<liqui-loc-html tag="p" msg-key="castVoteInfo" />
 		</div>
 
 		<liquido-footer>
