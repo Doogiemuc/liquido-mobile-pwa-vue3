@@ -202,7 +202,7 @@ import { store } from "@/services/store.js"
 import liquidoInput from "@/components/liquido-input.vue"
 
 const props = defineProps({
-	/** Invite code from the URL: /join-v2?inviteCode=ABC12345 . May be missing - see PAGE.ERROR. */
+	/** Invite code from the URL: /joinTeam?inviteCode=ABC12345 . May be missing - see PAGE.ERROR. */
 	inviteCodeQueryParam: { type: String, required: false, default: undefined }
 })
 

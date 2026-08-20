@@ -26,7 +26,7 @@
 		<div class="overview">
 			<section v-for="page in pages" :key="page.name" class="overview-section">
 				<h2 class="ms-2">
-					<a :href="page.route" target="_blank" rel="noopener" class="page-link">{{ page.name }}</a>
+					<a :href="page.route" target="_blank" rel="noopener" class="page-link"><pre>{{ page.route }}</pre></a>
 				</h2>
 				<div class="page-preview-container">
 					<iframe 
@@ -54,10 +54,12 @@ if (polls && polls.length > 0) {
 	newPollId = polls.find(poll => poll.status === "ELABORATION").id
 	pollInVotingId = polls.find(poll => poll.status === "VOTING").id
 }
+let inviteCode = api.getCachedTeam()?.inviteCode || "mock-invite-code"
 
 const pages = [
 	{ name: 'Login', route: '/login' },
 	{ name: 'Welcome', route: '/welcome' },
+	{ name: 'Join a Team', route: `/joinTeam?inviteCode=${inviteCode}` },
 	{ name: 'Team', route: '/team' },
 	{ name: 'User home', route: '/userhome' },
 	{ name: 'List of Polls', route: '/polls' },
@@ -70,8 +72,8 @@ const pages = [
 	{ name: 'Cast a vote', route: `/polls/${pollInVotingId}/castVote` },
 	{ name: 'Forgot password', route: '/forgotPassword' },
 	{ name: 'Verify email', route: '/verifyEmail?verifyToken=mock-token' },
-	{ name: '404 - not found', route: '/404' },
 	{ name: 'Polly', route: '/polly/create' },
+	//{ name: '404 - not found', route: '/404' },
 ]
 
 if (!config.mockBackend) console.log("==== Design overview: You might want to set config.mockBackend = true =======")

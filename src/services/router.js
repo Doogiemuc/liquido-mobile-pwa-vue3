@@ -42,11 +42,11 @@ const routes = [
 		}
 	},
 	{
-		path: "/join-v2",
+		path: "/joinTeam",
 		name: "joinTeamV2",
 		component: joinTeamV2,
 		// `props: true` would only pass route.params, and this path has none.
-		// The inviteCode arrives as a query parameter: /join-v2?inviteCode=ABC123
+		// The inviteCode arrives as a query parameter: /joinTeam?inviteCode=ABC123
 		props: route => ({
 			inviteCodeQueryParam: route.query.inviteCode
 		}),
