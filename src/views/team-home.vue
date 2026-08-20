@@ -242,17 +242,6 @@ function logout() {
 	router.push({ name: "login" })
 }
 
-async function inviteMembers() {
-	if (navigator.share) {
-		try {
-			await navigator.share({ title: "LIQUIDO Einladung", text: "Teammitglieder einladen", url: inviteLinkURL.value })
-		} catch (err) { console.error("Error sharing", err) }
-	} else {
-		try { await navigator.clipboard.writeText(inviteLinkURL.value) }
-		catch (err) { console.error("Failed to copy invite link", err) }
-	}
-}
-
 async function shareLink() {
 	if (navigator.share) {
 		try {
