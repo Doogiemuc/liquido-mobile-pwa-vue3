@@ -33,11 +33,16 @@
 			<liqui-loc-html tag="p" msg-key="PollInElaboration_Admin" />
 		</div>
 
-		<div v-if="!showError && poll.status === 'ELABORATION' && !userIsAdmin()" class="alert liquido-info">
-			<p>{{ $t('PollInElaboration_MemberInfo') }}</p>
-			<p v-if="poll.membersCanAddProposals">{{ $t('MembersCanAddProposals') }}</p>
-			<p v-if="!poll.membersCanAddProposals" id="onlyAdminAddsProposalsInfo">{{ $t('OnlyAdminCanAddProposals') }}</p>
-			<p>{{$t('MemberCanCastVote_WhenStarted')}}</p>
+		<!-- Every child below is status specific, so the alert must not render when none of them would:
+		     an admin looking at an ELABORATION poll already has the alert-admin box above, and this one
+		     would be an empty coloured box under it. -->
+		<div v-if="!showError && !hasAlreadyVoted && !(poll.status === 'ELABORATION' && userIsAdmin())" class="alert liquido-info">
+			<template v-if="poll.status === 'ELABORATION' && !userIsAdmin()">
+				<p>{{ $t('PollInElaboration_MemberInfo') }}</p>
+				<p v-if="poll.membersCanAddProposals">{{ $t('MembersCanAddProposals') }}</p>
+				<p v-if="!poll.membersCanAddProposals" id="onlyAdminAddsProposalsInfo">{{ $t('OnlyAdminCanAddProposals') }}</p>
+				<p>{{$t('MemberCanCastVote_WhenStarted')}}</p>
+			</template>
 
 			<p v-if="poll.status === 'VOTING'">
 				{{ $t('votingPhaseIsRunning') }}	
