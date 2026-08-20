@@ -79,7 +79,18 @@
 
 		<liquido-footer>
 			<template #primary>
-				<button v-if="poll.status === 'ELABORATION'" id="backToPollsButton" type="button" class="btn btn-outline-secondary" @click="gotoPolls()">
+				<!--
+					A poll in ELABORATION has exactly ONE footer action, never two.
+
+					For the admin that action is "start the voting phase" - it is the only thing only they
+					can do, and it is what moves the poll forward. Adding a proposal is deliberately NOT
+					here: it sits on the page, next to the proposals it adds to (see above).
+
+					For an ordinary member there is nothing to do in the footer at all, so they get Back.
+					The admin also falls back to Back while showStartVotingPhase is false, which happens
+					when the poll does not have the two proposals a vote needs yet.
+				-->
+				<button v-if="poll.status === 'ELABORATION' && !showStartVotingPhase" id="backToPollsButton" type="button" class="btn btn-outline-secondary" @click="gotoPolls()">
 					<i class="fas fa-angle-double-left" />
 					{{ $t("Back") }}
 				</button>
