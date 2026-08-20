@@ -15,28 +15,27 @@ export default {
 	showDebugLog: false,
 	mockBackend: false,
 	
-	// ---- FALLBACK values for settings the backend owns ----
+	// ---- FALLBACK for global settings that are normally fetched from backend ----
 	//
 	// These are fetched from the backend at startup (query liquidoConfig -> root-app.loadLiquidoConfig)
 	// and overwritten with its answer. They are kept here only so the app still works when the backend
 	// is unreachable. Do NOT tune these to change behaviour - change them in the backend's
 	// LiquidoConfig, or the two will disagree again and the server will reject what the client accepted.
-	//
-	// avatarPath below is NOT one of them: it points at files bundled with this PWA, so the backend has
-	// no way to know it and no business setting it.
-	usernameMinLength: 3,
+	
+	usernameMinLength: 3,										// used in login.vue and register.vue 
 	inviteCodeLength: 8,			       				// used for validating inviteCodes in welcome-chat.vue
 	minPasswordLength: 10, 									// used in forgot-password.vue
-	allowMembersToInvite: true,
-	pollTitleMinLength: 5,									// Can be short. But should possibly be longer than 3 chars to avoid spam. Used in poll-create.vue
+	pollTitleMinLength: 5,									// poll titles must be unique within one team. used in poll-add.vue
 	pollDefaultRuntimeDays: 7,
 	proposalTitleMinLength: 3,							// Used in proposal-add.vue
 	proposalDescriptionMinLength: 20,				// backend owns this; LiquidoConfigMatchesEntityTest locks it to ProposalEntity's @Size(min)
-	avatarPath: "./img/avatars",
 	inviteLinkPrefix: "http://app.liquido.vote/welcome?inviteCode=",
-	//TODO: adminMustConfirmNewMembers: ...
-	//TODO: voting algorith: absoluteMajority or margin
 
+
+	// ---- frontend only settings ------
+	avatarPath: "./img/avatars",
+	
+	
 	// Dummy data for mocked login. Must be same as @/mockdata/teamUserJwt.json
 	devLogin: {
 		teamName: "DevLogin Team",
