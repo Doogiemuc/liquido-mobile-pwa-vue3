@@ -134,9 +134,15 @@ export default defineComponent({
 		if (this.initialPoll) {
 			this.poll = this.initialPoll
 		}
-		this.hasAlreadyVoted = api.getMyBallot(this.poll.id).then(myBallot => {
-			return myBallot !== undefined
-		})
+		// A Polly that is still being created has no id yet, so there is no ballot to ask the backend
+		// for. Asking anyway sent pollId: null and the query died on "BigInteger!", which - being
+		// uncaught - surfaced as the global "network error" popup on every visit to /polly/create.
+		if (!this.poll.id) return
+		api.getMyBallot(this.poll.id)
+			.then(myBallot => {
+				this.hasAlreadyVoted = myBallot !== undefined
+			})
+			.catch(err => console.warn("Cannot check whether the user already voted", err))
 	},
 	mounted() {
 		this.$store.setHeaderTitle(this.pollyHeaderTitle)
