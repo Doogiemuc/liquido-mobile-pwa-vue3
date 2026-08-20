@@ -60,7 +60,7 @@
 			</button>
 		</div>
 
-		<div v-if="userIsAdmin" class="alert alert-admin mt-5">
+		<div v-if="userIsAdmin()" class="alert alert-admin mt-5">
 			<p>{{ $t('onlyAdminCanCreateNewPolls') }}</p>
 			<button id="createNewPollButton" class="btn btn-primary float-end" @click="gotoCreateNewPoll">
 				{{ $t("createNewPoll") }}
@@ -205,9 +205,15 @@ const showSearchClass = computed(() =>
 	showSearch.value ? "" : "search-hidden"
 )
 
-const userIsAdmin = computed(() =>
-	api.isAdmin()
-)
+/**
+ * A plain function, deliberately not a computed. api.isAdmin() decodes the cached JWT and has no
+ * reactive dependency, so a computed wrapping it would evaluate once and cache that answer for the
+ * life of the component - going stale as soon as it changes (a switchTeam re-mints the token, and a
+ * user can be admin of one team and a plain member of the next).
+ */
+function userIsAdmin() {
+	return api.isAdmin()
+}
 
 /* -----------------------
    ACTIONS

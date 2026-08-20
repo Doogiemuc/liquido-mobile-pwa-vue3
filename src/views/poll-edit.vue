@@ -277,10 +277,11 @@ export default {
 		},
 
 		/**
-		 * These three read api.isAdmin(), which looks at two plain caches - nothing reactive. As
-		 * computed properties they would latch whatever they saw on the very first render and never
-		 * re-evaluate, so a cold cache at that moment would stick as "not an admin" for good. As
-		 * methods they are recomputed on every render instead.
+		 * These three read api.isAdmin(), which decodes the cached JWT - nothing reactive. As computed
+		 * properties they would latch whatever they saw on the very first evaluation and never
+		 * re-evaluate, which goes stale as soon as the answer changes (a switchTeam re-mints the token,
+		 * and a user can be admin of one team and a plain member of the next). As methods they are
+		 * re-evaluated on every render instead.
 		 */
 		userIsAdmin() {
 			return api.isAdmin()

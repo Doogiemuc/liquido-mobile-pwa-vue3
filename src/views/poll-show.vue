@@ -29,13 +29,13 @@
 			</button>
 		</div>
 
-		<div v-if="!showError && poll.status === 'ELABORATION' && userIsAdmin" class="alert alert-admin">
+		<div v-if="!showError && poll.status === 'ELABORATION' && userIsAdmin()" class="alert alert-admin">
 			<p v-html="$t('PollInElaboration_Admin')" />
 		</div>
 
 		<div v-if="!showError && !hasAlreadyVoted" class="alert liquido-info">
-			<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && poll.membersCanAddProposals" v-html="$t('PollInElaboration_CanAddProposal')" />
-			<p v-if="poll.status === 'ELABORATION' && !userIsAdmin && !poll.membersCanAddProposals" id="onlyAdminAddsProposalsInfo" v-html="$t('PollInElaboration_OnlyAdminAddsProposals')" />
+			<p v-if="poll.status === 'ELABORATION' && !userIsAdmin() && poll.membersCanAddProposals" v-html="$t('PollInElaboration_CanAddProposal')" />
+			<p v-if="poll.status === 'ELABORATION' && !userIsAdmin() && !poll.membersCanAddProposals" id="onlyAdminAddsProposalsInfo" v-html="$t('PollInElaboration_OnlyAdminAddsProposals')" />
 
 			<p v-if="poll.status === 'VOTING' && !hasAlreadyVoted">
 				{{ $t('votingPhaseIsRunning') }}	
@@ -238,9 +238,6 @@ export default {
 			if (this.poll.status === "FINISHED") return this.$t("finishedPoll")
 			return this.$t("Poll")
 		},
-		userIsAdmin() {
-			return api.isAdmin()
-		},
 		hasAlreadyVoted() {
 			return this.poll.status === "VOTING" && !!this.existingBallot
 		},
@@ -252,14 +249,14 @@ export default {
 		 */
 		showAddProposal() {
 			if (this.poll.status !== "ELABORATION") return false
-			return this.userIsAdmin || !!this.poll.membersCanAddProposals
+			return this.userIsAdmin() || !!this.poll.membersCanAddProposals
 		},
 		/** The voting phase can be started by the admin when there are at least two proposals */
 		showStartVotingPhase() {
-			return this.userIsAdmin && this.poll.status === "ELABORATION" && this.poll.proposals && this.poll.proposals.length > 1
+			return this.userIsAdmin() && this.poll.status === "ELABORATION" && this.poll.proposals && this.poll.proposals.length > 1
 		},
 		showFinishVotingPhase() {
-			return this.userIsAdmin && this.poll.status === "VOTING"  //TODO: and this.poll.numBallots > 0
+			return this.userIsAdmin() && this.poll.status === "VOTING"  //TODO: and this.poll.numBallots > 0
 		},
 	},
 	watch: {
@@ -286,6 +283,16 @@ export default {
 		this.$root.scrollToTop()  // the polls list stays. But one poll is always shown from the top
 	},
 	methods: {
+		/**
+		 * A METHOD, deliberately not a computed. api.isAdmin() decodes the cached JWT and has no
+		 * reactive dependency, so a computed wrapping it would evaluate once and cache that answer for
+		 * the life of the component - going stale as soon as it changes (a switchTeam re-mints the
+		 * token, and a user can be admin of one team and a plain member of the next).
+		 */
+		userIsAdmin() {
+			return api.isAdmin()
+		},
+
 		loadPoll() {
 			if (!this.pollId || this.pollId < 0) {
 				console.warn("Need pollId!")
