@@ -24,7 +24,7 @@
 		</div>
 
 		<div class="overview">
-			<section v-for="page in pages" :key="page.name" class="overview-section">
+			<section v-for="page in pages" :key="page.name" class="overview-section" :class="{ 'page-dimmed': page.dimmed }">
 				<h1 class="ms-2">{{ page.name }}</h1>
 				<h2 class="ms-2">
 					<a :href="page.route" target="_blank" rel="noopener" class="page-link"><pre>{{ page.route }}</pre></a>
@@ -47,11 +47,9 @@ import api from "@/services/liquido-graphql-client.js"
 import config from "config"
 
 const polls = api.getCachedPolls()
-let firstPollId = 55555
 let newPollId = 66666
 let pollInVotingId = 77777
 if (polls && polls.length > 0) {
-	firstPollId = polls[0].id
 	newPollId = polls.find(poll => poll.status === "ELABORATION").id
 	pollInVotingId = polls.find(poll => poll.status === "VOTING").id
 }
@@ -66,15 +64,18 @@ const pages = [
 	{ name: 'List of Polls', route: '/polls' },
 	{ name: 'New Poll', route: `/polls/${newPollId}` },
 	{ name: 'Poll in Voting', route: `/polls/${pollInVotingId}` },
-	{ name: 'Create a new poll', route: '/polls/create' },
-	{ name: 'Poll editor (new)', route: '/polls/new' },
-	{ name: 'Poll editor (edit)', route: `/polls/${newPollId}/edit` },
-	{ name: 'Add a proposal', route: `/polls/${firstPollId}/add` },
+	
+	/*
+	{ name: 'Create a new poll (OLD)', route: '/polls/create' },
+	{ name: 'Add a proposal (OLD)', route: `/polls/${firstPollId}/add` },
+	 */
+	{ name: 'Create new poll (admin only)', route: '/polls/new' },
+	{ name: 'Edit Poll', route: `/polls/${newPollId}/edit` },
 	{ name: 'Cast a vote', route: `/polls/${pollInVotingId}/castVote` },
 	{ name: 'Forgot password', route: '/forgotPassword' },
 	{ name: 'Verify email', route: '/verifyEmail?verifyToken=mock-token' },
+	{ name: 'Page not found', route: `/404`, dimmed: true },  // placeholder to seperate polly
 	{ name: 'Polly', route: '/polly/create' },
-	//{ name: '404 - not found', route: '/404' },
 ]
 
 if (!config.mockBackend) console.log("==== Design overview: You might want to set config.mockBackend = true =======")
@@ -107,6 +108,7 @@ const logout = () => {
 	api.logout()
 	window.location.reload()
 }
+
 
 </script>
 
@@ -174,6 +176,10 @@ const logout = () => {
 	height: 100%;
 	border: none;
 	background-color: white;
+}
+
+.page-dimmed {
+	opacity: 0.2;
 }
 
 </style>
