@@ -9,7 +9,7 @@
 				<div v-for="poll in pollsInVoting" :key="poll.id" class="poll-card-wrapper user-select-none">
 					<poll-card
 						:poll="poll"
-						@click="$root.gotoPoll"
+						@click="gotoCastVote"
 					/>
 				</div>
 			</div>
@@ -224,6 +224,19 @@ function getImgUrl(imgFile) {
 
 function gotoPolls() {
 	router.push({ name: "polls" })
+}
+
+/**
+ * The team page is the "what still wants something from me" surface: pollsInVoting is filtered to
+ * polls that are open for voting AND that this user has not voted in yet, so every card here is a
+ * ballot waiting to be cast. Clicking one therefore goes straight to it, skipping poll-show.
+ *
+ * This is the only place in the app that takes that shortcut - $root.gotoPoll() opens the poll page.
+ * It is safe only because leaving cast-vote always walks back through poll-show, which is where the
+ * ballot receipt and the admin's "finish voting phase" button live.
+ */
+function gotoCastVote(pollId) {
+	router.push({ name: "castVote", params: { pollId } })
 }
 
 async function toggleInvite() {

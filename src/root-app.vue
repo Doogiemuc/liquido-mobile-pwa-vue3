@@ -199,12 +199,18 @@ export default {
 		//
 		// These methods are available as this.$root.<method> in all vue sub components of root-app
 		//
+		/**
+		 * Open a poll. A finished poll shows its winner, everything else opens the poll page.
+		 *
+		 * This deliberately does NOT jump into the ballot. poll-show is the hub for a poll: it is the
+		 * only place a voter can see their own (anonymous) ballot and verify its checksum, and the only
+		 * place an admin can end the voting phase. Skipping it would strand both. The one page that may
+		 * shortcut straight to the ballot is team-home, which lists nothing but polls awaiting your vote.
+		 */
 		gotoPoll(pollId) {
 			const poll = api.getCachedPolls().find(p => p.id == pollId)
 			if (poll?.status === "FINISHED") {
 				this.$router.push({name: "pollWinner", params: {pollId: pollId}})
-			} else if (poll?.status === "VOTING" && !poll?.userAlreadyVoted) {
-				this.$router.push({name: "castVote", params: {pollId: pollId}})
 			} else {
 				this.$router.push({name: "showPoll", params: {pollId: pollId}})
 			}
