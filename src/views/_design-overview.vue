@@ -25,6 +25,7 @@
 
 		<div class="overview">
 			<section v-for="page in pages" :key="page.name" class="overview-section">
+				<h1 class="ms-2">{{ page.name }}</h1>
 				<h2 class="ms-2">
 					<a :href="page.route" target="_blank" rel="noopener" class="page-link"><pre>{{ page.route }}</pre></a>
 				</h2>
@@ -120,6 +121,11 @@ const logout = () => {
 	background-color: white !important;
 	width: 100%;
 	max-width: 100%;
+	padding-top: 0 !important;  /* Remove the top padding to avoid extra space at the top of the design overview page. */
+}
+
+#liquidoHeader {
+	display: none; /* Hide the header to avoid extra space at the top of the design overview page. */
 }
 
 .button-group {
