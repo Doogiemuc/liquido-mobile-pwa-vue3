@@ -10,16 +10,16 @@
 	
 		<poll-card v-if="poll.id && !loadingPoll" :poll="poll" :show-arrow-right="false" :show-proposals="true" :proposals-expanded="true" class="shadow-sm mb-4" @edit-proposal="gotoEditProposal" />
 
-		<div v-if="showError"	class="alert alert-danger mb-3">
+		<div v-if="showError"	class="alert alert-danger alert-has-action mb-3">
 			<liqui-loc-html tag="div" msg-key="cannotFindPoll" :params="{pollId: pollId}" />
-			<button type="button" class="btn btn-primary float-end" @click="$root.gotoPolls">
+			<button type="button" class="btn btn-primary alert-action" @click="$root.gotoPolls">
 				{{ $t("Back") }}
 			</button>
 		</div>
 
-		<div v-if="!showError && poll.status === 'ELABORATION' && userIsAdmin()" class="alert alert-admin">
+		<div v-if="!showError && poll.status === 'ELABORATION' && userIsAdmin()" class="alert alert-admin alert-has-action">
 			<liqui-loc-html tag="p" msg-key="PollInElaboration_Admin" />
-			<button id="editPollButton" type="button" class="btn btn-primary float-end" @click="clickEditPoll()">
+			<button id="editPollButton" type="button" class="btn btn-primary alert-action" @click="clickEditPoll()">
 				{{ $t("editPoll") }}
 			</button>
 		</div>
@@ -27,7 +27,7 @@
 		<!-- Every child below is status specific, so the alert must not render when none of them would:
 		     an admin looking at an ELABORATION poll already has the alert-admin box above, and this one
 		     would be an empty coloured box under it. -->
-		<div v-if="!showError && !hasAlreadyVoted && !(poll.status === 'ELABORATION' && userIsAdmin())" class="alert liquido-info">
+		<div v-if="!showError && !hasAlreadyVoted && !(poll.status === 'ELABORATION' && userIsAdmin())" class="alert liquido-info alert-has-action">
 			<template v-if="poll.status === 'ELABORATION' && !userIsAdmin()">
 				<p>{{ $t('PollInElaboration_MemberInfo') }}</p>
 				<p v-if="poll.membersCanAddProposals">{{ $t('MembersCanAddProposals') }}</p>
@@ -40,10 +40,10 @@
 					"edit" - that they may also add another is said in the text above, and does not fit
 					on a button.
 				-->
-				<button v-if="myEditableProposal()" id="editMyProposalButton" type="button" class="btn btn-primary float-end" @click="clickEditMyProposal()">
+				<button v-if="myEditableProposal()" id="editMyProposalButton" type="button" class="btn btn-primary alert-action" @click="clickEditMyProposal()">
 					{{ $t("editMyProposal") }}
 				</button>
-				<button v-else-if="poll.membersCanAddProposals" id="addProposalButton" type="button" class="btn btn-primary float-end" @click="clickAddProposal()">
+				<button v-else-if="poll.membersCanAddProposals" id="addProposalButton" type="button" class="btn btn-primary alert-action" @click="clickAddProposal()">
 					{{ $t("addProposal") }}
 				</button>
 			</template>
@@ -148,9 +148,9 @@
 			</template>
 		</popup-modal>
 
-		<div v-if="showFinishVotingPhase" class="alert alert-admin mt-5">
+		<div v-if="showFinishVotingPhase" class="alert alert-admin alert-has-action mt-5">
 			<liqui-loc-html tag="p" msg-key="finishVotingPhaseInfo" :params="{numBallots: poll.numBallots}" />
-			<button id="finishVoteButton" type="button" :disabled="finishVoteLoading" class="btn btn-primary float-end" @click="clickFinishVote()">
+			<button id="finishVoteButton" type="button" :disabled="finishVoteLoading" class="btn btn-primary alert-action" @click="clickFinishVote()">
 				<span v-if="finishVoteLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
 				<i v-else class="fas fa-user-shield" />
 				{{ $t("finishVotingPhase") }}

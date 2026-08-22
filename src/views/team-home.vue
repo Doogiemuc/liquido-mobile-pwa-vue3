@@ -17,10 +17,10 @@
 
 		<!-- Passkey info box with fingerprint icon on the left -->
 		<section>
-			<div class="alert liquido-info alert-dismissible fade show" role="alert">
+			<div class="alert liquido-info alert-has-action alert-dismissible fade show" role="alert">
 				<h2>Mache LIQUIDO sicher!</h2>
 				<p>Melde dich in Zukunft ganz einfach mit Face-ID oder Fingerabdruck an.</p>
-				<button id="passkeyButton" type="button" class="btn btn-primary" @click="setupPasskey">
+				<button id="passkeyButton" type="button" class="btn btn-primary alert-action" @click="setupPasskey">
 					<i class="fas fa-fingerprint me-2" />Passkey einrichten
 				</button>
 				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -30,21 +30,39 @@
 		<!--
 			Reminder to confirm the email address. Only shown while it is actually unverified.
 
-			The "neue schicken" link is real markup with a real @click, NOT part of a v-html string:
-			Vue does not bind event handlers inside v-html, so a @click written in there would render
-			as an inert attribute and silently do nothing.
+			The action is a real <button> with a real @click, NOT markup inside a v-html string: Vue
+			does not bind event handlers inside v-html, so a @click written in there would render as
+			an inert attribute and silently do nothing.
+
+			.alert-has-action only while the button is there - once the mail is on its way the alert
+			holds nothing but the confirmation, so it should not reserve room for an overhang.
 		-->
 		<section v-if="showVerifyEmailReminder">
-			<div id="verifyEmailReminder" class="alert liquido-info" role="alert">
+			<div
+				id="verifyEmailReminder"
+				class="alert liquido-info"
+				:class="{'alert-has-action': !verifyMailSent}"
+				role="alert"
+			>
 				<p v-if="verifyMailSent" id="verifyEmailReminderSent">
 					Ok, ich habe dir eine neue E-Mail geschickt. Bitte schau in dein Postfach.
 				</p>
-				<p v-else>
-					Deine Email Adresse ist noch nicht verifiziert. Ich hatte dir eine Email mit einem
-					Bestätigen Link geschickt. Bitte klicke einmal auf diesen Link. Falls du die Email nicht
-					mehr findest, kann ich dir auch noch eine
-					<span id="resendEmailVerificationLink" class="inline-link" @click="sendNewEmailVerificationMail">neue schicken</span>.
-				</p>
+				<template v-else>
+					<p>
+						Deine Email Adresse ist noch nicht verifiziert. Ich hatte dir eine Email mit einem
+						Bestätigen Link geschickt. Bitte klicke einmal auf diesen Link. Falls du die Email nicht
+						mehr findest, kann ich dir auch noch eine neue schicken.
+					</p>
+					<!-- "Neuen" carries the point: this sends a fresh link, it does not re-send the old one. -->
+					<button
+						id="resendVerificationMailButton"
+						type="button"
+						class="btn btn-primary alert-action"
+						@click="sendNewEmailVerificationMail"
+					>
+						Neuen Bestätigungslink schicken
+					</button>
+				</template>
 			</div>
 		</section>
 
@@ -319,14 +337,6 @@ async function setupPasskey() {
 <style scoped>
 section {
 	margin-top: var(--two);  /* more relaxed space between sections on the team home page */
-}
-
-/* The "neue schicken" link inside the verify-email reminder. A span, not a button: it sits mid
-   sentence, so it has to read as a link rather than interrupt the text with a control. */
-.inline-link {
-	color: var(--primary);
-	text-decoration: underline;
-	cursor: pointer;
 }
 
 .passkey-icon { font-size: 2.5rem; color: var(--primary); flex-shrink: 0; }

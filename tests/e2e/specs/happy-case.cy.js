@@ -202,7 +202,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		// AND because he has just registered, his address is not confirmed yet, so the reminder is
 		// there - with the inline "send me a new one" link rather than a button.
 		cy.get("#verifyEmailReminder").scrollIntoView().should("be.visible")
-		cy.get("#resendEmailVerificationLink").should("exist")
+		cy.get("#resendVerificationMailButton").should("exist")
 
 		// AND his avatar image is loaded successfully
 		//TODO: needs to be fixed with new teams homepage

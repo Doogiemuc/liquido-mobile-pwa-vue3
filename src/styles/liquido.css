@@ -279,6 +279,42 @@ body {
   z-index: 0;
 }
 
+/*
+ * STANDARD: an action that belongs to an alert.
+ *
+ * The button sits at the alert's bottom right and hangs half over its border, so it reads as "this
+ * box's action" rather than as a loose control underneath it. Use it on any alert that carries one
+ * action - admin alerts and member alerts alike:
+ *
+ *   <div class="alert liquido-info alert-has-action"> ... <button class="btn btn-primary alert-action">
+ *
+ * Absolutely positioned with translateY(50%) rather than floated with a negative margin: that puts
+ * the button's centre exactly on the border whatever its height, so adding an icon or wrapping to a
+ * second line cannot change the overlap. Do not add .float-end as well - it does nothing here and
+ * only suggests the button is still in the flow.
+ */
+.alert-has-action {
+	position: relative;
+	margin-bottom: 2.5rem;   /* room for the half that hangs below the border */
+
+	/* .liquido-info clips itself to keep its watermark inside. The action has to escape that box,
+	   so clipping is off here and the watermark is pulled in to compensate (below). */
+	overflow: visible;
+}
+
+.alert-has-action.liquido-info::before {
+	right: 0;
+	bottom: 0;
+}
+
+.alert-has-action .alert-action {
+	position: absolute;
+	right: var(--unit);
+	bottom: 0;
+	transform: translateY(50%);
+	z-index: 3;              /* above .liquido-info's watermark, which sits at 2 */
+}
+
 
 
 

@@ -56,9 +56,9 @@
 			</button>
 		</div>
 
-		<div v-if="userIsAdmin()" class="alert alert-admin mt-5">
+		<div v-if="userIsAdmin()" class="alert alert-admin alert-has-action mt-5">
 			<p>{{ $t('onlyAdminCanCreateNewPolls') }}</p>
-			<button id="createNewPollButton" class="btn btn-primary float-end" @click="gotoCreateNewPoll">
+			<button id="createNewPollButton" class="btn btn-primary alert-action" @click="gotoCreateNewPoll">
 				{{ $t("createNewPoll") }}
 			</button>
 		</div>
