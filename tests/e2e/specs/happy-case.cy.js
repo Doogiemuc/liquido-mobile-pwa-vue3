@@ -447,8 +447,10 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get('#addProposalRowButton').scrollIntoView().should('be.visible')
 		// AND he may not delete anybody's proposal
 		cy.get('[id^=deleteProposalButton-]').should('not.exist')
-		// AND he may not edit the admin's proposals either
-		cy.get('[id^=editProposalButton-]').should('not.exist')
+		// AND he may not edit the admin's proposals either. The pencil is gone from the row - the
+		// whole row is the tap target now - so assert on what actually decides it.
+		cy.get('[data-row-editable="true"]').should('not.exist')
+		cy.get('.proposal-row.tappable').should('not.exist')
 
 		//WHEN he asks for a row and fills in his proposal
 		cy.get('#addProposalRowButton').click()
@@ -512,7 +514,8 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		//AND the new title survives a reload, ie. it really was saved in the backend
 		cy.reload()
 		cy.get('#poll-edit')
-		cy.get('.poll-card-edit .edit-button').click()
+		// The row itself is the tap target in the editor now - there is no pencil inside it.
+		cy.get('.proposal-row.tappable').click()
 		cy.get(OPENED_ROW).find('input[id^=proposalTitleInput-]')
 			.should('have.value', fix.memberProposalTitleEdited)
 	})

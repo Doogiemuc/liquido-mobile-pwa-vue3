@@ -307,20 +307,17 @@ export default {
 		/**
 		 * Whether to offer the "add another proposal" button right now.
 		 *
-		 * Not while a new row is already open: pressing the button again would stack a second empty
-		 * editor under the first, then a third. One new proposal at a time. Saving that row or
-		 * cancelling it brings the button back.
+		 * Not while ANY row is open for editing - a freshly added one or an existing proposal the
+		 * user tapped into. One thing at a time: either you are writing a new proposal or you are
+		 * changing one of yours, never both. Saving or cancelling brings the button back.
 		 *
-		 * A row without an id is exactly a row that has not been saved yet - applyPoll() rebuilds the
-		 * list from the backend after every save, so a saved row always carries one.
-		 *
-		 * Create mode is exempt: there every row is unsaved by definition and the page submits them
-		 * in one batch, so this rule would leave a new poll stuck at two options.
+		 * Create mode is exempt: there every row is an open editor by definition and the page submits
+		 * them in one batch, so this rule would leave a new poll stuck at two options.
 		 */
 		canAddRow() {
 			if (!this.canAddProposal()) return false
 			if (this.createMode) return true
-			return !this.rows.some(row => !row.id)
+			return !this.rows.some(row => row.editing)
 		},
 
 		isPollTitleValid(val) {

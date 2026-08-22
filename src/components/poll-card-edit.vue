@@ -33,27 +33,43 @@
 		</div>
 
 		<ul class="list-group list-group-flush proposal-list">
+			<!--
+				A row you may edit is the tap target itself, not a small control inside it: on a phone
+				the whole row is a comfortable target and a 20px pencil is not. Rows you may not edit
+				are inert and say nothing - the absent pencil below the icon carries that.
+			-->
 			<li
 				v-for="(row, index) in rows"
 				:key="row.key"
 				class="list-group-item proposal-row"
 				:data-proposal-id="row.id"
 				:data-row-state="row.editing ? 'editing' : 'saved'"
-				:class="{editing: row.editing, 'has-error': !!row.error}"
+				:data-row-editable="canEditRow(row) ? 'true' : 'false'"
+				:class="{editing: row.editing, 'has-error': !!row.error, tappable: isRowTappable(row)}"
+				@click="onRowClick(row)"
 			>
-				<!-- The icon circle. While editing it is a button that opens the picker. -->
-				<button
-					v-if="row.editing"
-					:id="'proposalIconButton-' + index"
-					type="button"
-					class="proposal-icon proposal-icon-button"
-					:title="$t('ChooseIcon')"
-					@click="openIconPicker(row)"
-				>
-					<i class="fas fa-fw" :class="'fa-' + row.icon"></i>
-				</button>
-				<div v-else class="proposal-icon">
-					<i class="fas fa-fw" :class="'fa-' + row.icon"></i>
+				<!--
+					The left gutter says what this is and what you can do with it. The icon marks the
+					row as a proposal - a child of the poll title above, which has no icon - and the
+					pencil under it marks the ones that are yours to edit.
+				-->
+				<div class="proposal-gutter">
+					<!-- The icon circle. While editing it is a button that opens the picker. -->
+					<button
+						v-if="row.editing"
+						:id="'proposalIconButton-' + index"
+						type="button"
+						class="proposal-icon proposal-icon-button"
+						:title="$t('ChooseIcon')"
+						@click.stop="openIconPicker(row)"
+					>
+						<i class="fas fa-fw" :class="'fa-' + row.icon"></i>
+					</button>
+					<div v-else class="proposal-icon">
+						<i class="fas fa-fw" :class="'fa-' + row.icon"></i>
+					</div>
+
+					<i v-if="isRowTappable(row)" class="fas fa-pencil-alt row-edit-hint" :title="$t('editProposal')"></i>
 				</div>
 
 				<div class="proposal-body flex-grow-1">
@@ -100,13 +116,13 @@
 							     but the option to drop a row again. -->
 							<template v-if="saveMode === 'row'">
 								<!-- On a saved row this reverts the edit; on a freshly added one it drops the row. -->
-								<span class="cancel-link" @click="cancelRow(row)">{{ $t('Cancel') }}</span>
+								<span class="cancel-link" @click.stop="cancelRow(row)">{{ $t('Cancel') }}</span>
 								<button
 									:id="'saveProposalButton-' + index"
 									type="button"
 									class="btn btn-sm btn-primary ms-auto"
 									:disabled="!isRowValid(row) || row.saving"
-									@click="$emit('save-row', row)"
+									@click.stop="$emit('save-row', row)"
 								>
 									<span v-if="row.saving" class="spinner-border spinner-border-sm" role="status">
 										<span class="visually-hidden">{{ $t('Loading') }}</span>
@@ -120,7 +136,7 @@
 								type="button"
 								class="btn btn-sm btn-link text-secondary ms-auto"
 								:title="$t('removeProposal')"
-								@click="$emit('remove-row', row)"
+								@click.stop="$emit('remove-row', row)"
 							>
 								<i class="fas fa-trash-alt"></i>
 							</button>
@@ -130,26 +146,17 @@
 					<!-- ============ saved, read only ============ -->
 					<template v-else>
 						<h3 class="proposal-title">{{ row.title }}</h3>
-						<div class="proposal-description">{{ row.description }}</div>
 						<div class="proposal-subtitle">
+							<!-- Liking belongs to reading a poll, not to editing it. Shown, never clickable here. -->
 							<span class="like-button">
 								<i class="far fa-heart"></i>&nbsp;<span class="numLikes">{{ row.numSupporters || 0 }}</span>
-							</span>
-							<span
-								v-if="canEditRow(row)"
-								:id="'editProposalButton-' + index"
-								class="edit-button"
-								:title="$t('editProposal')"
-								@click="startEditing(row)"
-							>
-								<i class="fas fa-pencil-alt"></i>
 							</span>
 							<span
 								v-if="canDeleteRow(row)"
 								:id="'deleteProposalButton-' + index"
 								class="delete-button"
 								:title="$t('deleteProposal')"
-								@click="$emit('delete-row', row)"
+								@click.stop="$emit('delete-row', row)"
 							>
 								<i class="fas fa-trash-alt"></i>
 							</span>
@@ -157,6 +164,7 @@
 								{{ $t('createdBy') }}&nbsp;{{ row.createdBy && row.createdBy.name }}
 							</span>
 						</div>
+						<div class="proposal-description">{{ row.description }}</div>
 					</template>
 				</div>
 			</li>
@@ -375,6 +383,34 @@ export default {
 			row.touched = false
 			row.error = undefined
 		},
+		/**
+		 * True while any row is open for editing.
+		 *
+		 * One thing at a time: with an editor open, no other row is tappable and the page hides its
+		 * "add proposal" button. Two open editors on one card is confusing, and worse, ambiguous
+		 * about what Save applies to.
+		 */
+		isEditingSomething() {
+			return this.rows.some(row => row.editing)
+		},
+
+		/**
+		 * Whether this row acts as a tap target that opens its editor.
+		 *
+		 * Only in "row" mode - while creating a poll every row is already an open editor, so there is
+		 * nothing to tap into. A method rather than a computed because it takes the row.
+		 */
+		isRowTappable(row) {
+			if (this.saveMode !== "row") return false
+			if (this.isEditingSomething()) return false
+			return this.canEditRow(row)
+		},
+
+		/** Tapping someone else's row deliberately does nothing at all - no message, no flash. */
+		onRowClick(row) {
+			if (this.isRowTappable(row)) this.startEditing(row)
+		},
+
 		/** Remember the stored values so Cancel can restore them, then switch the row to inputs. */
 		startEditing(row) {
 			row.savedTitle = row.title
@@ -468,6 +504,32 @@ export default {
 	background-color: var(--bs-danger-bg-subtle);
 }
 
+/* Icon and edit hint share the left gutter, stacked. */
+.poll-card-edit .proposal-gutter {
+	flex: 0 0 auto;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+/* Deliberately just the glyph - no circle. The circle belongs to the proposal icon above it, and a
+   second one would read as a second proposal rather than as an action on this one. */
+.poll-card-edit .row-edit-hint {
+	font-size: 1.25rem;
+	color: var(--primary);
+	line-height: 1;
+}
+
+.poll-card-edit .proposal-row.tappable {
+	cursor: pointer;
+}
+
+/* Touch has no hover, so give the press itself a visible response. */
+.poll-card-edit .proposal-row.tappable:active {
+	background-color: var(--bs-secondary-bg-subtle, rgba(0, 0, 0, 0.04));
+}
+
 .poll-card-edit .proposal-icon {
 	flex: 0 0 auto;
 	width: 2.5rem;
@@ -499,8 +561,9 @@ export default {
 }
 
 .poll-card-edit .proposal-title {
+	flex: 0 0 auto;   /* one line high; never shrink */
 	color: var(--primary);
-	margin: 0 0 0.5rem 0;
+	margin: 0;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -508,7 +571,8 @@ export default {
 
 .poll-card-edit .proposal-description {
 	font-size: var(--font-size-small);
-	color: var(--text-color);
+	color: var(--secondary);
+	margin-top: 0.25rem;
 	display: -webkit-box;
 	line-clamp: 3;
 	-webkit-line-clamp: 3;
@@ -517,11 +581,13 @@ export default {
 }
 
 .poll-card-edit .proposal-subtitle {
+	flex: 0 0 auto;   /* keep the likes/creator line fully visible; never shrink */
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	font-size: var(--font-size-small);
 	color: var(--secondary);
-	margin-top: 0.5rem;
+	margin: 0;
 }
 
 .poll-card-edit .proposal-subtitle .like-button,
