@@ -277,18 +277,34 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.visit(`/polls/${fix.pollId}/edit`)
 		cy.get('#poll-edit')
 
-		//THEN both proposals are shown saved, plus one empty row to add another
+		//THEN both proposals are shown saved, and NO input is open. The editor offers to add one,
+		// it does not assume you came to type.
 		cy.get(SAVED_ROW).should('have.length', 2)
+		cy.get(NEW_ROW).should('not.exist')
+		cy.get('#addProposalRowButton').scrollIntoView().should('be.visible')
+
+		//WHEN he asks for a row and then changes his mind, the row goes away again.
+		// While that row is open the button is gone - one new proposal at a time, or a second click
+		// would stack another empty editor underneath.
+		cy.get('#addProposalRowButton').click()
 		cy.get(NEW_ROW).should('have.length', 1)
+		cy.get('#addProposalRowButton').should('not.exist')
+		cy.get(NEW_ROW).find('.cancel-link').click()
+		cy.get(NEW_ROW).should('not.exist')
+		cy.get('#addProposalRowButton').scrollIntoView().should('be.visible')
 
 		//WHEN the admin adds a third proposal that he will then delete again
+		cy.get('#addProposalRowButton').click()
+		cy.get(NEW_ROW).should('have.length', 1)
+		cy.get('#addProposalRowButton').should('not.exist')
 		cy.get('#proposalTitleInput-2').type(fix.proposalTitleToDelete)
 		cy.get('#proposalDescriptionInput-2').type(fix.proposalDescription, { delay: 1 })
 		cy.get('#saveProposalButton-2').should('not.be.disabled').click()
 
-		//THEN it is saved and the editor offers a fresh empty row again
+		//THEN it is saved, nothing is left open, and the button to add another is still there
 		cy.get(SAVED_ROW).should('have.length', 3)
-		cy.get(NEW_ROW).should('have.length', 1)
+		cy.get(NEW_ROW).should('not.exist')
+		cy.get('#addProposalRowButton').scrollIntoView().should('be.visible')
 
 		//WHEN he deletes it again
 		cy.get(SAVED_ROW).eq(2).find('[id^=deleteProposalButton-]').click()
@@ -424,16 +440,20 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 
 		//THEN the poll's title is NOT editable for him - only the admin may rename a poll
 		cy.get('#pollTitleInput').should('not.exist')
-		// AND the admin's two proposals are read only, with exactly one empty row for his own
+		// AND the admin's two proposals are read only, with no input open until he asks for one
 		cy.get(SAVED_ROW).should('have.length', 2)
-		cy.get(NEW_ROW).should('have.length', 1)
+		cy.get(NEW_ROW).should('not.exist')
 		cy.get(OPENED_ROW).should('not.exist')
+		cy.get('#addProposalRowButton').scrollIntoView().should('be.visible')
 		// AND he may not delete anybody's proposal
 		cy.get('[id^=deleteProposalButton-]').should('not.exist')
 		// AND he may not edit the admin's proposals either
 		cy.get('[id^=editProposalButton-]').should('not.exist')
 
-		//WHEN he fills in his proposal
+		//WHEN he asks for a row and fills in his proposal
+		cy.get('#addProposalRowButton').click()
+		cy.get(NEW_ROW).should('have.length', 1)
+		cy.get('#addProposalRowButton').should('not.exist')
 		cy.get('#proposalTitleInput-2').type(fix.memberProposalTitle)
 		// A too short description must not be acceptable - the backend would reject it anyway
 		cy.get('#proposalDescriptionInput-2').type('too short')
@@ -441,9 +461,10 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get('#proposalDescriptionInput-2').clear().type(fix.proposalDescription2, { delay: 1 })
 		cy.get('#saveProposalButton-2').should('not.be.disabled').click()
 
-		//THEN the poll now holds three proposals, and a fresh empty row is offered
+		//THEN the poll now holds three proposals, nothing is left open, and he may add another
 		cy.get(SAVED_ROW).should('have.length', 3)
-		cy.get(NEW_ROW).should('have.length', 1)
+		cy.get(NEW_ROW).should('not.exist')
+		cy.get('#addProposalRowButton').scrollIntoView().should('be.visible')
 
 		// AND it survived the round trip to the backend
 		cy.reload()
@@ -542,6 +563,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get('#poll-edit')
 		cy.get(NEW_ROW).should('not.exist')
 		cy.get(OPENED_ROW).should('not.exist')
+		cy.get('#addProposalRowButton').should('not.exist')
 		cy.get('#onlyAdminAddsProposalsInfo').scrollIntoView().should('be.visible')
 	})
 

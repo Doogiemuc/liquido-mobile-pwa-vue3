@@ -99,7 +99,8 @@
 							     In "batch" mode the page saves everything at once, so there is nothing here
 							     but the option to drop a row again. -->
 							<template v-if="saveMode === 'row'">
-								<span v-if="row.id" class="cancel-link" @click="cancelRow(row)">{{ $t('Cancel') }}</span>
+								<!-- On a saved row this reverts the edit; on a freshly added one it drops the row. -->
+								<span class="cancel-link" @click="cancelRow(row)">{{ $t('Cancel') }}</span>
 								<button
 									:id="'saveProposalButton-' + index"
 									type="button"

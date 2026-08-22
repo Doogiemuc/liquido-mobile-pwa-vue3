@@ -13,7 +13,7 @@
 				class="shadow-sm"
 				:rows="rows"
 				:title-editable="canEditPollTitle()"
-				:can-add-rows="createMode && canAddProposal()"
+				:can-add-rows="canAddRow()"
 				:min-rows="createMode ? MIN_PROPOSALS : 0"
 				:save-mode="createMode ? 'batch' : 'row'"
 				:can-edit-row="canEditProposal"
@@ -304,6 +304,25 @@ export default {
 			return this.userIsAdmin() || !!this.poll.membersCanAddProposals
 		},
 
+		/**
+		 * Whether to offer the "add another proposal" button right now.
+		 *
+		 * Not while a new row is already open: pressing the button again would stack a second empty
+		 * editor under the first, then a third. One new proposal at a time. Saving that row or
+		 * cancelling it brings the button back.
+		 *
+		 * A row without an id is exactly a row that has not been saved yet - applyPoll() rebuilds the
+		 * list from the backend after every save, so a saved row always carries one.
+		 *
+		 * Create mode is exempt: there every row is unsaved by definition and the page submits them
+		 * in one batch, so this rule would leave a new poll stuck at two options.
+		 */
+		canAddRow() {
+			if (!this.canAddProposal()) return false
+			if (this.createMode) return true
+			return !this.rows.some(row => !row.id)
+		},
+
 		isPollTitleValid(val) {
 			return val !== undefined && val !== null && val.trim().length >= (config.pollTitleMinLength || 5)
 		},
@@ -332,7 +351,14 @@ export default {
 
 		// ==================== edit mode ====================
 
-		/** Turn a poll from the backend into the card's rows, plus one empty row to add to it. */
+		/**
+		 * Turn a poll from the backend into the card's rows.
+		 *
+		 * Deliberately does NOT append an empty row. An input field appears when you press
+		 * "Vorschlag hinzufügen", not before - an editor that greets you with a blank form implies
+		 * you are expected to fill it in. This also runs after every row save, so the editor settles
+		 * back to "nothing open, button below" once a proposal is stored.
+		 */
 		applyPoll(poll) {
 			this.poll = poll
 			this.pollTitle = poll.title
@@ -347,7 +373,6 @@ export default {
 				numSupporters: prop.numSupporters,
 				editing: false,
 			}))
-			if (this.canAddProposal()) this.rows.push(newRow())
 		},
 
 		/**
