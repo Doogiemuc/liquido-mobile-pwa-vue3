@@ -10,18 +10,6 @@
 	
 		<poll-card v-if="poll.id && !loadingPoll" :poll="poll" :show-arrow-right="false" :show-proposals="true" :proposals-expanded="true" class="shadow-sm mb-4" @edit-proposal="gotoEditProposal" />
 
-		<!--
-			Add proposal sits ON the page, next to the proposals it adds to - not in the footer bar.
-			The footer is reserved for the poll's main action, which for a poll in ELABORATION is
-			"start the voting phase".
-		-->
-		<div v-if="showAddProposal" class="text-center mb-4">
-			<button id="addProposalButton" type="button" class="btn btn-outline-primary" @click="clickAddProposal()">
-				<i class="fas fa-plus me-2" />
-				{{ $t("addProposal") }}
-			</button>
-		</div>
-
 		<div v-if="showError"	class="alert alert-danger mb-3">
 			<liqui-loc-html tag="div" msg-key="cannotFindPoll" :params="{pollId: pollId}" />
 			<button type="button" class="btn btn-primary float-end" @click="$root.gotoPolls">
@@ -31,6 +19,9 @@
 
 		<div v-if="!showError && poll.status === 'ELABORATION' && userIsAdmin()" class="alert alert-admin">
 			<liqui-loc-html tag="p" msg-key="PollInElaboration_Admin" />
+			<button id="editPollButton" type="button" class="btn btn-primary float-end" @click="clickEditPoll()">
+				{{ $t("editPoll") }}
+			</button>
 		</div>
 
 		<!-- Every child below is status specific, so the alert must not render when none of them would:
@@ -41,7 +32,20 @@
 				<p>{{ $t('PollInElaboration_MemberInfo') }}</p>
 				<p v-if="poll.membersCanAddProposals">{{ $t('MembersCanAddProposals') }}</p>
 				<p v-if="!poll.membersCanAddProposals" id="onlyAdminAddsProposalsInfo">{{ $t('OnlyAdminCanAddProposals') }}</p>
+				<p v-if="myEditableProposal()" id="canEditOwnProposalInfo">{{ $t('canEditOwnProposal') }}</p>
 				<p>{{$t('MemberCanCastVote_WhenStarted')}}</p>
+
+				<!--
+					One button, because two would compete. A member who already has a proposal is offered
+					"edit" - that they may also add another is said in the text above, and does not fit
+					on a button.
+				-->
+				<button v-if="myEditableProposal()" id="editMyProposalButton" type="button" class="btn btn-primary float-end" @click="clickEditMyProposal()">
+					{{ $t("editMyProposal") }}
+				</button>
+				<button v-else-if="poll.membersCanAddProposals" id="addProposalButton" type="button" class="btn btn-primary float-end" @click="clickAddProposal()">
+					{{ $t("addProposal") }}
+				</button>
 			</template>
 
 			<p v-if="poll.status === 'VOTING'">
@@ -188,6 +192,9 @@ export default {
 				onlyAdminAddsProposals:
 					"In dieser Abstimmung legt nur der Admin die Vorschläge fest.",
 				addProposal: "Vorschlag hinzufügen",
+				editPoll: "Abstimmung bearbeiten",
+				editMyProposal: "Vorschlag bearbeiten",
+				canEditOwnProposal: "Du kannst deinen eigenen Vorschlag bearbeiten",
 				startVotingPhaseInfo: 
 					"Hallo Admin! Möchstest du die diese Abstimmung starten? Dann sind die Vorschläge fixiert und dein Team kann abstimmen.",
 				startVotingPhase: "Abstimmung starten",
@@ -249,16 +256,6 @@ export default {
 		},
 		hasAlreadyVoted() {
 			return this.poll.status === "VOTING" && !!this.existingBallot
-		},
-		/**
-		 * Proposals can be added while the poll is in ELABORATION.
-		 * The admin always may. Ordinary members only when the admin allowed it for this poll
-		 * (the "Teammitglieder dürfen Vorschläge hinzufügen" checkbox on poll creation),
-		 * and then as many as they like - there is no longer a one-proposal-per-member cap.
-		 */
-		showAddProposal() {
-			if (this.poll.status !== "ELABORATION") return false
-			return this.userIsAdmin() || !!this.poll.membersCanAddProposals
 		},
 		/** The voting phase can be started by the admin when there are at least two proposals */
 		showStartVotingPhase() {
@@ -352,6 +349,38 @@ export default {
 				.filter(Boolean)
 		},
 		
+		/**
+		 * The current user's own proposal in this poll, or undefined.
+		 *
+		 * Same rule as poll-card.canEditProposal and the backend's PollService.updateProposalInPoll:
+		 * you may edit your own proposal while the poll is in ELABORATION, and there is deliberately
+		 * no admin override - rewriting someone else's words is a trust problem.
+		 *
+		 * A method rather than a computed on purpose: api.getCachedUser() is not reactive, so a
+		 * computed could latch onto whatever it read before the cache was warm.
+		 *
+		 * Members may add more than one proposal. This returns the first; the rest stay reachable
+		 * through the pencils on the poll card and in the editor.
+		 */
+		myEditableProposal() {
+			if (this.poll.status !== "ELABORATION") return undefined
+			const currentUserId = api.getCachedUser()?.id
+			if (!currentUserId) return undefined
+			return (this.poll.proposals || []).find(prop => prop.createdBy?.id === currentUserId)
+		},
+
+		/** Admin: open the editor on the whole poll - its title, its icon and any proposal. */
+		clickEditPoll() {
+			this.$router.push({name: "editPoll", params: {pollId: this.poll.id}})
+		},
+
+		/** Member: open the editor with their own proposal already expanded. */
+		clickEditMyProposal() {
+			const own = this.myEditableProposal()
+			if (own) this.gotoEditProposal(own.id)
+			else this.clickAddProposal()
+		},
+
 		clickAddProposal() {
 			// The editor shows the whole poll with an empty row at the bottom, so "add a proposal"
 			// and "edit my own" are the same page now.

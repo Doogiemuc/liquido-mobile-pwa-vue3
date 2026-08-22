@@ -257,7 +257,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 			fix.pollId = url.split('/').pop()
 		})
 		cy.get('.poll-card .proposal-list-group-item').should('have.length', 2)
-		cy.get('#addProposalButton').should('be.visible')
+		cy.get('#editPollButton').scrollIntoView().should('be.visible')
 
 		// AND the chosen icon really was saved, not just shown in the editor
 		cy.get('.poll-card .proposal-list-group-item').first()
@@ -465,6 +465,12 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get('.poll-card .proposal-list-group-item').should('have.length', 3)
 		cy.get('.poll-card .edit-button').should('have.length', 1)
 
+		//AND the info alert offers him exactly one action: edit, not add. He may still add another
+		// proposal, but that is said in the text - two competing buttons would not be.
+		cy.get('#canEditOwnProposalInfo').should('exist')
+		cy.get('#editMyProposalButton').scrollIntoView().should('be.visible')
+		cy.get('#addProposalButton').should('not.exist')
+
 		//WHEN he clicks it, he lands in the editor with exactly that row already open
 		cy.get('.poll-card .edit-button').click()
 		cy.get('#poll-edit')
@@ -513,7 +519,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.url().should('match', /\/polls\/\d+$/).then(url => {
 			fix.pollIdAdminOnly = url.split('/').pop()
 		})
-		cy.get('#addProposalButton').should('be.visible')
+		cy.get('#editPollButton').scrollIntoView().should('be.visible')
 
 		//WHEN an ordinary member of the same team opens that poll
 		cy.window().then(win => win.localStorage.setItem("LIQUIDO_JWT", fix.userJWT))
@@ -526,6 +532,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		//THEN he has no way to add a proposal, and is told why
 		cy.get('#poll-show')
 		cy.get('#addProposalButton').should('not.exist')
+		cy.get('#editMyProposalButton').should('not.exist')
 		cy.get('#onlyAdminAddsProposalsInfo').scrollIntoView().should('be.visible')
 
 		//AND even reaching the editor by URL gives him no row to type in
@@ -586,7 +593,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		// poll with no proposals yet, so this is the case that state does not reach.
 		// scrollIntoView first: the poll card with several proposals is taller than a 375x667 phone
 		// screen, so this button starts below the fold. should('be.visible') never scrolls by itself.
-		cy.get('#addProposalButton').scrollIntoView().should('be.visible')
+		cy.get('#editPollButton').scrollIntoView().should('be.visible')
 
 		// AND the footer offers exactly one action - starting the vote. The admin must NOT also get a
 		// Back button next to it: one poll state, one primary action.
