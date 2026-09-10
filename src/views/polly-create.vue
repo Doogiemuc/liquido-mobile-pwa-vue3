@@ -65,7 +65,7 @@ export default defineComponent({
 				// This info is for the admin, shown on this start page while creating the Polly.
 				"createPollIntro": "You are the admin of this Polly.",
 				"createPollStep1": "Add the options you want to vote on here.",
-				"createPollStep2": "When you start the vote, an invite link is sent to your friends. Everyone registers with a passkey — no complicated password, yet still secure.",
+				"createPollStep2": "When you start the vote, you get an invite link that you share with your friends yourself. Everyone registers with a passkey — no complicated password, yet still secure.",
 				"createPollStep3": "In LIQUIDO you don't just vote for one option — everyone ranks all the options in their own order of preference.",
 				"createPollStep4": "You can see at any time who has already voted.",
 				"createPollStep5": "When you close the vote, a clever algorithm calculates the option with the broadest approval among you.",
@@ -86,7 +86,7 @@ export default defineComponent({
 				// This info is for the admin, and only shown to him, on this start page while creating the Polly.
 				"createPollIntro": "Du bist der Admin dieses Pollys.",
 				"createPollStep1": "Füge hier die Optionen hinzu, über die ihr abstimmen möchtet.",
-				"createPollStep2": "Wenn du die Abstimmung startest, verschicke ich einen Einladungslink an deine Freunde. Jeder registriert sich ganz einfach mit einem Passkey – ganz ohne kompliziertes Passwort, aber trotzdem sicher.",
+				"createPollStep2": "Wenn du die Abstimmung startest, bekommst du einen Einladungslink, den du dann selbst an deine Freunde weitergibst. Jeder registriert sich ganz einfach mit einem Passkey – ganz ohne kompliziertes Passwort, aber trotzdem sicher.",
 				"createPollStep3": "In LIQUIDO stimmt man nicht nur für eine Option, sondern jeder von euch bringt alle Optionen in seine persönliche Reihenfolge.",
 				"createPollStep4": "Du kannst jederzeit sehen, wer schon abgestimmt hat.",
 				"createPollStep5": "Wenn du die Abstimmung beendest, berechnet ein cleverer Algorithmus den Vorschlag mit der größten Zustimmung unter euch.",
