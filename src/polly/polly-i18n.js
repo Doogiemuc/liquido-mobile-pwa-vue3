@@ -93,7 +93,7 @@ const messages = {
 		PrivacyNote: "Ein Polly ist privat unter Freunden. Für eine wirklich anonyme Wahl nimm eine LIQUIDO Abstimmung.",
 
 		// shown to whoever opens the share link and is not the polly's owner
-		FriendInfo: "Du wurdest zu diesem Polly eingeladen. Statt nur eine Option zu wählen, bringst du alle Optionen in deine bevorzugte Reihenfolge – deinen Favoriten ganz nach oben. Mit einem Tap bestätigst du per Passkey, ganz ohne Account oder Passwort. Sobald der Ersteller die Abstimmung beendet, wird die Option mit der größten Zustimmung berechnet.",
+		FriendInfo: "Du wurdest zu diesem Polly eingeladen. Statt nur eine Option zu wählen, bringst du alle Optionen in deine bevorzugte Reihenfolge – deinen Favoriten ganz nach oben. Mit einem Tap bestätigst du per Passkey, ganz ohne Account oder Passwort. Wenn euer Admin die Abstimmung beendet, wertet ein intelligenter Algorithmus alle Ranglisten aus und ermittelt die Option, die insgesamt die größte Zustimmung erhalten hat.",
 	},
 }
 
