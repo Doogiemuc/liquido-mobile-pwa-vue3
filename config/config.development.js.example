@@ -1,0 +1,26 @@
+// Copy this file to config.development.js and adjust to your local setup.
+// config.development.js is gitignored (it may contain secrets/local paths)
+// and is NOT read automatically - Vite requires the real file to exist.
+
+import common from "./config.common.js"
+
+export default Object.assign({}, common, {
+	configSource: "development",
+
+	// If frontend and backend run on the same host, point directly at the backend:
+	LIQUIDO_API_URL: "https://localhost:8443/graphql",
+
+	// If the backend runs on another machine, use the vite proxy instead
+	// (see the "/graphql_proxy" target in vite.config.js):
+	// LIQUIDO_API_URL: "/graphql_proxy",
+
+	// Set to true to run against the mocked GraphQL client, without a backend at all.
+	// The header turns red as a visual warning while this is active.
+	mockBackend: false,
+
+	// DEV only: skip the real WebAuthn passkey ceremony (a headless browser has no
+	// authenticator). See src/polly/polly-passkey.js. Only takes effect together with mockBackend.
+	mockPasskey: false,
+
+	showDebugLog: true,
+})

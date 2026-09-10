@@ -237,7 +237,7 @@
  *   }
  *
  * Rows are mutated in place. They are objects owned by the parent's reactive data, so v-model on
- * row.title reaches the parent - the same pattern Polly-vote.vue uses. Adding or removing a row
+ * row.title reaches the parent - the same pattern polly-vote.vue uses. Adding or removing a row
  * emits "rows-changed" so the parent can react to the count.
  */
 import liquidoInput from "@/components/liquido-input.vue"

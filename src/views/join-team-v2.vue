@@ -209,7 +209,7 @@ const props = defineProps({
 
 const router = useRouter()
 // <script setup> has no `this`, so the shared popup on root-app is reached through the instance
-// proxy. Same pattern Polly-vote.vue uses.
+// proxy. Same pattern polly-vote.vue uses.
 const { proxy } = getCurrentInstance()
 // The GLOBAL composer, i.e. the translations from main.js. Component local messages are not reachable
 // from <script setup> in legacy mode - which is why only the header title is translated here.

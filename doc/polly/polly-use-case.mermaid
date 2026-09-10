@@ -1,0 +1,27 @@
+---
+config:
+  theme: neutral
+  layout: elk
+title: LIQUIDO - Polly
+---
+flowchart TB
+    Create("<pre><b>/polly</b></pre> Create a new polly:\nSet title and add options") --> SavePolly(["Save polly"])
+    SavePolly --> Tap("Enter admin email &\nregister Passkey")
+    Tap --> Live(["Polly is live."])
+    Live --> Share["Admin shares link to friends. (Same link for everyone.)"]
+    Share --> CastVotes["Friends cast their votes"]
+    CastVotes --> Finish["Admin finishes poll"] --> Winner(["Winner by Ranked Pairs"])
+
+    Open("<pre><b>/polly/:publicUUID</b></pre> A friend opens the link") --> Known{{"Passkey recognised?"}}
+    Known -- "no, first time" --> Register["Register passkey<br>(one tap)"] --> Sort
+    Known -- yes --> Sort["Sort the options<br>favourite on top"]
+    Sort --> CastVote["User casts his vote"]
+    CastVote --> Voted(["Vote counted. One per passkey."])
+
+    Known:::Decision
+    Voted:::Done
+    Winner:::Done
+    Live:::State
+    classDef Decision fill:#99F,color:#333
+    classDef State fill:#109,color:#FFF
+    classDef Done fill:#3F3,color:#333

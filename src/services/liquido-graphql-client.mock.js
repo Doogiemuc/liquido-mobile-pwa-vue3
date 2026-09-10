@@ -1,5 +1,4 @@
 import axios from "axios"
-import { decodeJwtPayload } from "@/services/jwt-util.js"
 import { get, isValidString, set } from "@kubric/litedash"
 import config from "config"
 import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
@@ -34,92 +33,26 @@ const createState = () => {
 			const randomDuration = (7 + Math.random()*7) * msInDay							// 7-14 days duration for voting
 			poll.votingStartAt = new Date(randomPast).toISOString()
 			poll.votingEndAt   = new Date(randomPast + randomDuration).toISOString();
-			poll.numBallots    = Math.floor(Math.random() * 12)									// 0-11 fake ballots
-
 		}
-		// Seeded polls let members add proposals, EXCEPT the last one - so the mock shows both
-		// variants of the per-poll setting without needing to create a poll by hand.
-		poll.membersCanAddProposals = true
+		// Ballots that "other team members" already cast. The real backend counts rows in the
+		// ballots table, so a poll that is being voted on or is already finished must show a
+		// number in both states - not just in VOTING. Ballots cast by the mock user during the
+		// session are added on top of this baseline, see enrichPollForCurrentUser().
+		if (poll.status == 'VOTING' || poll.status == 'FINISHED') {
+			poll.numBallots = Math.floor(Math.random() * 12)										// 0-11 fake ballots
+		}
 		console.debug("MOCK: created new mockstate")
 	})
-	const lastSeededPoll = (seed.team.polls || [])[seed.team.polls.length - 1]
-	if (lastSeededPoll) lastSeededPoll.membersCanAddProposals = false
-
-	const nextPollId = Math.max(0, ...pollIds) + 1
-	const nextProposalId = Math.max(0, ...proposalIds) + 1
 
 	return {
-		// A mock user can be a member of SEVERAL teams, so the mock holds a list and remembers which
-		// one is current -- exactly the shape the real backend has. `teams[currentTeamIndex]` is what
-		// used to be the single `mockState.team`; reach for it through currentTeam().
-		teams: [seed.team, createSecondTeam(seed, nextPollId, nextProposalId)],
-		currentTeamIndex: 0,
+		team: seed.team,
 		//currentUser: seed.user,
 		//jwt: seed.jwt,
 		issuedAuthTokensByMobile: {},
 		voterTokensByPollAndUser: {},
 		ballotsByPollAndUser: {},
-		nextPollId: nextPollId + 1,          // +1 for the poll createSecondTeam() just used
-		nextProposalId: nextProposalId + 3,  // +3 for its three proposals
-	}
-}
-
-/**
- * A SECOND team, so that the team switcher can be exercised with a mocked backend.
- *
- * It deliberately shares the seed team's admin (who is the default mock login) and two of its
- * members, because the switcher only appears for a user who is in more than one team. The rest of
- * the seed team's members stay in one team, which keeps the "single-team user sees no switcher"
- * case reachable too.
- *
- * Derived from the seed rather than written into teamUserJwt.json so that the two teams cannot drift
- * apart: the shared people here are by construction the very same user objects.
- */
-const createSecondTeam = (seed, pollId, firstProposalId) => {
-	const userByEmail = email => (seed.team.members || []).find(m => m.user?.email === email)?.user
-
-	// The roles are swapped round on purpose. testadmin4711 is the ADMIN of the first team but only a
-	// MEMBER here, because a user is not automatically an admin of every team they belong to - and the
-	// team page hides its admin-only parts accordingly. Switching should visibly change that.
-	const roles = [
-		["testmember4711@liquido.vote", "ADMIN"],
-		["testadmin4711@liquido.vote", "MEMBER"],
-		["membr47110@liquido.vote", "MEMBER"],
-	]
-	const members = roles
-		.map(([email, role]) => ({ role, user: userByEmail(email) }))
-		.filter(m => m.user)
-		.map(m => ({ role: m.role, joinedAt: nowIso(), user: deepClone(m.user) }))
-
-	const proposal = (offset, title, description, icon) => ({
-		id: firstProposalId + offset,
-		title, description, icon,
-		status: "PROPOSAL",
-		createdAt: nowIso(),
-		numSupporters: 0,
-		likedByCurrentUser: false,
-		createdBy: deepClone(members[0].user),
-	})
-
-	return {
-		id: seed.team.id + 1,
-		teamName: "Second Mock Team",
-		inviteCode: "SECOND01",
-		members,
-		polls: [{
-			id: pollId,
-			title: "Where should the second team meet?",
-			status: "ELABORATION",
-			createdAt: nowIso(),
-			updatedAt: nowIso(),
-			userAlreadyVoted: false,
-			winner: null,
-			proposals: [
-				proposal(0, "In the park", "Fresh air, and free.", "tree"),
-				proposal(1, "At the office", "Boring, but it always works.", "building"),
-				proposal(2, "Online", "Nobody has to travel.", "video"),
-			],
-		}],
+		nextPollId: Math.max(0, ...pollIds) + 1,
+		nextProposalId: Math.max(0, ...proposalIds) + 1,
 	}
 }
 
@@ -150,15 +83,8 @@ const loadMockState = () => {
 		if (typeof window !== 'undefined' && window.sessionStorage) {
 			const saved = window.sessionStorage.getItem(MOCK_STATE_KEY)
 			if (saved) {
-				const state = JSON.parse(saved)
-				// A state saved before the mock grew a team LIST has a single `team` and no `teams`.
-				// Such a state would break every currentTeam() call, so start over instead.
-				if (!Array.isArray(state.teams)) {
-					console.log("MOCK: discarding mock state from an older schema")
-					return createState()
-				}
 				console.log("MOCK: loaded mock state from sessionStorage")
-				return state
+				return JSON.parse(saved)
 			}
 		}
 	} catch (e) {
@@ -180,17 +106,6 @@ const argFromQuery = (query, key, defaultValue = undefined) => {
 	const match = query.match(regex)
 	if (!match) return defaultValue
 	return stripQuotes(match[1].trim())
-}
-
-const stringArrayArgFromQuery = (query, key) => {
-	const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-	const regex = new RegExp(`${escapedKey}\\s*:\\s*\\[([^\]]*)\\]`, "i")
-	const match = query.match(regex)
-	if (!match) return []
-	return match[1]
-		.split(",")
-		.map(item => stripQuotes(item.trim()))
-		.filter(Boolean)
 }
 
 const voteOrderFromQuery = query => {
@@ -233,16 +148,11 @@ const mockErrorResponse = err => {
 }
 
 const detectOperation = query => {
-	// ORDER MATTERS: the first name found anywhere in the query string wins, and the query string
-	// includes the whole result selection. So an operation whose result mentions "team" or "polls"
-	// - which every login-shaped one does - must be listed BEFORE those generic names, or it gets
-	// misrouted to them. That is why switchTeam sits at the very front.
 	const operations = [
-		"switchTeam",
-		"createNewTeam", "joinTeam", "savePolly", "editPolly", "startPolly", "castVoteInPolly", "finishPolly", "createPoll", "updatePoll", "updateProposal", "addProposal", "deleteProposal", "likeProposal", "startVotingPhase",
+		"createNewTeam", "joinTeam", "createPoll", "addProposal", "likeProposal", "startVotingPhase",
 		"finishVotingPhase", "castVote", "loginWithEmailPassword", "googleOneTapLogin", "loginWithAuthToken",
 		"requestPasswordReset", "resetPassword", "requestEmailLoginLink", "teamForInviteCode", "loginWithJwt",
-		"devLogin", "authToken", "voterToken", "verifyBallot", "myBallot", "liquidoConfig", "polls", "poll", "team", "ping",
+		"devLogin", "authToken", "voterToken", "verifyBallot", "myBallot", "polls", "poll", "team", "ping",
 	]
 	for (const name of operations) {
 		if (new RegExp(`\\b${name}\\s*\\(`).test(query) || new RegExp(`\\b${name}\\b`).test(query)) {
@@ -252,59 +162,10 @@ const detectOperation = query => {
 	return null
 }
 
-/** The team the mock session is currently scoped to. This replaced the old single currentTeam(). */
-const currentTeam = () => mockState.teams[mockState.currentTeamIndex]
-
-/**
- * Mint a structurally real JWT: header.payload.signature, base64url encoded, carrying the same
- * "groups" claim the backend mints in JwtTokenUtils.generateToken.
- *
- * It is NOT signed - the signature segment is a constant, and nothing in the mock ever verifies it.
- * But it has to have the right SHAPE, because api.isAdmin() reads the admin role out of this claim.
- * The old `mock-jwt-<id>` string had no payload at all, so with a JWT-based isAdmin() the mock
- * backend would have had no admins anywhere.
- *
- * Deterministic for a given user and team: the token is compared by string equality on reload.
- */
-const mockJwt = (user, team) => {
-	const isAdmin = (team?.members || [])
-		.some(m => m.role === "ADMIN" && String(m.user?.id) === String(user.id))
-	const groups = isAdmin ? ["LIQUIDO_USER", "LIQUIDO_ADMIN"] : ["LIQUIDO_USER"]
-	// UTF-8 before base64: a JWT segment encodes BYTES. Handing btoa() a string with non-ASCII in it
-	// encodes Latin-1, which decodeJwtPayload would then read back as mojibake - and btoa throws
-	// outright above U+00FF, which would take the whole mock login down for one unusual address.
-	const b64url = obj => btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(obj))))
-		.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
-	return b64url({ alg: "none", typ: "JWT" }) + "." +
-		b64url({ sub: user.email, teamId: String(team?.id), groups }) + ".mocksignature"
-}
-
-/** Every team the given email is a member (or admin) of - the mock's TeamMemberEntity.findTeamsByMember. */
-const teamsOfMember = email =>
-	(mockState.teams || []).filter(t => (t.members || []).some(m => m.user?.email === email))
-
-/**
- * Members are looked up across ALL teams, not just the current one: a user who belongs only to the
- * second team must still be able to log in. Prefer a hit in the current team so that "who am I"
- * stays stable while a session is scoped somewhere.
- */
-const findMemberIn = (team, predicate) => (team?.members || []).find(predicate)
-const findMemberAnywhere = predicate =>
-	findMemberIn(currentTeam(), predicate) ||
-	(mockState.teams || []).flatMap(t => t.members || []).find(predicate)
-
-const findMemberByEmail = email => findMemberAnywhere(m => m.user?.email === email)
-const findMemberByMobile = mobile => findMemberAnywhere(m => m.user?.mobilephone === mobile)
-const findMemberByUserId = userId => findMemberAnywhere(m => String(m.user?.id) === String(userId))
-const findPoll = pollId => (currentTeam().polls || []).find(p => p.id === pollId)
-const pollyCreatorUser = () => deepClone(mockState.currentUser || {
-	id: 0,
-	name: "Polly Creator",
-	email: "polly@mock.local",
-	mobilephone: null,
-	picture: "Avatar1.png",
-	website: null,
-})
+const findMemberByEmail = email => (mockState.team.members || []).find(m => m.user?.email === email)
+const findMemberByMobile = mobile => (mockState.team.members || []).find(m => m.user?.mobilephone === mobile)
+const findMemberByUserId = userId => (mockState.team.members || []).find(m => String(m.user?.id) === String(userId))
+const findPoll = pollId => (mockState.team.polls || []).find(p => p.id === pollId)
 
 const jwtFromAuthHeader = () => {
 	const authHeader = axios.defaults.headers.common.Authorization || ""
@@ -314,9 +175,9 @@ const jwtFromAuthHeader = () => {
 
 const findMemberByJwt = jwt => {
 	if (jwt === teamUserJwtMock.jwt) return findMemberByUserId(teamUserJwtMock.user.id)
-	// mockJwt() puts the email in "sub", the same claim the backend uses.
-	const sub = decodeJwtPayload(jwt)?.sub
-	return sub ? findMemberByEmail(sub) : undefined
+	const match = (jwt || "").match(/^mock-jwt-(.+)$/)
+	if (!match) return undefined
+	return findMemberByUserId(match[1])
 }
 
 const currentUserOrThrow = () => {
@@ -326,68 +187,34 @@ const currentUserOrThrow = () => {
 	return mockState.currentUser
 }
 
-/** Is the currently logged in mock user the ADMIN of the current team? Mirrors JwtTokenUtils.isAdmin(). */
-const currentUserIsAdmin = () => {
-	const user = mockState.currentUser
-	if (!user) return false
-	return (currentTeam()?.members || [])
-		.some(m => m.role === "ADMIN" && String(m.user?.id) === String(user.id))
-}
-
 /**
  * Central login method for mock backend.
  * Simulates the complete login logic that happens in the real graphQlApi.login() method.
  * This sets up the mock state properly so that subsequent API calls work correctly.
  * 
- * Mirrors the real JwtTokenUtils.doLoginInternal(): the session is scoped to ONE team, which is the
- * requested one if given, otherwise the team the session is already in when the user belongs to it
- * (the mock's stand-in for lastTeamId), otherwise their first team.
- *
  * @param {String} email email of the user to log in
- * @param {Number} teamId (optional) pin the session to this team of the user
- * @returns {Object} login result { team, user, jwt, teams } ready to be passed to real graphQlApi.login()
- * @throws MockLiquidoError if email is not found, or is not a member of teamId
+ * @returns {Object} login result { team, user, jwt } ready to be passed to real graphQlApi.login()
+ * @throws MockLiquidoError if email is not found
  */
-const loginMock = (email, teamId) => {
+const loginMock = email => {
 	const member = findMemberByEmail(email)
 	if (!member) {
 		rejectLiquido(LiquidoExceptionCodes.UNAUTHORIZED, "Cannot mockLogin: user email not found: " + email)
 	}
 
 	const user = member.user
-	const usersTeams = teamsOfMember(user.email)
-	if (usersTeams.length === 0) {
-		rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_USER_NOT_MEMBER_OF_TEAM, "Mock user is not member of any team")
-	}
-
-	let team
-	if (teamId != null) {
-		team = usersTeams.find(t => t.id === teamId)
-		if (!team) {
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_USER_NOT_MEMBER_OF_TEAM,
-				`Mock user <${user.email}> is not a member of team ${teamId}`)
-		}
-	} else {
-		team = usersTeams.find(t => t.id === currentTeam().id) || usersTeams[0]
-	}
-	mockState.currentTeamIndex = mockState.teams.indexOf(team)
 
 	// Simulate the cache initialization that happens in graphQlApi.login()
 	mockState.currentUser = deepClone(user)
-	// Mock users start out unverified on purpose: it makes the "confirm your address" reminder on
-	// team-home visible in mock mode and in the design overview. Nothing in the mock ever verifies.
-	if (mockState.currentUser.emailVerified === undefined) mockState.currentUser.emailVerified = false
-	mockState.jwt = mockJwt(user, team)
+	mockState.jwt = `mock-jwt-${user.id}`
 	saveMockState(mockState)
 
-	console.log("Mock login successful for <" + user.email + "> into team '" + team.teamName + "'")
+	console.log("Mock login successful for <" + user.email + "> into team '" + mockState.team.teamName + "'")
 
 	return {
-		team: deepClone(team),
+		team: deepClone(mockState.team),
 		user: deepClone(user),
 		jwt: mockState.jwt,
-		// ALL teams of this user, so the frontend can offer the team switcher.
-		teams: usersTeams.map(t => ({ id: t.id, teamName: t.teamName })),
 	}
 }
 
@@ -405,6 +232,9 @@ const hasCurrentUserVoted = pollId => {
 const enrichPollForCurrentUser = poll => ({
 	...deepClone(poll),
 	userAlreadyVoted: hasCurrentUserVoted(poll.id),
+	// The backend derives numBallots live from the ballots table (PollEntity.getNumBallots()).
+	// Mirror that here: the seeded baseline plus every ballot cast during this mock session.
+	numBallots: (poll.numBallots || 0) + countVotesForPoll(poll.id),
 })
 
 const enrichTeamForCurrentUser = team => ({
@@ -418,7 +248,7 @@ const enrichTeamForCurrentUser = team => ({
 	
 const queryHandlers = {
 	ping: () => "MOCK responses are active!",
-	team: () => enrichTeamForCurrentUser(currentTeam()),
+	team: () => enrichTeamForCurrentUser(mockState.team),
 	loginWithJwt: () => {
 		console.log("========> MOCKED loginWithJwt")
 		const member = findMemberByJwt(jwtFromAuthHeader())
@@ -485,10 +315,9 @@ const queryHandlers = {
 		if (!findMemberByEmail(email)) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_EMAIL_NOT_FOUND, "Unknown user for devLogin")
 		}
-		const teamId = get(variables, "teamId", argFromQuery(query, "teamId"))
-		return loginMock(email, teamId != null && teamId !== "null" ? asInt(teamId) : undefined)
+		return loginMock(email)
 	},
-	polls: () => (currentTeam().polls || []).map(enrichPollForCurrentUser),
+	polls: () => (mockState.team.polls || []).map(enrichPollForCurrentUser),
 	poll: (query, variables = {}) => {
 		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
 		const poll = findPoll(pollId)
@@ -518,23 +347,14 @@ const queryHandlers = {
 	},
 	teamForInviteCode: (query, variables = {}) => {
 		const inviteCode = get(variables, "inviteCode", argFromQuery(query, "inviteCode"))
-		if (inviteCode !== currentTeam().inviteCode) {
+		if (inviteCode !== mockState.team.inviteCode) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_JOIN_TEAM_INVITE_CODE_INVALID, "Invite code not found")
 		}
-		return deepClone(currentTeam())
+		return deepClone(mockState.team)
 	},
 }
 
 const mutationHandlers = {
-	/**
-	 * Switch the session into another team of the current user. loginMock() does the membership
-	 * check and rejects a team the user does not belong to, exactly as the real backend does.
-	 */
-	switchTeam: (query, variables = {}) => {
-		const user = currentUserOrThrow()
-		const teamId = asInt(get(variables, "teamId", argFromQuery(query, "teamId", "-1")))
-		return loginMock(user.email, teamId)
-	},
 	createNewTeam: (query, variables = {}) => {
 		const teamName = get(variables, "teamName", argFromQuery(query, "teamName", "Mock Team"))
 		const admin = get(variables, "admin", { name: "Mock Admin", email: `admin.${Date.now()}@mock.local` })
@@ -554,15 +374,12 @@ const mutationHandlers = {
 			members: [{ role: "ADMIN", joinedAt: nowIso(), user: adminUser }],
 			polls: [],
 		}
-		// Initialize mockState for the newly created team. Registering as a brand-new user starts a
-		// brand-new world, so the team list is reset to just this one rather than appended to - the
-		// previous teams belonged to whoever was mocked before.
+		// Initialize mockState for the newly created team
 		mockState = {
 			...mockState,
-			teams: [newTeam],
-			currentTeamIndex: 0,
+			team: newTeam,
 			currentUser: adminUser,
-			jwt: mockJwt(adminUser, newTeam),
+			jwt: `mock-jwt-${userId}`,
 			issuedAuthTokensByMobile: {},
 			voterTokensByPollAndUser: {},
 			ballotsByPollAndUser: {},
@@ -578,133 +395,9 @@ const mutationHandlers = {
 			jwt: mockState.jwt,
 		}
 	},
-	savePolly: (query, variables = {}) => {
-		const title = get(variables, "title", argFromQuery(query, "title", "New Polly")).trim()
-		const proposalTitles = get(variables, "proposalTitles", stringArrayArgFromQuery(query, "proposalTitles"))
-			.map(proposalTitle => proposalTitle?.trim())
-			.filter(Boolean)
-		if (proposalTitles.length < 2) {
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_CREATE_POLL || LiquidoExceptionCodes.CANNOT_SAVE, "Need at least two proposals")
-		}
-		const createdBy = pollyCreatorUser()
-		const poll = {
-			id: mockState.nextPollId++,
-			title,
-			status: "ELABORATION",
-			createdAt: nowIso(),
-			updatedAt: nowIso(),
-			votingStartAt: null,
-			votingEndAt: null,
-			userAlreadyVoted: false,
-			proposals: proposalTitles.map(proposalTitle => ({
-				id: mockState.nextProposalId++,
-				title: proposalTitle,
-				description: "",
-				icon: "vote-yea",
-				status: "ELABORATION",
-				createdAt: nowIso(),
-				numSupporters: 0,
-				likedByCurrentUser: false,
-				createdBy: deepClone(createdBy),
-			})),
-			winner: null,
-		}
-		currentTeam().polls.unshift(poll)
-		return enrichPollForCurrentUser(poll)
-	},
-	editPolly: (query, variables = {}) => {
-		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
-		const poll = findPoll(pollId)
-		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Polly ${pollId} not found`)
-		const title = get(variables, "title", argFromQuery(query, "title", "")).trim()
-		const proposalTitles = get(variables, "proposalTitles", stringArrayArgFromQuery(query, "proposalTitles"))
-			.map(proposalTitle => proposalTitle?.trim())
-			.filter(Boolean)
-		if (proposalTitles.length < 2) {
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_SAVE, "Need at least two proposals")
-		}
-		poll.title = title
-		poll.proposals = proposalTitles.map((proposalTitle, i) => {
-			const existing = poll.proposals[i]
-			return {
-				id: existing?.id || mockState.nextProposalId++,
-				title: proposalTitle,
-				description: existing?.description || "",
-				icon: existing?.icon || "vote-yea",
-				status: existing?.status || "ELABORATION",
-				createdAt: existing?.createdAt || nowIso(),
-				numSupporters: existing?.numSupporters || 0,
-				likedByCurrentUser: existing?.likedByCurrentUser || false,
-				createdBy: existing?.createdBy || deepClone(pollyCreatorUser()),
-			}
-		})
-		poll.updatedAt = nowIso()
-		return enrichPollForCurrentUser(poll)
-	},
-	startPolly: (query, variables = {}) => {
-		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
-		const userEmail = get(variables, "userEmail", argFromQuery(query, "userEmail"))
-		const poll = findPoll(pollId)
-		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Polly ${pollId} not found`)
-		if (poll.status !== "ELABORATION") {
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_START_VOTING, "Polly is not in ELABORATION status")
-		}
-		console.log("MOCK: Sending admin and share links to " + userEmail)
-		poll.status = "VOTING"
-		poll.votingStartAt = nowIso()
-		poll.updatedAt = nowIso()
-		;(poll.proposals || []).forEach(p => {
-			if (p.status === "ELABORATION") p.status = "VOTING"
-		})
-		return enrichPollForCurrentUser(poll)
-	},
-	castVoteInPolly: (query, variables = {}) => {
-		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
-		const voteOrderIds = variables?.voteOrderIds || voteOrderFromQuery(query)
-		const voterToken = get(variables, "voterToken", argFromQuery(query, "voterToken"))
-		const user = currentUserOrThrow()
-		const poll = findPoll(pollId)
-		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Polly ${pollId} not found`)
-		const expectedToken = get(mockState, `voterTokensByPollAndUser.${ballotKey(pollId, user.id)}`)
-		if (!expectedToken || expectedToken !== voterToken) {
-			rejectLiquido(LiquidoExceptionCodes.INVALID_VOTER_TOKEN, "Invalid voter token")
-		}
-		const proposalIds = new Set((poll.proposals || []).map(p => p.id))
-		if (voteOrderIds.length === 0 || voteOrderIds.some(id => !proposalIds.has(id))) {
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_CAST_VOTE, "Invalid vote order")
-		}
-		const ballot = {
-			level: 0,
-			checksum: `mock-polly-${pollId}-${user.id}-${Date.now()}`,
-			voteOrder: voteOrderIds.map(id => ({ id })),
-		}
-		set(mockState, `ballotsByPollAndUser.${ballotKey(pollId, user.id)}`, ballot)
-		poll.userAlreadyVoted = true
-		poll.updatedAt = nowIso()
-		return {
-			voteCount: countVotesForPoll(pollId),
-			ballot: deepClone(ballot),
-		}
-	},
-	finishPolly: (query, variables = {}) => {
-		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
-		const poll = findPoll(pollId)
-		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Polly ${pollId} not found`)
-		const winner = (poll.proposals || [])
-			.slice()
-			.sort((a, b) => (b.numSupporters || 0) - (a.numSupporters || 0))[0] || null
-		poll.status = "FINISHED"
-		poll.votingEndAt = nowIso()
-		poll.updatedAt = nowIso()
-		poll.winner = winner ? deepClone(winner) : null
-		;(poll.proposals || []).forEach(proposal => {
-			proposal.status = winner && proposal.id === winner.id ? "WINNER" : "LOST"
-		})
-		return deepClone(winner)
-	},
 	joinTeam: (query, variables = {}) => {
 		const inviteCode = get(variables, "inviteCode", argFromQuery(query, "inviteCode"))
-		if (inviteCode !== currentTeam().inviteCode) {
+		if (inviteCode !== mockState.team.inviteCode) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_JOIN_TEAM_INVITE_CODE_INVALID, "Invite code invalid")
 		}
 		const memberInput = get(variables, "member", null)
@@ -725,7 +418,7 @@ const mutationHandlers = {
 			picture: memberInput.picture || "Avatar1.png",
 			website: memberInput.website || null,
 		}
-		currentTeam().members.push({ role: "MEMBER", joinedAt: nowIso(), user: newUser })
+		mockState.team.members.push({ role: "MEMBER", joinedAt: nowIso(), user: newUser })
 		saveMockState(mockState)
 		// Log in the newly created member
 		return loginMock(newUser.email)
@@ -741,12 +434,10 @@ const mutationHandlers = {
 			votingStartAt: null,
 			votingEndAt: null,
 			userAlreadyVoted: false,
-			// Same default as the backend: closed unless the admin ticked the box.
-			membersCanAddProposals: get(variables, "membersCanAddProposals", false) === true,
 			proposals: [],
 			winner: null,
 		}
-		currentTeam().polls.unshift(poll)
+		mockState.team.polls.unshift(poll)
 		return enrichPollForCurrentUser(poll)
 	},
 	addProposal: (query, variables = {}) => {
@@ -768,94 +459,6 @@ const mutationHandlers = {
 		poll.updatedAt = nowIso()
 		return deepClone(poll)
 	},
-
-	/**
-	 * Edit your own proposal. Mirrors the backend's rules closely enough to exercise the UI:
-	 * only while the poll is in ELABORATION, and only a proposal the mock user created.
-	 */
-	updateProposal: (query, variables = {}) => {
-		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
-		const proposalId = asInt(get(variables, "proposalId", argFromQuery(query, "proposalId", "-1")))
-		const poll = findPoll(pollId)
-		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
-		if (poll.status !== "ELABORATION")
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_EDIT_PROPOSAL, `Poll ${pollId} has already started`)
-
-		const user = currentUserOrThrow()
-		const proposal = (poll.proposals || []).find(p => p.id === proposalId)
-		if (!proposal) rejectLiquido(LiquidoExceptionCodes.CANNOT_EDIT_PROPOSAL, `No proposal ${proposalId} in poll ${pollId}`)
-		if (String(proposal.createdBy?.id) !== String(user.id))
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_EDIT_PROPOSAL, "You may only edit your own proposals")
-
-		const title = get(variables, "title", argFromQuery(query, "title", proposal.title))
-		// Unique within the poll - but a proposal never collides with itself.
-		if ((poll.proposals || []).some(p => p.id !== proposalId && p.title === title))
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_EDIT_PROPOSAL, `Poll already has a proposal titled '${title}'`)
-
-		proposal.title = title
-		proposal.description = get(variables, "description", argFromQuery(query, "description", proposal.description))
-		proposal.icon = get(variables, "icon", argFromQuery(query, "icon", proposal.icon))
-		poll.updatedAt = nowIso()
-		return deepClone(poll)
-	},
-	/**
-	 * Rename a poll. Admin only, and only while the poll is in ELABORATION.
-	 */
-	updatePoll: (query, variables = {}) => {
-		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
-		const poll = findPoll(pollId)
-		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
-		if (poll.status !== "ELABORATION")
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_UPDATE_POLL, `Poll ${pollId} has already started`)
-		if (!currentUserIsAdmin())
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_UPDATE_POLL, "Only the admin may rename a poll")
-
-		const title = get(variables, "title", argFromQuery(query, "title", poll.title))
-		// Unique within the team - but a poll never collides with itself.
-		if ((currentTeam().polls || []).some(p => p.id !== pollId && p.title === title))
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_UPDATE_POLL, `Team already has a poll titled '${title}'`)
-
-		poll.title = title
-		poll.updatedAt = nowIso()
-		return deepClone(poll)
-	},
-
-	/**
-	 * Delete a proposal from a poll. Admin only, and only while the poll is in ELABORATION.
-	 * Note the asymmetry with updateProposal: the admin may remove any proposal, but may not
-	 * rewrite one that is not their own.
-	 */
-	deleteProposal: (query, variables = {}) => {
-		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
-		const proposalId = asInt(get(variables, "proposalId", argFromQuery(query, "proposalId", "-1")))
-		const poll = findPoll(pollId)
-		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
-		if (poll.status !== "ELABORATION")
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_DELETE_PROPOSAL, `Poll ${pollId} has already started`)
-		if (!currentUserIsAdmin())
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_DELETE_PROPOSAL, "Only the admin may delete proposals")
-		if (!(poll.proposals || []).some(p => p.id === proposalId))
-			rejectLiquido(LiquidoExceptionCodes.CANNOT_DELETE_PROPOSAL, `No proposal ${proposalId} in poll ${pollId}`)
-
-		poll.proposals = (poll.proposals || []).filter(p => p.id !== proposalId)
-		poll.updatedAt = nowIso()
-		return deepClone(poll)
-	},
-	/**
-	 * The settings the real backend serves from LiquidoConfig. Same values as its @WithDefault
-	 * annotations, so mock mode validates exactly like the real thing.
-	 */
-	liquidoConfig: () => ({
-		usernameMinLength: 3,
-		inviteCodeLength: 8,
-		minPasswordLength: 10,
-		pollTitleMinLength: 5,
-		pollDefaultRuntimeDays: 7,
-		proposalTitleMinLength: 3,
-		proposalDescriptionMinLength: 20,
-		inviteLinkPrefix: config.inviteLinkPrefix,
-	}),
-
 	likeProposal: (query, variables = {}) => {
 		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
 		const proposalId = asInt(get(variables, "proposalId", argFromQuery(query, "proposalId", "-1")))
@@ -979,13 +582,10 @@ export const initializeLiquidoGraphQlMock = function(graphQlApi, teamCache) {
 	 * AND there isn't a real JWT in localStorage being handled by the router.
 	 */
 	if (mockState.currentUser && localStorage.getItem(graphQlApi.LIQUIDO_JWT_KEY) === mockState.jwt) {
-		teamCache.put(graphQlApi.TEAM_KEY, currentTeam())
+		teamCache.put(graphQlApi.TEAM_KEY, mockState.team)
 		teamCache.put(graphQlApi.CURRENT_USER_KEY, mockState.currentUser)
 		teamCache.put(graphQlApi.JWT_KEY, mockState.jwt)
-		// Restore the user's team list too, or the team switcher would silently disappear on reload.
-		teamCache.put(graphQlApi.ALL_USER_TEAMS_KEY,
-			teamsOfMember(mockState.currentUser.email).map(t => ({ id: t.id, teamName: t.teamName })))
-		graphQlApi.putPollsIntoCache(currentTeam().polls)
+		graphQlApi.putPollsIntoCache(mockState.team.polls)
 	}
 
 	if (mockRequestInterceptorInstalled) return
@@ -994,7 +594,7 @@ export const initializeLiquidoGraphQlMock = function(graphQlApi, teamCache) {
 	axios.interceptors.request.use(config => {
 		if (config.url.includes("/login/check-login-email")) {
 			const email = config.params.email
-			const member = currentTeam().members.find(m => m.user.email === email)
+			const member = mockState.team.members.find(m => m.user.email === email)
 			if (member) {
 				console.log("MOCK: /check-login-email for " + email + " -> existing user")
 				config.adapter = config => {
@@ -1020,32 +620,6 @@ export const initializeLiquidoGraphQlMock = function(graphQlApi, teamCache) {
 					})
 				}
 			}
-		} else if (config.url.includes("/login/resendEmailVerification")) {
-			console.log("MOCK: /login/resendEmailVerification -> pretending to send a mail")
-			config.adapter = cfg => Promise.resolve({
-				data: { message: "Verification mail sent." },
-				status: 200, statusText: "OK",
-				headers: { "Content-Type": "application/json" }, config: cfg, request: {},
-			})
-		} else if (config.url.includes("/login/verifyEmail")) {
-			// Mock mode has no mail, so there is no real nonce to check. Treat any non-empty token as
-			// valid, so the confirmation page can be seen in the design overview, and an empty one as
-			// invalid, so the error branch is reachable too.
-			const token = (config.data && JSON.parse(config.data).verifyToken) || ""
-			console.log("MOCK: /login/verifyEmail with token '" + token + "'")
-			config.adapter = cfg => token
-				? Promise.resolve({
-					data: { message: "Email verified.", email: mockState.currentUser?.email || "mock@liquido.vote" },
-					status: 200, statusText: "OK",
-					headers: { "Content-Type": "application/json" }, config: cfg, request: {},
-				})
-				: Promise.reject(Object.assign(new Error("Invalid token"), {
-					config: cfg, request: {},
-					response: {
-						status: 400,
-						data: { liquidoException: { liquidoErrorCode: LiquidoExceptionCodes.EMAIL_VERIFICATION_TOKEN_INVALID } },
-					},
-				}))
 		} else if (
 			config.url.includes("/webauthn/register-options-challenge") ||
 			config.url.includes("/webauthn/register") ||
