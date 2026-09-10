@@ -295,7 +295,7 @@ function showProblem(err, fallbackKey) {
 	<div class="polly">
 		<!-- No <liquido-header> here: root-app.vue already renders the one shared header. -->
 		<div class="card polly-card position-relative user-select-none">
-			<span v-if="polly.publicId && !isEditable" id="sharePollyButton" @click="sharePolly" class="fa-stack share-polly-icon" :title="t('Share')">
+			<span v-if="polly.publicId && !isEditable" id="sharePollyButton" @click="sharePolly" class="fa-stack share-polly-icon" :title="t('Share')" :data-public-id="polly.publicId">
 				<i class="fa-solid fa-circle fa-stack-2x" style="color:var(--proposal-icon-bg)"></i>
 				<i class="fa-solid fa-arrow-up-from-bracket fa-stack-1x"></i>
 			</span>

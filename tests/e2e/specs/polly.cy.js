@@ -8,10 +8,14 @@
  *   1. Creating a polly takes one confirmation and the polly is live immediately.
  *   2. One passkey means one vote.
  *
- * Runs against the REAL backend, with config.mockPasskey standing in for the WebAuthn
- * ceremony: a headless browser has no authenticator, so polly-passkey.js asks the backend for
- * a session via devLoginPolly instead. That is the one step this spec cannot cover - the
- * passkey legs have to be verified by hand on a real device.
+ * Runs against either backend:
+ *   - the REAL backend, with config.mockPasskey standing in for the WebAuthn ceremony: a
+ *     headless browser has no authenticator, so polly-passkey.js asks the backend for a
+ *     session via devLoginPolly instead.
+ *   - the local config.mockBackend, which never hits the network at all (see
+ *     src/polly/polly-client.mock.js) and mocks the passkey ceremony itself the same way.
+ * Either way the passkey ceremony itself is the one thing this spec cannot cover - it has to
+ * be verified by hand on a real device with a real authenticator.
  *
  * The multi-person cases (a friend voting, ownership, the winner calculation) are covered
  * far more cheaply in tests/unit/polly-flow.spec.js. This spec is here for the UI.
@@ -36,7 +40,7 @@ afterEach(function () {
 context("LIQUIDO Polly", { testIsolation: false }, () => {
 
 	let pollyUrl
-	/** The opaque public id, captured from the real createPolly response. */
+	/** The opaque public id, captured from the DOM once the polly is live. */
 	let createdPublicId
 
 	before(() => {
@@ -45,18 +49,6 @@ context("LIQUIDO Polly", { testIsolation: false }, () => {
 		cy.window().then(win => {
 			win.localStorage.removeItem("LIQUIDO_POLLY_JWT")
 			win.sessionStorage.removeItem("LIQUIDO_POLLY_MOCK_STATE")
-		})
-	})
-
-	// The public id never appears in the DOM - the share link is a computed value handed to
-	// navigator.share/clipboard. So we read it from the response the backend actually sent.
-	// Interceptors are cleared between tests, hence beforeEach rather than before.
-	beforeEach(() => {
-		cy.intercept("POST", "**/graphql", req => {
-			req.continue(res => {
-				const publicId = res.body?.data?.createPolly?.publicId
-				if (publicId) createdPublicId = publicId
-			})
 		})
 	})
 
@@ -117,8 +109,13 @@ context("LIQUIDO Polly", { testIsolation: false }, () => {
 			expect(pathname).to.match(/^\/polly/)
 		})
 
-		cy.then(() => {
-			expect(createdPublicId, "the backend returned a public id").to.be.a("string")
+		// The share link itself is a computed value handed to navigator.share/clipboard, not
+		// rendered as text anywhere - so we read the id off the share button's data attribute
+		// instead. This works the same whether createPolly went to the real backend or to
+		// config.mockBackend (which never sends a network request Cypress could intercept).
+		cy.get("#sharePollyButton").invoke("attr", "data-public-id").then(publicId => {
+			createdPublicId = publicId
+			expect(createdPublicId, "polly has a public id").to.be.a("string")
 			// A sequential id would make the share link the only access control, and
 			// /polly/1,2,3... would enumerate every polly's title, options and results.
 			expect(createdPublicId, "public id is opaque").to.not.match(/^\d+$/)
