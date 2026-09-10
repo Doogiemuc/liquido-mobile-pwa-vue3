@@ -1,14 +1,18 @@
 /**
  * Texts for the Polly module.
  *
- * vue-i18n runs in legacy mode here and has no SFC custom-block plugin, so
- * `useI18n({ useScope: "local" })` throws inside <script setup>. Rather than pushing polly
- * strings into the global table in main.js, the module keeps its own small table and only
- * borrows the *current locale* from vue-i18n. That keeps Polly self-contained and still
- * follows the app language - the previous version hardcoded `const lang = "de"`.
+ * The app's i18n is liqui-loc (src/services/liqui-loc.js), not vue-i18n - main.js says so
+ * explicitly: "Replaces vue-i18n". Rather than pushing polly strings into liqui-loc's global
+ * table, this module keeps its own small table and only borrows the app's *current locale*
+ * from liqui-loc's `locale` ref. That keeps Polly self-contained and still follows the app
+ * language - the previous version hardcoded `const lang = "de"`.
+ *
+ * (An earlier version of this file read the locale from vue-i18n's useI18n() instead. That
+ * plugin is never installed - liqui-loc replaced it - so useI18n() always threw and every
+ * polly text silently fell back to English regardless of the app's actual language.)
  */
 
-import { useI18n } from "vue-i18n"
+import { locale as appLocale } from "@/services/liqui-loc.js"
 
 const messages = {
 	en: {
@@ -47,6 +51,9 @@ const messages = {
 
 		// honesty about the privacy model - a polly is not a LIQUIDO poll
 		PrivacyNote: "A polly is private among friends. For a truly anonymous ballot, use a LIQUIDO poll.",
+
+		// shown to whoever opens the share link and is not the polly's owner
+		FriendInfo: "You've been invited to this polly. Instead of picking just one option, you sort all of them into your preferred order — your favourite on top. One tap confirms your vote via passkey, no account or password needed. Once the creator finishes the polly, the option with the broadest support is calculated.",
 	},
 	de: {
 		// creating
@@ -84,6 +91,9 @@ const messages = {
 
 		// honesty about the privacy model - a polly is not a LIQUIDO poll
 		PrivacyNote: "Ein Polly ist privat unter Freunden. Für eine wirklich anonyme Wahl nimm eine LIQUIDO Abstimmung.",
+
+		// shown to whoever opens the share link and is not the polly's owner
+		FriendInfo: "Du wurdest zu diesem Polly eingeladen. Statt nur eine Option zu wählen, bringst du alle Optionen in deine bevorzugte Reihenfolge – deinen Favoriten ganz nach oben. Mit einem Tap bestätigst du per Passkey, ganz ohne Account oder Passwort. Sobald der Ersteller die Abstimmung beendet, wird die Option mit der größten Zustimmung berechnet.",
 	},
 }
 
@@ -100,15 +110,8 @@ function interpolate(message, params) {
  * Call it once at the top of a <script setup> block.
  */
 export function usePollyI18n() {
-	let localeRef
-	try {
-		localeRef = useI18n().locale		// global scope - works in legacy mode
-	} catch (e) {
-		localeRef = undefined				// e.g. in a unit test without the i18n plugin
-	}
-
 	return function t(key, params = {}) {
-		const lang = (localeRef?.value || FALLBACK).split("-")[0]
+		const lang = (appLocale.value || FALLBACK).split("-")[0]
 		const message = messages[lang]?.[key] ?? messages[FALLBACK][key]
 		if (!message) {
 			console.warn("Polly: missing translation for '" + key + "'")

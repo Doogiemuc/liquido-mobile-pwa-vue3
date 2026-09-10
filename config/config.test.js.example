@@ -1,0 +1,15 @@
+// Copy this file to config.test.js. config/config.*.js is gitignored (it may contain secrets)
+// except config.common.js, and vitest.config.js requires this file to exist: vitest defaults
+// NODE_ENV to "test", so vite.config.js resolves the bare `config` import to config/config.test.js.
+//
+// Unit tests want a backend-free run, so this defaults to the mock - unlike
+// config.development.js.example, which defaults to a real local backend.
+
+import common from "./config.common.js"
+
+export default Object.assign({}, common, {
+	configSource: "test",
+	LIQUIDO_API_URL: "https://localhost:8443/graphql",
+	mockBackend: true,
+	mockPasskey: true,
+})

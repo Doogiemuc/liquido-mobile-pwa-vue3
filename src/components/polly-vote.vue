@@ -294,6 +294,12 @@ function showProblem(err, fallbackKey) {
 <template>
 	<div class="polly">
 		<!-- No <liquido-header> here: root-app.vue already renders the one shared header. -->
+
+		<!-- Whoever opens the share link and is not its owner sees this first, before the card. -->
+		<div v-if="!isEditable && !polly.isOwner" id="pollyFriendInfo" class="alert liquido-info mb-3">
+			{{ t('FriendInfo') }}
+		</div>
+
 		<div class="card polly-card position-relative user-select-none">
 			<span v-if="polly.publicId && !isEditable" id="sharePollyButton" @click="sharePolly" class="fa-stack share-polly-icon" :title="t('Share')" :data-public-id="polly.publicId">
 				<i class="fa-solid fa-circle fa-stack-2x" style="color:var(--proposal-icon-bg)"></i>
