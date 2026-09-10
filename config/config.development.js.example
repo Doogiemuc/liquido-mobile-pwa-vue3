@@ -18,5 +18,9 @@ export default Object.assign({}, common, {
 	// The header turns red as a visual warning while this is active.
 	mockBackend: false,
 
+	// DEV only: skip the real WebAuthn passkey ceremony (a headless browser has no
+	// authenticator). See src/polly/polly-passkey.js. Only takes effect together with mockBackend.
+	mockPasskey: false,
+
 	showDebugLog: true,
 })

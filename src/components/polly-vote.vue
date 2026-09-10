@@ -196,12 +196,14 @@ async function savePolly() {
 	try {
 		await passkey.ensurePasskeySession()
 
-		const saved = isEditing.value
+		const wasEditing = isEditing.value
+		const saved = wasEditing
 			? await pollyApi.editPolly(polly.publicId, polly.title, cleanedProposalTitles())
 			: await pollyApi.createPolly(polly.title, cleanedProposalTitles())
 
 		Object.assign(polly, saved)
 		isEditing.value = false
+		if (!wasEditing) console.log("Polly created. Share this link with your friends:", shareLink.value)
 		// Typing down a long list leaves the page scrolled. Bring the whole card back into
 		// view so the creator actually sees their new polly - and the share icon, which sits
 		// on the card's top edge and would otherwise stay above the fold.
