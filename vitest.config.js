@@ -7,9 +7,11 @@ export default mergeConfig(
   defineConfig({
     test: {
       environment: 'jsdom',
-      // config/config.test.js is the MODE=test environment config, not a spec file. Its name
-      // accidentally matches vitest's default include glob, so exclude the whole config dir.
-      exclude: [...configDefaults.exclude, 'e2e/*', 'config/**'],
+      // 'config/*' is not optional: vitest defaults NODE_ENV to "test", so vite.config.js resolves
+      // the bare `config` import to config/config.test.js - whose name also matches vitest's default
+      // `**/*.test.js` include pattern. Without this exclude vitest tries to run the config file as
+      // a suite and fails with "No test suite found".
+      exclude: [...configDefaults.exclude, 'e2e/*', 'config/*'],
       root: fileURLToPath(new URL('./', import.meta.url))
     }
   })

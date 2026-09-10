@@ -293,15 +293,13 @@ function showProblem(err, fallbackKey) {
 	<div class="polly">
 		<!-- No <liquido-header> here: root-app.vue already renders the one shared header. -->
 		<div class="card polly-card position-relative user-select-none">
-			<span v-if="polly.publicId && !isEditable" id="sharePollyButton" @click="sharePolly" class="fa-stack share-polly-icon" :title="t('Share')">
-				<i class="fa-solid fa-circle fa-stack-2x" style="color:var(--proposal-icon-bg)"></i>
-				<i class="fa-solid fa-arrow-up-from-bracket fa-stack-1x"></i>
-			</span>
+			<button v-if="polly.publicId && !isEditable" id="sharePollyButton" type="button"
+				class="polly-share-btn" :title="t('Share')" :aria-label="t('Share')" @click="sharePolly">
+				<i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i>
+			</button>
 
-			<div class="card-header pb-3">
-				<div class="text-center my-3">
-					<i class="fas fa-scale-balanced fa-3x" style="color: var(--primary)"></i>
-				</div>
+			<div class="card-header polly-card-header">
+				<i class="fas fa-scale-balanced polly-card-icon" aria-hidden="true"></i>
 				<liquido-input v-if="isEditable"
 					id="pollyTitleInput"
 					class="polly-title-input"
@@ -317,7 +315,7 @@ function showProblem(err, fallbackKey) {
 			</div>
 
 			<!-- writing a polly: a growing list of option inputs -->
-			<div v-if="isEditable" class="card-body">
+			<div v-if="isEditable" class="card-body polly-card-body">
 				<TransitionGroup name="fade" class="polly-proposals-wrapper" tag="ul">
 					<li v-for="(prop, index) in polly.proposals" :key="prop.id" class="polly-proposal">
 						<input v-model="prop.title" :placeholder="t('AddProposalPlaceholder')" type="text"
@@ -328,74 +326,80 @@ function showProblem(err, fallbackKey) {
 			</div>
 
 			<!-- voting: drag the options into your preferred order -->
-			<div v-if="inVoting && !isEditable && !polly.alreadyVoted" class="card-body d-flex flex-row">
-				<div class="me-1">
-					<div v-for="(prop, index) in polly.proposals" :key="prop.id" class="proposal-index-number">
-						{{ index + 1 }}.
+			<div v-if="inVoting && !isEditable && !polly.alreadyVoted" class="card-body polly-card-body">
+				<div class="polly-rank-grid">
+					<div class="polly-rank-numbers" aria-hidden="true">
+						<div v-for="(prop, index) in polly.proposals" :key="prop.id" class="proposal-index-number">
+							{{ index + 1 }}
+						</div>
 					</div>
-				</div>
-				<div class="polly-proposals-wrapper">
-					<draggable id="pollyDraggable" v-model="polly.proposals" class="draggable" item-key="id"
-							:swap-threshold="0.5" :delay="40" :animation="500" :can-scroll-x="false">
-						<template #item="{ element: prop }">
-							<div class="form-control polly-proposal sortable-proposal user-select-none">
-								<div class="arrow-up pos-top-middle">&nbsp;</div>
-								<div class="sortable-proposal-title">
-									{{ prop.title }}
+					<div class="polly-proposals-wrapper">
+						<draggable id="pollyDraggable" v-model="polly.proposals" class="draggable" item-key="id"
+								handle=".proposal-bars"
+								ghost-class="polly-ghost" chosen-class="polly-chosen" drag-class="polly-drag"
+								:swap-threshold="0.5" :delay="40" :animation="500" :can-scroll-x="false">
+							<template #item="{ element: prop }">
+								<div class="polly-proposal sortable-proposal user-select-none">
+									<div class="sortable-proposal-title">{{ prop.title }}</div>
+									<span class="proposal-bars" :title="t('SortProposals')" :aria-label="t('SortProposals')" role="button" tabindex="0">
+										<i class="fas fa-grip-lines" aria-hidden="true"></i>
+									</span>
 								</div>
-								<div class="proposal-bars">
-									<i class="fas fa-bars"></i>
-								</div>
-								<div class="arrow-up pos-bottom-middle-down">&nbsp;</div>
-							</div>
-						</template>
-					</draggable>
+							</template>
+						</draggable>
+					</div>
 				</div>
 			</div>
 
 			<!-- read-only: already voted, or the polly is over -->
-			<div v-if="(inVoting && polly.alreadyVoted && !isEditable) || isFinished" class="card-body">
-				<div class="polly-proposals-wrapper">
-					<div v-for="(proposal, index) in polly.proposals" :key="proposal.id" class="polly-proposal">
-						<div v-if="isFinished" class="text-secondary me-2">{{ index + 1 }}.</div>
-						<div class="flex-grow-1 form-control readonly-proposal"
-							:class="{ 'winner-proposal': isFinished && polly.winner && proposal.id === polly.winner.id }">
-							{{ proposal.title }}
-							<i v-if="isFinished && polly.winner && proposal.id === polly.winner.id"
-								class="fas fa-trophy ms-1" :title="t('Winner')"></i>
+			<div v-if="(inVoting && polly.alreadyVoted && !isEditable) || isFinished" class="card-body polly-card-body">
+				<div class="polly-rank-grid">
+					<div v-if="isFinished" class="polly-rank-numbers" aria-hidden="true">
+						<div v-for="(proposal, index) in polly.proposals" :key="proposal.id" class="proposal-index-number">
+							{{ index + 1 }}
+						</div>
+					</div>
+					<div class="polly-proposals-wrapper">
+						<div v-for="proposal in polly.proposals" :key="proposal.id" class="polly-proposal">
+							<div class="readonly-proposal"
+								:class="{ 'winner-proposal': isFinished && polly.winner && proposal.id === polly.winner.id }">
+								<span class="sortable-proposal-title">{{ proposal.title }}</span>
+								<i v-if="isFinished && polly.winner && proposal.id === polly.winner.id"
+									class="fas fa-trophy ms-1" :title="t('Winner')"></i>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 
 			<!-- status line -->
-			<div v-if="!isEditable && polly.publicId" id="pollyStatus" class="card-body pt-0 text-center text-secondary polly-status">
+			<div v-if="!isEditable && polly.publicId" id="pollyStatus" class="polly-status">
 				<span v-if="isFinished">{{ t('PollyFinished', { count: polly.numBallots }) }}</span>
 				<span v-else-if="polly.alreadyVoted">{{ t('AlreadyVoted') }}</span>
 				<span v-else-if="polly.isOwner">{{ t('NumBallots', { count: polly.numBallots }) }}</span>
 				<span v-else>{{ t('SortProposals') }}</span>
 			</div>
 
-			<div class="card-footer">
-				<div class="d-flex align-items-center justify-content-end">
+			<div class="card-footer polly-card-footer">
+				<div class="polly-actions">
 					<!-- writing or editing -->
-					<div v-if="isEditable" class="text-end">
-						<button id="savePollyButton" @click="savePolly" :disabled="!canSave || isSaving" type="button" class="btn btn-primary">
-							<i class="fa-solid fa-fingerprint"></i>&nbsp;{{ isEditing ? t('Save') : t('CreatePolly') }}
-						</button>
-					</div>
+					<button v-if="isEditable" id="savePollyButton" @click="savePolly" :disabled="!canSave || isSaving"
+						type="button" class="btn btn-primary polly-btn">
+						<i class="fa-solid fa-fingerprint" aria-hidden="true"></i><span>{{ isEditing ? t('Save') : t('CreatePolly') }}</span>
+					</button>
 
 					<!-- live polly -->
 					<template v-if="!isEditable && inVoting">
-						<button v-if="canEdit" id="editPollyButton" @click="editPolly" type="button" class="btn btn-secondary me-2">
-							<i class="fa-regular fa-edit"></i>&nbsp;{{ t('Edit') }}
+						<button v-if="canEdit" id="editPollyButton" @click="editPolly" type="button" class="btn btn-outline-secondary polly-btn">
+							<i class="fa-regular fa-edit" aria-hidden="true"></i><span>{{ t('Edit') }}</span>
 						</button>
 						<!-- The owner votes in their own polly like anybody else -->
-						<button v-if="canVote" id="castVoteButton" @click="castVote" :disabled="isVoting" type="button" class="btn btn-primary me-2">
-							<i class="fa-solid fa-person-booth"></i>&nbsp;{{ t('CastVote') }}
+						<button v-if="canVote" id="castVoteButton" @click="castVote" :disabled="isVoting" type="button" class="btn btn-primary polly-btn">
+							<i class="fa-solid fa-person-booth" aria-hidden="true"></i><span>{{ t('CastVote') }}</span>
 						</button>
-						<button v-if="polly.isOwner" id="finishPollyButton" @click="finishPolly" :disabled="isFinishing" type="button" class="btn btn-secondary">
-							<i class="fa-regular fa-circle-check"></i>&nbsp;{{ t('FinishPolly') }}
+						<button v-if="polly.isOwner" id="finishPollyButton" @click="finishPolly" :disabled="isFinishing"
+							type="button" class="btn polly-btn polly-btn-quiet">
+							<i class="fa-regular fa-circle-check" aria-hidden="true"></i><span>{{ t('FinishPolly') }}</span>
 						</button>
 					</template>
 				</div>
@@ -404,10 +408,10 @@ function showProblem(err, fallbackKey) {
 
 		<!-- A polly is not a LIQUIDO poll, and the difference is worth being honest about -->
 		<p v-if="isEditable" class="polly-hint text-secondary">
-			<i class="fa-solid fa-fingerprint"></i>&nbsp;{{ t('CreatePollyHint') }}
+			<i class="fa-solid fa-fingerprint" aria-hidden="true"></i><span>{{ t('CreatePollyHint') }}</span>
 		</p>
 		<p v-else class="polly-hint text-secondary">
-			<i class="fa-solid fa-user-group"></i>&nbsp;{{ t('PrivacyNote') }}
+			<i class="fa-solid fa-user-group" aria-hidden="true"></i><span>{{ t('PrivacyNote') }}</span>
 		</p>
 	</div>
 </template>
@@ -415,23 +419,61 @@ function showProblem(err, fallbackKey) {
 <style>
 
 .polly-card {
-	--arrow-size: 10px;
 	--proposal-bg: #e6f0ff;
-	--polly-proposal-height: 40px;
-	--polly-proposal-margin-bottom: 20px;
+	--proposal-border: #cddffb;
+	--polly-proposal-height: 44px;
+	--polly-proposal-gap: 10px;
+	--polly-section-gap: 1.5rem;
+	--polly-card-padding: 1.5rem;
 
 	max-width: 1024px;
+	margin-inline: auto;
+	border: 1px solid var(--bs-border-color, #e5e7eb);
+	border-radius: 1rem;
+	box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.06);
+	overflow: hidden;
 
-	.share-polly-icon {
-		cursor: pointer;
-		color: white;
+	/* ---------- share ---------- */
+	.polly-share-btn {
 		position: absolute;
-		top: -0.4rem;
-		right: -0.4rem;
+		top: 0.75rem;
+		right: 0.75rem;
+		width: 2.25rem;
+		height: 2.25rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid var(--bs-border-color, #e5e7eb);
+		border-radius: 50%;
+		background-color: white;
+		color: var(--secondary);
+		padding: 0;
+		line-height: 1;
+		transition: color .15s ease, background-color .15s ease, border-color .15s ease;
 
 		&:hover {
 			color: var(--primary);
+			background-color: var(--proposal-bg);
+			border-color: var(--proposal-border);
 		}
+		&:active { transform: translateY(1px); }
+		&:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+	}
+
+	/* ---------- header ---------- */
+	.polly-card-header {
+		border-bottom: none;
+		background-color: white;
+		padding: var(--polly-card-padding) var(--polly-card-padding) 0;
+		text-align: center;
+	}
+
+	.polly-card-icon {
+		display: block;
+		font-size: 2rem;
+		line-height: 1;
+		color: var(--primary);
+		margin-bottom: 1rem;
 	}
 
 	.polly-title-input {
@@ -445,9 +487,11 @@ function showProblem(err, fallbackKey) {
 	}
 
 	.polly-title {
-		margin: 0;
+		margin: 0 auto;
 		padding: 0;
+		max-width: 34ch;
 		font-size: 1.25rem;
+		line-height: 1.35;
 		font-weight: bold;
 		text-align: center;
 		display: -webkit-box;
@@ -457,57 +501,34 @@ function showProblem(err, fallbackKey) {
 		overflow: hidden;
 	}
 
-	.pos-top-middle {
-		position: absolute;
-		top: calc(-1*var(--arrow-size));
-		left: 50%
+	/* ---------- body ---------- */
+	.polly-card-body {
+		padding: var(--polly-section-gap) var(--polly-card-padding) 0;
 	}
 
-	.pos-bottom-middle-down {
-		position: absolute;
-		bottom: calc(-1*var(--arrow-size));
-		left: 50%;
-		transform: rotate(180deg);
+	.polly-rank-grid {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.75rem;
 	}
 
-	.arrow-up {
-		width: 0;
-		height: 0;
-		border-left: var(--arrow-size) solid transparent;
-		border-right: var(--arrow-size) solid transparent;
-		border-bottom: var(--arrow-size) solid var(--proposal-bg);
+	.polly-rank-numbers {
+		display: flex;
+		flex-direction: column;
+		gap: var(--polly-proposal-gap);
+		flex: 0 0 auto;
 	}
 
-	.card-header {
-		border-bottom: none;
-		background-color: white;
-	}
-	.card-footer {
-		border-top: none;
-		background-color: white;
-		margin-bottom: 1rem;
-	}
-
-	.polly-status {
+	/* The index number at the left side of the proposals. (These are fixed and don't move.) */
+	.proposal-index-number {
+		height: var(--polly-proposal-height);
+		min-width: 1.25rem;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
 		font-size: var(--font-size-small);
-	}
-
-	/**
-	 * ======== Proposals List =============
-	 * Each proposal has a fixed height and a margin-bottom.
-	 * This is important for the VUE list transition to work properly
-	 */
-
-	.readonly-proposal {
-		background-color: var(--bs-secondary-bg);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.winner-proposal {
-		background-color: var(--proposal-bg);
-		font-weight: bold;
+		font-variant-numeric: tabular-nums;
+		color: var(--secondary);
 	}
 
 	/* Wrapper around the proposals list */
@@ -517,7 +538,15 @@ function showProblem(err, fallbackKey) {
 		margin: 0;
 		list-style-type: none;
 		min-width: 0; /* must set to keep flexbox from growing too wide */
-		flex-grow: 1;
+		flex: 1 1 auto;
+	}
+
+	.draggable,
+	ul.polly-proposals-wrapper,
+	.polly-proposals-wrapper > div:not(.draggable) {
+		display: flex;
+		flex-direction: column;
+		gap: var(--polly-proposal-gap);
 	}
 
 	/* Each proposal. This is used for all views. (editable, sortable, read-only) */
@@ -526,57 +555,161 @@ function showProblem(err, fallbackKey) {
 		height: var(--polly-proposal-height);
 		display: flex;
 		align-items: center;
-		/* BUGFIX: Every polly-proposal has this margin at the bottom. Also the last one! But cannot remove it, otherwise the drag-fallback also would have this margin and the view jumps a bit up and down. */
-		margin-bottom: var(--polly-proposal-margin-bottom);
+		min-width: 0;
 	}
 
 	.polly-proposal-input::placeholder {
 		color: lightgrey;
 	}
 
-	/* The index number at the left side of the sortable proposals. (These are fixed and don't move.) */
-	.proposal-index-number {
+	.sortable-proposal,
+	.readonly-proposal {
 		height: var(--polly-proposal-height);
+		width: 100%;
 		display: flex;
 		align-items: center;
-		justify-content: center;
-		margin-bottom: var(--polly-proposal-margin-bottom);
+		gap: 0.5rem;
+		padding: 0 0.75rem;
+		border-radius: 0.6rem;
+		border: 1px solid var(--proposal-border);
+		background-color: var(--proposal-bg);
+		min-width: 0;
 	}
 
-	.sortable-proposal {
+	.readonly-proposal {
+		background-color: var(--bs-secondary-bg);
+		border-color: var(--bs-border-color, #e5e7eb);
+	}
+
+	.winner-proposal {
 		background-color: var(--proposal-bg);
+		border-color: var(--proposal-border);
+		font-weight: bold;
 	}
 
 	.sortable-proposal-title {
-		flex-grow: 1;
+		flex: 1 1 auto;
+		min-width: 0;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 
+	/* drag handle: a real affordance, bigger touch target */
 	.proposal-bars {
-		color: #CCC;
+		flex: 0 0 auto;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 100%;
+		margin-right: -0.25rem;
+		color: #b6bec9;
+		cursor: grab;
+		transition: color .15s ease;
+
+		&:hover { color: var(--primary); }
+		&:active { cursor: grabbing; }
+		&:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 0.4rem; }
 	}
 
+	/* ---------- status ---------- */
+	.polly-status {
+		margin: var(--polly-section-gap) var(--polly-card-padding) 0;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--bs-border-color, #e5e7eb);
+		text-align: center;
+		font-size: var(--font-size-small);
+		color: var(--secondary);
+	}
+
+	/* ---------- footer ---------- */
+	.polly-card-footer {
+		border-top: none;
+		background-color: white;
+		padding: var(--polly-section-gap) var(--polly-card-padding) var(--polly-card-padding);
+	}
+
+	.polly-actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		gap: 0.5rem;
+	}
+
+	.polly-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		min-height: 2.5rem;
+		padding-inline: 1rem;
+		border-radius: 0.6rem;
+		font-weight: 500;
+
+		i { font-size: 0.95em; line-height: 1; }
+		&:disabled { opacity: 0.55; }
+		&:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; box-shadow: none; }
+	}
+
+	/* "Beenden" ends the polly: quiet at rest, destructive-tinted on hover */
+	.polly-btn-quiet {
+		border: 1px solid transparent;
+		color: var(--secondary);
+		background-color: transparent;
+
+		&:hover:not(:disabled) {
+			color: var(--destructive, #b42318);
+			border-color: currentColor;
+			background-color: transparent;
+		}
+	}
+
+	@media (max-width: 480px) {
+		--polly-card-padding: 1.25rem;
+
+		.polly-actions {
+			flex-direction: column-reverse;
+			align-items: stretch;
+		}
+		.polly-btn { width: 100%; }
+	}
 }
 
 .polly-hint {
 	max-width: 1024px;
+	margin: 1rem auto 0;
+	display: flex;
+	align-items: flex-start;
+	gap: 0.5rem;
 	font-size: var(--font-size-small);
-	margin-top: 1rem;
+	color: var(--secondary);
+
+	i { margin-top: 0.2em; }
 }
 
 /* ========= For VUE.draggable@next ======== */
 .draggable {
-	.sortable-ghost {
-		opacity: 0.1;
+	/* the placeholder gap: a slim dashed insertion slot instead of the old arrow diamonds */
+	.polly-ghost {
+		opacity: 1;
+
+		.sortable-proposal {
+			background-color: transparent;
+			border: 1px dashed var(--primary);
+			box-shadow: none;
+		}
+		.sortable-proposal-title,
+		.proposal-bars { opacity: 0.25; }
 	}
 
-	.sortable-chosen {
-		z-index: 999;
-		-webkit-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
-		box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
+	.polly-chosen .sortable-proposal,
+	.polly-drag .sortable-proposal {
+		box-shadow: 0 8px 20px rgba(16, 24, 40, 0.18);
 	}
+
+	.polly-chosen,
+	.polly-drag { z-index: 999; }
 }
 
 /* ===== small utility classes ======= */

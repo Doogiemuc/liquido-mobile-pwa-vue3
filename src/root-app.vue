@@ -42,14 +42,6 @@ import api from "@/services/liquido-graphql-client.js"
 import EventBus from "@/services/event-bus.js"
 import config from "config"
 
-/**
- * joinTeam's `password` argument is non-null in the schema but is only used to CREATE a new user.
- * On the authenticated path the JWT identifies the caller and this value is never looked at, so a
- * placeholder is correct here - and necessary, because a user who logs in with a passkey has no
- * password for us to pass on.
- */
-const PENDING_JOIN_PLACEHOLDER_PASSWORD = "unused-jwt-authenticates-this-join"
-
 /** 
  * Pages will slide from right to left in this order 
  * Login and welcome page only do not slide, but fade in/out.
@@ -59,15 +51,17 @@ const page_order = {
 	"index": 0,
 	"welcome": 1,
 	"login": 1,     // welcome and login are on the same level, so they fade instead of sliding sideways
+	"loginSms": 2,
 	"forgotPassword": 2,
+	// Pollys are their own little world, reachable without any login
+	"createPolly": 3,
+	"showPolly": 4,
 	"userhome": 9,
 	"team": 10,
 	"polls": 11,
 	"createPoll": 12,
-	"newPoll": 12,      // the all-in-one editor sits at the same depth as createPoll
 	"showPoll": 13,
 	"addProposal": 14,
-	"editPoll": 14,     // ...and its edit mode at the same depth as addProposal
 	"castVote": 15,
 }
 
@@ -81,14 +75,12 @@ export default {
 				// We carefully distinguish between these two cases!
 				NetworkOffline: "Du bist offline. Bitte schalte dein WLAN ein.",
 				BackendNotReachable: "Ich kann den LIQUIDO Server gerade nicht erreichen. Bitte prüfe ob du onlien bist.",
-				DEV_OpenGraphQL: "DEV HINT: Open /graphql/schema.graphql",
-				// Shown when a user logged in to accept an invite, but the join itself then failed.
-				cannotJoinInvitedTeam: "Bitte entschuldige. Du bist erfolgreich eingeloggt, aber es gab gerade einen Fehler beim Beitreten in das neue Team. Bitte öffne den Einladungslink aus deiner Email noch einmal oder frag deinen Team-Admin."
+				DEV_OpenGraphQL: "DEV HINT: Open /graphql/schema.graphql"
 			}
 		},
 	},
 	name: "LiquidoApp",
-	// Remark: liqui-loc is configured in main.js! Do not overwrite it here by setting the i18n: property
+	// Remark: vue-i18n is configured in main.js! Do not overwrite it here by setting the i18n: property
 	components: { liquidoHeader, popupModal, mobileDebugLog },
 	data() { 
 		// These data attributes are reactive and available in EVERY sub-component as this.$root.<attributeName>
@@ -182,7 +174,6 @@ export default {
 			.then(() => {
 				console.log("We are online and backend is reachable at "+config.LIQUIDO_API_URL)
 				this.$refs.rootPopupModal.hide()
-				return this.loadLiquidoConfig()
 			})
 			.catch(res => {
 				if (res.response && res.response.status === 401) {
@@ -199,18 +190,12 @@ export default {
 		//
 		// These methods are available as this.$root.<method> in all vue sub components of root-app
 		//
-		/**
-		 * Open a poll. A finished poll shows its winner, everything else opens the poll page.
-		 *
-		 * This deliberately does NOT jump into the ballot. poll-show is the hub for a poll: it is the
-		 * only place a voter can see their own (anonymous) ballot and verify its checksum, and the only
-		 * place an admin can end the voting phase. Skipping it would strand both. The one page that may
-		 * shortcut straight to the ballot is team-home, which lists nothing but polls awaiting your vote.
-		 */
 		gotoPoll(pollId) {
 			const poll = api.getCachedPolls().find(p => p.id == pollId)
 			if (poll?.status === "FINISHED") {
 				this.$router.push({name: "pollWinner", params: {pollId: pollId}})
+			} else if (poll?.status === "VOTING" && !poll?.userAlreadyVoted) {
+				this.$router.push({name: "castVote", params: {pollId: pollId}})
 			} else {
 				this.$router.push({name: "showPoll", params: {pollId: pollId}})
 			}
@@ -220,81 +205,11 @@ export default {
 			this.$router.push({name: "polls"})
 		},
 
-		/**
-		 * Fetch the validation rules from the backend and merge them over our own defaults.
-		 *
-		 * The values in config.common.js are FALLBACKS, not the truth: if the backend is unreachable
-		 * the app keeps working with the numbers it shipped with. When the backend does answer, its
-		 * numbers win, because it is the side that actually enforces them - a frontend that disagrees
-		 * lets a user fill in a form the server then rejects.
-		 *
-		 * Merged into the config module object in place. Nothing here is reactive, which is fine
-		 * because this runs once at startup, before any page that validates input is reachable.
-		 */
-		loadLiquidoConfig() {
-			return api.getLiquidoConfig()
-				.then(settings => {
-					Object.assign(config, settings)
-					log.debug("Loaded settings from backend", settings)
-				})
-				.catch(err => {
-					// Deliberately not shown to the user: the app is fully usable on the fallbacks.
-					console.warn("Cannot load settings from backend, keeping local defaults", err)
-				})
-		},
-
 		gotoCreateNewPoll() {
-			this.$router.push({name: "newPoll"})
+			this.$router.push({name: "createPoll"})
 		},
 
-		/**
-		 * Go to the user's team after a successful login.
-		 *
-		 * If an inviteCode is sitting in the current route, the user got here from an invite link, found
-		 * they were already registered, and logged in to prove it. Their JWT is exactly the identity
-		 * proof that joinTeam wants, so finish that join first - otherwise they would land back in
-		 * their OLD team and the invite would silently have done nothing.
-		 *
-		 * This is called while the router is still on /login, which is why the query is readable here
-		 * and nothing had to be stored anywhere. Every login method funnels through this one method
-		 * (password, passkey, Google, email token), so passkey users are covered too - which is the
-		 * whole reason the join happens after login rather than on the join form.
-		 */
 		gotoTeam() {
-			const inviteCode = this.$route.query.inviteCode
-			if (inviteCode) {
-				this.joinInvitedTeamThenGoToTeam(inviteCode)
-			} else {
-				this.$router.push({name: "team"})
-			}
-		},
-
-		/**
-		 * Complete a pending invite for the user who has just logged in, then show them the team.
-		 *
-		 * Navigates to /team either way. A failed join must not strand the user on the login page: the
-		 * login itself succeeded, so they belong in the app. Only the invite is lost, and that is what
-		 * the error message is for.
-		 */
-		async joinInvitedTeamThenGoToTeam(inviteCode) {
-			const user = api.getCachedUser() || {}
-			const member = { name: user.name, email: user.email }
-			try {
-				// joinTeam declares password as non-null, but the authenticated branch never reads it -
-				// the JWT is the proof. Passing a placeholder is what lets a passkey user, who has no
-				// password at all, join this way.
-				const team = await api.joinTeam(inviteCode, member, PENDING_JOIN_PLACEHOLDER_PASSWORD)
-				log.info("Joined invited team after login:", team?.teamName)
-			} catch (err) {
-				const errCode = err?.liquidoException?.liquidoErrorCode ?? err?.response?.data?.liquidoErrorCode
-				if (errCode === api.err.CANNOT_JOIN_TEAM_ALREADY_MEMBER) {
-					// Nothing went wrong - they were already in it. Not worth interrupting them for.
-					log.info("Already a member of the invited team")
-				} else {
-					log.error("Could not join the invited team after login", err)
-					this.showError(this.$t("cannotJoinInvitedTeam"), this.$t("Error"))
-				}
-			}
 			this.$router.push({name: "team"})
 		},
 

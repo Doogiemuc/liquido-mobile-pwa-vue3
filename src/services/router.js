@@ -4,13 +4,10 @@ import api from "@/services/liquido-graphql-client.js"
 import config from "config"
 import log from 'loglevel'
 import welcomeChat from "@/views/welcome-chat.vue"
-import joinTeamV2 from '../views/join-team-v2.vue'
 //import { route } from 'fontawesome'
 if (import.meta.env.MODE === "development") log.enableAll()
 
 const routes = [
-	
-	// ========= public routes ============
 	{
 		path: "/",
 		name: "index",
@@ -41,20 +38,6 @@ const routes = [
 			public: true
 		}
 	},
-	{
-		path: "/joinTeam",
-		name: "joinTeamV2",
-		component: joinTeamV2,
-		// `props: true` would only pass route.params, and this path has none.
-		// The inviteCode arrives as a query parameter: /joinTeam?inviteCode=ABC123
-		props: route => ({
-			inviteCodeQueryParam: route.query.inviteCode
-		}),
-		meta: {
-			public: true
-		}
-	},
-
 
 	// ========= authenticated pages ============
 
@@ -69,10 +52,25 @@ const routes = [
 		name: "userhome",
 		component: () => import("@/views/user-home.vue"),
 	},
+	// ========= Polly - little polls, no team, no account ============
+	// Both routes are public: a polly has no login screen. Identity comes from a passkey,
+	// and only when the visitor actually creates or votes. See src/polly/polly-passkey.js.
 	{
-		path: "/polly/create",
+		path: "/polly",
 		name: "createPolly",
-		component: () => import("@/views/polly-create.vue"),
+		component: () => import("@/views/polly-page.vue"),
+		meta: {
+			public: true
+		}
+	},
+	{
+		// The ONE link the creator shares. There is no separate admin link and no secret in
+		// the URL - whoever opens it is recognised by their own passkey, so the creator gets
+		// the admin buttons and everybody else gets a ballot.
+		path: "/polly/:publicId",
+		name: "showPolly",
+		component: () => import("@/views/polly-page.vue"),
+		props: route => ({ publicId: route.params.publicId }),
 		meta: {
 			public: true
 		}
@@ -88,36 +86,14 @@ const routes = [
 		component: () => import("@/views/poll-create.vue"),
 	},
 	{
-		// The all-in-one editor: create a poll and its proposals on one page.
-		// MUST stay above "/polls/:pollId", or the param route swallows "new".
-		path: "/polls/new",
-		name: "newPoll",
-		component: () => import("@/views/poll-edit.vue"),
-	},
-	{
 		path: "/polls/:pollId",
 		name: "showPoll",
 		component: () => import("@/views/poll-show.vue"),
 		props: true,
 	}, 
 	{
-		// The same editor again, now editing a poll that already exists (ELABORATION only).
-		path: "/polls/:pollId/edit",
-		name: "editPoll",
-		component: () => import("@/views/poll-edit.vue"),
-		props: true,
-	},
-	{
 		path: "/polls/:pollId/add",
 		name: "addProposal",
-		component: () => import("@/views/proposal-add.vue"),
-		props: true,
-	},
-	{
-		// Edit your OWN proposal, while the poll has not started yet.
-		// Same component as addProposal: it switches to edit mode when a proposalId is present.
-		path: "/polls/:pollId/editProposal/:proposalId",
-		name: "editProposal",
 		component: () => import("@/views/proposal-add.vue"),
 		props: true,
 	},
@@ -141,10 +117,14 @@ const routes = [
 			public: true
 		}
 	},
-	// No "/login-via-sms" route: a mobilephone is optional in LIQUIDO and is no longer collected
-	// anywhere in the UI, and the backend's requestSmsToken/loginWithSmsToken are commented out, so
-	// the page's api calls hit operations that do not exist in the schema. login-via-sms.vue is kept
-	// in the repo on purpose as the starting point for when SMS login is actually built.
+	{
+		path: "/login-via-sms",
+		name: "loginSms",
+		component: () => import("@/views/login-via-sms.vue"),
+		meta: {
+			public: true
+		}
+	},
 	{	
 		path: "/resetPassword",
 		name: "resetPassword",
@@ -153,14 +133,6 @@ const routes = [
 		meta: {
 			public: true
 		}
-	},
-	{
-		// Public: the user clicks this straight out of their mail client, not logged in.
-		path: "/verifyEmail",
-		name: "verifyEmail",
-		component: () => import("@/views/verify-email.vue"),
-		props: route => ({ verifyToken: route.query.verifyToken }),
-		meta: { public: true },
 	},
 	{
 		path: "/404",
