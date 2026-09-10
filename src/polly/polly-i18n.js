@@ -27,6 +27,10 @@ const messages = {
 		// voting
 		SortProposals: "Drag your favourite to the top",
 		CastVote: "Vote",
+		ConfirmVoteTitle: "Cast your vote?",
+		ConfirmVoteMessage: "You can only vote once in this polly - you won't be able to change your ballot afterwards.",
+		ConfirmVoteButton: "Yes, cast my vote",
+		Cancel: "Cancel",
 		AlreadyVoted: "You already voted. Thanks!",
 		ThxForVoting: "Thanks for voting!",
 
@@ -67,6 +71,10 @@ const messages = {
 		// voting
 		SortProposals: "Zieh deinen Favoriten nach oben",
 		CastVote: "Abstimmen",
+		ConfirmVoteTitle: "Stimme abgeben?",
+		ConfirmVoteMessage: "Du kannst in diesem Polly nur einmal abstimmen – danach lässt sich deine Stimme nicht mehr ändern.",
+		ConfirmVoteButton: "Ja, Stimme abgeben",
+		Cancel: "Abbrechen",
 		AlreadyVoted: "Du hast schon abgestimmt. Danke!",
 		ThxForVoting: "Danke für deine Stimme!",
 

@@ -134,6 +134,11 @@ context("LIQUIDO Polly", { testIsolation: false }, () => {
 	it("the owner votes in their own polly like anybody else", () => {
 		cy.get("#castVoteButton").click()
 
+		// a vote can only be cast once, so this is confirmed first - via the shared root popup
+		// (root-app.vue), not a dedicated modal
+		cy.get("#rootPopupModal").should("be.visible")
+		cy.get("#rootPopupModalPrimaryButton").click()
+
 		// after voting the ballot disappears and the status says so
 		cy.get("#castVoteButton").should("not.exist")
 		cy.get("#pollyStatus").should("be.visible")

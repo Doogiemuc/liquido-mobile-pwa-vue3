@@ -223,6 +223,22 @@ function editPolly() {
 }
 
 /**
+ * Ask for confirmation before casting the ballot - a vote can only be cast once, so this is
+ * the one moment to catch a stray tap. Reuses the shared root popup (root-app.vue) rather than
+ * a dedicated modal, the same way showProblem() below already does for errors.
+ */
+function clickCastVoteButton() {
+	if (isVoting.value || !canVote.value) return
+	proxy?.$root?.showInfo(
+		t('ConfirmVoteMessage'),
+		t('ConfirmVoteTitle'),
+		t('ConfirmVoteButton'),
+		t('Cancel'),
+		castVote,
+	)
+}
+
+/**
  * Cast the ballot: the options in the order they were dragged into, favourite first.
  * A voter who has no passkey yet gets one here, with a single tap.
  */
@@ -399,7 +415,7 @@ function showProblem(err, fallbackKey) {
 							<i class="fa-regular fa-edit"></i>&nbsp;{{ t('Edit') }}
 						</button>
 						<!-- The owner votes in their own polly like anybody else -->
-						<button v-if="canVote" id="castVoteButton" @click="castVote" :disabled="isVoting" type="button" class="btn btn-primary me-2">
+						<button v-if="canVote" id="castVoteButton" @click="clickCastVoteButton" :disabled="isVoting" type="button" class="btn btn-primary me-2">
 							<i class="fa-solid fa-person-booth"></i>&nbsp;{{ t('CastVote') }}
 						</button>
 						<button v-if="polly.isOwner" id="finishPollyButton" @click="finishPolly" :disabled="isFinishing" type="button" class="btn btn-secondary">
