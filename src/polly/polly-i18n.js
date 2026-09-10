@@ -57,7 +57,8 @@ const messages = {
 		PrivacyNote: "A polly is private among friends. For a truly anonymous ballot, use a LIQUIDO poll.",
 
 		// shown to whoever opens the share link and is not the polly's owner
-		FriendInfo: "You've been invited to this polly. Instead of picking just one option, you sort all of them into your preferred order — your favourite on top. One tap confirms your vote via passkey, no account or password needed. Once the creator finishes the polly, the option with the broadest support is calculated.",
+		// \n\n marks a paragraph break - see the FriendInfoParagraphs computed in polly-vote.vue
+		FriendInfo: "You've been invited to this polly. Instead of picking just one option, you sort all of them into your preferred order — your favourite on top.\n\nOne tap confirms your vote via passkey, no account or password needed.\n\nOnce the creator finishes the polly, a clever algorithm evaluates everyone's rankings and works out the option with the broadest support.",
 	},
 	de: {
 		// creating
@@ -101,7 +102,8 @@ const messages = {
 		PrivacyNote: "Ein Polly ist privat unter Freunden. Für eine wirklich anonyme Wahl nimm eine LIQUIDO Abstimmung.",
 
 		// shown to whoever opens the share link and is not the polly's owner
-		FriendInfo: "Du wurdest zu diesem Polly eingeladen. Statt nur eine Option zu wählen, bringst du alle Optionen in deine bevorzugte Reihenfolge – deinen Favoriten ganz nach oben. Mit einem Tap bestätigst du per Passkey, ganz ohne Account oder Passwort. Wenn euer Admin die Abstimmung beendet, wertet ein intelligenter Algorithmus alle Ranglisten aus und ermittelt die Option, die insgesamt die größte Zustimmung erhalten hat.",
+		// \n\n marks a paragraph break - see the FriendInfoParagraphs computed in polly-vote.vue
+		FriendInfo: "Du wurdest zu diesem Polly eingeladen. Statt nur eine Option zu wählen, bringst du alle Optionen in deine bevorzugte Reihenfolge – deinen Favoriten ganz nach oben.\n\nMit einem Tap bestätigst du per Passkey, ganz ohne Account oder Passwort.\n\nWenn euer Admin die Abstimmung beendet, wertet ein intelligenter Algorithmus alle Ranglisten aus und ermittelt die Option, die insgesamt die größte Zustimmung erhalten hat.",
 	},
 }
 

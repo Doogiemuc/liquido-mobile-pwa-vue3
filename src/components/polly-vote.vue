@@ -91,6 +91,9 @@ const canVote = computed(() => inVoting.value && !polly.alreadyVoted && !isEdita
 
 const shareLink = computed(() => polly.publicId ? pollyApi.shareLinkFor(polly.publicId) : "")
 
+/** FriendInfo is written as paragraphs separated by a blank line - split it for <p> rendering. */
+const friendInfoParagraphs = computed(() => t('FriendInfo').split(/\n\n+/))
+
 /* ========================= lifecycle ========================= */
 
 onMounted(async () => {
@@ -311,11 +314,6 @@ function showProblem(err, fallbackKey) {
 	<div class="polly">
 		<!-- No <liquido-header> here: root-app.vue already renders the one shared header. -->
 
-		<!-- Whoever opens the share link and is not its owner sees this first, before the card. -->
-		<div v-if="!isEditable && !polly.isOwner" id="pollyFriendInfo" class="alert liquido-info mb-3">
-			{{ t('FriendInfo') }}
-		</div>
-
 		<div class="card polly-card position-relative user-select-none">
 			<span v-if="polly.publicId && !isEditable" id="sharePollyButton" @click="sharePolly" class="fa-stack share-polly-icon" :title="t('Share')" :data-public-id="polly.publicId">
 				<i class="fa-solid fa-circle fa-stack-2x" style="color:var(--proposal-icon-bg)"></i>
@@ -424,6 +422,11 @@ function showProblem(err, fallbackKey) {
 					</template>
 				</div>
 			</div>
+		</div>
+
+		<!-- Whoever opens the share link and is not its owner sees this, below the card. -->
+		<div v-if="!isEditable && !polly.isOwner" id="pollyFriendInfo" class="alert liquido-info mt-3">
+			<p v-for="(paragraph, i) in friendInfoParagraphs" :key="i">{{ paragraph }}</p>
 		</div>
 
 		<!-- A polly is not a LIQUIDO poll, and the difference is worth being honest about -->
