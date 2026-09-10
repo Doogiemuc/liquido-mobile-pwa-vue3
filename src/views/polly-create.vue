@@ -9,7 +9,9 @@
 			:poll="poll">
 		</polly>
 
-		<liqui-loc-html v-if="poll.status === 'NEW'" class="alert liquido-info" tag="div" msg-key="PollIsNewInfo" />
+		<!-- The bright info box is only for friends who arrive via the invite link, once the poll
+		     exists (ELABORATION/VOTING/FINISHED). On this page (status NEW) only the admin who is
+		     creating the poll can be here, so only the admin box below is shown. -->
 		<div v-if="poll.status === 'ELABORATION'" class="alert liquido-info">
 			{{ $t('PollInElaborationInfo') }}
 		</div>
@@ -18,7 +20,7 @@
 			<ol class='fa-ul'>
 				<li><span class='fa-li'><i class='fas fa-person-booth'></i></span> <liqui-loc-html tag="span" msg-key="PollInVotingInfo2" /></li>
 				<li><span class='fa-li'><i class='fas fa-check-circle'></i></span> {{ $t('PollInVotingInfo3') }}</li>
-			</ol>			
+			</ol>
 		</div>
 		<div v-if="hasAlreadyVoted" class="alert liquido-info mt-3">
 			{{ $t('YouAlreadyVoted') }}
@@ -27,13 +29,15 @@
 			{{ $t('PollIsFinishedInfo') }}
 		</div>
 
-		<!-- Extra info for the admin -->
-		<div class="alert alert-admin mt-5">
-			<p>{{ $t('createPollInfo1') }}</p>
+		<!-- Extra info for the admin: shown on this start page, describing the whole Polly lifecycle -->
+		<div v-if="poll.status === 'NEW'" class="alert alert-admin mt-5">
+			<p>{{ $t('createPollIntro') }}</p>
 			<ol class='fa-ul'>
-				<li><span class='fa-li'><i class='fas fa-comments'></i></span> {{ $t('createPollInfo2') }} {{ $t('createPollInfo3') }}</li>
-				<li><span class='fa-li'><i class='fas fa-person-booth'></i></span> <liqui-loc-html tag="span" msg-key="createPollInfo4" /></li>
-				<li><span class='fa-li'><i class='fas fa-check-circle'></i></span> {{ $t('createPollInfo5') }}</li>
+				<li><span class='fa-li'><i class='fas fa-list-ul'></i></span> {{ $t('createPollStep1') }}</li>
+				<li><span class='fa-li'><i class='fas fa-envelope-open-text'></i></span> {{ $t('createPollStep2') }}</li>
+				<li><span class='fa-li'><i class='fas fa-sort-amount-down'></i></span> {{ $t('createPollStep3') }}</li>
+				<li><span class='fa-li'><i class='fas fa-eye'></i></span> {{ $t('createPollStep4') }}</li>
+				<li><span class='fa-li'><i class='fas fa-check-circle'></i></span> {{ $t('createPollStep5') }}</li>
 			</ol>
 		</div>
 	</div>
@@ -57,34 +61,36 @@ export default defineComponent({
 			"en": {
 				"Polly": "Polly",
 				"NewPolly": "New Polly",
-				"createPollInfo1": "Polls go through three phases:",
-				"createPollInfo2": "A new poll is first discussed.",
-				"createPollInfo3": "You can decide whether team members are allowed to add their own proposals.",
-				"createPollInfo4": "As an admin, you start the poll. In LIQUIDO, you don't just vote for one proposal, but everyone in the team anonymously ranks all proposals in their personal order.",
-				"createPollInfo5": "When you finish the poll, the proposal with the most approval is calculated by a clever algorithm.",
-				"createPollInfoForKids_NOT_USED_YET": "In LIQUIDO, you don't just choose one proposal, but everyone secretly ranks all proposals in the order they like them best.",
+
+				// This info is for the admin, shown on this start page while creating the Polly.
+				"createPollIntro": "You are the admin of this Polly.",
+				"createPollStep1": "Add the options you want to vote on here.",
+				"createPollStep2": "When you start the vote, an invite link is sent to your friends. Everyone registers with a passkey — no complicated password, yet still secure.",
+				"createPollStep3": "In LIQUIDO you don't just vote for one option — everyone ranks all the options in their own order of preference.",
+				"createPollStep4": "You can see at any time who has already voted.",
+				"createPollStep5": "When you close the vote, a clever algorithm calculates the option with the broadest approval among you.",
+
 				"create": "Create"
 			},
 			"de": {
 				"Polly": "Polly",
 				"NewPolly": "Neues Polly",
-				"PollIsNewInfo": "Willkommen bei <span class='liquido'></span>. Ein Polly ist eine einfache, anonyme und sichere Abstimmung. In  Füge hier die Vorschläge hinzu, über die ihr abstimmen wollt.",
 				"PollInElaborationInfo": "Ok bin bereit. Du kannst die Abstimmung jetzt starten.",
-				
+
 				// This info is for voters and shown when polly is in voting
-				"PollInVotingInfo1": "Willkommen bei <span class='liquido'></span>! Ein Polly ist eine einfache, anonyme und sichere Abstimmung.", 
+				"PollInVotingInfo1": "Willkommen bei <span class='liquido'></span>! Ein Polly ist eine einfache, anonyme und sichere Abstimmung.",
 				"PollInVotingInfo2": "In <span class='liquido'></span> stimmst du nicht nur für einen Vorschlag, sondern du <b>sortierst alle</b> Vorschläge so wie du es möchtest. Mit deinem Favoriten ganz oben.",
 				"PollInVotingInfo3": "Wenn euer Admin die Abstimmung abschließt, wird der Vorschlag mit der größten Zustimmung durch einen cleveren Algorithmus berechnet.",
-				"YouAlreadyVoted": "Du hast bereits abgestimmt.",	
+				"YouAlreadyVoted": "Du hast bereits abgestimmt.",
 
-				// This info is for the admin, and only shown to him.
-				"createPollInfo1": "Du bist der Polly Admin:",
-				"createPollInfo2": "Eine neue Abstimmung wird erst einmal debatiert.",
-				"createPollInfo3": "Du kannst festlegen ob Teammitglieder eigene Vorschläge hinzufügen dürfen oder nicht.",
-				"createPollInfo4": "Du, als Admin, startest die Abstimmung. In LIQUIDO stimmt man nicht nur für einen Vorschlag, sondern jeder im Team ordnet alle Vorschläge anonym in seine persönliche Reihenfolge.",
-				"createPollInfo5": "Wenn du die Abstimmung abschliest, wird der Vorschlag mit der größten Zustimmung durch einen cleveren Algorithmus berechnet.",
-				"createPollInfoForKids_NOT_USED_YET": "In LIQUIDO sucht man sich nicht nur einen Vorschlag aus, sondern jeder ordnet alle Vorschläge heimlich so, wie er sie am liebsten hat.",
-				
+				// This info is for the admin, and only shown to him, on this start page while creating the Polly.
+				"createPollIntro": "Du bist der Admin dieses Pollys.",
+				"createPollStep1": "Füge hier die Optionen hinzu, über die ihr abstimmen möchtet.",
+				"createPollStep2": "Wenn du die Abstimmung startest, verschicke ich einen Einladungslink an deine Freunde. Jeder registriert sich ganz einfach mit einem Passkey – ganz ohne kompliziertes Passwort, aber trotzdem sicher.",
+				"createPollStep3": "In LIQUIDO stimmt man nicht nur für eine Option, sondern jeder von euch bringt alle Optionen in seine persönliche Reihenfolge.",
+				"createPollStep4": "Du kannst jederzeit sehen, wer schon abgestimmt hat.",
+				"createPollStep5": "Wenn du die Abstimmung beendest, berechnet ein cleverer Algorithmus den Vorschlag mit der größten Zustimmung unter euch.",
+
 				"PollIsFinishedInfo": "Diese Abstimmung ist abgeschlossen. Es können keine weiteren Stimmen mehr abgegeben werden.",
 			}
 		}
@@ -115,8 +121,6 @@ export default defineComponent({
 		},
 		getInfoTextForPollStatus() {
 			switch (this.poll.status) {
-				case "NEW":
-					return this.$t('PollIsNewInfo')
 				case "ELABORATION":
 					return this.$t('PollInElaborationInfo')
 				case "FINISHED":
