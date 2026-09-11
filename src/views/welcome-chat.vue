@@ -838,7 +838,14 @@ export default {
 			this.FLOW.SetupPasskeyClicked = true
 			this.FLOW.SetupPasskeySuccessfull = false
 			if (!this.passkeyLabel) this.passkeyLabel = this.user.name + "-" + this.$t('Passkey')
-			webauthnService.registerWebauthn(this.passkeyLabel)
+			// Passkeys cannot be driven from an automated test (that's the whole point of them).
+			// A headless Cypress browser has no authenticator, and navigator.credentials.create()
+			// just hangs instead of failing fast, so take the same "failed" path a real ceremony
+			// failure would take.
+			const registerPromise = window.Cypress
+				? Promise.reject(new Error("Passkey registration is not testable in Cypress"))
+				: webauthnService.registerWebauthn(this.passkeyLabel)
+			registerPromise
 				.then(() => {
 					this.$root?.$refs?.mobileDebugLogRef?.info("setupPasskey: SUCCESSFULL")
 					this.FLOW.SetupPasskeySuccessfull = true
