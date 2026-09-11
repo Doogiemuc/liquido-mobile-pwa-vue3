@@ -75,7 +75,7 @@ const pages = [
 	{ name: 'Forgot password', route: '/forgotPassword' },
 	{ name: 'Verify email', route: '/verifyEmail?verifyToken=mock-token' },
 	{ name: 'Page not found', route: `/404`, dimmed: true },  // placeholder to seperate polly
-	{ name: 'Polly', route: '/polly/create' },
+	{ name: 'Polly', route: '/polly' },
 ]
 
 if (!config.mockBackend) console.log("==== Design overview: You might want to set config.mockBackend = true =======")
