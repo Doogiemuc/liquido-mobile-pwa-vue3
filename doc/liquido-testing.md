@@ -35,7 +35,7 @@ Testing locally is easier. Testing on a real device requires much more setup.
 
 ## Start services
 
- * Start the LIQUIDO backend `mvn quakrus:dev`
+ * Start the LIQUIDO backend `./mvnw quarkus:dev`
  * Start the LIQUIDO frontend `npm run dev`
  * Navigate at least once to https://backend.host:8443/graphql/schema.graphql  => This is necessary at least once, to make the browser accept the self-signed certificate
  * Navigate to to https://backend.host:8443  -> should show now show the LIQUIDO API version
@@ -65,12 +65,63 @@ https://dev.to/nimajafari/remote-debugging-using-safari-on-ios-devices-with-maco
 
 # Automated tests
 
-Every LIQUIDO use case is covered with an automated playwright test.
+The e2e suite uses **Cypress** (not Playwright — this section used to say otherwise). Specs live in
+`tests/e2e/specs/`:
+
+ * `happy-case.cy.js` — **the primary regression test.** One long, sequential flow (`testIsolation:
+   false`) that walks a brand new team through the entire product against the real backend: create
+   team → register passkey → create a poll with two proposals → a member joins, adds and edits their
+   own proposal → admin starts voting → member casts a vote and verifies its checksum → admin
+   finishes voting → winner is shown. An `afterEach` stops the whole run on the first failure, so a
+   failing early step hides everything after it — read the "Skipped:" count, not just "Passing:".
+ * `login-tests.cy.js` — anonymous access, route guards, login via email/password, forgot-password.
+ * `switch-team.cy.js` — switching between a user's teams. Needs the seeded multi-team scenario
+   (`multiteammember4711@liquido.vote` in both `multiTeamA4711` and `multiTeamB4711`) from the
+   backend's `TestDataCreator` — fails against a bare/freshly-deployed backend that was never seeded.
+ * `polly.cy.js` — the Polly flow (the simpler, teamless, passkey-only poll type).
+ * `user-home-tests.cy.js.FIXME` — disabled (the `.FIXME` extension excludes it from
+   `specPattern`), not currently run.
+
+Run with `npm run test:e2e` (all specs) or `npx cypress run --e2e --spec tests/e2e/specs/<file>`
+for one spec. `npx cypress open --e2e --browser firefox` for interactive mode. See `CLAUDE.md` §7
+for the full command list.
+
+**Testing rule:** never assert on displayed UI text (a translated/reworded string must not break
+the suite) — assert on DOM ids or `data-*` attributes instead. See `CLAUDE.md` §3 for the full list
+of rules and the `data-error-code` convention for error cases.
+
+### WebAuthn/passkey ceremony in headless tests
+
+A headless test browser has no authenticator. `navigator.credentials.create()` doesn't fail fast
+there either — it just hangs indefinitely instead of rejecting, which used to make `happy-case.cy.js`
+time out on the passkey step. `welcome-chat.vue`'s `setupPasskey()` now checks `window.Cypress`
+(only ever set inside a Cypress run) and short-circuits straight to the same "registration failed"
+path a real ceremony failure already takes, instead of calling the real WebAuthn API. That is why
+the happy-case test can assert the passkey *failure* UI (the retry/"do it later" modal) even
+though passkeys themselves are inherently untestable in an automated browser.
+
+### Running against an already-deployed instance
+
+`cypress.config.remote.js` points the suite at an already-deployed frontend/backend (e.g.
+`https://liquido.dynv6.net`) instead of the local dev servers on `localhost:3001`/`:8443` — no local
+Postgres or Quarkus needed:
+
+```bash
+npm run test:e2e:remote                                           # defaults to liquido.dynv6.net
+CYPRESS_REMOTE_URL=https://staging.liquido.vote npm run test:e2e:remote
+npm run cypress:open:remote                                        # interactive mode
+```
+
+Every spec creates real data (teams, polls, ballots) against whatever backend this points at —
+never run it against a production instance with real users. `switch-team.cy.js` and the
+password-login/forgot-password parts of `login-tests.cy.js` fail against a fresh deploy for the
+same seed-data reason as above: they need `TestDataCreator`'s seeded users, which only exist in a
+database that generator has actually run against.
 
 ### TODO: Tests to implement
 
  * Negative test cases
    * Cannot reach backend
-	 * Device does not support Passkey
-	 * Supported but cannot register Passkey (eg. wrong/different domain)
+   * Device does not support Passkey (`webauthnService.isWebAuthnSupported()` returning false —
+     different from the ceremony itself failing, which `happy-case.cy.js` already covers)
 
