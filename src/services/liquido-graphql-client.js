@@ -396,9 +396,24 @@ let graphQlApi = {
 	},
 
 	/**
+	 * Send the welcome mail to the user who just registered.
+	 *
+	 * Called by welcome-chat.vue/join-team-v2.vue right after createNewTeam or joinTeam returns,
+	 * using the JWT that call just stored. Takes no parameters on purpose: recipient, team and role
+	 * all come from the JWT on the backend (LoginRestAPI.sendWelcomeMail).
+	 *
+	 * REST, not GraphQL, for the same reason as requestPasswordReset below: the mailer deadlocks
+	 * inside a blocking GraphQL resolver on this Quarkus version.
+	 */
+	sendWelcomeMail() {
+		return axios.post('/login/welcomeMail')
+			.then(res => res.data)
+	},
+
+	/**
 	 * Request a password reset for a user.
 	 * @param {String} email must be a registered user email
-	 * @returns 
+	 * @returns
 	 */
 	requestPasswordReset(email) {
 		if (!email) throw new Error("Need email to request password reset!")
