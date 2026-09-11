@@ -22,12 +22,12 @@ beforeAll(async () => {
 	fix = {
 		admin: {
 			name: 'GAdmin-'+now,
-			email: 'gAdmin-'+now+'@liquido.me',
+			email: 'gAdmin-'+now+'@liquido.vote',
 			mobilephone: '+49 666 '+now
 		},
 		member: {
 			name : 'GMember'+now,
-			email: 'GMember-'+now+'@liquido.me',
+			email: 'GMember-'+now+'@liquido.vote',
 			mobilephone: '+49 555 '+now
 		},
 		team: {

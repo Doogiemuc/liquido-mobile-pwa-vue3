@@ -53,12 +53,12 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 	 */
 	before(() => {
 		fix.userName   = 'Cypress User-'+now
-		fix.userEmail  = 'cypressUser-'+now+'@liquido.me'
+		fix.userEmail  = 'cypressUser-'+now+'@liquido.vote'
 		fix.userPassword = fix.userEmail + "pwd"
 		// No mobilephone fixtures: a mobilephone is optional in LIQUIDO and no screen collects one,
 		// so asserting on one here would only pretend to cover something.
 		fix.adminName  = 'Cypress Admin-'+now
-		fix.adminEmail = 'cypressAdmin-'+now+'@liquido.me'
+		fix.adminEmail = 'cypressAdmin-'+now+'@liquido.vote'
 		fix.adminPassword = fix.adminEmail + "pwd"
 		fix.teamName   = 'Cypress Team '+now
 		fix.pollTitle  = 'Cypress Poll '+now
