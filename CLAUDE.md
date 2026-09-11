@@ -289,6 +289,7 @@ npm run build          # production bundle
 npx vitest run         # unit tests
 npx eslint src --ext .vue,.js
 npx cypress run --e2e --spec tests/e2e/specs/happy-case.cy.js
+npm run test:e2e:remote     # same suite against an already-deployed instance, see below
 ```
 
 **Both dev servers are Claude's to manage** — Vite on `https://localhost:3001` and the Quarkus
@@ -299,6 +300,16 @@ test immediately.
 The e2e suite runs against the **real backend and the real `LIQUIDO-DEV` database** — every run
 leaves a team behind. `config.development.js` can flip `mockBackend: true` for a backend-free run
 (remember to restore it).
+
+**Running against an already-deployed instance** (e.g. `https://liquido.dynv6.net`), without any
+local dev server or database: `npm run test:e2e:remote` (or `cypress:open:remote`) uses
+`cypress.config.remote.js`, which points `baseUrl`/`LIQUIDO_API` at `CYPRESS_REMOTE_URL` (default
+`https://liquido.dynv6.net`) instead of `localhost:3001`/`:8443`. Same caveat applies — it creates
+real teams/polls/ballots on whatever that URL's backend is, so never point it at an instance with
+real users. `switch-team.cy.js` and parts of `login-tests.cy.js` will still fail against a fresh
+deploy: they depend on the seeded multi-team users from `TestDataCreator` (`testadmin4711@…`,
+`multiteammember4711@…`), which only exist in a `TestDataCreator`-seeded `LIQUIDO-DEV`/`-TEST` DB,
+not on a bare deploy.
 
 The backend lives in the sibling repo `../liquido-backend-quarkus` and has its own `CLAUDE.md` and a
 detailed `AGENTS.md` — read those before touching the API, the schema or the seed data.
