@@ -28,11 +28,50 @@
 			</div>
 		</section>
 
+		<!--
+			Reminder to confirm the email address. Only shown while it is actually unverified.
+
+			The action is a real <button> with a real @click, NOT markup inside a v-html string: Vue
+			does not bind event handlers inside v-html, so a @click written in there would render as
+			an inert attribute and silently do nothing.
+
+			.alert-has-action only while the button is there - once the mail is on its way the alert
+			holds nothing but the confirmation, so it should not reserve room for an overhang.
+		-->
+		<section v-if="showVerifyEmailReminder">
+			<div
+				id="verifyEmailReminder"
+				class="alert liquido-info"
+				:class="{'alert-has-action': !verifyMailSent}"
+				role="alert"
+			>
+				<p v-if="verifyMailSent" id="verifyEmailReminderSent">
+					Ok, ich habe dir eine neue E-Mail geschickt. Bitte schau in dein Postfach.
+				</p>
+				<template v-else>
+					<p>
+						Deine Email Adresse ist noch nicht verifiziert. Ich hatte dir eine Email mit einem
+						Bestätigen Link geschickt. Bitte klicke einmal auf diesen Link. Falls du die Email nicht
+						mehr findest, kann ich dir auch noch eine neue schicken.
+					</p>
+					<!-- "Neuen" carries the point: this sends a fresh link, it does not re-send the old one. -->
+					<button
+						id="resendVerificationMailButton"
+						type="button"
+						class="btn btn-primary alert-action"
+						@click="sendNewEmailVerificationMail"
+					>
+						Neuen Bestätigungslink schicken
+					</button>
+				</template>
+			</div>
+		</section>
+
 		<!-- Team members as circles -->
 		<section>
 			<h2>{{ team.teamName }}</h2>
 			<div id="memberCircles" class="member-grid mt-3 mb-3">
-				<div v-for="member in members.slice(0,6)" :key="member.user.id" class="member-circle">
+				<div v-for="member in members.slice(0,6)" :key="member.user.id" class="member-circle" :data-member-name="member.user.name" :data-member-role="member.role">
 					<img :src="getImgUrl(member.user.picture)" class="member-avatar" alt="Member Avatar" />
 					<div class="member-name">{{ member.user.name }}</div>
 				</div>
@@ -53,7 +92,7 @@
 			</div>
 		</section>
 
-		<section v-if="userIsAdmin">
+		<section id="adminSettingsSection" v-if="userIsAdmin">
 			<h2>Admin Einstellungen</h2>
 			<p>Nur du kannst <router-link to="/new-poll">neue Abstimmungen erstellen</router-link>.</p>
 		</section>
@@ -87,9 +126,10 @@
 <script setup>
 import { ref, computed, onMounted } from "vue"
 import { useRouter } from "vue-router"
-import { useI18n } from "vue-i18n"
+import { useLoc } from "@/services/liqui-loc.js"
 import config from "config"
 import api from "@/services/liquido-graphql-client"
+import loginAPI from "@/services/login-rest-client.js"
 import LiquidoFooter from "@/components/liquido-footer.vue"
 import PollCard from "@/components/poll-card.vue"
 import QRCode from "qrcode"
@@ -97,7 +137,7 @@ import webauthnService from '@/services/webauthn-service.js'
 import { store } from "@/services/store"
 
 const router = useRouter()
-const { t, d } = useI18n()
+const { t, d } = useLoc()
 
 const team = ref({})
 
@@ -106,6 +146,12 @@ const userIsAdmin = api.isAdmin()
 const userHasWebauthn = api.getCachedUser()?.hasWebauthn
 const showInvite = ref(false)
 const qrCodeDataUrl = ref("")
+
+// Whether to nag about the unconfirmed address, and whether we already sent a fresh link.
+// Only nag when the backend actually told us it is unverified - if the field is missing (an older
+// cached login that predates it) treat it as verified rather than nagging on no evidence.
+const emailVerified = api.getCachedUser()?.emailVerified !== false
+const verifyMailSent = ref(false)
 
 // Computed properties that might dynamically change their values
 
@@ -131,6 +177,9 @@ const members = computed(() => {
 })
 const pollsInVoting = computed(() => api.getCachedPolls().filter(p => p.status === "VOTING" && !p.userAlreadyVoted) || [])
 const inviteLinkURL = computed(() => config.inviteLinkPrefix + team.value?.inviteCode)
+
+/** Nag only while the address really is unconfirmed. Hidden again as soon as it is verified. */
+const showVerifyEmailReminder = computed(() => !emailVerified)
 
 let passkeyLabel = ref("passkeylabel")
 
@@ -194,6 +243,22 @@ async function shareLink() {
 			console.error('Failed to copy: ', err);
 		}
 	}
+}
+
+/**
+ * Ask the backend for a fresh confirmation mail.
+ *
+ * Only reachable from here, where the user is logged in - the backend derives the recipient from the
+ * JWT and there is deliberately no anonymous variant. Sending a new link invalidates the old one.
+ */
+async function sendNewEmailVerificationMail() {
+	if (verifyMailSent.value) return   // already sent one; do not let an impatient double click spam
+	verifyMailSent.value = true
+	loginAPI.resendEmailVerification()
+		.catch(err => {
+			console.error("Cannot resend the email verification mail", err)
+			verifyMailSent.value = false   // let them try again
+		})
 }
 
 /**
