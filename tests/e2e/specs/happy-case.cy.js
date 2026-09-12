@@ -797,6 +797,19 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		// AND the winning proposal is displayed in the winner card
 		cy.get(".winner-proposal").should("be.visible")
 		cy.get(".winner-title").should("be.visible")
+
+		// AND the pairwise breakdown shows the winner against the poll's one other proposal
+		cy.get("#pairwiseComparisonList li").should("have.length", 1)
+
+		// WHEN expanding "more details"
+		cy.get("#toggleMoreDetailsButton").scrollIntoView().click()
+
+		// THEN the full duel matrix and the lock-in graph are shown
+		cy.get("#moreDetailsSection").should("be.visible")
+		cy.get("#duelMatrixTable").should("be.visible")
+		cy.get("#duelMatrixTable td[data-duel-row][data-duel-col]").should("have.length", 4)  // 2x2 matrix
+		cy.get("#rankedPairsGraph").should("be.visible")
+		cy.get("#rankedPairsGraph [data-graph-node-letter]").should("have.length", 2)
 	})
 	
 	/* TODO

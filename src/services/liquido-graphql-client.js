@@ -136,7 +136,10 @@ const JQL_LOGIN_USER = `{ id name email mobilephone picture website hasWebauthn 
 const JQL_USER = `{ id name email mobilephone picture website  } `
 const JQL_TEAM_MEMBER = `{ role joinedAt user ${JQL_USER} } `
 const JQL_PROPOSAL =  `{ id title description icon status createdAt numSupporters likedByCurrentUser createdBy ${JQL_USER} } `   // no "is" before likedByCurrentUser!
-const JQL_POLL = `{ id title status createdAt updatedAt votingStartAt votingEndAt userAlreadyVoted numBallots membersCanAddProposals proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `  //TODO: duelMatrix { data }
+const JQL_POLL = `{ id title status createdAt updatedAt votingStartAt votingEndAt userAlreadyVoted numBallots membersCanAddProposals proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `
+// The duelMatrix itself is not fetched here -- Matrix cannot be serialized directly by SmallRye GraphQL,
+// see getPublishedTally() below for the flattened, verifiable version of it.
+const JQL_PUBLISHED_TALLY = `{ pollId proposalOrder duelMatrix winnerId numBallots } `
 const JQL_TEAM = `{ id teamName inviteCode ` +
 		`members ${JQL_TEAM_MEMBER} ` +
 		`polls ${JQL_POLL} } `
@@ -709,6 +712,18 @@ let graphQlApi = {
 		return this.pollsCache.get("polls/"+pollId, {
 			callBackend: force ? this.pollsCache.FORCE_BACKEND_CALL : this.pollsCache.CALL_BACKEND_WHEN_EXPIRED
 		})
+	},
+
+	/**
+	 * Everything needed to independently recompute a FINISHED poll's result: the duel matrix and
+	 * the proposal id order that indexes it. Not cached -- only fetched once, on the winner page,
+	 * for a poll that can no longer change.
+	 * @param {Number|String} pollId a poll in status FINISHED
+	 * @returns {Promise} the PublishedTally
+	 */
+	async getPublishedTally(pollId) {
+		let graphQL = `query publishedTally($pollId: BigInteger!) { publishedTally(pollId: $pollId) ${JQL_PUBLISHED_TALLY} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId) }).then(res => res.data.publishedTally)
 	},
 
 	/** 

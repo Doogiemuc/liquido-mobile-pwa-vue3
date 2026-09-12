@@ -152,7 +152,7 @@ const detectOperation = query => {
 		"createNewTeam", "joinTeam", "createPoll", "addProposal", "updateProposal", "deleteProposal", "likeProposal", "startVotingPhase",
 		"finishVotingPhase", "castVote", "loginWithEmailPassword", "googleOneTapLogin", "loginWithAuthToken",
 		"requestPasswordReset", "resetPassword", "requestEmailLoginLink", "teamForInviteCode", "loginWithJwt",
-		"devLogin", "authToken", "voterToken", "verifyBallot", "myBallot", "polls", "poll", "team", "ping",
+		"devLogin", "authToken", "voterToken", "verifyBallot", "myBallot", "publishedTally", "polls", "poll", "team", "ping",
 	]
 	for (const name of operations) {
 		if (new RegExp(`\\b${name}\\s*\\(`).test(query) || new RegExp(`\\b${name}\\b`).test(query)) {
@@ -323,6 +323,35 @@ const queryHandlers = {
 		const poll = findPoll(pollId)
 		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
 		return enrichPollForCurrentUser(poll)
+	},
+	publishedTally: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
+		const poll = findPoll(pollId)
+		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
+		const proposalOrder = (poll.proposals || []).map(p => p.id).sort((a, b) => a - b)
+		const winnerIndex = poll.winner ? proposalOrder.indexOf(poll.winner.id) : -1
+		// Fake but internally consistent head-to-head numbers: the winner beats every other proposal,
+		// and among the remaining proposals earlier ids beat later ones. Good enough to render a
+		// plausible-looking duel matrix/graph in mock-backend mode; not meant to be mathematically real.
+		const n = proposalOrder.length
+		const duelMatrix = Array.from({ length: n }, () => Array.from({ length: n }, () => 0))
+		for (let i = 0; i < n; i++) {
+			for (let j = 0; j < n; j++) {
+				if (i === j) continue
+				if (i === winnerIndex) duelMatrix[i][j] = 5
+				else if (j === winnerIndex) duelMatrix[i][j] = 3
+				else if (i < j) duelMatrix[i][j] = 4
+				else duelMatrix[i][j] = 2
+			}
+		}
+		return {
+			pollId,
+			pollTitle: poll.title,
+			proposalOrder,
+			duelMatrix,
+			winnerId: poll.winner ? poll.winner.id : null,
+			numBallots: poll.numBallots || 0,
+		}
 	},
 	voterToken: (query, variables = {}) => {
 		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
