@@ -240,4 +240,20 @@ context('Login Test', () => {
 
 	})
 
+	it('Shows a warning when the LIQUIDO backend cannot be reached', function() {
+		// GIVEN the backend is completely unreachable - every GraphQL call fails at the network level,
+		// not with an HTTP error status. root-app.vue's mounted() pings the backend on every page load
+		// (api.pingApi()) specifically to catch this case.
+		cy.intercept("POST", "**/graphql", { forceNetworkError: true }).as("graphqlDown")
+
+		// WHEN the app loads (the frontend's own static assets are still reachable - only the backend
+		// API call fails, which is the realistic case: the site is up, the backend is not)
+		cy.visit("/")
+		cy.wait("@graphqlDown")
+
+		// THEN a warning is shown, instead of the app silently failing or hanging
+		cy.get("#rootPopupModal").should("be.visible")
+		cy.get("#rootPopupModalPrimaryButton").should("be.visible")
+	})
+
 })
