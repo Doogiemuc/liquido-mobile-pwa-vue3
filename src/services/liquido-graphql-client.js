@@ -139,7 +139,7 @@ const JQL_PROPOSAL =  `{ id title description icon status createdAt numSupporter
 const JQL_POLL = `{ id title status createdAt updatedAt votingStartAt votingEndAt userAlreadyVoted numBallots membersCanAddProposals proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `
 // The duelMatrix itself is not fetched here -- Matrix cannot be serialized directly by SmallRye GraphQL,
 // see getPublishedTally() below for the flattened, verifiable version of it.
-const JQL_PUBLISHED_TALLY = `{ pollId proposalOrder duelMatrix winnerId numBallots } `
+const JQL_PUBLISHED_TALLY = `{ pollId proposalOrder duelMatrix winnerId winnerIds numBallots } `
 const JQL_TEAM = `{ id teamName inviteCode ` +
 		`members ${JQL_TEAM_MEMBER} ` +
 		`polls ${JQL_POLL} } `

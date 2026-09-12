@@ -196,26 +196,24 @@ export default {
 		proposalsById() {
 			return Object.fromEntries((this.poll?.proposals || []).map(p => [p.id, p]))
 		},
-		// A genuine Ranked Pairs tie: more than one source with no path between them.
-		// Deliberately independent of poll.winner -- the backend currently still picks one arbitrary
-		// proposal as "the" winner even when there is a tie, which this page does not follow.
+		// A genuine Ranked Pairs tie: more than one undefeated proposal. Backend-authoritative -- read
+		// from tally.winnerIds, which PollService.publishTally() now reports honestly (it no longer
+		// silently picks one of the tied proposals as "the" winner). rankedPairsResult (the client's own
+		// recomputation, below) is only used for the lock-in graph's edges, which aren't published.
 		isTie() {
-			return !!this.rankedPairsResult && this.rankedPairsResult.winners.length > 1
+			return !!this.tally && this.tally.winnerIds.length > 1
 		},
 		winnerIndex() {
-			return this.rankedPairsResult && this.rankedPairsResult.winners.length === 1
-				? this.rankedPairsResult.winners[0]
-				: null
+			if (!this.tally || this.tally.winnerIds.length !== 1) return null
+			return this.tally.proposalOrder.indexOf(this.tally.winnerIds[0])
 		},
 		winnerProposal() {
 			if (this.winnerIndex === null || !this.tally) return undefined
 			return this.proposalsById[this.tally.proposalOrder[this.winnerIndex]]
 		},
 		tiedProposalsList() {
-			if (!this.isTie || !this.tally) return []
-			return this.rankedPairsResult.winners
-				.map(idx => this.proposalsById[this.tally.proposalOrder[idx]])
-				.filter(Boolean)
+			if (!this.isTie) return []
+			return this.tally.winnerIds.map(id => this.proposalsById[id]).filter(Boolean)
 		},
 		pairwiseRows() {
 			if (this.winnerIndex === null || !this.tally) return []
@@ -230,9 +228,9 @@ export default {
 				}))
 		},
 		// The "Mehr details ..." toggle only makes sense once there is a tally with at least one
-		// counted comparison. With zero ballots the matrix would be all zeros -- not worth showing.
+		// counted ballot. With zero ballots the matrix would be all zeros -- not worth showing.
 		showMoreDetailsToggle() {
-			return !!this.tally && !!this.rankedPairsResult && this.rankedPairsResult.winners.length > 0
+			return !!this.tally && this.tally.numBallots > 0
 		},
 		// Layout for the lock-in graph SVG: nodes placed by "layer" (longest path from the winner),
 		// edges trimmed to end at each node's circle rather than its center.
@@ -292,7 +290,7 @@ export default {
 					this.tally = tally
 					this.rankedPairsResult = calcRankedPairsResult(tally.duelMatrix)
 					// Only celebrate a genuine single winner - never for a tie.
-					if (this.rankedPairsResult.winners.length === 1) this.startConfetti()
+					if (tally.winnerIds.length === 1) this.startConfetti()
 				})
 			})
 			.catch(err => log.warn("Cannot load poll/tally for winner page, id=" + this.pollId, err))

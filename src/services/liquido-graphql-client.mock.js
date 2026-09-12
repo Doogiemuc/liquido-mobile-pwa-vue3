@@ -350,6 +350,7 @@ const queryHandlers = {
 			proposalOrder,
 			duelMatrix,
 			winnerId: poll.winner ? poll.winner.id : null,
+			winnerIds: poll.winner ? [poll.winner.id] : [],
 			numBallots: poll.numBallots || 0,
 		}
 	},
