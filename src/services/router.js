@@ -151,6 +151,22 @@ const routes = [
 		}
 	},
 	{
+		path: "/agb",
+		name: "agb",
+		component: () => import("@/views/agb.vue"),
+		meta: {
+			public: true
+		}
+	},
+	{
+		path: "/datenschutz",
+		name: "datenschutz",
+		component: () => import("@/views/datenschutz.vue"),
+		meta: {
+			public: true
+		}
+	},
+	{
 		path: "/404",
 		name: "pageNotFound",
 		component: () => import("@/views/not-found-page.vue"),

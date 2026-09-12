@@ -119,7 +119,13 @@
 				</button>
 			</template>
 		</liquido-footer>
-		
+
+		<nav id="legalLinks" class="legal-links text-center">
+			<RouterLink id="agbLink" :to="{ name: 'agb' }">{{ t('agbLink') }}</RouterLink>
+			<span class="legal-links-separator">&middot;</span>
+			<RouterLink id="datenschutzLink" :to="{ name: 'datenschutz' }">{{ t('datenschutzLink') }}</RouterLink>
+		</nav>
+
 	</div>
 </template>
 
@@ -284,6 +290,20 @@ async function setupPasskey() {
 <style scoped>
 section {
 	margin-top: var(--two);  /* more relaxed space between sections on the team home page */
+}
+
+.legal-links {
+	margin-top: var(--two);
+	font-size: 0.8rem;
+}
+
+.legal-links a {
+	color: var(--secondary);
+}
+
+.legal-links-separator {
+	margin: 0 0.5rem;
+	color: var(--secondary);
 }
 
 .passkey-icon { font-size: 2.5rem; color: var(--primary); flex-shrink: 0; }

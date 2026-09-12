@@ -65,6 +65,9 @@ const page_order = {
 	"showPoll": 13,
 	"addProposal": 14,
 	"castVote": 15,
+	// Legal pages, only linked from the bottom of team-home - not part of the main navigation flow
+	"agb": 20,
+	"datenschutz": 20,
 }
 
 /** Liquido Root App */

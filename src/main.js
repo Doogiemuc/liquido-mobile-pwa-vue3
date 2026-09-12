@@ -36,6 +36,8 @@ const globalTranslations = {
 		No: "No",
 		Cancel: "Cancel",
 		Password: "Password",
+		agbLink: "Terms",
+		datenschutzLink: "Privacy",
 	},
 	de: {
 		HelloWorld: "Hallo Welt!",
@@ -91,6 +93,8 @@ const globalTranslations = {
 		Finished: "Abgeschlossen",  // "Beendet" ?
 		User: "Profil",
 		gotoPolls: "Abstimmungen",  // Link to /polls page  short!
+		agbLink: "AGB",
+		datenschutzLink: "Datenschutz",
 		inviteNewMembers: "Teammitglieder einladen",
 		SwitchTeam: "Team wechseln",   // only shown to users who are in more than one team
 		TeamHome: "Team",
