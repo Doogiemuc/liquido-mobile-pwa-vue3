@@ -59,7 +59,9 @@ const page_order = {
 	"userhome": 9,
 	"team": 10,
 	"polls": 11,
-	"createPoll": 12,
+	"newPoll": 12,
+	"createPoll": 12,   // deprecated old two-step flow, kept reachable by URL - same level as newPoll
+	"editPoll": 13,
 	"showPoll": 13,
 	"addProposal": 14,
 	"castVote": 15,
