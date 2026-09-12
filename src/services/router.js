@@ -151,6 +151,14 @@ const routes = [
 		}
 	},
 	{
+		path: "/impressum",
+		name: "impressum",
+		component: () => import("@/views/impressum.vue"),
+		meta: {
+			public: true
+		}
+	},
+	{
 		path: "/agb",
 		name: "agb",
 		component: () => import("@/views/agb.vue"),

@@ -121,6 +121,8 @@
 		</liquido-footer>
 
 		<nav id="legalLinks" class="legal-links text-center">
+			<RouterLink id="impressumLink" :to="{ name: 'impressum' }">{{ t('impressumLink') }}</RouterLink>
+			<span class="legal-links-separator">&middot;</span>
 			<RouterLink id="agbLink" :to="{ name: 'agb' }">{{ t('agbLink') }}</RouterLink>
 			<span class="legal-links-separator">&middot;</span>
 			<RouterLink id="datenschutzLink" :to="{ name: 'datenschutz' }">{{ t('datenschutzLink') }}</RouterLink>

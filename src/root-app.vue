@@ -66,6 +66,7 @@ const page_order = {
 	"addProposal": 14,
 	"castVote": 15,
 	// Legal pages, only linked from the bottom of team-home - not part of the main navigation flow
+	"impressum": 20,
 	"agb": 20,
 	"datenschutz": 20,
 }

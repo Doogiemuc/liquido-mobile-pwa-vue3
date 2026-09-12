@@ -36,6 +36,7 @@ const globalTranslations = {
 		No: "No",
 		Cancel: "Cancel",
 		Password: "Password",
+		impressumLink: "Legal Notice",
 		agbLink: "Terms",
 		datenschutzLink: "Privacy",
 	},
@@ -93,6 +94,7 @@ const globalTranslations = {
 		Finished: "Abgeschlossen",  // "Beendet" ?
 		User: "Profil",
 		gotoPolls: "Abstimmungen",  // Link to /polls page  short!
+		impressumLink: "Impressum",
 		agbLink: "AGB",
 		datenschutzLink: "Datenschutz",
 		inviteNewMembers: "Teammitglieder einladen",
