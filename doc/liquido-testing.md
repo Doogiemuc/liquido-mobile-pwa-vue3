@@ -92,13 +92,24 @@ of rules and the `data-error-code` convention for error cases.
 
 ### WebAuthn/passkey ceremony in headless tests
 
-A headless test browser has no authenticator. `navigator.credentials.create()` doesn't fail fast
-there either — it just hangs indefinitely instead of rejecting, which used to make `happy-case.cy.js`
-time out on the passkey step. `welcome-chat.vue`'s `setupPasskey()` now checks `window.Cypress`
-(only ever set inside a Cypress run) and short-circuits straight to the same "registration failed"
-path a real ceremony failure already takes, instead of calling the real WebAuthn API. That is why
-the happy-case test can assert the passkey *failure* UI (the retry/"do it later" modal) even
-though passkeys themselves are inherently untestable in an automated browser.
+A headless test browser has no authenticator, and `navigator.credentials.create()` doesn't fail
+fast there either — by default it just hangs indefinitely instead of rejecting. `welcome-chat.vue`'s
+`setupPasskey()` guards against this: whenever `window.Cypress` is set (only true inside a Cypress
+run) **and** no virtual authenticator has been registered, it short-circuits straight to the same
+"registration failed" path a real ceremony failure already takes, instead of calling the real
+WebAuthn API. That is the default for every passkey step except one.
+
+`happy-case.cy.js` exercises **both** outcomes for real, not just the failure path: the admin
+genuinely registers a passkey, the member declines, and later assertions confirm `team-home.vue`'s
+passkey reminder is gone for the admin and still shown for the member. The admin's registration
+works via a **Chrome DevTools Protocol virtual authenticator** — `setupVirtualAuthenticator()` in
+the spec calls `Cypress.automation("remote:debugger:protocol", ...)` to issue `WebAuthn.enable`
+then `WebAuthn.addVirtualAuthenticator` (`protocol: "ctap2"`, `transport: "internal"`,
+`automaticPresenceSimulation: true`), then sets `window.__cypressWebAuthnAvailable = true` on the
+page. That flag is what lets `setupPasskey()`'s guard let the real ceremony through for that one
+step — the resulting credential is genuine (Chrome's own compliant virtual implementation, not a
+faked response), so the backend accepts it exactly like a real device's. Chromium-family browsers
+only (Cypress's bundled Electron qualifies; Firefox does not support this CDP domain at all).
 
 ### Running against an already-deployed instance
 
@@ -117,6 +128,32 @@ never run it against a production instance with real users. `switch-team.cy.js` 
 password-login/forgot-password parts of `login-tests.cy.js` fail against a fresh deploy for the
 same seed-data reason as above: they need `TestDataCreator`'s seeded users, which only exist in a
 database that generator has actually run against.
+
+### Running locally on GISMO, without touching public DNS at all
+
+`liquido.dynv6.net`'s public DNS record has repeatedly gone stale (the FritzBox's DDNS client
+doesn't reliably update it whenever the home connection's public IP rotates). That only breaks
+reaching the site from *outside* GISMO. Claude Code sessions in this project run directly on
+GISMO itself, not via SSH from a laptop, so a local test run has no reason to go anywhere near the
+public internet or its DNS at all:
+
+```bash
+./deploy/test-e2e-local.sh                              # full happy-case.cy.js
+./deploy/test-e2e-local.sh tests/e2e/specs/polly.cy.js  # a specific spec
+```
+
+This still uses `cypress.config.remote.js` (so it exercises the real deployed backend/frontend,
+same as `test:e2e:remote`), but resolves `liquido.dynv6.net` straight to `127.0.0.1` inside an
+unprivileged mount namespace (`unshare -Urm` bind-mounting a private `/etc/hosts` — the real system
+one is never touched), so requests hit Caddy directly on this host with the correct Host/SNI for
+its site block to match. No DNS lookup, no dependency on the FritzBox's DDNS being current.
+
+This is a *local* check only — it says nothing about whether the public internet can actually
+reach GISMO (DNS, FritzBox port-forwarding, and Caddy's real TLS cert all have to work together for
+that). For genuine outside-the-network verification, run the suite from somewhere that is actually
+outside GISMO's own network — e.g. a cloud CI runner, or (for a Claude Code session) a remote-
+isolated agent. The same IPv4-forcing `unshare` technique still applies there, just pointed at the
+real public IP instead of `127.0.0.1`, since that runner's network is genuinely elsewhere.
 
 ### TODO: Tests to implement
 
