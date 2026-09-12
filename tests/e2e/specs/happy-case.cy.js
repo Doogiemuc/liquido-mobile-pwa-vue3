@@ -798,18 +798,20 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get(".winner-proposal").should("be.visible")
 		cy.get(".winner-title").should("be.visible")
 
-		// AND the pairwise breakdown shows the winner against the poll's one other proposal
-		cy.get("#pairwiseComparisonList li").should("have.length", 1)
+		// AND the pairwise breakdown shows the winner against each of the poll's two other proposals
+		// (the admin's two plus the member's own addition, from earlier steps in this poll's editor)
+		cy.get("#pairwiseComparisonList li").should("have.length", 2)
 
 		// WHEN expanding "more details"
 		cy.get("#toggleMoreDetailsButton").scrollIntoView().click()
 
-		// THEN the full duel matrix and the lock-in graph are shown
+		// THEN the full duel matrix and the lock-in graph are shown. Both are well below the fold on
+		// the mobile viewport, and should('be.visible') does not auto-scroll - see CLAUDE.md §3.
 		cy.get("#moreDetailsSection").should("be.visible")
-		cy.get("#duelMatrixTable").should("be.visible")
-		cy.get("#duelMatrixTable td[data-duel-row][data-duel-col]").should("have.length", 4)  // 2x2 matrix
-		cy.get("#rankedPairsGraph").should("be.visible")
-		cy.get("#rankedPairsGraph [data-graph-node-letter]").should("have.length", 2)
+		cy.get("#duelMatrixTable").scrollIntoView().should("be.visible")
+		cy.get("#duelMatrixTable td[data-duel-row][data-duel-col]").should("have.length", 9)  // 3x3 matrix
+		cy.get("#rankedPairsGraph").scrollIntoView().should("be.visible")
+		cy.get("#rankedPairsGraph [data-graph-node-letter]").should("have.length", 3)
 	})
 	
 	/* TODO
