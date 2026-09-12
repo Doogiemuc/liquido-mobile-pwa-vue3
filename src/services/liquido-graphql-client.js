@@ -132,11 +132,11 @@ const graphQlQuery = function(query, variables) {
 
 
 /** Shorthands for JQL return values */
-const JQL_LOGIN_USER = `{ id name email mobilephone picture website hasWebauthn } `
+const JQL_LOGIN_USER = `{ id name email mobilephone picture website hasWebauthn emailVerified } `
 const JQL_USER = `{ id name email mobilephone picture website  } `
 const JQL_TEAM_MEMBER = `{ role joinedAt user ${JQL_USER} } `
 const JQL_PROPOSAL =  `{ id title description icon status createdAt numSupporters likedByCurrentUser createdBy ${JQL_USER} } `   // no "is" before likedByCurrentUser!
-const JQL_POLL = `{ id title status createdAt updatedAt votingStartAt votingEndAt userAlreadyVoted numBallots proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `  //TODO: duelMatrix { data }
+const JQL_POLL = `{ id title status createdAt updatedAt votingStartAt votingEndAt userAlreadyVoted numBallots membersCanAddProposals proposals ${JQL_PROPOSAL} winner ${JQL_PROPOSAL}  } `  //TODO: duelMatrix { data }
 const JQL_TEAM = `{ id teamName inviteCode ` +
 		`members ${JQL_TEAM_MEMBER} ` +
 		`polls ${JQL_POLL} } `
@@ -685,9 +685,9 @@ let graphQlApi = {
 	 * API calls against backend that need to be authenticated with a JWT
 	 **********************************************************************/
 
-	async createPoll(pollTitle) {
-		let graphQL = `mutation createPoll($title: String!) { createPoll(title: $title) ${JQL.POLL} }`
-		return graphQlQuery(graphQL, { title: pollTitle })
+	async createPoll(pollTitle, membersCanAddProposals) {
+		let graphQL = `mutation createPoll($title: String!, $membersCanAddProposals: Boolean) { createPoll(title: $title, membersCanAddProposals: $membersCanAddProposals) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { title: pollTitle, membersCanAddProposals })
 			.then(res => {
 				let poll = res.data.createPoll
 				this.pollsCache.put("polls/"+poll.id, poll)
@@ -756,6 +756,47 @@ let graphQlApi = {
 	},
 
 	/**
+	 * Edit your own proposal, as long as the poll has not started yet.
+	 * Will update the poll in pollsCache.
+	 *
+	 * @param {String} pollId poll ID
+	 * @param {String} proposalId the proposal to edit. MUST be part of that poll, and created by the caller.
+	 * @param {String} title new title
+	 * @param {String} description new description
+	 * @param {String} icon name of fontawesome icon (without any "fa-" prefix. Just the name)
+	 * @returns {Object} the updated poll
+	 */
+	async updateProposal(pollId, proposalId, title, description, icon) {
+		let graphQL = `mutation updateProposal($pollId: BigInteger!, $proposalId: BigInteger!, $title: String!, $description: String!, $icon: String!) { updateProposal(pollId: $pollId, proposalId: $proposalId, title: $title, description: $description, icon: $icon) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId), proposalId: Number(proposalId), title, description, icon })
+			.then(res => {
+				let poll = res.data.updateProposal
+				this.pollsCache.put("polls/"+poll.id, poll)
+				console.debug("Updated proposal in poll:", poll)
+				return poll
+			})
+	},
+
+	/**
+	 * Delete a proposal from a poll. Admin only, and only while the poll has not started.
+	 * Will update the poll in pollsCache.
+	 *
+	 * @param {String} pollId poll ID
+	 * @param {String} proposalId the proposal to delete. MUST be part of that poll.
+	 * @returns {Object} the updated poll, without that proposal
+	 */
+	async deleteProposal(pollId, proposalId) {
+		let graphQL = `mutation deleteProposal($pollId: BigInteger!, $proposalId: BigInteger!) { deleteProposal(pollId: $pollId, proposalId: $proposalId) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId), proposalId: Number(proposalId) })
+			.then(res => {
+				let poll = res.data.deleteProposal
+				this.pollsCache.put("polls/"+poll.id, poll)
+				console.debug("Deleted proposal from poll:", poll)
+				return poll
+			})
+	},
+
+	/**
 	 * Like ("support") a proposal in a poll.
 	 * Will update the poll in pollsCache and notify listeners POLL_LOADED
 	 * 
@@ -775,9 +816,9 @@ let graphQlApi = {
 			})
 	},
 
-	async startVotingPhase(pollId) {
-		let graphQL = `mutation startVotingPhase($pollId: BigInteger!) { startVotingPhase(pollId: $pollId) ${JQL.POLL} }`
-		return graphQlQuery(graphQL, { pollId: Number(pollId) })
+	async startVotingPhase(pollId, durationInDays) {
+		let graphQL = `mutation startVotingPhase($pollId: BigInteger!, $durationInDays: Int) { startVotingPhase(pollId: $pollId, durationInDays: $durationInDays) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId), durationInDays })
 			.then(res => {
 				let poll = res.data.startVotingPhase
 				//TODO: invalidate cache for pollId

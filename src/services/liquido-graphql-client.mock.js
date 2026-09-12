@@ -149,7 +149,7 @@ const mockErrorResponse = err => {
 
 const detectOperation = query => {
 	const operations = [
-		"createNewTeam", "joinTeam", "createPoll", "addProposal", "likeProposal", "startVotingPhase",
+		"createNewTeam", "joinTeam", "createPoll", "addProposal", "updateProposal", "deleteProposal", "likeProposal", "startVotingPhase",
 		"finishVotingPhase", "castVote", "loginWithEmailPassword", "googleOneTapLogin", "loginWithAuthToken",
 		"requestPasswordReset", "resetPassword", "requestEmailLoginLink", "teamForInviteCode", "loginWithJwt",
 		"devLogin", "authToken", "voterToken", "verifyBallot", "myBallot", "polls", "poll", "team", "ping",
@@ -425,6 +425,7 @@ const mutationHandlers = {
 	},
 	createPoll: (query, variables = {}) => {
 		const title = get(variables, "title", argFromQuery(query, "title", "New Mock Poll"))
+		const membersCanAddProposals = get(variables, "membersCanAddProposals", argFromQuery(query, "membersCanAddProposals", false))
 		const poll = {
 			id: mockState.nextPollId++,
 			title,
@@ -434,6 +435,7 @@ const mutationHandlers = {
 			votingStartAt: null,
 			votingEndAt: null,
 			userAlreadyVoted: false,
+			membersCanAddProposals,
 			proposals: [],
 			winner: null,
 		}
@@ -459,6 +461,28 @@ const mutationHandlers = {
 		poll.updatedAt = nowIso()
 		return deepClone(poll)
 	},
+	updateProposal: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
+		const proposalId = asInt(get(variables, "proposalId", argFromQuery(query, "proposalId", "-1")))
+		const poll = findPoll(pollId)
+		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
+		const proposal = (poll.proposals || []).find(p => p.id === proposalId)
+		if (!proposal) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Proposal ${proposalId} not found`)
+		proposal.title = get(variables, "title", argFromQuery(query, "title", proposal.title))
+		proposal.description = get(variables, "description", argFromQuery(query, "description", proposal.description))
+		proposal.icon = get(variables, "icon", argFromQuery(query, "icon", proposal.icon))
+		poll.updatedAt = nowIso()
+		return deepClone(poll)
+	},
+	deleteProposal: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
+		const proposalId = asInt(get(variables, "proposalId", argFromQuery(query, "proposalId", "-1")))
+		const poll = findPoll(pollId)
+		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
+		poll.proposals = (poll.proposals || []).filter(p => p.id !== proposalId)
+		poll.updatedAt = nowIso()
+		return deepClone(poll)
+	},
 	likeProposal: (query, variables = {}) => {
 		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
 		const proposalId = asInt(get(variables, "proposalId", argFromQuery(query, "proposalId", "-1")))
@@ -473,10 +497,14 @@ const mutationHandlers = {
 	},
 	startVotingPhase: (query, variables = {}) => {
 		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
+		const durationInDays = asInt(get(variables, "durationInDays", argFromQuery(query, "durationInDays", "7")))
 		const poll = findPoll(pollId)
 		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
 		poll.status = "VOTING"
 		poll.votingStartAt = nowIso()
+		const end = new Date()
+		end.setDate(end.getDate() + (durationInDays || 7))
+		poll.votingEndAt = end.toISOString()
 		poll.updatedAt = nowIso()
 		;(poll.proposals || []).forEach(p => {
 			if (p.status === "ELABORATION") p.status = "VOTING"
