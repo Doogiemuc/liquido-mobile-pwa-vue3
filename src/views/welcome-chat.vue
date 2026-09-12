@@ -838,11 +838,14 @@ export default {
 			this.FLOW.SetupPasskeyClicked = true
 			this.FLOW.SetupPasskeySuccessfull = false
 			if (!this.passkeyLabel) this.passkeyLabel = this.user.name + "-" + this.$t('Passkey')
-			// Passkeys cannot be driven from an automated test (that's the whole point of them).
-			// A headless Cypress browser has no authenticator, and navigator.credentials.create()
-			// just hangs instead of failing fast, so take the same "failed" path a real ceremony
-			// failure would take.
-			const registerPromise = window.Cypress
+			// Passkeys can't be driven from an automated test by clicking through a real ceremony -
+			// that's the whole point of them. A headless Cypress browser has no authenticator, and
+			// navigator.credentials.create() just hangs instead of failing fast, so by default take
+			// the same "failed" path a real ceremony failure would take. The one exception: a spec
+			// that has registered a Chrome DevTools Protocol virtual authenticator (see
+			// setupVirtualAuthenticator() in happy-case.cy.js) sets window.__cypressWebAuthnAvailable
+			// first, in which case the real call below genuinely succeeds against that authenticator.
+			const registerPromise = (window.Cypress && !window.__cypressWebAuthnAvailable)
 				? Promise.reject(new Error("Passkey registration is not testable in Cypress"))
 				: webauthnService.registerWebauthn(this.passkeyLabel)
 			registerPromise

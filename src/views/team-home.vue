@@ -16,8 +16,8 @@
 			</div>
 		</section>
 
-		<!-- Passkey info box with fingerprint icon on the left -->
-		<section>
+		<!-- Passkey info box with fingerprint icon on the left. Hidden once the user has one. -->
+		<section v-if="!userHasWebauthn">
 			<div class="alert liquido-info alert-dismissible fade show" role="alert">
 				<h2>Mache LIQUIDO sicher!</h2>
 				<p>Melde dich in Zukunft ganz einfach mit Face-ID oder Fingerabdruck an.</p>
@@ -143,7 +143,7 @@ const team = ref({})
 
 const currentUserName = api.getCachedUser()?.name
 const userIsAdmin = api.isAdmin()
-const userHasWebauthn = api.getCachedUser()?.hasWebauthn
+const userHasWebauthn = ref(api.getCachedUser()?.hasWebauthn)
 const showInvite = ref(false)
 const qrCodeDataUrl = ref("")
 
@@ -269,6 +269,7 @@ async function setupPasskey() {
 	if (!passkeyLabel.value) passkeyLabel.value = currentUserName.value + "-Passkey"
 	webauthnService.registerWebauthn(passkeyLabel.value).then(() => {
 		api.getCachedUser().hasWebauthn = true
+		userHasWebauthn.value = true
 		console.log("setupPasskey SUCCESSFULL")
 	}).catch(err => {
 		//this.$root?.$refs?.mobileDebugLogRef?.info("setupPasskey: ERROR")

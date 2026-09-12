@@ -32,7 +32,40 @@ let fix = {}  // Individual test fixtures for this test run. Every run can have 
 const SAVED_ROW    = '[data-row-state="saved"]'                        // an existing proposal, read only
 const OPENED_ROW   = '[data-proposal-id][data-row-state="editing"]'    // an existing proposal, opened for editing
 const NEW_ROW      = '.proposal-row:not([data-proposal-id])'           // the empty "add another" row
-	
+
+/**
+ * Register a Chrome DevTools Protocol virtual WebAuthn authenticator, so that a passkey
+ * registration ceremony can actually complete for real in headless Cypress instead of just
+ * failing/hanging - there is no physical authenticator and no UI to click through, but Chrome's
+ * WebAuthn testing API can act as one. Chromium-family browsers only.
+ * https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn/
+ *
+ * Call this once, on the currently-loaded page, before the passkey ceremony you want to actually
+ * succeed. It also sets window.__cypressWebAuthnAvailable, which welcome-chat.vue's setupPasskey()
+ * checks to decide whether to attempt the real ceremony at all - without a virtual authenticator
+ * registered, navigator.credentials.create() just hangs in headless Cypress, so every OTHER
+ * passkey step in this spec deliberately does NOT call this, and keeps taking the "declined" path.
+ * A page reload (cy.visit) resets the flag along with the rest of the JS context, so nothing needs
+ * to be undone for a later step to go back to the declined path.
+ */
+function setupVirtualAuthenticator() {
+	cy.then(() => Cypress.automation("remote:debugger:protocol", { command: "WebAuthn.enable", params: {} }))
+	cy.then(() => Cypress.automation("remote:debugger:protocol", {
+		command: "WebAuthn.addVirtualAuthenticator",
+		params: {
+			options: {
+				protocol: "ctap2",
+				transport: "internal",              // simulates a platform authenticator (Face-ID/fingerprint), matching LIQUIDO's own UI text
+				hasResidentKey: true,
+				hasUserVerification: true,
+				isUserVerified: true,
+				automaticPresenceSimulation: true,   // no manual "tap" step needed - completes immediately like a real fingerprint would
+			},
+		},
+	}))
+	cy.window({ log: false }).then(win => { win.__cypressWebAuthnAvailable = true })
+}
+
 /* When one of test steps fails, then abort the whole test run. */
 afterEach(function() {
   if (this.currentTest.state === 'failed') {
@@ -131,27 +164,21 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 			expect(fix.adminJWT, "Expected to find a JWT in localStorage!").to.have.length.of.at.least(10)
 		})
 		
-		// ===== Test passkey registration =====
+		// ===== Test passkey registration: the admin actually registers one (see below for the
+		// member, who declines instead - the happy case exercises both variants) =====
 		// GIVEN the setupPasskeyCard is shown
 		cy.get('#setupPasskeyCard').should('be.visible')
-		
-		//  WHEN test-user tries to register his passkey
+
+		// AND a virtual authenticator is available, so this ceremony can genuinely succeed
+		setupVirtualAuthenticator()
+
+		//  WHEN test-user registers his passkey
 		cy.get('#passkeyInput').should('be.visible').clear().type('My Test Passkey')
-		// AND we intercept the webauthn register request to make it fail    => no need to intercept. Will fail anyway :-)
-		//cy.intercept('POST', '**/webauthn/register', {
-		//	statusCode: 500,
-		//	body: { error: 'Failed intentionally in test' }
-		//})		
 		cy.get('#setupPasskeyButton').should('be.visible').click()
-				
-		// THEN the passkey info modal is shown
-		cy.get('#rootPopupModal').should('be.visible')
-		
-		// WHEN user clicks the secondary button ("Try again later") 
-		cy.get('#rootPopupModalSecondaryButton').click()
-		
-		// THEN the modal is closed
+
+		// THEN it succeeds: no "Try again later" modal, a green checkmark on the button
 		cy.get('#rootPopupModal').should('not.be.visible')
+		cy.get('#setupPasskeyButton .fa-check').should('be.visible')
 
 		//  AND passkey label input is disabled
 		cy.get('#passkeyInput').should('be.disabled')
@@ -203,6 +230,10 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		// there - with the inline "send me a new one" link rather than a button.
 		cy.get("#verifyEmailReminder").scrollIntoView().should("be.visible")
 		cy.get("#resendVerificationMailButton").should("exist")
+
+		// AND, having genuinely registered a passkey earlier, the passkey reminder is gone - the
+		// positive counterpart to the "should exist" check below for the member, who declined.
+		cy.get("#passkeyButton").should("not.exist")
 
 		// AND his avatar image is loaded successfully
 		//TODO: needs to be fixed with new teams homepage
@@ -374,6 +405,10 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 
 		// AND he joined as an ordinary MEMBER, not as an admin: the admin-only section is not there
 		cy.get("#adminSettingsSection").should("not.exist")
+
+		// AND, having just declined passkey setup, the reminder is still shown - the negative
+		// counterpart to the "should not exist" check above for the admin, who registered one.
+		cy.get("#passkeyButton").should("exist")
 
 		cy.should(() => {
 			// AND a JWT was put into the browser's localStorage
