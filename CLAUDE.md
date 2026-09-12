@@ -25,11 +25,14 @@ and the winner is the one that beats each rival in a head-to-head majority. The 
 and the reason the product exists: the option **most people can live with** wins, even when two loud
 camps would otherwise deadlock.
 
-**Ballots are anonymous, and provably so.** The backend never links a ballot to a user. It stores a
-`RightToVote` derived from `sha3_256(email + serverSalt)`, and the ballot is FK'd only to that hash.
-A voter gets a checksum back and can verify their own ballot was counted, without anyone being able
-to work backwards to who they are. This is why the email address is treated as voter identity, and
-why anything touching it deserves care.
+**Ballots are anonymous, and provably so.** The backend never links a ballot to a user. A
+`RightToVote` is derived **per team** as `HMAC-SHA256(secret, email | teamId)`, and a ballot stores
+neither that nor any user reference — only a **per-poll** pseudonym derived from it,
+`HMAC-SHA256(secret, hashedVoterInfo | pollId)`, with no foreign key back. So one voter's ballots in
+ten polls carry ten unrelated values. A voter gets a checksum back and can verify their own ballot
+was counted, without anyone being able to work backwards to who they are. This is why the email
+address is treated as voter identity, and why anything touching it deserves care. The authoritative
+description is the backend whitepaper's §9.3 (three-layer anonymity architecture).
 
 ### The lifecycle, in human terms
 
@@ -262,8 +265,9 @@ route swallows them.
 | `/polls/:pollId/edit` | editPoll | 🔒 | same editor, existing poll |
 | `/polls/:pollId` | showPoll | 🔒 | read-only poll |
 | `/polls/:pollId/castVote` | castVote | 🔒 | rank + submit ballot |
-| `/polls/:pollId/winner` | pollWinner | 🔒 | |
+| `/polls/:pollId/winner` | pollWinner | 🔒 | winner, pairwise breakdown, duel matrix, lock-in graph |
 | `/polly/create` | createPolly | ✅ | separate, simpler poll type |
+| `/impressum` `/agb` `/datenschutz` | impressum, agb, datenschutz | ✅ | German legal pages, linked only from the bottom of `team-home.vue` |
 | `/devLogin` `/_design-overview` | | | **development mode only** |
 
 `/polls/create` (`poll-create.vue`) and `/polls/:pollId/add` (`proposal-add.vue`) are the **old**

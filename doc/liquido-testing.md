@@ -79,6 +79,11 @@ The e2e suite uses **Cypress** (not Playwright — this section used to say othe
    (`multiteammember4711@liquido.vote` in both `multiTeamA4711` and `multiTeamB4711`) from the
    backend's `TestDataCreator` — fails against a bare/freshly-deployed backend that was never seeded.
  * `polly.cy.js` — the Polly flow (the simpler, teamless, passkey-only poll type).
+ * `no-webauthn-support.cy.js` — a device with **no** WebAuthn support at all must still be able to
+   register password-only. Deletes `window.PublicKeyCredential` before the page loads, so
+   `browserSupportsWebAuthn()` genuinely returns false rather than stubbing our own code, and
+   asserts the passkey step is never offered (as opposed to offered-and-declined, which
+   `happy-case.cy.js` covers).
  * `user-home-tests.cy.js.FIXME` — disabled (the `.FIXME` extension excludes it from
    `specPattern`), not currently run.
 
@@ -155,10 +160,21 @@ outside GISMO's own network — e.g. a cloud CI runner, or (for a Claude Code se
 isolated agent. The same IPv4-forcing `unshare` technique still applies there, just pointed at the
 real public IP instead of `127.0.0.1`, since that runner's network is genuinely elsewhere.
 
+### Negative test cases
+
+Both of the negative cases this section used to list as TODO now exist:
+
+ * **Cannot reach backend** — `login-tests.cy.js`, last test. `cy.intercept` forces every GraphQL
+   call to fail at the *network* level (not with an HTTP error status), which is what `root-app.vue`'s
+   `api.pingApi()` on mount exists to catch, and asserts the warning modal actually appears.
+ * **Device does not support Passkey** — `no-webauthn-support.cy.js`, see the spec list above.
+
 ### TODO: Tests to implement
 
- * Negative test cases
-   * Cannot reach backend
-   * Device does not support Passkey (`webauthnService.isWebAuthnSupported()` returning false —
-     different from the ceremony itself failing, which `happy-case.cy.js` already covers)
+ * A genuine Ranked Pairs **tie** (more than one undefeated proposal) on the winner page. The
+   backend reports it via `publishedTally.winnerIds`, and `poll-winner.vue` renders an explanation
+   instead of a winner, but no e2e spec reaches that state: the happy case casts a single ballot, and
+   a tie needs two voters who split 1:1 on one pair while both beating a third proposal. The pure
+   algorithm side is covered by `tests/unit/ranked-pairs.spec.js` and the backend's
+   `PublishedTallyTest`.
 
