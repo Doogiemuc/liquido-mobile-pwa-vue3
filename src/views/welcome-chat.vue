@@ -93,6 +93,19 @@
 					@keyup.enter="userNameSubmit()"
 					@blur="userNameSubmit()"
 				/>
+
+				<!--
+					The second way back in. #welcomeLoginButton catches a returning visitor on arrival,
+					top right; this catches the one who scrolled straight past it and only realises here -
+					asked for a nickname - that they do not need to register at all. A real button, not a
+					link inside a message: an @click inside a v-html string never binds.
+				-->
+				<p v-if="showLoginButton" class="login-in-chat">
+					{{ $t("alreadyRegistered") }}
+					<button id="welcomeLoginInChat" class="login-in-chat-link" type="button" @click="goToLogin">
+						{{ $t("Login") }}
+					</button>
+				</p>
 			</div>
 		</div>
 
@@ -478,6 +491,7 @@ export default {
 				welcome:
 					"<p>Here you do not just vote for <em>one</em> proposal. Everyone on your team sorts the proposals "+
 					"by their own preference, and a clever algorithm works out which proposal has the broadest support.</p>",
+				alreadyRegistered: "Already have an account?",
 				whatsYourName: "How shall I call you?",
 				createOrJoin: "Do you want to <em>join an existing team</em> with an invitation code or <em>create a new team</em>?",
 				joinTeamButton: "Join a team",
@@ -498,6 +512,8 @@ export default {
 				hasInviteCodeForTeam: "Hey, du wurdest von <b>{adminName}</b> in das Team <b>{teamName}</b> eingeladen.",
 				whatsYourName: "Darf ich fragen wie du heißt?",
 				yourNickname: "Dein Spitzname",
+				// Offered under the nickname field, in the chat bot's own "du" voice.
+				alreadyRegistered: "Schon dabei?",
 				userNameInvalid: "Bitte mindestens " + config.usernameMinLength + " Zeichen!",
 				niceToMeetYou: "Hallo <b>{nickname}</b>, freut mich, dich kennen zu lernen!",
 
@@ -1397,6 +1413,45 @@ export default {
 .hero-login:focus-visible {
 	outline: 2px solid var(--primary);
 	outline-offset: -4px;
+	border-radius: var(--liquido-border-radius);
+}
+
+/*
+ * The Login's second home, under the nickname field. The top-right one catches a returning visitor
+ * on arrival; this one catches them at the moment of commitment, when the chat asks for a nickname
+ * and they realise they already have an account.
+ *
+ * It stays quieter than the top-right one and quieter still than the field above it: the nickname
+ * IS the primary action in this card, and a returning visitor is the rare case. Padding on the link
+ * with matching negative margins buys a thumb-sized hit area without moving the text, which a bare
+ * one-line link would not give.
+ */
+.login-in-chat {
+	margin: 0;
+	text-align: right;
+	font-size: var(--font-size-small);
+	color: var(--secondary);
+}
+
+.login-in-chat-link {
+	display: inline-block;
+	padding: 0.4rem 0.25rem;
+	margin: -0.4rem -0.25rem;
+	border: 0;
+	background: none;
+	font: inherit;
+	color: var(--primary);
+	text-decoration: underline;
+	text-decoration-color: var(--light-border);
+	text-underline-offset: 3px;
+	cursor: pointer;
+}
+.login-in-chat-link:hover {
+	text-decoration-color: var(--primary);
+}
+.login-in-chat-link:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: 0;
 	border-radius: var(--liquido-border-radius);
 }
 

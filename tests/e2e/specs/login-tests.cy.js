@@ -86,6 +86,42 @@ context('Login Test', () => {
 		cy.get("#login-page")
 	})
 
+	it('The chat offers the Login a second time, under the nickname field', function() {
+		//GIVEN an anonymous visitor who scrolled past the top-right Login and reached the nickname step
+		cy.visit("/")
+		// Wait for the card to actually OPEN, not just to exist: until FLOW.NicknameInput it carries
+		// .collapse-max-height (display:none), and .scrollIntoView() on a display:none element is a
+		// no-op that the retried should() below would never redo.
+		cy.get("#usernameCard", { timeout: 8000 }).should("not.have.css", "display", "none")
+
+		//THEN the chat offers the way back in a second time, right there in the card
+		cy.get("#welcomeLoginInChat")
+			.scrollIntoView()
+			.should("be.visible")
+			.and($link => {
+				const card = Cypress.$("#usernameCard")[0].getBoundingClientRect()
+				const link = $link[0].getBoundingClientRect()
+				expect(link.top, "sits inside the nickname card").to.be.at.least(card.top)
+				expect(link.bottom, "sits inside the nickname card").to.be.at.most(card.bottom)
+			})
+
+		//AND it reaches the login page too
+		cy.get("#welcomeLoginInChat").click()
+		cy.get("#login-page")
+	})
+
+	it('Both Login offers step aside once the visitor has committed to registering', function() {
+		//GIVEN an anonymous visitor on the welcome page
+		cy.visit("/")
+
+		//WHEN they give a nickname, and are therefore registering rather than returning
+		cy.get("#userNameInput", { timeout: 8000 }).type("Returning Visitor").type("{enter}")
+
+		//THEN neither offer is in the way any more
+		cy.get("#welcomeLoginButton").should("not.exist")
+		cy.get("#welcomeLoginInChat").should("not.exist")
+	})
+
 	it('Scrolling down flows the LIQUIDO mark up into the header', function() {
 		//GIVEN the welcome page, where the mark starts out on the hero and not in the header
 		cy.visit("/")
