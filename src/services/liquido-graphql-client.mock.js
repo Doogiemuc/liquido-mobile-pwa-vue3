@@ -44,15 +44,81 @@ const createState = () => {
 		console.debug("MOCK: created new mockstate")
 	})
 
+	const nextPollId = Math.max(0, ...pollIds) + 1
+	const nextProposalId = Math.max(0, ...proposalIds) + 1
+
 	return {
-		team: seed.team,
+		// A mock user can be a member of SEVERAL teams, so the mock holds a list and remembers which
+		// one is current - exactly the shape the real backend has. `teams[currentTeamIndex]` is what
+		// used to be the single `mockState.team`; reach for it through currentTeam().
+		teams: [seed.team, createSecondTeam(seed, nextPollId, nextProposalId)],
+		currentTeamIndex: 0,
 		//currentUser: seed.user,
 		//jwt: seed.jwt,
 		issuedAuthTokensByMobile: {},
 		voterTokensByPollAndUser: {},
 		ballotsByPollAndUser: {},
-		nextPollId: Math.max(0, ...pollIds) + 1,
-		nextProposalId: Math.max(0, ...proposalIds) + 1,
+		nextPollId: nextPollId + 1,          // +1 for the poll createSecondTeam() just used
+		nextProposalId: nextProposalId + 3,  // +3 for its three proposals
+	}
+}
+
+/**
+ * A SECOND team, so that the team switcher can be exercised with a mocked backend.
+ *
+ * It deliberately shares the seed team's admin (who is the default mock login) and two of its
+ * members, because the switcher only appears for a user who is in more than one team. The rest of
+ * the seed team's members stay in one team, which keeps the "single-team user sees no switcher"
+ * case reachable too.
+ *
+ * Derived from the seed rather than written into teamUserJwt.json so that the two teams cannot drift
+ * apart: the shared people here are by construction the very same user objects.
+ */
+const createSecondTeam = (seed, pollId, firstProposalId) => {
+	const userByEmail = email => (seed.team.members || []).find(m => m.user?.email === email)?.user
+
+	// The roles are swapped round on purpose. testadmin4711 is the ADMIN of the first team but only a
+	// MEMBER here, because a user is not automatically an admin of every team they belong to - and the
+	// team page hides its admin-only parts accordingly. Switching should visibly change that.
+	const roles = [
+		["testmember4711@liquido.vote", "ADMIN"],
+		["testadmin4711@liquido.vote", "MEMBER"],
+		["membr47110@liquido.vote", "MEMBER"],
+	]
+	const members = roles
+		.map(([email, role]) => ({ role, user: userByEmail(email) }))
+		.filter(m => m.user)
+		.map(m => ({ role: m.role, joinedAt: nowIso(), user: deepClone(m.user) }))
+
+	const proposal = (offset, title, description, icon) => ({
+		id: firstProposalId + offset,
+		title, description, icon,
+		status: "PROPOSAL",
+		createdAt: nowIso(),
+		numSupporters: 0,
+		likedByCurrentUser: false,
+		createdBy: deepClone(members[0].user),
+	})
+
+	return {
+		id: seed.team.id + 1,
+		teamName: "Second Mock Team",
+		inviteCode: "SECOND01",
+		members,
+		polls: [{
+			id: pollId,
+			title: "Where should the second team meet?",
+			status: "ELABORATION",
+			createdAt: nowIso(),
+			updatedAt: nowIso(),
+			userAlreadyVoted: false,
+			winner: null,
+			proposals: [
+				proposal(0, "In the park", "Fresh air, and free.", "tree"),
+				proposal(1, "At the office", "Boring, but it always works.", "building"),
+				proposal(2, "Online", "Nobody has to travel.", "video"),
+			],
+		}],
 	}
 }
 
@@ -83,8 +149,15 @@ const loadMockState = () => {
 		if (typeof window !== 'undefined' && window.sessionStorage) {
 			const saved = window.sessionStorage.getItem(MOCK_STATE_KEY)
 			if (saved) {
+				const state = JSON.parse(saved)
+				// A state saved before the mock grew a team LIST has a single `team` and no `teams`.
+				// Such a state would break every currentTeam() call, so start over instead.
+				if (!Array.isArray(state.teams)) {
+					console.log("MOCK: discarding mock state from an older schema")
+					return createState()
+				}
 				console.log("MOCK: loaded mock state from sessionStorage")
-				return JSON.parse(saved)
+				return state
 			}
 		}
 	} catch (e) {
@@ -148,7 +221,12 @@ const mockErrorResponse = err => {
 }
 
 const detectOperation = query => {
+	// ORDER MATTERS: the first name found anywhere in the query string wins, and the query string
+	// includes the whole result selection. So an operation whose result mentions "team" or "polls"
+	// - which every login-shaped one does - must be listed BEFORE those generic names, or it gets
+	// misrouted to them. That is why switchTeam sits at the very front.
 	const operations = [
+		"switchTeam",
 		"createNewTeam", "joinTeam", "createPoll", "addProposal", "updateProposal", "deleteProposal", "likeProposal", "startVotingPhase",
 		"finishVotingPhase", "castVote", "loginWithEmailPassword", "googleOneTapLogin", "loginWithAuthToken",
 		"requestPasswordReset", "resetPassword", "requestEmailLoginLink", "teamForInviteCode", "loginWithJwt",
@@ -162,10 +240,27 @@ const detectOperation = query => {
 	return null
 }
 
-const findMemberByEmail = email => (mockState.team.members || []).find(m => m.user?.email === email)
-const findMemberByMobile = mobile => (mockState.team.members || []).find(m => m.user?.mobilephone === mobile)
-const findMemberByUserId = userId => (mockState.team.members || []).find(m => String(m.user?.id) === String(userId))
-const findPoll = pollId => (mockState.team.polls || []).find(p => p.id === pollId)
+/** The team the mock session is currently scoped to. This replaced the old single mockState.team. */
+const currentTeam = () => mockState.teams[mockState.currentTeamIndex]
+
+/** Every team the given email is a member (or admin) of - the mock's TeamMemberEntity.findTeamsByMember. */
+const teamsOfMember = email =>
+	(mockState.teams || []).filter(t => (t.members || []).some(m => m.user?.email === email))
+
+/**
+ * Members are looked up across ALL teams, not just the current one: a user who belongs only to the
+ * second team must still be able to log in. Prefer a hit in the current team so that "who am I"
+ * stays stable while a session is scoped somewhere.
+ */
+const findMemberIn = (team, predicate) => (team?.members || []).find(predicate)
+const findMemberAnywhere = predicate =>
+	findMemberIn(currentTeam(), predicate) ||
+	(mockState.teams || []).flatMap(t => t.members || []).find(predicate)
+
+const findMemberByEmail = email => findMemberAnywhere(m => m.user?.email === email)
+const findMemberByMobile = mobile => findMemberAnywhere(m => m.user?.mobilephone === mobile)
+const findMemberByUserId = userId => findMemberAnywhere(m => String(m.user?.id) === String(userId))
+const findPoll = pollId => (currentTeam().polls || []).find(p => p.id === pollId)
 
 const jwtFromAuthHeader = () => {
 	const authHeader = axios.defaults.headers.common.Authorization || ""
@@ -191,30 +286,53 @@ const currentUserOrThrow = () => {
  * Central login method for mock backend.
  * Simulates the complete login logic that happens in the real graphQlApi.login() method.
  * This sets up the mock state properly so that subsequent API calls work correctly.
- * 
+ *
+ * Mirrors the real JwtTokenUtils.doLoginInternal(): the session is scoped to ONE team, which is the
+ * requested one if given, otherwise the team the session is already in when the user belongs to it
+ * (the mock's stand-in for lastTeamId), otherwise their first team.
+ *
  * @param {String} email email of the user to log in
- * @returns {Object} login result { team, user, jwt } ready to be passed to real graphQlApi.login()
- * @throws MockLiquidoError if email is not found
+ * @param {Number} teamId (optional) pin the session to this team of the user
+ * @returns {Object} login result { team, user, jwt, teams } ready to be passed to real graphQlApi.login()
+ * @throws MockLiquidoError if email is not found, or is not a member of teamId
  */
-const loginMock = email => {
+const loginMock = (email, teamId) => {
 	const member = findMemberByEmail(email)
 	if (!member) {
 		rejectLiquido(LiquidoExceptionCodes.UNAUTHORIZED, "Cannot mockLogin: user email not found: " + email)
 	}
 
 	const user = member.user
+	const usersTeams = teamsOfMember(user.email)
+	if (usersTeams.length === 0) {
+		rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_USER_NOT_MEMBER_OF_TEAM, "Mock user is not member of any team")
+	}
+
+	let team
+	if (teamId != null) {
+		team = usersTeams.find(t => t.id === teamId)
+		if (!team) {
+			rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_USER_NOT_MEMBER_OF_TEAM,
+				`Mock user <${user.email}> is not a member of team ${teamId}`)
+		}
+	} else {
+		team = usersTeams.find(t => t.id === currentTeam().id) || usersTeams[0]
+	}
+	mockState.currentTeamIndex = mockState.teams.indexOf(team)
 
 	// Simulate the cache initialization that happens in graphQlApi.login()
 	mockState.currentUser = deepClone(user)
 	mockState.jwt = `mock-jwt-${user.id}`
 	saveMockState(mockState)
 
-	console.log("Mock login successful for <" + user.email + "> into team '" + mockState.team.teamName + "'")
+	console.log("Mock login successful for <" + user.email + "> into team '" + team.teamName + "'")
 
 	return {
-		team: deepClone(mockState.team),
+		team: deepClone(team),
 		user: deepClone(user),
 		jwt: mockState.jwt,
+		// ALL teams of this user, so the frontend can offer the team switcher.
+		teams: usersTeams.map(t => ({ id: t.id, teamName: t.teamName })),
 	}
 }
 
@@ -248,7 +366,7 @@ const enrichTeamForCurrentUser = team => ({
 	
 const queryHandlers = {
 	ping: () => "MOCK responses are active!",
-	team: () => enrichTeamForCurrentUser(mockState.team),
+	team: () => enrichTeamForCurrentUser(currentTeam()),
 	loginWithJwt: () => {
 		console.log("========> MOCKED loginWithJwt")
 		const member = findMemberByJwt(jwtFromAuthHeader())
@@ -315,9 +433,13 @@ const queryHandlers = {
 		if (!findMemberByEmail(email)) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_EMAIL_NOT_FOUND, "Unknown user for devLogin")
 		}
-		return loginMock(email)
+		// Not sent by the real client today (devLogin only takes email + token), but accepted here
+		// defensively in case that ever changes - harmless when absent, since loginMock(email,
+		// undefined) just falls back to its normal default-team resolution.
+		const teamId = get(variables, "teamId", argFromQuery(query, "teamId"))
+		return loginMock(email, teamId != null && teamId !== "null" ? asInt(teamId) : undefined)
 	},
-	polls: () => (mockState.team.polls || []).map(enrichPollForCurrentUser),
+	polls: () => (currentTeam().polls || []).map(enrichPollForCurrentUser),
 	poll: (query, variables = {}) => {
 		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
 		const poll = findPoll(pollId)
@@ -377,14 +499,23 @@ const queryHandlers = {
 	},
 	teamForInviteCode: (query, variables = {}) => {
 		const inviteCode = get(variables, "inviteCode", argFromQuery(query, "inviteCode"))
-		if (inviteCode !== mockState.team.inviteCode) {
+		if (inviteCode !== currentTeam().inviteCode) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_JOIN_TEAM_INVITE_CODE_INVALID, "Invite code not found")
 		}
-		return deepClone(mockState.team)
+		return deepClone(currentTeam())
 	},
 }
 
 const mutationHandlers = {
+	/**
+	 * Switch the session into another team of the current user. loginMock() does the membership
+	 * check and rejects a team the user does not belong to, exactly as the real backend does.
+	 */
+	switchTeam: (query, variables = {}) => {
+		const user = currentUserOrThrow()
+		const teamId = asInt(get(variables, "teamId", argFromQuery(query, "teamId", "-1")))
+		return loginMock(user.email, teamId)
+	},
 	createNewTeam: (query, variables = {}) => {
 		const teamName = get(variables, "teamName", argFromQuery(query, "teamName", "Mock Team"))
 		const admin = get(variables, "admin", { name: "Mock Admin", email: `admin.${Date.now()}@mock.local` })
@@ -404,10 +535,13 @@ const mutationHandlers = {
 			members: [{ role: "ADMIN", joinedAt: nowIso(), user: adminUser }],
 			polls: [],
 		}
-		// Initialize mockState for the newly created team
+		// Initialize mockState for the newly created team. Registering as a brand-new user starts a
+		// brand-new world, so the team list is reset to just this one rather than appended to - the
+		// previous teams belonged to whoever was mocked before.
 		mockState = {
 			...mockState,
-			team: newTeam,
+			teams: [newTeam],
+			currentTeamIndex: 0,
 			currentUser: adminUser,
 			jwt: `mock-jwt-${userId}`,
 			issuedAuthTokensByMobile: {},
@@ -417,17 +551,18 @@ const mutationHandlers = {
 			nextProposalId: 1,
 		}
 		saveMockState(mockState)
-		
+
 		// Return login result with the newly created team and admin
 		return {
 			team: deepClone(newTeam),
 			user: deepClone(adminUser),
 			jwt: mockState.jwt,
+			teams: [{ id: newTeam.id, teamName: newTeam.teamName }],
 		}
 	},
 	joinTeam: (query, variables = {}) => {
 		const inviteCode = get(variables, "inviteCode", argFromQuery(query, "inviteCode"))
-		if (inviteCode !== mockState.team.inviteCode) {
+		if (inviteCode !== currentTeam().inviteCode) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_JOIN_TEAM_INVITE_CODE_INVALID, "Invite code invalid")
 		}
 		const memberInput = get(variables, "member", null)
@@ -448,7 +583,7 @@ const mutationHandlers = {
 			picture: memberInput.picture || "Avatar1.png",
 			website: memberInput.website || null,
 		}
-		mockState.team.members.push({ role: "MEMBER", joinedAt: nowIso(), user: newUser })
+		currentTeam().members.push({ role: "MEMBER", joinedAt: nowIso(), user: newUser })
 		saveMockState(mockState)
 		// Log in the newly created member
 		return loginMock(newUser.email)
@@ -469,7 +604,7 @@ const mutationHandlers = {
 			proposals: [],
 			winner: null,
 		}
-		mockState.team.polls.unshift(poll)
+		currentTeam().polls.unshift(poll)
 		return enrichPollForCurrentUser(poll)
 	},
 	addProposal: (query, variables = {}) => {
@@ -640,10 +775,13 @@ export const initializeLiquidoGraphQlMock = function(graphQlApi, teamCache) {
 	 * AND there isn't a real JWT in localStorage being handled by the router.
 	 */
 	if (mockState.currentUser && localStorage.getItem(graphQlApi.LIQUIDO_JWT_KEY) === mockState.jwt) {
-		teamCache.put(graphQlApi.TEAM_KEY, mockState.team)
+		teamCache.put(graphQlApi.TEAM_KEY, currentTeam())
 		teamCache.put(graphQlApi.CURRENT_USER_KEY, mockState.currentUser)
 		teamCache.put(graphQlApi.JWT_KEY, mockState.jwt)
-		graphQlApi.putPollsIntoCache(mockState.team.polls)
+		// Restore the user's team list too, or the team switcher would silently disappear on reload.
+		teamCache.put(graphQlApi.ALL_USER_TEAMS_KEY,
+			teamsOfMember(mockState.currentUser.email).map(t => ({ id: t.id, teamName: t.teamName })))
+		graphQlApi.putPollsIntoCache(currentTeam().polls)
 	}
 
 	if (mockRequestInterceptorInstalled) return
@@ -652,7 +790,7 @@ export const initializeLiquidoGraphQlMock = function(graphQlApi, teamCache) {
 	axios.interceptors.request.use(config => {
 		if (config.url.includes("/login/check-login-email")) {
 			const email = config.params.email
-			const member = mockState.team.members.find(m => m.user.email === email)
+			const member = currentTeam().members.find(m => m.user.email === email)
 			if (member) {
 				console.log("MOCK: /check-login-email for " + email + " -> existing user")
 				config.adapter = config => {

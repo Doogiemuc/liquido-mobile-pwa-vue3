@@ -143,14 +143,18 @@ const JQL_PUBLISHED_TALLY = `{ pollId proposalOrder duelMatrix winnerId winnerId
 const JQL_TEAM = `{ id teamName inviteCode ` +
 		`members ${JQL_TEAM_MEMBER} ` +
 		`polls ${JQL_POLL} } `
+// The little a team switcher needs about every OTHER team the user is in - not the full JQL_TEAM,
+// which would mean fetching every member and poll of every team just to draw a list of names.
+const JQL_TEAM_SUMMARY = `{ id teamName } `
 
 const JQL = {
 	TEAM: JQL_TEAM,
 	PROPOSAL: JQL_PROPOSAL,
 	CREATE_OR_JOIN_TEAM_RESULT: `{ ` +
 		`team ${JQL_TEAM} ` +
-		`user ${JQL_LOGIN_USER} ` + 
-		`jwt } `, 
+		`user ${JQL_LOGIN_USER} ` +
+		`teams ${JQL_TEAM_SUMMARY} ` +
+		`jwt } `,
 	POLL: JQL_POLL
 }
 
@@ -254,11 +258,14 @@ let graphQlApi = {
 	 * @param {Object} team Team with members[] and polls[]
 	 * @param {Object} user currently logged in user
 	 * @param {String} jwt JsonWebToken received from server
+	 * @param {Array} teams every team this user belongs to, so the client can offer a team switcher.
+	 *   Optional - callers that don't have it (e.g. an older cached response shape) just don't get one.
 	 */
-	login(team, user, jwt) {
+	login(team, user, jwt, teams) {
 		this.teamCache.put(this.TEAM_KEY, team)
 		this.teamCache.put(this.CURRENT_USER_KEY, user)
 		this.teamCache.put(this.JWT_KEY, jwt)
+		this.teamCache.put(this.ALL_USER_TEAMS_KEY, teams || [])
 		this.putPollsIntoCache(team.polls)
 		if (localStorage != null) localStorage.setItem(this.LIQUIDO_JWT_KEY, jwt)
 		axios.defaults.headers.common["Authorization"] = "Bearer " + jwt
@@ -277,7 +284,30 @@ let graphQlApi = {
 		EventBus.emit(EventBus.Event.LOGOUT, userEmail)
 	},
 
-	//TODO: changeTeam / login into another team
+	/**
+	 * Switch the current session into another team of the same user.
+	 * The user MUST already be logged in, and MUST be a member of that team. The backend checks both.
+	 * On success this replaces the whole login state, including the JWT, exactly like a fresh login.
+	 *
+	 * @param {Number} teamId id of another team of the currently logged in user
+	 * @returns {Object} login data with the new team, user and jwt
+	 */
+	async switchTeam(teamId) {
+		let graphQL = `mutation switchTeam($teamId: BigInteger!) { switchTeam(teamId: $teamId) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
+		return graphQlQuery(graphQL, { teamId: Number(teamId) })
+			.then(response => {
+				let res = response.data.switchTeam
+				// MUST empty the polls cache BEFORE login() refills it.
+				// putPollsIntoCache() only ever puts under "polls/<id>", it never removes. Without this
+				// the previous team's polls would stay behind and getCachedPolls() would hand back a
+				// mix of two teams' polls - in a voting app. We cannot just call logout() instead,
+				// because that also drops the JWT and emits LOGOUT.
+				this.pollsCache.emptyCache()
+				this.login(res.team, res.user, res.jwt, res.teams)
+				console.debug("Switched into team:", res.team.teamName)
+				return res
+			})
+	},
 
 	/**
 	 * This sets a special header `jwtTokenString` which is used by the
@@ -319,6 +349,15 @@ let graphQlApi = {
 	 */
 	getCachedTeam() {
 		return this.teamCache.getSync(this.TEAM_KEY, false)
+	},
+
+	/**
+	 * Synchronously get every team the current user belongs to, from the local cache.
+	 * Used to decide whether to offer a team switcher at all - most users are in exactly one team.
+	 * @returns {Array} every team of the current user, or [] if none is known
+	 */
+	getAllUserTeams() {
+		return this.teamCache.getSync(this.ALL_USER_TEAMS_KEY, false) || []
 	},
 
 	/** 
@@ -365,7 +404,7 @@ let graphQlApi = {
 		axios.defaults.headers.common["Authorization"] = "Bearer " + jwt
 		return graphQlQuery(graphQL)
 			.then(res => {
-				this.login(res.data.loginWithJwt.team, res.data.loginWithJwt.user, res.data.loginWithJwt.jwt)
+				this.login(res.data.loginWithJwt.team, res.data.loginWithJwt.user, res.data.loginWithJwt.jwt, res.data.loginWithJwt.teams)
 				return res.data.loginWithJwt
 			})
 	},
@@ -393,7 +432,7 @@ let graphQlApi = {
 		let graphQL = `query loginWithEmailPassword($email: String!, $password: String!) { loginWithEmailPassword(email: $email, password: $password) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		return graphQlQuery(graphQL, { email, password }).then(response => {
 			let res = response.data.loginWithEmailPassword
-			this.login(res.team, res.user, res.jwt)
+			this.login(res.team, res.user, res.jwt, res.teams)
 			return res
 		})
 	},
@@ -464,7 +503,7 @@ let graphQlApi = {
 		let graphQL = `query googleOneTapLogin($googleIdToken: String!) { googleOneTapLogin(googleIdToken: $googleIdToken) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		return graphQlQuery(graphQL, { googleIdToken }).then(response => {
 			let res = response.data.googleOneTapLogin
-			this.login(res.team, res.user, res.jwt)
+			this.login(res.team, res.user, res.jwt, res.teams)
 			return res
 		})
 	},
@@ -490,7 +529,7 @@ let graphQlApi = {
 		let graphQL = `query loginWithAuthToken($mobilephone: String!, $authToken: String!) { loginWithAuthToken(mobilephone: $mobilephone, authToken: $authToken) ${JQL.CREATE_OR_JOIN_TEAM_RESULT} }`
 		return graphQlQuery(graphQL, { mobilephone, authToken }).then(response => {
 			let res = response.data.loginWithAuthToken
-			this.login(res.team, res.user, res.jwt)
+			this.login(res.team, res.user, res.jwt, res.teams)
 			return res
 		})
 	},
@@ -608,7 +647,7 @@ let graphQlApi = {
 		return graphQlQuery(graphQL, { email, devLoginToken })
 			.then(res => {
 				console.log("API: devLogin <"+email+">")
-				this.login(res.data.devLogin.team, res.data.devLogin.user, res.data.devLogin.jwt)
+				this.login(res.data.devLogin.team, res.data.devLogin.user, res.data.devLogin.jwt, res.data.devLogin.teams)
 				return res.data.devLogin
 			})
 	},
@@ -635,7 +674,8 @@ let graphQlApi = {
 				this.login(
 					team,
 					res.data.createNewTeam.user,  // admin
-					res.data.createNewTeam.jwt
+					res.data.createNewTeam.jwt,
+					res.data.createNewTeam.teams
 				)
 				console.debug("Created new team:", team)
 				return team
@@ -677,7 +717,8 @@ let graphQlApi = {
 				this.login(
 					team,
 					res.data.joinTeam.user,
-					res.data.joinTeam.jwt
+					res.data.joinTeam.jwt,
+					res.data.joinTeam.teams
 				)
 				console.debug("Joined team:", team)
 				return team
@@ -915,6 +956,7 @@ let graphQlApi = {
 	JWT_KEY: "jwt",
 	CURRENT_USER_KEY: "currentUser",       // key for current user object in teamCache
 	TEAM_KEY: "team",
+	ALL_USER_TEAMS_KEY: "allUserTeams",    // every team of the current user, for the team switcher
 	VOTER_TOKEN_KEY: "voterToken",
 	LIQUIDO_JWT_KEY: "LIQUIDO_JWT",        // JWT in localStorage
 
