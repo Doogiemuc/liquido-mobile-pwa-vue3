@@ -60,6 +60,30 @@ context('Login Test', () => {
 		cy.get("#liquidoHeader").should($header => {
 			expect(getComputedStyle($header[0]).backgroundColor).to.match(/rgba\(.*,\s*0\)$/)
 		})
+
+		// AND the one way back in for a returning user without a JWT is readable right away, in the
+		// top right - it must NOT wait for the header to fade in, or it is invisible on arrival.
+		cy.get("#welcomeLoginButton").should("be.visible").and($login => {
+			const login = $login[0].getBoundingClientRect()
+			const header = Cypress.$("#liquidoHeader")[0].getBoundingClientRect()
+			expect(login.top, "sits in the header band").to.be.at.least(header.top - 1)
+			expect(login.bottom, "sits in the header band").to.be.at.most(header.bottom + 1)
+			expect(login.left, "sits in the right-hand half").to.be.greaterThan(Cypress.config("viewportWidth") / 2)
+			// The whole block is the tap target, not just the glyphs of the word.
+			expect(login.height, "comfortable tap target").to.be.at.least(44)
+			expect(login.width, "comfortable tap target").to.be.at.least(44)
+		})
+	})
+
+	it('The landing Login leads to the login page', function() {
+		//GIVEN an anonymous visitor on the welcome page
+		cy.visit("/")
+
+		//WHEN they take the way back in
+		cy.get("#welcomeLoginButton").click()
+
+		//THEN they land on the login page
+		cy.get("#login-page")
 	})
 
 	it('Scrolling down flows the LIQUIDO mark up into the header', function() {

@@ -29,6 +29,22 @@
 				<i ref="markIcon" class="fas fa-university liquid-icon" />
 			</div>
 
+			<!--
+				The one way back in for somebody who already has an account but no JWT on this device -
+				a different browser, a new phone. Everyone else registers by simply talking to the chat
+				below, so this is the exception path and is deliberately the quietest thing on the page.
+			-->
+			<button
+				v-if="showLoginButton"
+				id="welcomeLoginButton"
+				class="hero-login"
+				:class="{ 'hero-login--beside-mock': isMockBackend }"
+				type="button"
+				@click="goToLogin"
+			>
+				{{ $t("Login") }}
+			</button>
+
 			<!-- Makes the blob and its trailing drops melt into each other instead of looking like
 			     three separate circles: blur, then crank up the alpha contrast so the blurred halos
 			     snap back into one surface wherever they overlap. -->
@@ -78,11 +94,6 @@
 					@blur="userNameSubmit()"
 				/>
 			</div>
-		</div>
-
-		<!-- Login button -->
-		<div v-if="showLoginButton" class="login-link" @click="goToLogin">
-			<button class="btn btn-outline-primary btn-lg px-5">{{ $t('Login') }}</button>
 		</div>
 
 		<!-- Nice to meet you bubble -->
@@ -623,6 +634,10 @@ export default {
 		},
 		showLoginButton() {
 			return !this.FLOW.NiceToMeetYou
+		},
+		/** Only to keep the Login clear of the dev-only mock-reset button. See .hero-login--beside-mock. */
+		isMockBackend() {
+			return !!config.mockBackend
 		},
 		joinTeamOkButtonDisabled() {
 			return this.FLOW.JoinTeamClicked ||
@@ -1330,6 +1345,61 @@ export default {
 	color: var(--primary);
 }
 
+/*
+ * The Login, top right. Three things about it are deliberate:
+ *
+ * 1. It does NOT fade in along --hero-progress the way everything else in the header does. A
+ *    returning visitor arrives at the top of the page, and that is exactly where they look for the
+ *    way in - so it has to be readable in the very first frame, over a header that is still
+ *    completely transparent.
+ * 2. The whole box is the tap target, not the few glyphs of the word: it takes the header's full
+ *    height and at least its height in width, so it covers the same corner block as the header's
+ *    own .header-right and is comfortable to hit with a thumb.
+ * 3. It stays quiet - text, no button chrome. Registering here means talking to the chat, so the
+ *    page itself is the primary call to action and this is the exception path. The mark is the one
+ *    loud thing on this screen and it keeps the stage to itself.
+ *
+ * env(safe-area-inset-top) rather than 0, to line up with .is-pwa #liquidoHeader, which pads itself
+ * down by exactly that when LIQUIDO runs from the home screen.
+ */
+.hero-login {
+	position: fixed;
+	top: env(safe-area-inset-top, 0px);
+	right: 0;
+	z-index: 10001;   /* above #liquidoHeader (9999) and above the mark (10000) */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: var(--liquido-header-height);
+	height: var(--liquido-header-height);
+	padding: 0 var(--unit);
+	border: 0;
+	background: none;
+	font-family: inherit;
+	font-size: 0.9375rem;
+	line-height: 1;
+	color: var(--primary);
+	text-decoration: underline;
+	text-decoration-color: var(--light-border);
+	text-underline-offset: 3px;
+	cursor: pointer;
+}
+/* liquido-header.vue puts its mock-reset button in .header-right, in exactly this corner. That
+   button only exists while config.mockBackend is on, so step aside for it rather than making the
+   production layout pay for a development affordance. */
+.hero-login--beside-mock {
+	right: var(--liquido-header-height);
+}
+
+.hero-login:hover {
+	text-decoration-color: var(--primary);
+}
+.hero-login:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: -4px;
+	border-radius: var(--liquido-border-radius);
+}
+
 /* The filter only has to exist; it must not take up any space. */
 .liquid-goo-filter {
 	position: absolute;
@@ -1456,23 +1526,6 @@ export default {
 	margin-bottom: 0;
 	border: none;
 	*/
-}
-
-.login-link {
-	z-index: 9799;
-	position: fixed;
-	cursor: pointer;
-	padding: 1rem;
-	left: 50%;
-	bottom: var(--save-area-inset-bottom, 2rem);
-	transform: translateX(-50%);
-}
-
-/* The button floats over the page, and on the landing view the first chat bubble now peeks up from
-   underneath it - so it has to be opaque, or the two texts collide. */
-.login-link .btn {
-	background-color: var(--app-background);
-	box-shadow: var(--liquido-shadow);
 }
 
 #createOrJoinButtons {
