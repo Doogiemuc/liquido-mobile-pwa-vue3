@@ -19,6 +19,7 @@ coverage
 # Config files that might contain secrets
 /config/config.*.js
 !/config/config.common.js
+!/config/config.test.js
 
 # Cypress screenshots & videos from tests
 cypress.config.js
