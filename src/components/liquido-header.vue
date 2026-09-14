@@ -1,5 +1,5 @@
  <template>
-	<header id="liquidoHeader" :class="{ 'transition-header': isSticky }">
+	<header id="liquidoHeader" :class="{ 'transition-header': isSticky, 'hero-mark-active': heroMarkActive }">
 		<div class="header-top-row">
 			<div class="header-left" @click="clickLeft">
 				<button v-if="headerBackTarget" class="header-action-btn header-action-btn--left" type="button" @click.stop="clickLeft" aria-label="Back">
@@ -66,6 +66,13 @@ export default {
 		},
 		headerTitle() {
 			return this.pageTitle ?? this.$store.headerTitle
+		},
+		/**
+		 * True while the welcome page's hero owns the LIQUIDO mark. The header then starts out
+		 * completely transparent and materialises while the user scrolls - see the CSS below.
+		 */
+		heroMarkActive() {
+			return this.$store.heroMarkActive
 		},
 
 	},
@@ -277,6 +284,33 @@ export default {
 		}
 	}
 	
+}
+
+/**
+ * While the welcome page's hero is on screen there is deliberately NO header yet: it starts fully
+ * transparent and materialises as the visitor scrolls, in step with the LIQUIDO mark flowing up
+ * into it. --hero-progress (0 .. 1) is written onto <html> by welcome-chat.vue's renderLiquidMark().
+ *
+ * The header's own icon stays invisible for the whole ride, because welcome-chat's #liquidMark IS
+ * the icon the user sees - so nothing is ever swapped and nothing can flicker at the end. It keeps
+ * its layout box (opacity, not display), and it has to: that box is exactly where the mark aims.
+ */
+#liquidoHeader.hero-mark-active {
+	background: rgba(255, 255, 255, calc(0.82 * var(--hero-progress, 1)));
+	-webkit-backdrop-filter: saturate(180%) blur(calc(20px * var(--hero-progress, 1)));
+	backdrop-filter: saturate(180%) blur(calc(20px * var(--hero-progress, 1)));
+
+	.liquido-claim i {
+		opacity: 0;
+	}
+
+	/* The wordmark only joins in once the mark is nearly home, and slides the last few pixels
+	   towards it - as if the icon pulled it along. */
+	.liquido-claim .liquido {
+		display: inline-block;
+		opacity: calc((var(--hero-progress, 1) - 0.55) / 0.45);
+		transform: translateX(calc((1 - var(--hero-progress, 1)) * -0.6rem));
+	}
 }
 
 /* In PWA standalone mode: extend header under the status bar / Dynamic Island */

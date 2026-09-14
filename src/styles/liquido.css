@@ -87,6 +87,11 @@
 	   height, otherwise the animation gets jumpy. */
 	--poll-card-height: 10rem;
 
+	/* Size of the LIQUIDO mark (the big university icon) while it sits in the welcome page's hero.
+	   welcome-chat.vue's #liquidMark and the empty slot that reserves its place in the hero must
+	   agree on this, and the mark is teleported to <body>, so the two cannot share a local variable. */
+	--hero-mark-size: clamp(7rem, 32vw, 9.5rem);
+
 	/****************** Info, Warning and Error messages *************/
 
 	/* Info text in .alert on --app-background */

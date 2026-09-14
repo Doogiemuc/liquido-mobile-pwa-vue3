@@ -41,6 +41,14 @@ export default {
 		}
   },
 
+	/**
+	 * Scroll an element to the MIDDLE of the viewport before acting on it, not to the top.
+	 * #liquidoHeader is position:fixed, so Cypress' default ('top') parks the element underneath it
+	 * and then refuses to click, complaining that it is covered. That only stayed invisible for as
+	 * long as no page was tall enough to scroll that far - welcome-chat's landing hero is.
+	 */
+	scrollBehavior: 'center',
+
   viewportWidth: 375,
   viewportHeight: 667,
   fixturesFolder: 'tests/e2e/fixtures',

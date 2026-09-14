@@ -36,6 +36,56 @@ context('Login Test', () => {
 		cy.get("#welcome-chat")
 	})
 
+	it('The welcome page opens on its landing hero, with the first chat bubble below the fold', function() {
+		//WHEN anonymously accessing index
+		cy.visit("/")
+
+		//THEN the landing hero is there, with the LIQUIDO mark and the claim ...
+		cy.get("#welcomeHero").should("be.visible")
+		cy.get("#liquidoClaim").should("be.visible")
+		// (not be.visible for the mark: it is pointer-events:none, so Cypress' hit test looks straight
+		// through it and reports the empty hero slot underneath as "covering" it.)
+		cy.get("#liquidMark").should($mark => {
+			expect($mark[0].getBoundingClientRect().width, "the LIQUIDO mark has a size").to.be.greaterThan(0)
+			expect(getComputedStyle($mark[0]).opacity).to.not.equal("0")
+		})
+
+		// ... and the first chat bubble starts BELOW the bottom edge of the phone. That cut-off
+		// bubble is the page's only "scroll down" hint, so it is worth a test.
+		cy.get("#welcome-chat").should($bubble => {
+			expect($bubble[0].getBoundingClientRect().bottom).to.be.greaterThan(Cypress.config("viewportHeight"))
+		})
+
+		// AND while the visitor is still up here, the header has not appeared yet
+		cy.get("#liquidoHeader").should($header => {
+			expect(getComputedStyle($header[0]).backgroundColor).to.match(/rgba\(.*,\s*0\)$/)
+		})
+	})
+
+	it('Scrolling down flows the LIQUIDO mark up into the header', function() {
+		//GIVEN the welcome page, where the mark starts out on the hero and not in the header
+		cy.visit("/")
+		cy.get("#liquidMark").should($mark => {
+			expect($mark[0].getBoundingClientRect().top, "mark starts below the header").to.be.greaterThan(60)
+		})
+
+		//WHEN the visitor scrolls past the end of the mark's travel
+		cy.get("#app").scrollTo(0, 400)
+
+		//THEN the mark has arrived inside the header ...
+		cy.get("#liquidMark").should($mark => {
+			const mark = $mark[0].getBoundingClientRect()
+			const header = Cypress.$("#liquidoHeader")[0].getBoundingClientRect()
+			expect(mark.top, "mark landed below the top of the header").to.be.at.least(header.top - 1)
+			expect(mark.bottom, "mark landed above the bottom of the header").to.be.at.most(header.bottom + 1)
+		})
+
+		// ... and the header itself is no longer transparent
+		cy.get("#liquidoHeader").should($header => {
+			expect(getComputedStyle($header[0]).backgroundColor).to.not.match(/rgba\(.*,\s*0\)$/)
+		})
+	})
+
 	it('Anonymous access to restricted /polls page should be forwarded to login', function() {
 		//WHEN anonymously trying to access /polls
 		cy.visit("/polls")
