@@ -1,31 +1,20 @@
 /**
- * Cypress config for running the e2e suite against an already-deployed frontend/backend
- * (e.g. https://liquido.dynv6.net) instead of the local dev servers on localhost:3001/:8443.
+ * Cypress config pinned to the "deployed" mode: the browser opens the DEPLOYED frontend and that
+ * frontend calls the DEPLOYED backend, with no local dev server involved at all.
  *
- * Usage:
- *   npx cypress run --config-file cypress.config.remote.js --spec tests/e2e/specs/happy-case.cy.js
+ *   npm run test:e2e:deployed          (or the older alias, npm run test:e2e:remote)
  *   npx cypress open --config-file cypress.config.remote.js
- *   (or: npm run test:e2e:remote)
  *
- * Point it at a different deployment by setting CYPRESS_REMOTE_URL, e.g.:
- *   CYPRESS_REMOTE_URL=https://staging.liquido.vote npm run test:e2e:remote
+ * Point it somewhere other than https://liquido.dynv6.net with CYPRESS_REMOTE_URL, e.g.
+ *   CYPRESS_REMOTE_URL=https://staging.liquido.vote npm run test:e2e:deployed
  *
- * NOTE: every e2e spec creates real data (teams, polls, ballots) against whatever backend
- * this points at - never run it against a real production instance with real users on it.
+ * NOTE: every run creates real teams, polls and ballots on whatever backend this points at - never
+ * aim it at an instance with real users on it.
+ *
+ * To run YOUR OWN frontend against the deployed backend instead, that is a different mode:
+ *   npm run test:e2e:remote-backend
  */
 import { defineConfig } from "cypress";
-import baseConfig from "./tests/cypress-base-config.js"
+import { configForMode } from "./tests/cypress-base-config.js"
 
-const REMOTE_URL = process.env.CYPRESS_REMOTE_URL || "https://liquido.dynv6.net"
-
-export default defineConfig({
-	...baseConfig,
-	e2e: {
-		...baseConfig.e2e,
-		baseUrl: REMOTE_URL,
-	},
-	expose: {
-		...baseConfig.expose,
-		LIQUIDO_API: REMOTE_URL + "/",
-	}
-})
+export default defineConfig(configForMode("deployed"))

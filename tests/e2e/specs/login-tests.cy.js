@@ -11,16 +11,26 @@ console.log("Running Cypress login-test.js (test_uuid="+now+")", "NODE_ENV="+pro
 
 context('Login Test', () => {
 	
-	/** Check if backend is available at all */
+	/**
+	 * Check if backend is available at all.
+	 *
+	 * Skipped in the "mock" mode, where there deliberately is no backend to reach - the frontend
+	 * answers its own queries there. Cypress.expose("LIQUIDO_API") is null in exactly that case,
+	 * and cy.request(null) would fail the whole suite before the first test body ran.
+	 */
 	before(() => {
 		cy.visit("/login")
 		cy.get("#login-page")
 		cy.get("#rootPopupModal").should("not.be.visible")
 
-		cy.request(Cypress.expose('LIQUIDO_API'))
-			.then(res => {
+		const apiUrl = Cypress.expose("LIQUIDO_API")
+		if (apiUrl) {
+			cy.request(apiUrl).then(res => {
 				expect(res.status, "Check if backend is available.").to.equal(200)
 			})
+		} else {
+			cy.log(`LIQUIDO_E2E_MODE=${Cypress.expose("mode")}: no backend to ping`)
+		}
 	})
 
 	beforeEach(() => {
@@ -236,6 +246,9 @@ context('Login Test', () => {
 		
 	
 	it('Forgot password flow', function() {
+		// Needs the backend's own testPasswordResetToken and a real reset round-trip, so there is
+		// nothing for it to do in the "mock" mode.
+		if (!Cypress.expose("LIQUIDO_API")) this.skip()
 		cy.visit("/login")
 		cy.get("#login-page")
 
@@ -351,6 +364,11 @@ context('Login Test', () => {
 	})
 
 	it('Shows a warning when the LIQUIDO backend cannot be reached', function() {
+		// Only meaningful where the frontend really issues GraphQL over HTTP. In the "mock" mode the
+		// mocked client answers in-process and no POST /graphql is ever sent, so there is no request
+		// to fail and cy.wait() below would simply time out.
+		if (!Cypress.expose("LIQUIDO_API")) this.skip()
+
 		// GIVEN the backend is completely unreachable - every GraphQL call fails at the network level,
 		// not with an HTTP error status. root-app.vue's mounted() pings the backend on every page load
 		// (api.pingApi()) specifically to catch this case.

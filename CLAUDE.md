@@ -296,8 +296,35 @@ npm run build          # production bundle
 npx vitest run         # unit tests
 npx eslint src --ext .vue,.js
 npx cypress run --e2e --spec tests/e2e/specs/happy-case.cy.js
-npm run test:e2e:remote     # same suite against an already-deployed instance, see below
 ```
+
+### The four e2e modes
+
+Which frontend the browser opens and which backend that frontend talks to are two separate
+questions. `LIQUIDO_E2E_MODE` picks the pair; the table lives at the top of
+`tests/cypress-base-config.js` and each mode has an npm script:
+
+| mode | frontend | backend | script |
+|---|---|---|---|
+| `local` *(default)* | `localhost:3001` | `localhost:8443` | `npm run test:e2e` |
+| `mock` | `localhost:3001` | none, mocked in the app | `npm run test:e2e:mock` |
+| `remote-backend` | `localhost:3001` | `liquido.dynv6.net` | `npm run test:e2e:remote-backend` |
+| `deployed` | `liquido.dynv6.net` | `liquido.dynv6.net` | `npm run test:e2e:deployed` |
+
+`CYPRESS_REMOTE_URL` aims the two deployed modes elsewhere. `npm run test:e2e:remote` is kept as an
+alias of `deployed`.
+
+**Cypress only decides which URL the browser opens.** Which backend the *frontend* calls comes from
+`config/config.development.js` (`mockBackend`, `LIQUIDO_API_URL`), read once when the dev server
+starts — so `mock`, `local` and `remote-backend` need that file set to match, and the dev server
+restarted. The mode is checked against that file and **a mismatch aborts the run**, because the
+alternative is the dangerous one: a green suite that only proved the mock works while you believed
+it exercised a real backend.
+
+In `mock` mode the backend-availability check in `login-tests.cy.js` is skipped, along with the two
+cases that need real GraphQL over HTTP (the password-reset round-trip and the
+backend-unreachable warning) — `Cypress.expose("LIQUIDO_API")` is `null` there, and those tests
+`this.skip()` on it. That mode is green, not partially red.
 
 **Both dev servers are Claude's to manage** — Vite on `https://localhost:3001` and the Quarkus
 backend on `https://localhost:8443`. Start the frontend via `preview_start {name: "liquido-pwa"}`,
