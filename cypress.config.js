@@ -1,10 +1,11 @@
 /**
- * Default Cypress configuration
+ * Default Cypress configuration.
+ *
+ * The mode - which frontend the browser opens and which backend it talks to - comes from
+ * LIQUIDO_E2E_MODE, and defaults to "local" (local frontend, local backend on :8443). See the
+ * table at the top of tests/cypress-base-config.js, or use one of the npm run test:e2e:* scripts.
  */
-
 import { defineConfig } from "cypress";
-import baseConfig from "./tests/cypress-base-config.js"
+import { configForMode } from "./tests/cypress-base-config.js"
 
-// The defaultConfig can be adapted here for other environments
-
-export default defineConfig(baseConfig)
+export default defineConfig(configForMode())

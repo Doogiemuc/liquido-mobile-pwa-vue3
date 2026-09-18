@@ -116,7 +116,7 @@ test('ADMIN:  add proposal to poll', async function() {
 test('MEMBER: like proposal', function() {
 	client.login(t.team, t.member, t.memberJWT)
 	return client.likeProposal(t.poll.id, t.poll.proposals[1].id)
-		.then(poll => {
+		.then(() => {
 			console.log("Successfully liked proposal")
 		})
 })

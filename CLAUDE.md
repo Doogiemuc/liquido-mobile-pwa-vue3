@@ -171,8 +171,15 @@ Match the surrounding file. Broadly:
   `vue/multi-word-component-names` is off).
 - `.then()/.catch()` chains are preferred over `async/await` in views — except where a genuine
   sequential loop makes `await` clearer.
-- Run `npx eslint src --ext .vue,.js` before finishing. One pre-existing error is expected
-  (`liquido-graphql-client.mock.js` no-useless-escape).
+- Run `npx eslint src tests --ext .vue,.js` before finishing. It is **clean** — zero errors, zero
+  warnings — so anything it reports is yours and belongs fixed before you hand the work over.
+  (This used to say one pre-existing error was expected. Every error it named over time is gone now,
+  and a documented "expected" error is worse than none: it gives a real one somewhere to hide.)
+- `tests/` is linted too, and `.eslintrc.cjs` has the overrides that make that meaningful: Cypress
+  specs get `plugin:cypress/recommended` (so `cy`, `Cypress` and the mocha globals resolve) plus
+  `process` alone, which is all their bundler shims; the Node-side files get `env: node`. That
+  override used to point at `cypress/e2e/**`, a directory this repo does not have, so it had never
+  applied to anything. `cypress/unsafe-to-chain-command` is off on purpose — see the comment there.
 
 ### i18n
 
@@ -291,10 +298,37 @@ enforced per-component via `api.isAdmin()`, and properly by the backend.
 npm run dev            # Vite dev server, HTTPS on :3001 (mkcert certs in tls-certs/)
 npm run build          # production bundle
 npx vitest run         # unit tests
-npx eslint src --ext .vue,.js
+npx eslint src tests --ext .vue,.js
 npx cypress run --e2e --spec tests/e2e/specs/happy-case.cy.js
-npm run test:e2e:remote     # same suite against an already-deployed instance, see below
 ```
+
+### The four e2e modes
+
+Which frontend the browser opens and which backend that frontend talks to are two separate
+questions. `LIQUIDO_E2E_MODE` picks the pair; the table lives at the top of
+`tests/cypress-base-config.js` and each mode has an npm script:
+
+| mode | frontend | backend | script |
+|---|---|---|---|
+| `local` *(default)* | `localhost:3001` | `localhost:8443` | `npm run test:e2e` |
+| `mock` | `localhost:3001` | none, mocked in the app | `npm run test:e2e:mock` |
+| `remote-backend` | `localhost:3001` | `liquido.dynv6.net` | `npm run test:e2e:remote-backend` |
+| `deployed` | `liquido.dynv6.net` | `liquido.dynv6.net` | `npm run test:e2e:deployed` |
+
+`CYPRESS_REMOTE_URL` aims the two deployed modes elsewhere. `npm run test:e2e:remote` is kept as an
+alias of `deployed`.
+
+**Cypress only decides which URL the browser opens.** Which backend the *frontend* calls comes from
+`config/config.development.js` (`mockBackend`, `LIQUIDO_API_URL`), read once when the dev server
+starts — so `mock`, `local` and `remote-backend` need that file set to match, and the dev server
+restarted. The mode is checked against that file and **a mismatch aborts the run**, because the
+alternative is the dangerous one: a green suite that only proved the mock works while you believed
+it exercised a real backend.
+
+In `mock` mode the backend-availability check in `login-tests.cy.js` is skipped, along with the two
+cases that need real GraphQL over HTTP (the password-reset round-trip and the
+backend-unreachable warning) — `Cypress.expose("LIQUIDO_API")` is `null` there, and those tests
+`this.skip()` on it. That mode is green, not partially red.
 
 **Both dev servers are Claude's to manage** — Vite on `https://localhost:3001` and the Quarkus
 backend on `https://localhost:8443`. Start the frontend via `preview_start {name: "liquido-pwa"}`,
@@ -317,3 +351,23 @@ not on a bare deploy.
 
 The backend lives in the sibling repo `../liquido-backend-quarkus` and has its own `CLAUDE.md` and a
 detailed `AGENTS.md` — read those before touching the API, the schema or the seed data.
+
+---
+
+## 8. How work is organised
+
+**One branch per piece of work** — a feature, or a batch of related fixes. Robert names it and
+Robert merges it when the work is finished. Pull requests are his to open, not yours; do not open
+one unless he asks.
+
+**A merged branch is finished.** When the branch you were given has been merged, the next feature —
+and the next session — starts a **new** branch cut from the freshly merged `main`. Never continue on
+a merged branch and never stack new commits on merged history: a merged pull request cannot track
+new work, so anything pushed there is invisible to review.
+
+So when you pick up follow-up work, check first whether the branch you are on has already been
+merged (`git fetch origin main && git log --oneline origin/main..HEAD`). If it has, cut the new
+branch from `origin/main` and carry over only the commits that are genuinely unmerged.
+
+`main` moves while you work. Fetch it before branching rather than trusting the base you started
+from — that is also how you notice that a fix you were about to make has already landed.
