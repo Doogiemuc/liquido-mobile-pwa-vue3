@@ -1,5 +1,68 @@
 <template>
 	<div>
+		<!--
+			The landing hero. An anonymous visitor sees this first and nothing else: the LIQUIDO mark,
+			the claim, and no header. It is deliberately one screen tall MINUS a few rem, so the first
+			chat bubble below always runs off the bottom edge. That half-visible bubble is the whole
+			"scroll down" hint - no arrow needed.
+		-->
+		<div id="welcomeHero" class="welcome-hero">
+			<!-- Only reserves the spot. The icon itself is #liquidMark, which is position:fixed and
+			     therefore out of the flow, because it has to survive the trip into the header. -->
+			<div ref="heroIconSlot" class="hero-icon-slot" aria-hidden="true" />
+			<liqui-loc-html id="liquidoClaim" class="liquido-hero-claim" tag="p" msg-key="liquidoClaim" />
+		</div>
+
+		<!--
+			The LIQUIDO mark: the big university icon of the hero, which flows up into the header while
+			the visitor scrolls. Teleported to <body> because #appContent is transformed during the
+			page-slide transition, and a transformed ancestor would demote this position:fixed element
+			to position:absolute halfway through the animation.
+		-->
+		<Teleport to="body">
+			<div id="liquidMark" ref="liquidMark" class="liquid-mark" :class="{ 'liquid-mark--mock': isMockBackend }" aria-hidden="true">
+				<div class="liquid-goo">
+					<span class="liquid-blob" />
+					<span class="liquid-drop liquid-drop--a" />
+					<span class="liquid-drop liquid-drop--b" />
+				</div>
+				<i ref="markIcon" class="fas fa-university liquid-icon" />
+			</div>
+
+			<!--
+				The one way back in for somebody who already has an account but no JWT on this device -
+				a different browser, a new phone. Everyone else registers by simply talking to the chat
+				below, so this is the exception path and is deliberately the quietest thing on the page.
+			-->
+			<button
+				v-if="showLoginButton"
+				id="welcomeLoginButton"
+				class="hero-login"
+				type="button"
+				@click="goToLogin"
+			>
+				{{ $t("Login") }}
+			</button>
+
+			<!-- Makes the blob and its trailing drops melt into each other instead of looking like
+			     three separate circles: blur, then crank up the alpha contrast so the blurred halos
+			     snap back into one surface wherever they overlap. -->
+			<svg class="liquid-goo-filter" aria-hidden="true" focusable="false">
+				<defs>
+					<filter id="liquidGoo" x="-50%" y="-50%" width="200%" height="200%">
+						<feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blurred" />
+						<feColorMatrix
+							in="blurred"
+							mode="matrix"
+							values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -11"
+							result="goo"
+						/>
+						<feBlend in="SourceGraphic" in2="goo" />
+					</filter>
+				</defs>
+			</svg>
+		</Teleport>
+
 		<!-- Welcome -->
 		<div id="welcome-chat" :class="{ 'hide-left': !FLOW.Welcome }" class="card chat-bubble chat-left mt-3">
 			<liqui-loc-html class="card-body" tag="div" msg-key="welcome" />
@@ -29,12 +92,20 @@
 					@keyup.enter="userNameSubmit()"
 					@blur="userNameSubmit()"
 				/>
-			</div>
-		</div>
 
-		<!-- Login button -->
-		<div v-if="showLoginButton" class="login-link" @click="goToLogin">
-			<button class="btn btn-outline-primary btn-lg px-5">{{ $t('Login') }}</button>
+				<!--
+					The second way back in. #welcomeLoginButton catches a returning visitor on arrival,
+					top right; this catches the one who scrolled straight past it and only realises here -
+					asked for a nickname - that they do not need to register at all. A real button, not a
+					link inside a message: an @click inside a v-html string never binds.
+				-->
+				<p v-if="showLoginButton" class="login-in-chat">
+					{{ $t("alreadyRegistered") }}
+					<button id="welcomeLoginInChat" class="login-in-chat-link" type="button" @click="goToLogin">
+						{{ $t("Login") }}
+					</button>
+				</p>
+			</div>
 		</div>
 
 		<!-- Nice to meet you bubble -->
@@ -369,14 +440,57 @@ import webauthnService from "@/services/webauthn-service"
 
 const eMailRegEx = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,64}$/
 
+/**
+ * How long the landing hero has the stage to itself before the chat starts below it.
+ * Deliberately NOT scaled down in dev/test like chatDelayMs: half a second is short enough not to
+ * slow anything down, and it is the one beat that makes the page read as a landing page first and
+ * a chat second.
+ */
+const FIRST_BUBBLE_DELAY_MS = 500
+
+/**
+ * Over how many pixels of scrolling the LIQUIDO mark travels from the hero into the header.
+ * Much shorter than the hero itself, so the mark is home and the header is solid long before the
+ * hero has left the screen.
+ */
+const MARK_TRAVEL_PX = 220
+
+/** How long the mark keeps jiggling after it has landed in the header. */
+const MARK_WOBBLE_MS = 750
+
+const clamp01 = x => (x < 0 ? 0 : x > 1 ? 1 : x)
+
+/** Smooth 0..1 ramp between two thresholds - no corners, unlike a plain clamp. */
+const smoothstep = (from, to, x) => {
+	const t = clamp01((x - from) / (to - from))
+	return t * t * (3 - 2 * t)
+}
+
+/** Decelerating, no overshoot. */
+const easeOutCubic = t => 1 - Math.pow(1 - t, 3)
+
+/**
+ * Decelerating WITH a small overshoot: the value sails a little past its target and comes back.
+ * This is what keeps the mark from looking like it is on rails - it flows past the header for a
+ * moment and then settles, the way a drop of liquid would.
+ */
+const easeOutBack = (t, overshoot = 0.9) => {
+	const c1 = overshoot
+	const c3 = c1 + 1
+	return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
+}
+
 
 export default {
 	i18n: {
 		messages: {
 			en: {
-				welcome: 
-					"Welcome to <span class='liquido'></span> - the free, secure and liquid eVoting platform. "+
-					"With this mobile app you can create polls and then take votes with your team.",
+				// The punchline on the landing hero, above the fold. Shown as plain text, not as a chat bubble.
+				liquidoClaim: "Secure, anonymous, fair and <em>liquid</em> voting for everyone.",
+				welcome:
+					"<p>Here you do not just vote for <em>one</em> proposal. Everyone on your team sorts the proposals "+
+					"by their own preference, and a clever algorithm works out which proposal has the broadest support.</p>",
+				alreadyRegistered: "Already have an account?",
 				whatsYourName: "How shall I call you?",
 				createOrJoin: "Do you want to <em>join an existing team</em> with an invitation code or <em>create a new team</em>?",
 				joinTeamButton: "Join a team",
@@ -389,14 +503,16 @@ export default {
 				createPoll: "Create a poll",
 			},
 			de: {
+				// The punchline on the landing hero, above the fold. Shown as plain text, not as a chat bubble.
+				liquidoClaim: "Sichere, anonyme, faire und <em>liquide</em> Abstimmungen für alle.",
 				welcome:
-					"<p>Willkommen bei <span class='liquido'></span>!</p>"+
-					"<p>Sichere, anonyme, faire und <em>liquide</em> Abstimmungen für alle.</p>"+
 					"<p>Hier stimmst du nicht nur für <em>einen</em> Vorschlag, sondern jeder in eurem Team sortiert Vorschläge nach der eigenen Präferenz. " + 
 					"Ein cleverer Algorithmus berechnet daraus dann den Vorschlag mit der größten Zustimmung.</p>",
 				hasInviteCodeForTeam: "Hey, du wurdest von <b>{adminName}</b> in das Team <b>{teamName}</b> eingeladen.",
 				whatsYourName: "Darf ich fragen wie du heißt?",
 				yourNickname: "Dein Spitzname",
+				// Offered under the nickname field, in the chat bot's own "du" voice.
+				alreadyRegistered: "Schon dabei?",
 				userNameInvalid: "Bitte mindestens " + config.usernameMinLength + " Zeichen!",
 				niceToMeetYou: "Hallo <b>{nickname}</b>, freut mich, dich kennen zu lernen!",
 
@@ -534,6 +650,10 @@ export default {
 		showLoginButton() {
 			return !this.FLOW.NiceToMeetYou
 		},
+		/** Reddens the mark as a mock-backend warning. See .liquid-mark--mock. */
+		isMockBackend() {
+			return !!config.mockBackend
+		},
 		joinTeamOkButtonDisabled() {
 			return this.FLOW.JoinTeamClicked ||
 				!this.isInviteCodeSyntaxValid(this.inviteCodeInputField) || 
@@ -581,27 +701,173 @@ export default {
 		*/
 
     this.startChatAnimation()
+		this.initLiquidMark()
 
 		//this._debugDesignMode() // only for debugging
 	},
+	beforeUnmount() {
+		this.teardownLiquidMark()
+	},
 	methods: {
 		/**
-		 * Show the first chat bubbles, one by one
+		 * Show the first chat bubbles, one by one.
+		 * Everything is offset by FIRST_BUBBLE_DELAY_MS, so the hero is alone on screen for a moment
+		 * before the conversation starts underneath it.
 		 */
 		startChatAnimation() {
 			if (this.chatAnimationStarted) return  // start chat animation only once
 			this.chatAnimationStarted = true
-			this.FLOW.Welcome = true
 			this.$root.scrollToTop()
 			window.setTimeout(() => {
+				this.FLOW.Welcome = true
+			}, FIRST_BUBBLE_DELAY_MS)
+			window.setTimeout(() => {
 				this.FLOW.WhatsYourName = true
-			}, this.chatDelayMs*2)
+			}, FIRST_BUBBLE_DELAY_MS + this.chatDelayMs*2)
 			window.setTimeout(() => {
 				this.FLOW.NicknameInput = true
 				this.$nextTick(() => {
-					document.getElementById("userNameInput")?.focus()
+					// preventScroll, because the nickname input sits a full screen below the hero: without
+					// it the browser would yank the landing page out of view before it has been read.
+					document.getElementById("userNameInput")?.focus({ preventScroll: true })
 				})
-			}, this.chatDelayMs*2.5)
+			}, FIRST_BUBBLE_DELAY_MS + this.chatDelayMs*2.5)
+		},
+
+		// ========= the LIQUIDO mark flowing from the hero into the header ==============
+
+		/**
+		 * The big university icon in the hero is not an icon in the page flow - it is #liquidMark, a
+		 * position:fixed element that sits exactly on top of the empty slot in the hero and flows into
+		 * the header's own icon as the visitor scrolls.
+		 *
+		 * Doing it with one element that never changes parents is what keeps the morph seamless: the
+		 * header hides its own icon for as long as the mark is alive (store.heroMarkActive), so there
+		 * is no hand-over at the end and therefore nothing that could flicker.
+		 *
+		 * All state here lives on `this` OUTSIDE of data(): it is rewritten on every animation frame
+		 * and must not drag Vue's reactivity - and the render itself only ever touches inline styles.
+		 */
+		initLiquidMark() {
+			this.$store.setHeroMarkActive(true)
+			this.markRaf = undefined
+			this.markLanded = false
+			this.markWobbleStartedAt = 0
+			this.markEndScale = 0.25
+			this.reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+			this.markScrollElem = document.getElementById("app") || document.scrollingElement
+			// Synchronously, before the first paint: without it the header would flash in fully opaque
+			// for one frame, because its CSS falls back to "no hero" when --hero-progress is unset.
+			document.documentElement.style.setProperty("--hero-progress", "0")
+			this.onMarkScroll = () => this.requestMarkFrame()
+			// --hero-mark-size is a vw clamp, so a resize can change how far the mark has to shrink.
+			this.onMarkResize = () => {
+				this.measureLiquidMark()
+				this.requestMarkFrame()
+			}
+			this.markScrollElem?.addEventListener("scroll", this.onMarkScroll, { passive: true })
+			window.addEventListener("resize", this.onMarkResize, { passive: true })
+			this.$nextTick(() => {
+				this.measureLiquidMark()
+				this.renderLiquidMark()
+			})
+		},
+
+		teardownLiquidMark() {
+			this.markScrollElem?.removeEventListener("scroll", this.onMarkScroll)
+			window.removeEventListener("resize", this.onMarkResize)
+			if (this.markRaf) window.cancelAnimationFrame(this.markRaf)
+			document.documentElement.style.removeProperty("--hero-progress")
+			this.$store.setHeroMarkActive(false)
+		},
+
+		/** Coalesce a burst of scroll events into one render per frame. */
+		requestMarkFrame() {
+			if (this.markRaf) return
+			this.markRaf = window.requestAnimationFrame(() => {
+				this.markRaf = undefined
+				this.renderLiquidMark()
+			})
+		},
+
+		/**
+		 * How far the mark has to shrink. Measured from the two FONT SIZES rather than from the two
+		 * bounding boxes, because the mark's box also holds the blob behind the icon - it is the
+		 * glyphs that have to end up the same size.
+		 */
+		measureLiquidMark() {
+			const headerIcon = document.querySelector("#liquidoHeader .liquido-claim i")
+			const markIcon = this.$refs.markIcon
+			if (!headerIcon || !markIcon) return
+			const from = parseFloat(window.getComputedStyle(markIcon).fontSize)
+			const to = parseFloat(window.getComputedStyle(headerIcon).fontSize)
+			if (from > 0 && to > 0) this.markEndScale = to / from
+		},
+
+		/**
+		 * One frame of the morph. Position, size and shape are deliberately NOT in step:
+		 *
+		 *  - position leads and overshoots slightly (easeOutBack), so the mark arrives and settles
+		 *    instead of stopping dead,
+		 *  - size lags a few percent behind (easeOutCubic on a delayed t), so the mark is still big
+		 *    while it is already moving - the follow-through that makes it read as liquid being
+		 *    pulled up rather than a picture being scaled down,
+		 *  - and it squashes and stretches along the direction of travel, hardest in the middle of
+		 *    the journey where it is fastest.
+		 */
+		renderLiquidMark() {
+			const mark = this.$refs.liquidMark
+			const slot = this.$refs.heroIconSlot
+			if (!mark || !slot) return
+			const headerIcon = document.querySelector("#liquidoHeader .liquido-claim i")
+
+			// --- read ---
+			const scrollTop = this.markScrollElem ? this.markScrollElem.scrollTop : window.scrollY
+			const p = clamp01(scrollTop / MARK_TRAVEL_PX)
+			const from = slot.getBoundingClientRect()          // scrolls away with the page
+			const to = headerIcon ? headerIcon.getBoundingClientRect() : from   // invisible, but it keeps its box
+
+			const pPos = this.reduceMotion ? p : easeOutBack(p)
+			const pSize = this.reduceMotion ? p : easeOutCubic(clamp01((p - 0.12) / 0.88))
+
+			// Fastest in the middle, nothing at either end. The exponent skews the peak towards the
+			// start, where the mark breaks away from the hero.
+			let stretch = this.reduceMotion ? 0 : Math.sin(Math.PI * Math.pow(p, 0.7)) * 0.85
+			stretch += this.markWobble()
+
+			const scale = 1 + (this.markEndScale - 1) * pSize
+			const cx = (from.left + from.width / 2) + ((to.left + to.width / 2) - (from.left + from.width / 2)) * pPos
+			const cy = (from.top + from.height / 2) + ((to.top + to.height / 2) - (from.top + from.height / 2)) * pPos
+
+			// --- write ---
+			mark.style.transform =
+				`translate3d(${(cx - mark.offsetWidth / 2).toFixed(2)}px, ${(cy - mark.offsetHeight / 2).toFixed(2)}px, 0) ` +
+				`scale(${(scale * (1 - 0.17 * stretch)).toFixed(4)}, ${(scale * (1 + 0.24 * stretch)).toFixed(4)})`
+			mark.style.setProperty("--goo", Math.abs(stretch).toFixed(3))
+			// The blob evaporates on arrival, leaving just the icon - the header has no disc behind it.
+			mark.style.setProperty("--blob-opacity", (1 - smoothstep(0.6, 1, p)).toFixed(3))
+			document.documentElement.style.setProperty("--hero-progress", p.toFixed(3))
+
+			// Landing: give it one short settle, but only on the way in.
+			const landed = p > 0.995
+			if (landed && !this.markLanded && !this.reduceMotion) this.markWobbleStartedAt = performance.now()
+			this.markLanded = landed
+		},
+
+		/**
+		 * A damped oscillation that decays to zero, added on top of the squash & stretch when the mark
+		 * touches down in the header. Returns 0 (and costs nothing) once it has died away.
+		 */
+		markWobble() {
+			if (!this.markWobbleStartedAt) return 0
+			const t = (performance.now() - this.markWobbleStartedAt) / MARK_WOBBLE_MS
+			if (t >= 1) {
+				this.markWobbleStartedAt = 0
+				return 0
+			}
+			this.requestMarkFrame()  // nothing else is driving frames while the user holds still
+			const decay = (1 - t) * (1 - t)
+			return Math.sin(t * Math.PI * 3) * decay * 0.45
 		},
 
 		/* username must not be empty and contain at least n chars */
@@ -968,6 +1234,256 @@ export default {
 
 <style scoped>
 
+/****** Landing hero *******/
+
+/*
+ * One screen tall MINUS 8rem, so that the first chat bubble underneath always runs off the bottom
+ * edge of the phone. That cut-off bubble is the scroll hint - which is why the 8rem is a fixed
+ * value and not a fraction: it has to stay smaller than a chat bubble at every viewport size.
+ * #appContent already pads the header height and the safe area away above us, so subtract both.
+ *
+ * The mark and the claim sit near the TOP of that box rather than in its middle: the icon is the
+ * first thing on the page, and the empty space below the claim is what the bubble grows into.
+ */
+.welcome-hero {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+	gap: var(--two);
+	min-height: calc(100vh - var(--liquido-header-height) - env(safe-area-inset-top) - 8rem);
+	min-height: calc(100svh - var(--liquido-header-height) - env(safe-area-inset-top) - 8rem);
+	padding-top: clamp(1.5rem, 6vh, 3rem);
+	padding-bottom: var(--unit);
+	text-align: center;
+}
+
+/* Reserves the mark's place in the hero. #liquidMark is position:fixed and out of the flow. */
+.hero-icon-slot {
+	flex: none;
+	width: var(--hero-mark-size);
+	height: var(--hero-mark-size);
+}
+
+.liquido-hero-claim {
+	margin: 0;
+	max-width: 20rem;
+	font-family: var(--serif-font);
+	font-size: clamp(1.45rem, 6.8vw, 2.1rem);
+	line-height: 1.35;
+	color: var(--primary);
+	text-wrap: balance;   /* no lonely "alle." on a line of its own */
+	animation: claim-rise 900ms 200ms cubic-bezier(0.22, 0.9, 0.24, 1) both;
+}
+
+.liquido-hero-claim :deep(em) {
+	font-style: italic;
+}
+
+@keyframes claim-rise {
+	from { opacity: 0; transform: translateY(1.25rem); }
+	to   { opacity: 1; transform: none; }
+}
+
+
+/****** The LIQUIDO mark, flowing from the hero into the header *******/
+
+/*
+ * Teleported to <body>, so no ancestor transform can turn this position:fixed element into a
+ * position:absolute one mid-flight. renderLiquidMark() writes the transform, --goo (how hard it is
+ * being stretched right now) and --blob-opacity on every frame; everything else is expressed
+ * relative to those, so the JS never has to know about colours or shapes.
+ */
+.liquid-mark {
+	--goo: 0;
+	--blob-opacity: 1;
+	position: fixed;
+	left: 0;
+	top: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--hero-mark-size);
+	height: var(--hero-mark-size);
+	transform-origin: center center;
+	pointer-events: none;   /* never steals a tap, and never "covers" an element for Cypress */
+	will-change: transform;
+	z-index: 10000;         /* one above #liquidoHeader: once it lands, the mark IS the header's icon */
+}
+
+.liquid-goo {
+	position: absolute;
+	inset: 0;
+	opacity: var(--blob-opacity);
+	filter: url(#liquidGoo);
+}
+
+.liquid-blob {
+	position: absolute;
+	inset: 0;
+	background: var(--light-bg);
+	/* Never quite a circle, and never the same shape twice. This is what makes the mark look like a
+	   drop of liquid even while the page is standing still. */
+	border-radius: 58% 42% 46% 54% / 47% 52% 48% 53%;
+	animation: blob-morph 7s ease-in-out infinite;
+}
+
+/*
+ * Two smaller drops that only leave the blob while it is actually moving (--goo). The gooey filter
+ * melts them back into it, so they read as liquid being dragged behind rather than as loose circles.
+ */
+.liquid-drop {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	background: var(--light-bg);
+	border-radius: 50%;
+	opacity: calc(var(--goo) * 1.6);
+}
+/* Trails just far enough to bulge out of the blob's lower edge, never far enough to come loose. */
+.liquid-drop--a {
+	width: 24%;
+	height: 24%;
+	transform: translate(-85%, calc(-50% + var(--goo) * 300%));
+}
+/* This one does come loose, and the filter draws the neck between the two while it goes. */
+.liquid-drop--b {
+	width: 15%;
+	height: 15%;
+	transform: translate(55%, calc(-50% + var(--goo) * 560%));
+}
+
+.liquid-icon {
+	position: relative;   /* above .liquid-goo, and NOT inside the blur */
+	font-size: calc(var(--hero-mark-size) * 0.52);
+	line-height: 1;
+	color: var(--primary);
+}
+
+/*
+ * config.mockBackend is on, so there is no backend at all behind this page - liquido-header.vue
+ * reddens the LIQUIDO mark to say so. On THIS page the header's own icon is invisible and the mark
+ * stands in for it, so the warning has to be painted here instead.
+ *
+ * It is red for the whole flight, hero included, not only once it has landed in the header: a
+ * warning that appears after you scroll is a warning you can miss. The blob stays brand blue, so
+ * the red reads as a state and not as a redesign.
+ */
+.liquid-mark--mock .liquid-icon {
+	color: var(--destructive);
+}
+
+/*
+ * The Login, top right. Three things about it are deliberate:
+ *
+ * 1. It does NOT fade in along --hero-progress the way everything else in the header does. A
+ *    returning visitor arrives at the top of the page, and that is exactly where they look for the
+ *    way in - so it has to be readable in the very first frame, over a header that is still
+ *    completely transparent.
+ * 2. The whole box is the tap target, not the few glyphs of the word: it takes the header's full
+ *    height and at least its height in width, so it covers the same corner block as the header's
+ *    own .header-right and is comfortable to hit with a thumb.
+ * 3. It stays quiet - text, no button chrome. Registering here means talking to the chat, so the
+ *    page itself is the primary call to action and this is the exception path. The mark is the one
+ *    loud thing on this screen and it keeps the stage to itself.
+ *
+ * env(safe-area-inset-top) rather than 0, to line up with .is-pwa #liquidoHeader, which pads itself
+ * down by exactly that when LIQUIDO runs from the home screen.
+ */
+.hero-login {
+	position: fixed;
+	top: env(safe-area-inset-top, 0px);
+	right: 0;
+	z-index: 10001;   /* above #liquidoHeader (9999) and above the mark (10000) */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: var(--liquido-header-height);
+	height: var(--liquido-header-height);
+	padding: 0 var(--unit);
+	border: 0;
+	background: none;
+	font-family: inherit;
+	font-size: 0.9375rem;
+	line-height: 1;
+	color: var(--primary);
+	text-decoration: underline;
+	text-decoration-color: var(--light-border);
+	text-underline-offset: 3px;
+	cursor: pointer;
+}
+
+.hero-login:hover {
+	text-decoration-color: var(--primary);
+}
+.hero-login:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: -4px;
+	border-radius: var(--liquido-border-radius);
+}
+
+/*
+ * The Login's second home, under the nickname field. The top-right one catches a returning visitor
+ * on arrival; this one catches them at the moment of commitment, when the chat asks for a nickname
+ * and they realise they already have an account.
+ *
+ * It stays quieter than the top-right one and quieter still than the field above it: the nickname
+ * IS the primary action in this card, and a returning visitor is the rare case. Padding on the link
+ * with matching negative margins buys a thumb-sized hit area without moving the text, which a bare
+ * one-line link would not give.
+ */
+.login-in-chat {
+	margin: 0;
+	text-align: right;
+	font-size: var(--font-size-small);
+	color: var(--secondary);
+}
+
+.login-in-chat-link {
+	display: inline-block;
+	padding: 0.4rem 0.25rem;
+	margin: -0.4rem -0.25rem;
+	border: 0;
+	background: none;
+	font: inherit;
+	color: var(--primary);
+	text-decoration: underline;
+	text-decoration-color: var(--light-border);
+	text-underline-offset: 3px;
+	cursor: pointer;
+}
+.login-in-chat-link:hover {
+	text-decoration-color: var(--primary);
+}
+.login-in-chat-link:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: 0;
+	border-radius: var(--liquido-border-radius);
+}
+
+/* The filter only has to exist; it must not take up any space. */
+.liquid-goo-filter {
+	position: absolute;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+}
+
+@keyframes blob-morph {
+	0%, 100% { border-radius: 58% 42% 46% 54% / 47% 52% 48% 53%; }
+	25%      { border-radius: 45% 55% 62% 38% / 55% 41% 59% 45%; }
+	50%      { border-radius: 52% 48% 38% 62% / 60% 55% 45% 40%; }
+	75%      { border-radius: 63% 37% 53% 47% / 42% 58% 42% 58%; }
+}
+
+/* renderLiquidMark() already drops the overshoot, the squash and the wobble; this takes care of the
+   two animations that run on their own. */
+@media (prefers-reduced-motion: reduce) {
+	.liquido-hero-claim { animation: none; }
+	.liquid-blob { animation: none; border-radius: 50%; }
+}
+
+
 .date-pill {
 	font-size: 0.7rem;
 	font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
@@ -1071,16 +1587,6 @@ export default {
 	margin-bottom: 0;
 	border: none;
 	*/
-}
-
-.login-link {
-	z-index: 9799;
-	position: fixed;
-	cursor: pointer;
-	padding: 1rem;
-	left: 50%;
-	bottom: var(--save-area-inset-bottom, 2rem);
-	transform: translateX(-50%);
 }
 
 #createOrJoinButtons {

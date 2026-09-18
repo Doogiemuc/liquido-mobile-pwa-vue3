@@ -12,6 +12,13 @@ export const store = reactive({
 	headerBackTarget: undefined,
 	headerRight: undefined,
 
+	/**
+	 * True while the welcome page's hero owns the LIQUIDO mark: its #liquidMark is then the only
+	 * university icon on screen, and liquido-header.vue hides its own one and fades itself in
+	 * along --hero-progress instead of being there from the start.
+	 */
+	heroMarkActive: false,
+
   setHeaderTitle(newTitle) {
     this.headerTitle = newTitle
   },
@@ -22,6 +29,10 @@ export const store = reactive({
 
 	clearHeaderRight() {
 		this.headerRight = undefined
+	},
+
+	setHeroMarkActive(active) {
+		this.heroMarkActive = active
 	},
 
 	/**
