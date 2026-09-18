@@ -171,11 +171,15 @@ Match the surrounding file. Broadly:
   `vue/multi-word-component-names` is off).
 - `.then()/.catch()` chains are preferred over `async/await` in views — except where a genuine
   sequential loop makes `await` clearer.
-- Run `npx eslint src --ext .vue,.js` before finishing. It is **clean** — zero errors, zero
+- Run `npx eslint src tests --ext .vue,.js` before finishing. It is **clean** — zero errors, zero
   warnings — so anything it reports is yours and belongs fixed before you hand the work over.
-  (This used to say one pre-existing error was expected. Both of the errors it named over time are
-  gone now, and a documented "expected" error is worse than none: it gives a real one somewhere to
-  hide.)
+  (This used to say one pre-existing error was expected. Every error it named over time is gone now,
+  and a documented "expected" error is worse than none: it gives a real one somewhere to hide.)
+- `tests/` is linted too, and `.eslintrc.cjs` has the overrides that make that meaningful: Cypress
+  specs get `plugin:cypress/recommended` (so `cy`, `Cypress` and the mocha globals resolve) plus
+  `process` alone, which is all their bundler shims; the Node-side files get `env: node`. That
+  override used to point at `cypress/e2e/**`, a directory this repo does not have, so it had never
+  applied to anything. `cypress/unsafe-to-chain-command` is off on purpose — see the comment there.
 
 ### i18n
 
@@ -294,7 +298,7 @@ enforced per-component via `api.isAdmin()`, and properly by the backend.
 npm run dev            # Vite dev server, HTTPS on :3001 (mkcert certs in tls-certs/)
 npm run build          # production bundle
 npx vitest run         # unit tests
-npx eslint src --ext .vue,.js
+npx eslint src tests --ext .vue,.js
 npx cypress run --e2e --spec tests/e2e/specs/happy-case.cy.js
 ```
 

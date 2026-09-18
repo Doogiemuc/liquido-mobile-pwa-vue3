@@ -18,7 +18,7 @@
     "test:e2e:remote": "cypress run --config-file cypress.config.remote.js",
     "cypress:open": "cypress open --e2e --browser firefox",
     "cypress:open:remote": "cypress open --config-file cypress.config.remote.js --browser firefox",
-    "lint": "eslint src --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "lint": "eslint src tests --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
     "format": "prettier --write src/"
   },
   "dependencies": {

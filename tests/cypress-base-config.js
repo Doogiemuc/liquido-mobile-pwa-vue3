@@ -1,4 +1,3 @@
-/* eslint-env node */
 /**
  * Cypress configuration, shared by every cypress.config*.js in the repo root.
  *
