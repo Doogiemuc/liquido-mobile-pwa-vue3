@@ -142,7 +142,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get("#welcome-chat")
 		cy.get('#userNameInput', {timeout: 8000}).type(fix.adminName).type("{enter}")    // implicitly checks that #userNameInput is not disabled
 		
-		cy.get('#createNewTeamButton').should('be.visible').click()  // Need to wait for button to become visible, because of andimation.
+		cy.get('#createNewTeamButton').scrollIntoView().should('be.visible').click()  // Need to wait for button to become visible, because of andimation.
 		cy.get('#teamNameInput').type(fix.teamName)
 		cy.get('#adminEmailInput').type(fix.adminEmail)
 		cy.get('#adminPasswordInput').type(fix.adminPassword)
@@ -167,24 +167,24 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		// ===== Test passkey registration: the admin actually registers one (see below for the
 		// member, who declines instead - the happy case exercises both variants) =====
 		// GIVEN the setupPasskeyCard is shown
-		cy.get('#setupPasskeyCard').should('be.visible')
+		cy.get('#setupPasskeyCard').scrollIntoView().should('be.visible')
 
 		// AND a virtual authenticator is available, so this ceremony can genuinely succeed
 		setupVirtualAuthenticator()
 
 		//  WHEN test-user registers his passkey
-		cy.get('#passkeyInput').should('be.visible').clear().type('My Test Passkey')
-		cy.get('#setupPasskeyButton').should('be.visible').click()
+		cy.get('#passkeyInput').scrollIntoView().should('be.visible').clear().type('My Test Passkey')
+		cy.get('#setupPasskeyButton').scrollIntoView().should('be.visible').click()
 
 		// THEN it succeeds: no "Try again later" modal, a green checkmark on the button
 		cy.get('#rootPopupModal').should('not.be.visible')
-		cy.get('#setupPasskeyButton .fa-check').should('be.visible')
+		cy.get('#setupPasskeyButton .fa-check').scrollIntoView().should('be.visible')
 
 		//  AND passkey label input is disabled
 		cy.get('#passkeyInput').should('be.disabled')
 		
 		// AND the teamQrCode section is visible
-		cy.get('#teamQrCode').should('be.visible')
+		cy.get('#teamQrCode').scrollIntoView().should('be.visible')
 
 		// AND there is an invite link with inviteCode
 		// Here we extract the inviteCode, because we need it later to join this team.
@@ -257,7 +257,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get('#poll-edit')
 		cy.get(NEW_ROW).should('have.length', 2)
 		cy.get(SAVED_ROW).should('not.exist')
-		cy.get('#addProposalRowButton').should('be.visible')
+		cy.get('#addProposalRowButton').scrollIntoView().should('be.visible')
 		// AND with nothing filled in yet, the poll cannot be created
 		cy.get('#createPollButton').should('be.disabled')
 
@@ -365,7 +365,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		//WHEN joining a team
 		cy.visit("/")
 		cy.get('#userNameInput', {timeout: 8000}).type(fix.userName).type("{enter}")  // implicitly checks that #userNameInput is not disabled
-		cy.get('#joinTeamButton').should('be.visible').click()
+		cy.get('#joinTeamButton').scrollIntoView().should('be.visible').click()
 		cy.get('#inviteCodeInput').type(fix.inviteCode)
 		cy.get('#userEmailInput').type(fix.userEmail)
 		cy.get('#userPasswordInput').type(fix.userPassword)
@@ -378,9 +378,9 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.wait('@memberWelcomeMail').its('response.statusCode').should('eq', 200)
 
 		// AND trying to register a passkey, after joining a team
-		cy.get('#setupPasskeyCard').should('be.visible')
-		cy.get('#passkeyInput').should('be.visible').clear().type('Join team passkey')
-		cy.get('#setupPasskeyButton').should('be.visible').click()
+		cy.get('#setupPasskeyCard').scrollIntoView().should('be.visible')
+		cy.get('#passkeyInput').scrollIntoView().should('be.visible').clear().type('Join team passkey')
+		cy.get('#setupPasskeyButton').scrollIntoView().should('be.visible').click()
 		cy.get('#rootPopupModal').should('be.visible')
 		cy.get('#rootPopupModalSecondaryButton').click()
 		cy.get('#rootPopupModal').should('not.be.visible')
@@ -792,11 +792,11 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get(`[data-poll-id="${fix.pollId}"]`).click()
 
 		// THEN the poll winner page is shown
-		cy.get("#poll-winner-page").should("be.visible")
+		cy.get("#poll-winner-page").scrollIntoView().should("be.visible")
 
 		// AND the winning proposal is displayed in the winner card
-		cy.get(".winner-proposal").should("be.visible")
-		cy.get(".winner-title").should("be.visible")
+		cy.get(".winner-proposal").scrollIntoView().should("be.visible")
+		cy.get(".winner-title").scrollIntoView().should("be.visible")
 
 		// AND the pairwise breakdown shows the winner against each of the poll's two other proposals
 		// (the admin's two plus the member's own addition, from earlier steps in this poll's editor)
@@ -807,7 +807,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 
 		// THEN the full duel matrix and the lock-in graph are shown. Both are well below the fold on
 		// the mobile viewport, and should('be.visible') does not auto-scroll - see CLAUDE.md §3.
-		cy.get("#moreDetailsSection").should("be.visible")
+		cy.get("#moreDetailsSection").scrollIntoView().should("be.visible")
 		cy.get("#duelMatrixTable").scrollIntoView().should("be.visible")
 		cy.get("#duelMatrixTable td[data-duel-row][data-duel-col]").should("have.length", 9)  // 3x3 matrix
 		cy.get("#rankedPairsGraph").scrollIntoView().should("be.visible")

@@ -50,6 +50,10 @@ context('Login Test', () => {
 		//WHEN anonymously accessing index
 		cy.visit("/")
 
+		// NB: deliberately NO .scrollIntoView() anywhere in this test. It is the one test about what
+		// the visitor sees BEFORE touching the screen, and every assertion below reads a bounding rect
+		// against the unscrolled viewport. Scrolling here would not strengthen it, it would erase it.
+
 		//THEN the landing hero is there, with the LIQUIDO mark and the claim ...
 		cy.get("#welcomeHero").should("be.visible")
 		cy.get("#liquidoClaim").should("be.visible")
@@ -106,8 +110,7 @@ context('Login Test', () => {
 
 		//THEN the chat offers the way back in a second time, right there in the card
 		cy.get("#welcomeLoginInChat")
-			.scrollIntoView()
-			.should("be.visible")
+			.scrollIntoView().should("be.visible")
 			.and($link => {
 				const card = Cypress.$("#usernameCard")[0].getBoundingClientRect()
 				const link = $link[0].getBoundingClientRect()
@@ -240,6 +243,8 @@ context('Login Test', () => {
 		cy.get("#loginEmailInput").type("unknown-user@example.com")
 		cy.get("#continueButton").click()
 
+		// No .scrollIntoView(): an error the user has to scroll to find is an error they miss. This
+		// asserts the stronger property, that it lands where they are already looking.
 		cy.get("#loginErrorMessage").should("be.visible")
 	})
 
@@ -265,7 +270,7 @@ context('Login Test', () => {
 		cy.get("#requestPasswordResetButton").click()
 
 		// Should show success message and no error message
-		cy.get("#requestPasswordResetSuccessMessage").should("be.visible")
+		cy.get("#requestPasswordResetSuccessMessage").should("be.visible")   // no scroll: see the note on #loginErrorMessage
 		cy.get("#requestPasswordResetErrorMessage").should("not.exist")
 
 		// ========= Step 2: Reset password with token ========

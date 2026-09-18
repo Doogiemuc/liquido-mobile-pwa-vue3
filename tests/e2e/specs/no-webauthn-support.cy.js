@@ -34,7 +34,7 @@ context('Registration without WebAuthn support', () => {
 		cy.get('#userNameInput', { timeout: 8000 }).type(adminName).type("{enter}")
 
 		// WHEN registering a new team, same as any other admin
-		cy.get('#createNewTeamButton').should('be.visible').click()
+		cy.get('#createNewTeamButton').scrollIntoView().should('be.visible').click()
 		cy.get('#teamNameInput').type(teamName)
 		cy.get('#adminEmailInput').type(adminEmail)
 		cy.get('#adminPasswordInput').type(adminPassword)
@@ -52,7 +52,7 @@ context('Registration without WebAuthn support', () => {
 		cy.get('#setupPasskeyInfoCard').should('not.be.visible')
 
 		// AND the team is reached with an invite code, exactly as with a passkey-capable device
-		cy.get('#teamQrCode').should('be.visible')
+		cy.get('#teamQrCode').scrollIntoView().should('be.visible')
 		cy.get('#inviteCodeButton').should('have.attr', 'data-invitecode').and('match', /^[A-Za-z0-9]{8}$/)
 
 		// AND back on the team page, the passkey reminder shows - this account genuinely has no

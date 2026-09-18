@@ -54,8 +54,8 @@ context("LIQUIDO Polly", { testIsolation: false }, () => {
 
 	it("shows an empty polly with two option rows", () => {
 		cy.visit("/polly")
-		cy.get("#pollyPageTitle").should("be.visible")
-		cy.get("#pollyTitleInput").should("be.visible")
+		cy.get("#pollyPageTitle").scrollIntoView().should("be.visible")
+		cy.get("#pollyTitleInput").scrollIntoView().should("be.visible")
 		cy.get(".polly-proposal-input").should("have.length", 2)
 		// Nothing to save yet
 		cy.get("#savePollyButton").should("be.disabled")
@@ -84,12 +84,12 @@ context("LIQUIDO Polly", { testIsolation: false }, () => {
 		// the editable form is replaced by the live polly
 		cy.get("#pollyTitle").should("contain", QUESTION)
 		cy.get("#pollyTitleInput").should("not.exist")
-		cy.get("#pollyStatus").should("be.visible")
+		cy.get("#pollyStatus").scrollIntoView().should("be.visible")
 
 		// it is votable right away, and the owner may also finish or edit it
-		cy.get("#castVoteButton").should("be.visible")
-		cy.get("#finishPollyButton").should("be.visible")
-		cy.get("#editPollyButton").should("be.visible")
+		cy.get("#castVoteButton").scrollIntoView().should("be.visible")
+		cy.get("#finishPollyButton").scrollIntoView().should("be.visible")
+		cy.get("#editPollyButton").scrollIntoView().should("be.visible")
 
 		// the creator now holds a polly session - and NOT a team session
 		cy.window().then(win => {
@@ -141,8 +141,8 @@ context("LIQUIDO Polly", { testIsolation: false }, () => {
 
 		// after voting the ballot disappears and the status says so
 		cy.get("#castVoteButton").should("not.exist")
-		cy.get("#pollyStatus").should("be.visible")
-		cy.get("#finishPollyButton").should("be.visible")   // still the owner
+		cy.get("#pollyStatus").scrollIntoView().should("be.visible")
+		cy.get("#finishPollyButton").scrollIntoView().should("be.visible")   // still the owner
 	})
 
 	it("opening the share link again shows the vote is already cast", () => {
@@ -150,7 +150,7 @@ context("LIQUIDO Polly", { testIsolation: false }, () => {
 
 		cy.get("#pollyTitle").should("contain", QUESTION)
 		cy.get("#castVoteButton").should("not.exist")       // one passkey, one vote
-		cy.get("#pollyStatus").should("be.visible")
+		cy.get("#pollyStatus").scrollIntoView().should("be.visible")
 	})
 
 	it("the owner finishes the polly and a winner is shown", () => {
@@ -158,7 +158,7 @@ context("LIQUIDO Polly", { testIsolation: false }, () => {
 
 		// finished pollys show the ranked result with a trophy on the winner
 		cy.get(".winner-proposal").should("have.length", 1)
-		cy.get(".fa-trophy").should("be.visible")
+		cy.get(".fa-trophy").scrollIntoView().should("be.visible")
 		cy.get("#finishPollyButton").should("not.exist")
 		cy.get("#castVoteButton").should("not.exist")
 	})

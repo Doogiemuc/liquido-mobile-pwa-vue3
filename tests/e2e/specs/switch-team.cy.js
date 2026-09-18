@@ -43,13 +43,14 @@ context('Switch Team', () => {
 	it('A user of several teams can switch, and the page follows', function() {
 		loginWith(MULTI_TEAM.email)
 
-		// The switcher is offered ...
-		cy.get("#switchTeamButton").should("be.visible")
+		// The switcher is offered ... but below the fold: team-home resets #app.scrollTop to 0 on
+		// mount, and the passkey and verify-email banners fill the first screen on 375x667.
+		cy.get("#switchTeamButton").scrollIntoView().should("be.visible")
 		// ... and the list is collapsed until asked for.
 		cy.get("#switchTeamList").should("not.exist")
 
 		cy.get("#switchTeamButton").click()
-		cy.get("#switchTeamList").should("be.visible")
+		cy.get("#switchTeamList").scrollIntoView().should("be.visible")
 
 		// Both teams are listed, and the one we are in is marked as current and not clickable.
 		cy.get("#switchTeamList button").should("have.length", 2)
