@@ -228,7 +228,10 @@ const showVerifyEmailReminder = computed(() => !emailVerified.value)
 let passkeyLabel = ref("passkeylabel")
 
 onMounted(() => {
-	proxy?.$root?.scrollToTop()
+	// ?.() on the CALL too, not just the path: when this component is mounted on its own in a unit
+	// test, $root is the component itself and has no scrollToTop - so `?.` on $root passes and the
+	// call then throws. Navigating here must never depend on the page-scroll helper existing.
+	proxy?.$root?.scrollToTop?.()
 	refreshFromCache()
 })
 
