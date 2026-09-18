@@ -317,3 +317,23 @@ not on a bare deploy.
 
 The backend lives in the sibling repo `../liquido-backend-quarkus` and has its own `CLAUDE.md` and a
 detailed `AGENTS.md` — read those before touching the API, the schema or the seed data.
+
+---
+
+## 8. How work is organised
+
+**One branch per piece of work** — a feature, or a batch of related fixes. Robert names it and
+Robert merges it when the work is finished. Pull requests are his to open, not yours; do not open
+one unless he asks.
+
+**A merged branch is finished.** When the branch you were given has been merged, the next feature —
+and the next session — starts a **new** branch cut from the freshly merged `main`. Never continue on
+a merged branch and never stack new commits on merged history: a merged pull request cannot track
+new work, so anything pushed there is invisible to review.
+
+So when you pick up follow-up work, check first whether the branch you are on has already been
+merged (`git fetch origin main && git log --oneline origin/main..HEAD`). If it has, cut the new
+branch from `origin/main` and carry over only the commits that are genuinely unmerged.
+
+`main` moves while you work. Fetch it before branching rather than trusting the base you started
+from — that is also how you notice that a fix you were about to make has already landed.
