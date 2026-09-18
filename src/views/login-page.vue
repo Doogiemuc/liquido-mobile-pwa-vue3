@@ -72,9 +72,9 @@
 
 					<div class="row mb-3">
 						<div class="col">
-							<button type="button"
+							<button id="emailLoginLinkButton" type="button"
 								class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center"
-								@click="requestEmailLoginLink">
+								:disabled="!emailInputIsValid || !emailKnown" @click="requestEmailLoginLink">
 								<i class="fa-regular fa-envelope"></i>
 								<span class="flex-grow-1 text-center">{{ $t("EmailLoginLink") }}</span>
 							</button>
@@ -245,6 +245,7 @@ export default {
 			webAuthnAvailable: false,
 			webAuthnLoginInProgress: false,
 			checking: false,
+			emailKnown: false,
 			loginErrorMessage: undefined,
 			loginErrorMessageId: undefined,
 			emailError: null,
@@ -285,6 +286,7 @@ export default {
 	watch: {
 		emailInputVal() {
 			this.clearErrors()
+			this.emailKnown = false
 			if (this.step === 2) {
 				this.step = 1
 				this.webAuthnAvailable = false
@@ -411,13 +413,17 @@ export default {
 				.then(result => {
 					if (result.status === "REGISTERED") {
 						this.webAuthnAvailable = !!result.webauthn
+						this.emailKnown = true
 						this.step = 2
 					} else {
+						this.emailKnown = false
 						this.setLoginError(this.$t("emailNotFound"), ERROR.EMAIL_NOT_FOUND)
 					}
 				})
 				.catch(() => {
-					// Network error — still allow login attempt
+					// Network error — still allow login attempt, but we could not confirm the
+					// email is known, so the email-link button stays disabled.
+					this.emailKnown = false
 					this.step = 2
 				})
 				.finally(() => {

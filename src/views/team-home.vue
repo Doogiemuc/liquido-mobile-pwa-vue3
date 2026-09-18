@@ -157,7 +157,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue"
+import { ref, computed, onMounted, getCurrentInstance } from "vue"
 import { useRouter } from "vue-router"
 import { useLoc } from "@/services/liqui-loc.js"
 import config from "config"
@@ -171,6 +171,7 @@ import { store } from "@/services/store"
 
 const router = useRouter()
 const { t, d } = useLoc()
+const { proxy } = getCurrentInstance()
 
 const team = ref({})
 
@@ -227,6 +228,7 @@ const showVerifyEmailReminder = computed(() => !emailVerified.value)
 let passkeyLabel = ref("passkeylabel")
 
 onMounted(() => {
+	proxy?.$root?.scrollToTop()
 	refreshFromCache()
 })
 

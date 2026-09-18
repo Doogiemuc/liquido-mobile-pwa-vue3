@@ -410,17 +410,21 @@ let graphQlApi = {
 	},
 
 	/**
-	 * When an already registered user wants to login, 
+	 * When an already registered user wants to login,
 	 * LIQUIDO can send him a magic link via email.
 	 * The user MUST have access to his own email inbox.
-	 * 
+	 *
+	 * REST, not GraphQL, for the same reason as requestPasswordReset above: the mailer deadlocks
+	 * inside a blocking GraphQL resolver on this Quarkus version.
+	 *
 	 * @param {String} email email of a registered user
 	 * @returns Promise.resolve(), when email was sent successfully
 	 */
 	requestEmailLoginLink(email) {
 		if (!email) throw new Error("Need email to log in!")
-		let graphQL = `query requestEmailLoginLink($email: String!) { requestEmailLoginLink(email: $email) }`
-		return graphQlQuery(graphQL, { email })
+		return axios.get('/login/requestEmailLoginLink', {
+			params: { email: email }
+		}).then(res => res.data)
 	},
 
 	/**
