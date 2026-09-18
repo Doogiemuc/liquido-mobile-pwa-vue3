@@ -16,12 +16,19 @@
 			</div>
 		</section>
 
-		<!-- Passkey info box with fingerprint icon on the left. Hidden once the user has one. -->
+		<!--
+			Passkey info box with fingerprint icon on the left. Hidden once the user has one.
+
+			.alert-has-action + .alert-action is the app-wide standard for "this box's action" - see
+			the block in liquido.css. It puts the button at the bottom right, hanging half over the
+			border, the same as #resendVerificationMailButton below and every alert action in
+			poll-show.vue and polls.vue.
+		-->
 		<section v-if="!userHasWebauthn">
-			<div class="alert liquido-info alert-dismissible fade show" role="alert">
+			<div class="alert liquido-info alert-has-action alert-dismissible fade show" role="alert">
 				<h2>Mache LIQUIDO sicher!</h2>
 				<p>Melde dich in Zukunft ganz einfach mit Face-ID oder Fingerabdruck an.</p>
-				<button id="passkeyButton" type="button" class="btn btn-primary" @click="setupPasskey">
+				<button id="passkeyButton" type="button" class="btn btn-primary alert-action" @click="setupPasskey">
 					<i class="fas fa-fingerprint me-2" />Passkey einrichten
 				</button>
 				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
