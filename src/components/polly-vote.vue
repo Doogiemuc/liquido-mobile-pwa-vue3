@@ -13,7 +13,7 @@
  * option - you drag them all into your preferred order, favourite on top.
  */
 
-import { ref, reactive, computed, onMounted, getCurrentInstance } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
 import draggable from 'vuedraggable'
 import config from "config"
 import pollyApi from '@/polly/polly-client.js'
@@ -102,6 +102,25 @@ onMounted(async () => {
 	} else {
 		document.getElementById("pollyTitleInput")?.focus()
 	}
+
+	// TEST HELPER (Cypress e2e only), same reasoning as cast-vote.vue's: the ballot order IS
+	// polly.proposals, reordered by native HTML5 drag'n'drop, which vuedraggable/SortableJS make
+	// unreliable to simulate. Without this a test can only ever cast the default order, so two
+	// voters could never disagree and the ranked count would never actually be exercised.
+	if (window.Cypress) {
+		window.liquidoPollyTest = {
+			/** Move the option at `index` to the top of the ballot, as dragging it there would. */
+			moveProposalToTop: (index) => {
+				if (index < 0 || index >= polly.proposals.length) return false
+				polly.proposals.unshift(polly.proposals.splice(index, 1)[0])
+				return true
+			},
+		}
+	}
+})
+
+onUnmounted(() => {
+	if (window.Cypress) delete window.liquidoPollyTest
 })
 
 async function loadPolly() {
@@ -391,7 +410,8 @@ function showProblem(err, fallbackKey) {
 			</div>
 
 			<!-- status line -->
-			<div v-if="!isEditable && polly.publicId" id="pollyStatus" class="card-body pt-0 text-center text-secondary polly-status">
+			<div v-if="!isEditable && polly.publicId" id="pollyStatus" class="card-body pt-0 text-center text-secondary polly-status"
+				:data-num-ballots="polly.numBallots" :data-already-voted="!!polly.alreadyVoted">
 				<span v-if="isFinished">{{ t('PollyFinished', { count: polly.numBallots }) }}</span>
 				<span v-else-if="polly.alreadyVoted">{{ t('AlreadyVoted') }}</span>
 				<span v-else-if="polly.isOwner">{{ t('NumBallots', { count: polly.numBallots }) }}</span>
