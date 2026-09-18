@@ -1,5 +1,5 @@
  <template>
-	<header id="liquidoHeader" :class="{ 'transition-header': isSticky, 'hero-mark-active': heroMarkActive }">
+	<header id="liquidoHeader" :class="{ 'transition-header': isSticky, 'hero-mark-active': heroMarkActive, 'mock-backend': isMockBackend }">
 		<div class="header-top-row">
 			<div class="header-left" @click="clickLeft">
 				<button v-if="headerBackTarget" class="header-action-btn header-action-btn--left" type="button" @click.stop="clickLeft" aria-label="Back">
@@ -8,7 +8,17 @@
 			</div>
 			<div class="header-center" @click="clickHeaderCenter">
 				<div class="liquido-claim">
-					<i class="fas fa-university" />&nbsp;
+					<!--
+						In mock mode this icon turns red and doubles as the mock-state reset (see
+						resetMockState), which is what the "M" button next to it used to be for.
+						It must stay a bare <i>: welcome-chat.vue's measureLiquidMark() reads this
+						element's font size and box to work out where the liquid mark has to land.
+					-->
+					<i
+						class="fas fa-university"
+						:title="isMockBackend ? 'Mock backend is active - click to reset the mock state' : undefined"
+						@click.stop="resetMockState"
+					/>&nbsp;
 					<span class="liquido" />
 				</div>
 				<div class="center-title">
@@ -16,7 +26,6 @@
 				</div>
 			</div>
 			<div class="header-right" :click-right="clickRight">
-				<button v-if="isMockBackend" id="mockResetButton" class="mock-reset-button" type="button" @click.stop="resetMockState" title="Reset mock state" aria-label="Reset mock state">M</button>
 				<slot name="header-right" />
 			</div>
 		</div>
@@ -135,7 +144,12 @@ export default {
 			EventBus.emit(EventBus.Event.CLICK_HEADER_RIGHT)
 		},
 
+		/**
+		 * Wipe the mocked backend's "database" and start over. Reached by clicking the red LIQUIDO
+		 * icon, which only turns red - and only does this - while config.mockBackend is on.
+		 */
 		resetMockState() {
+			if (!this.isMockBackend) return
 			try {
 				sessionStorage.removeItem("LIQUIDO_MOCK_STATE")
 				window.location.reload()
@@ -228,23 +242,6 @@ export default {
 			outline: none;
 		}
 
-		.mock-reset-button {
-			background: transparent;
-			border: none;
-			box-shadow: none;
-			color: #c40000;
-			font-weight: 800;
-			font-size: 1.35rem;
-			line-height: 1;
-			padding: 0;
-			cursor: pointer;
-		}
-
-		.mock-reset-button:hover,
-		.mock-reset-button:focus-visible {
-			color: #920000;
-			outline: none;
-		}
 		.header-back-link {
 			display: flex;
 			align-items: center;
@@ -311,6 +308,25 @@ export default {
 		opacity: calc((var(--hero-progress, 1) - 0.55) / 0.45);
 		transform: translateX(calc((1 - var(--hero-progress, 1)) * -0.6rem));
 	}
+}
+
+/**
+ * config.mockBackend is on: there is NO backend behind this app, and every team, poll and ballot
+ * on screen is invented by liquido-graphql-client.mock.js. That has to be impossible to miss -
+ * forgetting it is on is exactly the mistake that wastes an afternoon - so the LIQUIDO mark itself
+ * turns red. It used to be a separate red "M" button in the corner, which was easy to overlook and
+ * spent a slot in the header that real content wants.
+ *
+ * The icon keeps the reset that the "M" carried: clicking it drops the mocked "database" and
+ * reloads. resetMockState() is a no-op unless mockBackend is on, so the same handler is harmless
+ * in production.
+ *
+ * On welcome-chat.vue this icon is invisible (.hero-mark-active above) because #liquidMark stands
+ * in for it, so that page reddens the mark instead - see .liquid-mark--mock there.
+ */
+#liquidoHeader.mock-backend .liquido-claim i {
+	color: var(--destructive);
+	cursor: pointer;
 }
 
 /* In PWA standalone mode: extend header under the status bar / Dynamic Island */

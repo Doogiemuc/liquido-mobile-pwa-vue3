@@ -20,7 +20,7 @@
 			to position:absolute halfway through the animation.
 		-->
 		<Teleport to="body">
-			<div id="liquidMark" ref="liquidMark" class="liquid-mark" aria-hidden="true">
+			<div id="liquidMark" ref="liquidMark" class="liquid-mark" :class="{ 'liquid-mark--mock': isMockBackend }" aria-hidden="true">
 				<div class="liquid-goo">
 					<span class="liquid-blob" />
 					<span class="liquid-drop liquid-drop--a" />
@@ -38,7 +38,6 @@
 				v-if="showLoginButton"
 				id="welcomeLoginButton"
 				class="hero-login"
-				:class="{ 'hero-login--beside-mock': isMockBackend }"
 				type="button"
 				@click="goToLogin"
 			>
@@ -651,7 +650,7 @@ export default {
 		showLoginButton() {
 			return !this.FLOW.NiceToMeetYou
 		},
-		/** Only to keep the Login clear of the dev-only mock-reset button. See .hero-login--beside-mock. */
+		/** Reddens the mark as a mock-backend warning. See .liquid-mark--mock. */
 		isMockBackend() {
 			return !!config.mockBackend
 		},
@@ -1362,6 +1361,19 @@ export default {
 }
 
 /*
+ * config.mockBackend is on, so there is no backend at all behind this page - liquido-header.vue
+ * reddens the LIQUIDO mark to say so. On THIS page the header's own icon is invisible and the mark
+ * stands in for it, so the warning has to be painted here instead.
+ *
+ * It is red for the whole flight, hero included, not only once it has landed in the header: a
+ * warning that appears after you scroll is a warning you can miss. The blob stays brand blue, so
+ * the red reads as a state and not as a redesign.
+ */
+.liquid-mark--mock .liquid-icon {
+	color: var(--destructive);
+}
+
+/*
  * The Login, top right. Three things about it are deliberate:
  *
  * 1. It does NOT fade in along --hero-progress the way everything else in the header does. A
@@ -1399,12 +1411,6 @@ export default {
 	text-decoration-color: var(--light-border);
 	text-underline-offset: 3px;
 	cursor: pointer;
-}
-/* liquido-header.vue puts its mock-reset button in .header-right, in exactly this corner. That
-   button only exists while config.mockBackend is on, so step aside for it rather than making the
-   production layout pay for a development affordance. */
-.hero-login--beside-mock {
-	right: var(--liquido-header-height);
 }
 
 .hero-login:hover {
