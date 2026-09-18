@@ -148,7 +148,7 @@
 			</template>
 		</popup-modal>
 
-		<div v-if="showFinishVotingPhase" class="alert alert-admin alert-has-action mt-5">
+		<div v-if="showFinishVotingPhase" class="alert alert-admin alert-has-action mt-5" :data-num-ballots="poll.numBallots">
 			<liqui-loc-html tag="p" msg-key="finishVotingPhaseInfo" :params="{numBallots: poll.numBallots}" />
 			<button id="finishVoteButton" type="button" :disabled="finishVoteLoading" class="btn btn-primary alert-action" @click="clickFinishVote()">
 				<span v-if="finishVoteLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>

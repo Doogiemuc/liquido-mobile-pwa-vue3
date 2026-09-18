@@ -727,16 +727,37 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		// by the page slide transition or by the panel sitting below the fold.
 		cy.get("#availableDraggable .proposal-panel").should("have.length", 3)
 
-		// AND user drags a proposal into his ballot.
+		// Remember which proposals he is about to rank, in order. PollEntity.proposals is @OrderBy("id"),
+		// so this pool is in a stable order and the admin below will see the same first proposal - which
+		// is what makes the winner predictable rather than a coin toss.
+		cy.get("#availableDraggable .proposal-panel").eq(0).invoke("attr", "data-proposal-id").then(id => {
+			fix.firstChoiceId = id
+			expect(fix.firstChoiceId, "the member's first choice must have an id").to.be.a("string")
+		})
+		cy.get("#availableDraggable .proposal-panel").eq(1).invoke("attr", "data-proposal-id").then(id => {
+			fix.secondChoiceId = id
+		})
+
+		// AND user drags TWO proposals into his ballot, favourite first, leaving the third out.
+		// That partial ballot is the whole point of LIQUIDO: you rank what you have an opinion about
+		// and simply leave out what you do not. Ranking exactly one would never exercise it.
 		// Native drag'n'drop (vuedraggable/SortableJS) is unreliable to simulate in Cypress,
 		// so we use the test-only helper that cast-vote.vue exposes when window.Cypress is set.
 		cy.window().then(win => {
 			expect(win.liquidoCastVoteTest, "cast-vote test helper should be exposed on window").to.exist
 			win.liquidoCastVoteTest.addFirstProposalToBallot()
+			win.liquidoCastVoteTest.addFirstProposalToBallot()
 		})
 
-		// THEN the proposal appears in the ballot
-		cy.get("#ballotDraggable .proposal-panel").should("have.length", 1)
+		// THEN both appear in the ballot, in the order he ranked them, and the third stays available
+		cy.get("#ballotDraggable .proposal-panel").should("have.length", 2)
+		cy.get("#availableDraggable .proposal-panel").should("have.length", 1)
+		cy.then(() => {
+			cy.get("#ballotDraggable .proposal-panel").eq(0)
+				.should("have.attr", "data-proposal-id", fix.firstChoiceId)
+			cy.get("#ballotDraggable .proposal-panel").eq(1)
+				.should("have.attr", "data-proposal-id", fix.secondChoiceId)
+		})
 
 		// WHEN user casts his vote
 		cy.get("#castVoteButton").should("not.be.disabled").click()
@@ -760,6 +781,42 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get("#ballotIsVerifiedInfo").scrollIntoView().should("be.visible")
 	})
 	
+	it("[Admin] Admin votes too, so the poll has more than one ballot", function() {
+		assert.isString(fix.adminJWT, "Need adminJWT to cast the admin's own vote")
+		assert.isString(fix.firstChoiceId, "Need the member's first choice from the step before")
+
+		// A decision taken by one person is not a decision. Until this step the poll was always
+		// finished on a single ballot, so the count, the duel matrix and the winner were all trivially
+		// whatever that one voter said - a tally that can never disagree cannot catch a counting bug.
+
+		//GIVEN the admin, who has not voted yet, on the poll in voting
+		localStorage.setItem("LIQUIDO_JWT", fix.adminJWT)
+		cy.visit("/")
+		cy.get("#team-home")
+		cy.get(`.polls-in-voting-container [data-poll-id="${fix.pollId}"]`).click()
+		cy.get("#cast-vote-page")
+
+		// THEN he gets an empty ballot of his own - the member's vote is secret, and is not his
+		cy.get("#ballotDraggable .proposal-panel").should("have.length", 0)
+		cy.get("#availableDraggable .proposal-panel").should("have.length", 3)
+
+		// WHEN he ranks only his single favourite - the same proposal the member put first, because
+		// the pool is ordered by id for both of them - and leaves the other two unranked
+		cy.window().then(win => win.liquidoCastVoteTest.addFirstProposalToBallot())
+		cy.get("#ballotDraggable .proposal-panel").should("have.length", 1)
+		cy.get("#ballotDraggable .proposal-panel").eq(0)
+			.should("have.attr", "data-proposal-id", fix.firstChoiceId)
+
+		cy.get("#castVoteButton").should("not.be.disabled").click()
+		cy.get('#confirmVoteModal').should("be.visible")
+		cy.get('#confirmVoteModalPrimaryButton').click()
+		cy.get('#rootPopupModal').should("be.visible").and("have.attr", "data-modaltype", "success")
+		cy.get('#rootPopupModalPrimaryButton').click()
+
+		// THEN his own vote is recorded too
+		cy.get("#alreadyVotedInfo").scrollIntoView().should("be.visible")
+	})
+
 	it("[Admin] Admin finishes voting phase", function() {
 		assert.isString(fix.adminJWT, "Need adminJWT to show team and polls")
 
@@ -768,6 +825,11 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.visit("/polls")
 		// AND the poll in elaboration that was created before
 		cy.get(`[data-poll-id="${fix.pollId}"]`).click()
+
+		// THEN both ballots were counted - the member's and his own. Asserted before finishing,
+		// because this is the number the poll is about to be decided on.
+		cy.get("#finishVoteButton").scrollIntoView()
+		cy.get("[data-num-ballots]").should("have.attr", "data-num-ballots", "2")
 
 		// WHEN admin finishes the voting phase
 		cy.get("#finishVoteButton").click()
@@ -797,6 +859,13 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		// AND the winning proposal is displayed in the winner card
 		cy.get(".winner-proposal").scrollIntoView().should("be.visible")
 		cy.get(".winner-title").scrollIntoView().should("be.visible")
+
+		// AND it is the RIGHT proposal: both voters put this one first, so it beats each of the others
+		// head to head and is the Condorcet winner. Asserting only that "a winner is shown" would pass
+		// just as happily if the count picked the wrong proposal, which is the one thing here worth
+		// getting right.
+		cy.get(".winner-proposal").should("have.attr", "data-proposal-id", fix.firstChoiceId)
+		cy.get(".winner-title").should("contain", fix.proposalTitle)
 
 		// AND the pairwise breakdown shows the winner against each of the poll's two other proposals
 		// (the admin's two plus the member's own addition, from earlier steps in this poll's editor)

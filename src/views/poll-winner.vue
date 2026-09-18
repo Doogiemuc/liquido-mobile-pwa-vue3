@@ -36,7 +36,7 @@
 			<template v-else-if="winnerProposal">
 				<h2 class="page-title mb-1">{{ $t('theWinnerIs') }}</h2>
 
-				<div class="winner-proposal shadow">
+				<div class="winner-proposal shadow" :data-proposal-id="winnerProposal.id">
 					<div class="winner-badge">
 						<i class="fas fa-crown"></i>&nbsp;{{ $t('winnerBadge') }}
 					</div>
