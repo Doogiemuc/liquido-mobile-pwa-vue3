@@ -171,8 +171,11 @@ Match the surrounding file. Broadly:
   `vue/multi-word-component-names` is off).
 - `.then()/.catch()` chains are preferred over `async/await` in views — except where a genuine
   sequential loop makes `await` clearer.
-- Run `npx eslint src --ext .vue,.js` before finishing. One pre-existing error is expected
-  (`liquido-graphql-client.mock.js` no-useless-escape).
+- Run `npx eslint src --ext .vue,.js` before finishing. It is **clean** — zero errors, zero
+  warnings — so anything it reports is yours and belongs fixed before you hand the work over.
+  (This used to say one pre-existing error was expected. Both of the errors it named over time are
+  gone now, and a documented "expected" error is worse than none: it gives a real one somewhere to
+  hide.)
 
 ### i18n
 
