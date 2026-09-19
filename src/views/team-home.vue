@@ -235,7 +235,10 @@ onMounted(() => {
 	refreshFromCache()
 	// Refresh the team from the backend too: the cache may be minutes old (e.g. another member
 	// joined, or an admin renamed the team) by the time this page is visited.
-	api.getTeam(true).then(refreshFromCache).catch(err => console.error("Could not refresh team", err))
+	// loginWithJwt() re-queries the backend with the current JWT and repopulates the team/user/teams
+	// cache (see api.login() inside it) - api.getTeam() does not exist on this client.
+	const jwt = localStorage.getItem(api.LIQUIDO_JWT_KEY)
+	if (jwt) api.loginWithJwt(jwt).then(refreshFromCache).catch(err => console.error("Could not refresh team", err))
 })
 
 /**
