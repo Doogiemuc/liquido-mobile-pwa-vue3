@@ -165,6 +165,17 @@ outside GISMO's own network — e.g. a cloud CI runner, or (for a Claude Code se
 isolated agent. The same IPv4-forcing `unshare` technique still applies there, just pointed at the
 real public IP instead of `127.0.0.1`, since that runner's network is genuinely elsewhere.
 
+**Why the script exports `DISPLAY`.** Cypress's own Electron shell needs a real X display (or
+Xvfb) just to launch, even for a fully "headless" run — `--headless` only concerns the *browser
+under test*, not the Cypress app driving it. Without one, `npx cypress run` fails immediately.
+GISMO isn't a headless-only box: it already has a real X display running via its desktop session
+(lightdm), consistently at `:1` in practice, so the script just does
+`export DISPLAY="${DISPLAY:-:1}"` and reuses whatever is already there rather than installing or
+starting anything. This is specific to GISMO having a desktop session at all — a genuinely
+headless environment (e.g. a cloud CI runner or a remote-isolated agent for the
+outside-the-network verification above) has no `:1` to fall back to, and needs Xvfb or an
+equivalent instead.
+
 ### Negative test cases
 
 Both of the negative cases this section used to list as TODO now exist:

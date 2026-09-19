@@ -3,7 +3,7 @@
 Guidance for Claude Code when working in the LIQUIDO mobile PWA (Vue 3 frontend).
 
 For the technical overview — tech stack, bootstrap sequence, cache design, build and deploy —
-read **[doc/liquido-architecture.md](doc/liquido-architecture.md)** first. This file does not repeat
+read **[docs/liquido-architecture.md](docs/liquido-architecture.md)** first. This file does not repeat
 it. What follows is what that document does not tell you: what LIQUIDO is *for*, and the things in
 this codebase that will cost you an hour if you learn them the hard way.
 
@@ -20,7 +20,7 @@ survey tool. Two ideas drive every design decision in here:
 
 **You do not vote for one option — you rank them.** A voter drags the proposals they support into a
 personal order of preference and simply leaves out the ones they don't. Counting is by
-[Ranked Pairs](doc/ai/ranked-pair-voting-doc.md): every proposal is compared against every other,
+[Ranked Pairs](docs/ai/ranked-pair-voting-doc.md): every proposal is compared against every other,
 and the winner is the one that beats each rival in a head-to-head majority. The practical effect,
 and the reason the product exists: the option **most people can live with** wins, even when two loud
 camps would otherwise deadlock.
@@ -196,7 +196,7 @@ German is the only complete locale; `en: {}` is normal.
   escapes each parameter, interpolates, then sanitises — the one place message HTML is allowed.
 - A missing key logs a warning once per key and renders the key itself. Do not ignore those warnings;
   they are real gaps (the German UI showed an English "Password" for a long time this way).
-- `doc/english-translation-gaps.md` lists the keys English is missing.
+- `docs/english-translation-gaps.md` lists the keys English is missing.
 
 ---
 

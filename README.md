@@ -13,4 +13,4 @@ It talks to the LIQUIDO backend via a GraphQL API.
 
 # Coding
 
-See ./doc/README-tech.md for more technical details.
+See ./docs/README-tech.md for more technical details.
