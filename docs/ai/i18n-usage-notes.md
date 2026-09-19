@@ -82,7 +82,7 @@ const i18n = new createI18n({
 ```
 
 > Migration direction: `legacy: false` + `globalInjection: true`, then move component messages to
-> `useI18n({ useScope: 'local', messages })`. See `doc/ai/AI-plan migrate to i18n v12.md`.
+> `useI18n({ useScope: 'local', messages })`. See `docs/ai/AI-plan migrate to i18n v12.md`.
 
 ### No `<i18n>` SFC custom blocks
 
@@ -155,7 +155,7 @@ Files: `src/views/polls.vue`, `src/views/team-home.vue`.
 ## 4. Pattern C — Polly's own translator in `src/polly/polly-i18n.js`
 
 The Polly module keeps its own translations, on purpose: `src/polly/` is self-contained and must not
-depend on the rest of the app (see §8b of `doc/liquido-architecture.md`). Messages live in
+depend on the rest of the app (see §8b of `docs/liquido-architecture.md`). Messages live in
 [`src/polly/polly-i18n.js`](../../src/polly/polly-i18n.js), and components get a `t()` from
 `usePollyI18n()`:
 
@@ -263,4 +263,4 @@ import { ref, computed, onMounted, getCurrentInstance } from "vue"
 - Options `i18n:` examples: `src/components/poll-card.vue`, `src/views/cast-vote.vue`
 - `<script setup>` + global `useI18n()`: `src/views/polls.vue`, `src/views/team-home.vue`
 - Polly's own translator: `src/polly/polly-i18n.js`, used by `src/components/polly-vote.vue`
-- Migration notes: `doc/ai/AI-plan migrate to i18n v12.md`
+- Migration notes: `docs/ai/AI-plan migrate to i18n v12.md`

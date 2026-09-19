@@ -232,7 +232,7 @@ stateDiagram-v2
 
 A **Polly** is a quick poll with no team, no account and no login screen. It is a
 **separate module** (`src/polly/`) that shares the app shell and nothing else — its own
-client, its own session key, its own mock. See `doc/use-case-flows/polly.mermaid`.
+client, its own session key, its own mock. See `docs/use-case-flows/polly.mermaid`.
 
 ```mermaid
 stateDiagram-v2

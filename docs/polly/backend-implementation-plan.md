@@ -20,7 +20,7 @@ cute. Same clever idea (you *sort* the options instead of picking one), none of 
 - **Two states.** `VOTING → FINISHED`. A polly is live the instant it is created — there is
   no elaboration phase and no start step.
 
-Flow diagram: `doc/use-case-flows/polly.mermaid`.
+Flow diagram: `docs/use-case-flows/polly.mermaid`.
 
 ---
 
@@ -149,7 +149,7 @@ RankedPairs.determineWinner(List<List<ProposalId>> ballots) -> ProposalId
 ```
 
 Both `finishVotingPhase` (team polls) and `finishPolly` call it. Winning-votes vs margin is
-discussed in `doc/ai/ranked-pair-voting-doc.md` — whichever variant you pick must live in
+discussed in `docs/ai/ranked-pair-voting-doc.md` — whichever variant you pick must live in
 this one function, so a fix reaches both products.
 
 This extraction is the only change to existing backend code. Everything else is additive.
@@ -225,7 +225,7 @@ editing after the first ballot, and that `public_id` values are not sequential.
 | `src/polly/polly-passkey.js` | The ceremony the REST endpoints must satisfy |
 | `src/polly/polly-client.mock.js` | A **working reference implementation** of every rule — ownership, the one-vote constraint, winner calculation |
 | `tests/unit/polly-flow.spec.js` | 25 tests describing the intended behaviour |
-| `doc/liquido-architecture.md` §8b | Polly vs LIQUIDO poll, side by side |
+| `docs/liquido-architecture.md` §8b | Polly vs LIQUIDO poll, side by side |
 
 `polly-client.mock.js` is the fastest way to see the intended semantics — it is small and
 every rule in it is one the backend now needs to enforce for real.

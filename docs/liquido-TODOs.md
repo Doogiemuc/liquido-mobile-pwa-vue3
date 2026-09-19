@@ -70,7 +70,7 @@ LIQUIDO premium  is a decentralized implementation of a new liquid, proxy voting
 ## Bigger technical lifts
 
  * Refactor all components to Composition style API
- * Update i18n. See plans under doc/ai. Or implement our own loc(). Then date formatting is still a todo.
+ * Update i18n. See plans under docs/ai. Or implement our own loc(). Then date formatting is still a todo.
  * Three levels of polls,  Polly
  * Capacitorjs.com A cross platform native runtime for web apps.
  * split liquido-graphql-client.js  into authentication, cache-service and pure backend HTTP clients

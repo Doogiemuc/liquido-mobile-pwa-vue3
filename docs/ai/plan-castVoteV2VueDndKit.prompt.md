@@ -1,6 +1,6 @@
 # Plan: Cast-Vote v2 with Vue DnD Kit
 
-Port `doc/ai/cast-vote-react.tsx` into a new `<script setup>` page `cast-vote-v2.vue`, driving all drag & drop with **`@vue-dnd-kit/core`**. The library is a Vue-native twin of the React `@dnd-kit` — so the port stays faithful: `DnDProvider` ≈ `DndContext`, `makeDraggable`/`makeDroppable` ≈ `useSortable`/`useDroppable`, `DragPreview` ≈ `DragOverlay` (rotation), and `event.helpers.suggestSort('vertical')` replaces the manual `arrayMove`/slot logic. Bootstrap styling; standard `poll-card.vue` on top and `liquido-footer.vue` at the bottom.
+Port `docs/ai/cast-vote-react.tsx` into a new `<script setup>` page `cast-vote-v2.vue`, driving all drag & drop with **`@vue-dnd-kit/core`**. The library is a Vue-native twin of the React `@dnd-kit` — so the port stays faithful: `DnDProvider` ≈ `DndContext`, `makeDraggable`/`makeDroppable` ≈ `useSortable`/`useDroppable`, `DragPreview` ≈ `DragOverlay` (rotation), and `event.helpers.suggestSort('vertical')` replaces the manual `arrayMove`/slot logic. Bootstrap styling; standard `poll-card.vue` on top and `liquido-footer.vue` at the bottom.
 
 ## Library API mapping
 
@@ -49,7 +49,7 @@ Port `doc/ai/cast-vote-react.tsx` into a new `<script setup>` page `cast-vote-v2
 5. **Layout (Bootstrap)** — page title → loading spinner → `<poll-card :show-arrow-right="false">` → "Dein Stimmzettel" heading+subtitle → **ballot droppable zone** (filled items via v-for + numbered empty slots) → up-arrow hint (optional) → "Verfügbare Vorschläge" divider → **pool droppable zone** → info/checksum alerts → `<liquido-footer>` with `#info` + `#primary` cast-vote button. *depends on 3, 4*.
 6. **Wire drop zones** — `makeDroppable(ballotRef, {groups:['proposals'], events:{onDrop: applySort}}, () => proposalsInBallot.value)` and same for poolRef; `applySort` runs `suggestSort('vertical')` and updates both arrays (cross-list pattern from the library's Sorting Lists example). Zone highlight via `isDragOver`. *depends on 5*.
 7. **Drag overlay** — `<DragPreview>` in the provider `#preview` slot + **global** CSS rotating/scaling the clone (`rotate(2deg) scale(1.02)` + shadow) to match the React tilt.
-8. **CSS port** — translate `doc/ai/cast-vote-react-styles.css` receipt/slot/pool visuals to Bootstrap + liquido vars (`--primary`, `--unit`, `--liquido-border-radius`, `--secondary`, `--proposal-icon-bg`, `--light-bg`, `--header-bg`, `--font-size-small`), reusing patterns from the old page's `<style>`; drop the Tailwind oklch tokens + dark mode.
+8. **CSS port** — translate `docs/ai/cast-vote-react-styles.css` receipt/slot/pool visuals to Bootstrap + liquido vars (`--primary`, `--unit`, `--liquido-border-radius`, `--secondary`, `--proposal-icon-bg`, `--light-bg`, `--header-bg`, `--font-size-small`), reusing patterns from the old page's `<style>`; drop the Tailwind oklch tokens + dark mode.
 
 ## Relevant files
 - `src/views/cast-vote-v2.vue` *(new)* — provider, zones, ported API logic, poll-card, footer, DragPreview.
