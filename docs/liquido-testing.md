@@ -76,8 +76,10 @@ The e2e suite uses **Cypress** (not Playwright — this section used to say othe
    failing early step hides everything after it — read the "Skipped:" count, not just "Passing:".
  * `login-tests.cy.js` — anonymous access, route guards, login via email/password, forgot-password.
  * `switch-team.cy.js` — switching between a user's teams. Needs the seeded multi-team scenario
-   (`multiteammember4711@liquido.vote` in both `multiTeamA4711` and `multiTeamB4711`) from the
-   backend's `TestDataCreator` — fails against a bare/freshly-deployed backend that was never seeded.
+   (`multiteammember@liquido.vote` in both `multiTeamA` and `multiTeamB`) from the backend's
+   `TestDataCreator` — fails against a bare/freshly-deployed backend that was never seeded. Those
+   names are fixed constants, not timestamped, because `TestDataCreator` purges and recreates those
+   teams on every seed run; the identities come from `tests/cypress-base-config.js`.
  * `polly-happy-case.cy.js` — the Polly flow (the simpler, teamless, passkey-only poll type), from
    writing the question to the winner, with a friend opening the share link and voting differently.
    It registers a **Chrome virtual authenticator** rather than mocking the passkey, so the WebAuthn

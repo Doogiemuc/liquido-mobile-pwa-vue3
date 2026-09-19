@@ -2,17 +2,16 @@
  * End-2-end test for switching between the teams of one user.
  *
  * <h3>Preconditions</h3>
- * Needs the seeded multi-team scenario from TestDataCreator: the user
- * `multiteammember4711@liquido.vote` is a member of BOTH `multiTeamA4711` and `multiTeamB4711`,
- * while `testadmin4711@liquido.vote` belongs to one team only. Both halves matter - the whole point
- * of the feature is that the control appears for the first user and not for the second.
+ * Needs the seeded multi-team scenario from TestDataCreator: one user who is a member of BOTH
+ * multiTeamA and multiTeamB, while the login admin belongs to one team only. Both halves matter -
+ * the whole point of the feature is that the control appears for the first user and not the second.
+ *
+ * Those teams have FIXED names because TestDataCreator purges and recreates them on every seed run.
+ * The identities come from cypress-base-config.js rather than being repeated here, so there is one
+ * place per repo to change when the fixtures move.
  */
 
-const MULTI_TEAM = {
-	email: "multiteammember4711@liquido.vote",
-	teamA: "multiTeamA4711",
-	teamB: "multiTeamB4711",
-}
+const MULTI_TEAM = Cypress.expose("multiTeam")
 
 context('Switch Team', () => {
 

@@ -143,18 +143,34 @@ export function configForMode(name = mode) {
 		 * no backend at all. Guard every cy.request() to it with this.
 		 */
 		LIQUIDO_API: picked.backend ? picked.backend + "/" : null,
-		// This user must exist in the DB.
-		teamName: "RobTeam",
+		/*
+		 * The seeded identities these specs sign in as. Every one of them is a FIXED name that the
+		 * backend's TestFixtures.java declares as a constant and TestDataCreator purges and recreates
+		 * on every seed run - which is the only reason they can safely be hard-coded here.
+		 *
+		 * Do NOT point any of this at the seed team (testTeam<millis>): its name and its admin's email
+		 * carry the timestamp of the run that created them, so no constant here could follow them.
+		 *
+		 * Keep in sync with liquido-backend-quarkus/src/test/java/org/liquido/TestFixtures.java.
+		 */
+
+		/** The team the login specs sign in to. Nothing else may mutate it. */
+		teamName: "loginTeam",
+		/**
+		 * The login identity. Owned by login-tests.cy.js alone: that spec asserts this display NAME
+		 * appears in #memberCircles, and resets this password back to <email>_PWD, so it must not live
+		 * in scratchTeam, where any test is free to rename anybody.
+		 */
 		admin: {
-			name: "TestAdmin 4711",
-			email: "testadmin4711@liquido.vote",
-			mobilephone: "01515554711",
+			name: "Login Admin",
+			email: "loginadmin@liquido.vote",
 		},
-		member: {
-			name: "Member 1781788893728",
-			email: "membr47110@liquido.vote",
-			mobilephone: "01515551781788893728"
-		}
+		/** The two-team scenario switch-team.cy.js switches between, and the user who is in both. */
+		multiTeam: {
+			email: "multiteammember@liquido.vote",
+			teamA: "multiTeamA",
+			teamB: "multiTeamB",
+		},
 	},
 
 	/**

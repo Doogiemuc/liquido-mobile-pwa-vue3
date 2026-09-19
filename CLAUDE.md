@@ -345,9 +345,17 @@ local dev server or database: `npm run test:e2e:remote` (or `cypress:open:remote
 `https://liquido.dynv6.net`) instead of `localhost:3001`/`:8443`. Same caveat applies — it creates
 real teams/polls/ballots on whatever that URL's backend is, so never point it at an instance with
 real users. `switch-team.cy.js` and parts of `login-tests.cy.js` will still fail against a fresh
-deploy: they depend on the seeded multi-team users from `TestDataCreator` (`testadmin4711@…`,
-`multiteammember4711@…`), which only exist in a `TestDataCreator`-seeded `LIQUIDO-DEV`/`-TEST` DB,
-not on a bare deploy.
+deploy: they depend on `TestDataCreator`'s fixed-name seed teams (`loginTeam` with
+`loginadmin@liquido.vote`, and `multiTeamA`/`multiTeamB` with `multiteammember@liquido.vote`), which
+exist only in a seeded database, not on a bare deploy.
+
+**Test data, in one paragraph.** `TestDataCreator` seeds two tiers. `testTeam<millis>` is **added**
+fresh each run and is what backend tests rely on — they find it by PREFIX (`getSeedTeam()`), never by
+name, because the timestamp differs per run. The fixed-name teams — `scratchTeam`, `loginTeam`,
+`multiTeamA`, `multiTeamB` — are **purged and recreated** each run, which is what lets the Cypress
+config hard-code their identities. `scratchTeam` is the one place a test may change anything; nothing
+may assume any property of it. Nothing cleans up automatically: leftovers are swept on demand with
+`TestDataPurgeSweep` (see the backend's `AGENTS.md`), which is dry-run by default.
 
 The backend lives in the sibling repo `../liquido-backend-quarkus` and has its own `CLAUDE.md` and a
 detailed `AGENTS.md` — read those before touching the API, the schema or the seed data.
