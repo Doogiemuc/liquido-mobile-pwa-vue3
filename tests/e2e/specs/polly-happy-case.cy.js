@@ -14,15 +14,17 @@
  *   5. The owner sees both ballots, finishes the polly, and a winner is shown.
  *   6. The finished polly stays readable through the very same link.
  *
- * No error cases and no edge cases - those live in polly.cy.js and in the backend's PollyTests.
+ * No error cases and no edge cases - those live in the backend's PollyTests and in
+ * tests/unit/polly-flow.spec.js, which cover them far more cheaply than a browser can.
  *
  * <h2>Why this uses real passkeys, and how a second person is simulated</h2>
  *
- * A Polly identity IS a passkey, so a test that mocks the passkey away is not testing a Polly.
- * polly.cy.js takes that shortcut deliberately (config.mockPasskey), which is why it cannot run
- * against a real deployment. This spec instead registers a Chrome DevTools virtual authenticator,
- * the same way happy-case.cy.js does for the team flow, so the WebAuthn ceremony genuinely
- * completes and this runs against any real backend.
+ * A Polly identity IS a passkey, so a test that mocks the passkey away is not testing a Polly. The
+ * spec this replaced took that shortcut (config.mockPasskey), which meant it could not run against
+ * a real deployment at all - and hid a cookie-path bug that had been breaking Polly registration in
+ * production for every new visitor. This spec instead registers a Chrome DevTools virtual
+ * authenticator, the same way happy-case.cy.js does for the team flow, so the WebAuthn ceremony
+ * genuinely completes and this runs against any real backend.
  *
  * That also buys the thing the product is actually about: **a second voter**. Swapping the virtual
  * authenticator for a fresh one, and dropping the polly session, is a new device with no

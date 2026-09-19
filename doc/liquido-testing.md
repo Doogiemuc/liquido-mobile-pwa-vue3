@@ -78,7 +78,12 @@ The e2e suite uses **Cypress** (not Playwright — this section used to say othe
  * `switch-team.cy.js` — switching between a user's teams. Needs the seeded multi-team scenario
    (`multiteammember4711@liquido.vote` in both `multiTeamA4711` and `multiTeamB4711`) from the
    backend's `TestDataCreator` — fails against a bare/freshly-deployed backend that was never seeded.
- * `polly.cy.js` — the Polly flow (the simpler, teamless, passkey-only poll type).
+ * `polly-happy-case.cy.js` — the Polly flow (the simpler, teamless, passkey-only poll type), from
+   writing the question to the winner, with a friend opening the share link and voting differently.
+   It registers a **Chrome virtual authenticator** rather than mocking the passkey, so the WebAuthn
+   ceremony genuinely completes and the spec runs against a real deployment. That is not a detail:
+   the mock-based spec this replaced could not run in `deployed` mode at all, and the first run of
+   the real one found a cookie-path bug that had been breaking Polly registration in production.
  * `no-webauthn-support.cy.js` — a device with **no** WebAuthn support at all must still be able to
    register password-only. Deletes `window.PublicKeyCredential` before the page loads, so
    `browserSupportsWebAuthn()` genuinely returns false rather than stubbing our own code, and
@@ -144,7 +149,7 @@ public internet or its DNS at all:
 
 ```bash
 ./deploy/test-e2e-local.sh                              # full happy-case.cy.js
-./deploy/test-e2e-local.sh tests/e2e/specs/polly.cy.js  # a specific spec
+./deploy/test-e2e-local.sh tests/e2e/specs/polly-happy-case.cy.js  # a specific spec
 ```
 
 This still uses `cypress.config.remote.js` (so it exercises the real deployed backend/frontend,

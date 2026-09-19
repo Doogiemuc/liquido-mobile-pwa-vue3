@@ -727,12 +727,18 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		// by the page slide transition or by the panel sitting below the fold.
 		cy.get("#availableDraggable .proposal-panel").should("have.length", 3)
 
-		// Remember which proposals he is about to rank, in order. PollEntity.proposals is @OrderBy("id"),
-		// so this pool is in a stable order and the admin below will see the same first proposal - which
-		// is what makes the winner predictable rather than a coin toss.
+		// Remember WHICH proposals he is about to rank, by reading them off the page rather than
+		// assuming. Both voters see the pool in the same order within a run, so they agree on a
+		// favourite and the winner is decided - but which proposal that is is not something this test
+		// gets to predict, and an earlier version that hard-coded it failed intermittently for exactly
+		// that reason. Capture the title too, so the winner can be checked the way a person reads it.
 		cy.get("#availableDraggable .proposal-panel").eq(0).invoke("attr", "data-proposal-id").then(id => {
 			fix.firstChoiceId = id
 			expect(fix.firstChoiceId, "the member's first choice must have an id").to.be.a("string")
+		})
+		cy.get("#availableDraggable .proposal-panel").eq(0).find(".proposal-title").invoke("text").then(title => {
+			fix.firstChoiceTitle = title.trim()
+			expect(fix.firstChoiceTitle, "the member's first choice must have a title").to.not.be.empty
 		})
 		cy.get("#availableDraggable .proposal-panel").eq(1).invoke("attr", "data-proposal-id").then(id => {
 			fix.secondChoiceId = id
@@ -800,12 +806,18 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get("#ballotDraggable .proposal-panel").should("have.length", 0)
 		cy.get("#availableDraggable .proposal-panel").should("have.length", 3)
 
-		// WHEN he ranks only his single favourite - the same proposal the member put first, because
-		// the pool is ordered by id for both of them - and leaves the other two unranked
+		// WHEN he ranks only his single favourite, and leaves the other two unranked
 		cy.window().then(win => win.liquidoCastVoteTest.addFirstProposalToBallot())
 		cy.get("#ballotDraggable .proposal-panel").should("have.length", 1)
-		cy.get("#ballotDraggable .proposal-panel").eq(0)
-			.should("have.attr", "data-proposal-id", fix.firstChoiceId)
+
+		// This is an explicit PRECONDITION, not incidental: both voters take whatever the pool offers
+		// first, so the poll only has a predictable winner while they are offered the same one. If that
+		// ever stops holding, fail here - naming the real cause - rather than further down on a winner
+		// that looks wrong for no visible reason.
+		cy.then(() => {
+			cy.get("#ballotDraggable .proposal-panel").eq(0)
+				.should("have.attr", "data-proposal-id", fix.firstChoiceId)
+		})
 
 		cy.get("#castVoteButton").should("not.be.disabled").click()
 		cy.get('#confirmVoteModal').should("be.visible")
@@ -864,8 +876,10 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		// head to head and is the Condorcet winner. Asserting only that "a winner is shown" would pass
 		// just as happily if the count picked the wrong proposal, which is the one thing here worth
 		// getting right.
-		cy.get(".winner-proposal").should("have.attr", "data-proposal-id", fix.firstChoiceId)
-		cy.get(".winner-title").should("contain", fix.proposalTitle)
+		cy.then(() => {
+			cy.get(".winner-proposal").should("have.attr", "data-proposal-id", fix.firstChoiceId)
+			cy.get(".winner-title").should("contain", fix.firstChoiceTitle)
+		})
 
 		// AND the pairwise breakdown shows the winner against each of the poll's two other proposals
 		// (the admin's two plus the member's own addition, from earlier steps in this poll's editor)
