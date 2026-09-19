@@ -233,6 +233,9 @@ onMounted(() => {
 	// call then throws. Navigating here must never depend on the page-scroll helper existing.
 	proxy?.$root?.scrollToTop?.()
 	refreshFromCache()
+	// Refresh the team from the backend too: the cache may be minutes old (e.g. another member
+	// joined, or an admin renamed the team) by the time this page is visited.
+	api.getTeam(true).then(refreshFromCache).catch(err => console.error("Could not refresh team", err))
 })
 
 /**
