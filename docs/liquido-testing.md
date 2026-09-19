@@ -14,7 +14,7 @@ There are several possibilities how you can configure the frontend to access the
 
 If the backend is running on another machine you can configure a path proxy in vite that forwards requests for you. Set `LIQUIDO_API_URL: '/graphql_proxy'` in `./config/config.development.js`. and configure a `target` in `vite.config.js`. Plus you'll most likely need to fiddle around with path reqrites a bit :-) In this setup the LIQUIDO frontend simply sends backend requests to the configured local PATH and the vite proxy then forwards to the actual LIQUIDO backend running somewhere else.
 
-## Additional requirements for WebAuthn
+## Additional requirements for WebAuthn to work on real phones
 
  * Frontend must be served on a real domain not just an IP address, Tip: Configure a domain in your local `/etc/hosts` or in your local DNS. The current dev host is `shadow.fritz.box` (resolved by the Fritz!Box DNS).
  * That domain must be configured in backend `application-dev.properties` — **three** settings, and all of them must agree:
@@ -26,6 +26,50 @@ If the backend is running on another machine you can configure a path proxy in v
    new laptop breaks both of these at once.
  * And obviously your hardware device must support WebAuthN (iOS Safari with Face ID, Chrome on Android with fingerprint, or desktop with platform authenticators)
 
+
+# Test data management: seeded fixtures + manual out-of-band cleanup
+
+## Context
+
+E2E and backend tests share one database. Today that creates two opposing problems.
+
+**Nothing is ever cleaned up.** Every Cypress run creates a real team through the UI and leaves it
+there — GISMO's `liquido-int` held ~53 teams and ~50 polls at last count. `CLAUDE.md` states the
+problem outright: *"every run leaves a team behind"*.
+
+**And the shared seed is fragile.** `TestDataCreator` seeds a fixture other tests rely on, but there
+is no stated contract about what a test may touch. `user-home-tests.cy.js.FIXME` is the concrete
+casualty: it renames a user, to a *constant* name, so it cannot run twice — the `//FIXME` on line 1
+literally asks *"Which user should I use to rename?"*.
+
+The chosen resolution is a two-tier fixture plus a **manual, on-demand sweep**. Cleanup deliberately
+does **not** run through the product API: exposing a destructive "purge" endpoint would have to be
+guarded by config (Quarkus `LaunchMode` is `NORMAL` on GISMO, which is exactly where the residue is,
+so the existing `devLogin`-style guard would disable it precisely where it's needed). Keeping the
+sweep in `src/test` means **no destructive code ships in the deployed artifact at all**.
+
+Outcome: a seed with an explicit, executable contract; a database that stops growing; and mutation
+tests that are repeatable without per-test fixture creation.
+
+## The fixture contract
+
+`TestDataCreator` produces **five** teams:
+
+| Team | Name | Lifecycle | Contract |
+|---|---|---|---|
+| Seed | `testTeam<millis>` | **Added** fresh each run, never purged by the seeder | Tests may rely on its defined state. May **add** users and polls, and vote in polls they created. Must not change existing users. |
+| Scratch | `scratchTeam` | Purged + recreated each run | Assume **nothing** except that it exists. Any test may change anything. |
+| Multi A/B | `multiTeamA`, `multiTeamB` | Purged + recreated each run | Owned solely by `switch-team.cy.js`. Fixed team names, user names and emails. |
+| Login | `loginTeam` | Purged + recreated each run | Owned solely by `login-tests.cy.js`. Fixed email **and display name**. Nothing mutates it except the idempotent password reset. |
+
+For the four fixed-name teams, members are purged **unconditionally** — including users who also
+belong to other teams (today's `purgeTeam` deliberately spares those, which is precisely why the
+multi-team member could never be recreated under a fixed email).
+
+Two rules carry over from the existing design and must stay:
+- A test may vote only in polls **it created** — voting twice in a found poll returns `ALREADY_VOTED`.
+- Mutations must be idempotent: write a run-unique value, or rewrite the same deterministic one.
+  `login-tests.cy.js:287` already does the latter and is the model.
 
 
 
