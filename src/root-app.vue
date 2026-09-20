@@ -60,7 +60,6 @@ const page_order = {
 	"team": 10,
 	"polls": 11,
 	"newPoll": 12,
-	"createPoll": 12,   // deprecated old two-step flow, kept reachable by URL - same level as newPoll
 	"editPoll": 13,
 	"showPoll": 13,
 	"addProposal": 14,
@@ -212,7 +211,7 @@ export default {
 		},
 
 		gotoCreateNewPoll() {
-			this.$router.push({name: "createPoll"})
+			this.$router.push({name: "newPoll"})
 		},
 
 		gotoTeam() {

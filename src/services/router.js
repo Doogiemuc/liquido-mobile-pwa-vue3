@@ -81,14 +81,6 @@ const routes = [
 		component: () => import("@/views/polls.vue"),
 	},
 	{
-		// Deprecated old two-step flow. Nothing links to it any more (polls.vue and poll-show.vue
-		// point at the new all-in-one editor below), but it is deliberately kept reachable by URL
-		// while that editor is still being exercised. Do not delete, and keep it working.
-		path: "/polls/create",
-		name: "createPoll",
-		component: () => import("@/views/poll-create.vue"),
-	},
-	{
 		// The all-in-one poll editor, create mode (no pollId prop).
 		path: "/polls/new",
 		name: "newPoll",

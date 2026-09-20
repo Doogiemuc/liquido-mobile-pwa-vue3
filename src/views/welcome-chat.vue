@@ -1159,7 +1159,7 @@ export default {
 		},
 
 		gotoCreatePoll() {
-			this.$router.push({name: "createPoll"})
+			this.$router.push({name: "newPoll"})
 		},
 
 		goToLogin() {

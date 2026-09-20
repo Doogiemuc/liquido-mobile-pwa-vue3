@@ -50,6 +50,15 @@
 				<p v-html="submitError" />
 			</div>
 
+			<div v-if="createMode" class="alert alert-admin my-5">
+				<p>{{ $t('createPollInfo1') }}</p>
+				<ol class="fa-ul">
+					<li class="mb-3"><span class="fa-li"><i class="fas fa-comments"></i></span> {{ $t('createPollInfo2') }} {{ $t('createPollInfo3') }}</li>
+					<li class="mb-3"><span class="fa-li"><i class="fas fa-person-booth"></i></span> <liqui-loc-html tag="span" msg-key="createPollInfo4" /></li>
+					<li class="mb-3"><span class="fa-li"><i class="fas fa-check-circle"></i></span> {{ $t('createPollInfo5') }}</li>
+				</ol>
+			</div>
+
 			<div v-if="createMode" class="page-subtitle mt-5">
 				<ul class="fa-ul">
 					<li class="mb-3"><span class="fa-li"><i class="fas fa-shield-alt"></i></span> {{ $t('votesAreAlwaysAnonymous') }}</li>
@@ -139,6 +148,13 @@ export default {
 				createPoll: "Abstimmung anlegen",
 				continueSaving: "Weiter",
 				gotoPoll: "Zur Abstimmung",
+
+				// This info is for the admin, and only shown to him, while creating the poll.
+				createPollInfo1: "Du bist der Admin dieses Teams.",
+				createPollInfo2: "Eine neue Abstimmung wird erst einmal debatiert.",
+				createPollInfo3: "Du kannst festlegen ob Teammitglieder eigene Vorschläge hinzufügen dürfen oder nicht.",
+				createPollInfo4: "Du, als Admin, startest die Abstimmung. In <span class='liquido'></span> stimmt man nicht nur für einen Vorschlag, sondern jeder im Team ordnet alle Vorschläge anonym in seine persönliche Reihenfolge.",
+				createPollInfo5: "Wenn du die Abstimmung abschliest, wird der Vorschlag mit der größten Zustimmung durch einen cleveren Algorithmus berechnet.",
 
 				// Per-poll setting, chosen here and not changeable later.
 				membersCanAddProposals: "Teammitglieder dürfen Vorschläge hinzufügen",
