@@ -26,10 +26,6 @@
 			<p><i class="fas fa-exclamation-circle" />&nbsp;<liqui-loc-html tag="span" msg-key="verifyEmailError" /></p>
 		</div>
 
-		<div class="page-subtitle mt-4">
-			<p>{{ $t("verifyEmailIsOptional") }}</p>
-		</div>
-
 		<!-- No Team/Polls icons: this page is opened from a mail by someone who is not logged in, so
 		     both would only bounce them to the login. The space is kept so the button keeps its width. -->
 		<liquido-footer hide-nav-icons>
@@ -66,11 +62,10 @@ export default {
 			de: {
 				verifyEmailTitle: "E-Mail-Adresse bestätigen",
 				verifyEmailPending: "Einen Moment, deine E-Mail-Adresse wird bestätigt ...",
-				verifyEmailSuccess: "<b>Danke!</b> Deine E-Mail-Adresse ist jetzt bestätigt.",
-				verifyEmailError: "Dieser Link ist leider nicht (mehr) gültig. Vielleicht hast du ihn schon einmal benutzt?"
-					+ "<br/><br/>Melde dich einfach an. Falls deine Adresse noch nicht bestätigt ist, findest du auf deiner "
-					+ "Team-Seite einen Hinweis, über den ich dir einen neuen Link schicken kann.",
-				verifyEmailIsOptional: "Die Bestätigung ist freiwillig. Du kannst LIQUIDO auch ohne sie ganz normal benutzen.",
+				verifyEmailSuccess: "<b>Danke!</b> Deine E-Mail-Adresse <b>{{email}}</b> ist jetzt bestätigt.",
+				verifyEmailError: "Dieser Link ist leider nicht mehr gültig. Es kann auch sein, dass deine E-Mail-Adresse ganz einfach schon bestätigt ist."
+					+ "<br/><br/>Log dich einfach hier bei LIQUIDO ein. Falls deine E-Mail-Adresse noch nicht bestätigt ist, findest du auf deiner "
+					+ "Team-Seite einen Hinweis, über den ich dir auch einen neuen Link schicken kann.",
 				gotoLogin: "Zum Login",
 			},
 		},

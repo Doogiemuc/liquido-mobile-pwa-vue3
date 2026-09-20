@@ -20,6 +20,7 @@
 				:label="$t('pollTitle')"
 				:valid-func="isPollTitleValid"
 				:invalid-feedback="$t('pollTitleInvalid', {minLen: pollTitleMinLength})"
+				:feedback-placeholder=true
 				:max-length="255"
 				@update:model-value="val => $emit('update:pollTitle', val)"
 				@blur="$emit('title-blur')"

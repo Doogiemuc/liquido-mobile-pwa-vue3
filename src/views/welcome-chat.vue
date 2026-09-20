@@ -565,7 +565,7 @@ export default {
 
 				// Admin: Create first poll bubble
 				pollInfo: "Möchtest du jetzt gleich eine erste Abstimung für dein Team erstellen?",
-				createPoll: "Abstimmung anlegen",
+				createPoll: "Abstimmung erstellen",
 
 				// Error messages
 				teamWithSameNameExists: "Ein Team mit diesem Namen existiert bereits. Bitte wählen einen anderen Namen für dein Team. Oder kann es sein, dass du dich einloggen möchtest?",

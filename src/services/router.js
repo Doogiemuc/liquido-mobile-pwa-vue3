@@ -82,6 +82,8 @@ const routes = [
 	},
 	{
 		// The all-in-one poll editor, create mode (no pollId prop).
+		// This is the same component as the edit mode, but without a pollId prop it will create a new poll.
+		// Previously there was a seperate /polls/create component to create a new poll, but now we use the same component for both create and edit.
 		path: "/polls/new",
 		name: "newPoll",
 		component: () => import("@/views/poll-edit.vue"),

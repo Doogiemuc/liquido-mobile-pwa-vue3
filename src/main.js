@@ -113,8 +113,8 @@ const globalTranslations = {
 		// Polls page
 		"noPollYet": "Es gibt noch keine Abstimmungen in eurem Team.",
 		"noPollsMatchSearch": "Keine Abstimmungen passen zu deiner Suche.",
-		"onlyAdminCanCreateNewPolls": "Nur du als Admin kannst neue Abstimmungen anlegen.",
-		"createNewPoll": "Neu Abstimmung anlegen"
+		"onlyAdminCanCreateNewPolls": "Nur du als Admin kannst neue Abstimmungen erstellen.",
+		"createNewPoll": "Neu Abstimmung erstellen"
 	},
 }
 

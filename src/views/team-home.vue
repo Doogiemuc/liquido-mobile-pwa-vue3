@@ -101,7 +101,7 @@
 
 		<section id="adminSettingsSection" v-if="userIsAdmin">
 			<h2>Admin Einstellungen</h2>
-			<p>Nur du kannst <router-link to="/new-poll">neue Abstimmungen erstellen</router-link>.</p>
+			<p>Nur du kannst <router-link :to="{ name: 'newPoll' }">neue Abstimmungen erstellen</router-link>.</p>
 		</section>
 
 		<!-- Switch team. Only shown at all when the user actually is in more than one team. -->

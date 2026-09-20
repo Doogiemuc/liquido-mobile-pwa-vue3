@@ -143,9 +143,9 @@ export default {
 		messages: {
 			en: {},
 			de: {
-				createNewPoll: "Neue Abstimmung anlegen",
+				createNewPoll: "Neue Abstimmung erstellen",
 				editPoll: "Abstimmung bearbeiten",
-				createPoll: "Abstimmung anlegen",
+				createPoll: "Abstimmung erstellen",
 				continueSaving: "Weiter",
 				gotoPoll: "Zur Abstimmung",
 
@@ -158,7 +158,7 @@ export default {
 
 				// Per-poll setting, chosen here and not changeable later.
 				membersCanAddProposals: "Teammitglieder dürfen Vorschläge hinzufügen",
-				membersCanAddProposalsHint: "Wenn du das nicht aktivierst, legst nur du als Admin fest, worüber abgestimmt wird. Diese Einstellung kann später nicht mehr geändert werden.",
+				membersCanAddProposalsHint: "Du kannst deinen Teammitgliedern hier erlauben auch ihren eigenen Vorschlag zur Abstimmung hinzuzufügen. In jedem Fall aber nur solange bis du die Abstimmung startest.",
 				PollInElaboration_OnlyAdminAddsProposals: "In dieser Abstimmung legt nur euer Admin die Vorschläge fest.",
 
 				votesAreAlwaysAnonymous: "Abstimmungen sind immer anonym.",
