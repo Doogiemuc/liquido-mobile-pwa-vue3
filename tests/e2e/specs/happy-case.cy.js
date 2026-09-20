@@ -245,6 +245,31 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 			*/
 	})
 
+	it('[Admin] The verify-email link from the welcome mail actually resolves', function() {
+		// This step exists because the route was silently lost in a merge once, and nothing caught it
+		// for weeks: the app fell through to its own 404 page instead of erroring, so it looked like a
+		// dead link rather than a bug. Reached with no JWT at all, exactly like a real visitor clicking
+		// the link straight out of their mail client - see verify-email.vue's own doc comment.
+		//
+		// We cannot read the REAL token here without either a mailbox to read (GISMO sends through a
+		// real SMTP relay, not a test catcher) or a backend test/dev bypass (deliberately disabled on
+		// GISMO - see UserService#resetPassword's "[TEST/DEV]" shortcut and its dummy-value config for
+		// the equivalent password-reset case). A syntactically-plausible but wrong token still proves
+		// the part that broke: the route resolves to the real page and completes a real round trip to
+		// the backend, rather than falling through to the unrelated 404 page.
+		localStorage.clear()
+		cy.visit("/verifyEmail?verifyToken=not-a-real-token-" + now)
+
+		// THEN we are on the actual verify-email page - NOT silently redirected to 404.
+		cy.get("#verify-email")
+		cy.get("#notFoundCard").should("not.exist")
+
+		// AND the backend was really called with that (invalid) token, and answered with its genuine
+		// "this link is not valid" error state - not a client-side stub.
+		cy.get("#verifyEmailError").should("be.visible")
+		cy.get("#verifyEmailGotoLoginButton").should("exist")
+	})
+
 	it('[Admin] Create a poll with its first two proposals on one page', function() {
 		assert.isString(fix.adminJWT, "Need adminJWT to create first poll")
 

@@ -143,6 +143,14 @@ const routes = [
 		}
 	},
 	{
+		// Public: the user clicks this straight out of their mail client, not logged in.
+		path: "/verifyEmail",
+		name: "verifyEmail",
+		component: () => import("@/views/verify-email.vue"),
+		props: route => ({ verifyToken: route.query.verifyToken }),
+		meta: { public: true },
+	},
+	{
 		path: "/impressum",
 		name: "impressum",
 		component: () => import("@/views/impressum.vue"),
