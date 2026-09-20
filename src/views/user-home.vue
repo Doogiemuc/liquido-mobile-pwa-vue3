@@ -66,6 +66,7 @@
 					:invalid-feedback="$t('UsernameInvalid')"
 					:empty-feedback="$t('UsernameRequired')"
 					:feedback-placeholder="true"
+					autocomplete="nickname"
 				/>
 
 				<liquido-input

@@ -89,6 +89,7 @@
 					:max-length="100"
 					:invalid-feedback="$t('userNameInvalid')"
 					:disabled="FLOW.NiceToMeetYou"
+					autocomplete="nickname"
 					@keyup.enter="userNameSubmit()"
 					@blur="userNameSubmit()"
 				/>
