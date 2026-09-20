@@ -57,9 +57,9 @@
 				</p>
 				<template v-else>
 					<p>
-						Deine Email Adresse ist noch nicht verifiziert. Ich hatte dir eine Email mit einem
-						Bestätigen Link geschickt. Bitte klicke einmal auf diesen Link. Falls du die Email nicht
-						mehr findest, kann ich dir auch noch eine neue schicken.
+						Deine Email <b>{{ currentUserEmail }}</b> ist noch nicht verifiziert. Ich hatte dir eine
+						Email mit einem Bestätigen Link geschickt. Bitte klicke einmal auf diesen Link. Falls du
+						die Email nicht mehr findest, kann ich dir auch noch eine neue schicken.
 					</p>
 					<!-- "Neuen" carries the point: this sends a fresh link, it does not re-send the old one. -->
 					<button
@@ -180,6 +180,7 @@ const team = ref({})
 // especially - a user can be admin of one team and a plain member of the next, and it gates the
 // invite circle and the whole admin section below.
 const currentUserName = ref(undefined)
+const currentUserEmail = ref(undefined)
 const userIsAdmin = ref(false)
 const userHasWebauthn = ref(false)
 const showInvite = ref(false)
@@ -251,6 +252,7 @@ function refreshFromCache() {
 	team.value = api.getCachedTeam() || {}
 	allUserTeams.value = api.getAllUserTeams()
 	currentUserName.value = api.getCachedUser()?.name
+	currentUserEmail.value = api.getCachedUser()?.email
 	userIsAdmin.value = api.isAdmin()
 	userHasWebauthn.value = api.getCachedUser()?.hasWebauthn
 	// Only nag when the backend actually told us it is unverified. If the field is missing (an older
