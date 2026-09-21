@@ -274,45 +274,42 @@ context('Login Test', () => {
 		cy.get("#requestPasswordResetErrorMessage").should("not.exist")
 
 		// ========= Step 2: Reset password with token ========
-
-		// Here we test the password reset flow with a secret "testPasswordResetToken".
-		//TODO: copy implementation with mailtrap from below!
+		//
+		// We cannot read the REAL token here: GISMO sends the reset mail through a real SMTP relay
+		// (smtp.ionos.de), not a catcher this suite can query, and the backend's matching test/dev
+		// bypass ("testPasswordResetToken") is deliberately disabled there - see
+		// UserService#resetPassword's "[TEST/DEV]" shortcut and its dummy-value config on GISMO (same
+		// situation as the verify-email link, see happy-case.cy.js). So this step cannot complete a
+		// real reset. It uses that same always-wrong token on purpose and asserts the honest outcome:
+		// a real round trip to the backend that correctly rejects it.
+		//
+		// This used to assert `#resetPasswordSuccessMessage should not.be.empty` and then log in with
+		// the "reset" password - which PASSED even though the reset always failed. chai-jquery's
+		// `.empty` is backed by jQuery's `:empty` pseudo-selector, and `.is()` on a zero-length
+		// collection always returns false, so `not.be.empty` on an element that does not exist at all
+		// is vacuously true. This test had never actually proven a password reset works on GISMO.
 
 		cy.env(["testPasswordResetToken"]).then(({testPasswordResetToken}) => {
 			cy.visit(`/resetPassword?email=${encodeURIComponent(Cypress.expose("admin").email)}&resetPasswordToken=${testPasswordResetToken}`)
 		})
 		cy.get("#forgot-password-page")
 
-		// Enter new password twice   (set the same password again, so that the test is repeatable)
 		cy.env(["passwordSuffix"]).then(({passwordSuffix}) => {
 			const newPassword = Cypress.expose("admin").email + passwordSuffix
 			cy.get("#newPasswordInput1").type(newPassword) // first input
 			cy.get("#newPasswordInput2").type(newPassword) // second input
-			
+
 			// Click reset password button
 			cy.get("#resetPasswordButton").click()
 
-			// Should show password reset success message
-			cy.get("#resetPasswordSuccessMessage").should("not.be.empty")
-
-			// ======== Step 3: Login with new password ========
-
-			cy.visit("/login")
-
-			cy.get("#login-page")
-
-			//WHEN test user enters his email & password
-			cy.get("#loginEmailInput").type(Cypress.expose("admin").email)
-			cy.get("#continueButton").click()
-			cy.get("#loginPasswordInput").type(newPassword)
-			
-			// AND click login button
-			cy.get("#loginWithEmailPasswordButton").click()
-
-			//THEN user is logged in and teamHome is shown
-			cy.get("#team-home")
-			
+			// THEN the backend genuinely rejects the (wrong, on purpose) token - a real error from a
+			// real call, not silence. No scroll: see the note on #loginErrorMessage above.
+			cy.get("#resetPasswordErrorMessage").should("be.visible")
+			cy.get("#resetPasswordSuccessMessage").should("not.exist")
 		})
+
+		// Login with the existing (unchanged) password is already covered by
+		// "Login via email & password" above - nothing was actually reset here to log in with.
 	})
 
 
