@@ -55,7 +55,7 @@
 							{{ $t("invitedByAdminV2", { adminName: invite.adminName, teamName: invite.teamName }) }}
 						</button>
 						<p v-else class="join-hint">
-							{{ $t("joinHintPrefix") }}<button id="welcomeV2JoinTeamButton" type="button" class="inline-link" @click="goToJoin">{{ $t("joinTeamButton") }}</button>{{ $t("joinHintSuffix") }}
+							{{ $t("joinHintPrefix") }}<button id="welcomeV2JoinTeamButton" type="button" class="inline-link" @click="goToJoin">{{ $t("joinTeamButton") }}</button>
 						</p>
 					</div>
 				</section>
@@ -290,8 +290,7 @@ export default {
 
 				createTeamButton: "Neues Team erstellen",
 				joinTeamButton: "Team beitreten",
-				joinHintPrefix: "Oder hast du einen Einladungscode bekommen? Dann kannst du damit einem ",
-				joinHintSuffix: ".",
+				joinHintPrefix: "Einladungslink bekommen? ",
 				invitedByAdminV2: "{adminName} hat dich eingeladen, Team „{teamName}“ beizutreten.",
 
 				createTeamTitle: "Team erstellen",
