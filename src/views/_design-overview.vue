@@ -59,8 +59,6 @@ const pages = [
 	{ name: 'Login', route: '/login' },
 	{ name: 'Welcome', route: '/welcome' },
 	{ name: 'Join a Team', route: `/welcome?inviteCode=${inviteCode}` },
-	{ name: 'Welcome v2', route: '/welcome-v2' },
-	{ name: 'Welcome v2 - with invite', route: `/welcome-v2?inviteCode=${inviteCode}` },
 	{ name: 'Team', route: '/team' },
 	{ name: 'User home', route: '/userhome' },
 	{ name: 'List of Polls', route: '/polls' },

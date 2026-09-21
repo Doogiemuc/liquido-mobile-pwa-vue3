@@ -191,6 +191,12 @@
 										{{ $t("emailAlreadyRegisteredPrefix") }}<router-link :to="{ name: 'login', query: loginLinkQuery }">{{ $t("emailAlreadyRegisteredLoginLink") }}</router-link>{{ path === "create" ? $t("emailAlreadyRegisteredSuffixCreate") : $t("emailAlreadyRegisteredSuffixJoin") }}
 									</small>
 								</div>
+								<div v-else-if="formErrorKey === 'alreadyRegisteredCannotCreate'" id="welcomeV2RegisterError" class="alert alert-warning text-center mt-3"
+									data-register-error-key="alreadyRegisteredCannotCreate">
+									<small>
+										{{ $t("alreadyRegisteredCannotCreatePrefix") }}<router-link :to="{ name: 'login', query: loginLinkQuery }">{{ $t("alreadyRegisteredCannotCreateLoginLink") }}</router-link>{{ $t("alreadyRegisteredCannotCreateSuffix") }}
+									</small>
+								</div>
 								<div v-else-if="formErrorKey" id="welcomeV2RegisterError" class="alert alert-warning text-center mt-3"
 									:data-register-error-key="formErrorKey">
 									<small>{{ $t(formErrorKey) }}</small>
@@ -233,7 +239,7 @@
 									<small>{{ $t(passkeyErrorKey) }}</small>
 								</div>
 							</template>
-							<p v-else class="text-muted"><small>{{ $t("PasskeyNotSupported") }}</small></p>
+							<p v-else data-qa="passkeyNotSupportedMessage" class="text-muted"><small>{{ $t("PasskeyNotSupported") }}</small></p>
 
 							<button id="welcomeV2SkipPasskeyButton" type="button" class="btn btn-link w-100 mt-2" @click="skipPasskey">
 								{{ $t("SkipForNow") }}
@@ -243,7 +249,7 @@
 				</section>
 
 				<!-- ================= FIRST PROPOSAL (create-team path only) ================= -->
-				<section v-else key="firstProposal" class="step step-first-proposal">
+				<section v-else key="firstProposal" class="step step-first-proposal" :ref="scrollFirstProposalToTop">
 					<div id="welcomeV2FirstProposalCard" class="card first-proposal-card text-center">
 						<div class="card-body">
 							<i class="fas fa-check-circle success-icon" />
@@ -319,6 +325,9 @@ export default {
 				emailAlreadyRegisteredLoginLink: "einloggen",
 				emailAlreadyRegisteredSuffixCreate: ". Dann kannst du auch ein weiteres Team gründen.",
 				emailAlreadyRegisteredSuffixJoin: ". Dann kannst du diesem Team beitreten.",
+				alreadyRegisteredCannotCreatePrefix: "Du bist bereits registriert. Du kannst ein zweites Team gründen. Aber dazu musst du dich ",
+				alreadyRegisteredCannotCreateLoginLink: "einloggen",
+				alreadyRegisteredCannotCreateSuffix: ".",
 				passwordTooWeak: "Dieses Passwort ist zu schwach. Bitte wähle ein längeres.",
 				unexpectedError: "Bitte versuche es später noch einmal.",
 				inviteCodeInvalid: "Dieser Einladungscode ist nicht mehr gültig.",
@@ -357,7 +366,7 @@ import { store } from "@/services/store.js"
 import liquidoInput from "@/components/liquido-input.vue"
 
 const props = defineProps({
-	/** Invite code from the URL: /welcome-v2?inviteCode=ABC12345 . May be missing. */
+	/** Invite code from the URL: /welcome?inviteCode=ABC12345 . May be missing. */
 	inviteCodeQueryParam: { type: String, required: false, default: undefined }
 })
 
@@ -589,6 +598,14 @@ function handleRegisterError(err) {
 		return
 	}
 	switch (code) {
+		case api.err.CANNOT_CREATE_TEAM_ALREADY_REGISTERED:
+			// Edge case: this visitor already has an account (e.g. registered on another device or
+			// browser), so has no local JWT here - the backend can tell from the email alone that an
+			// account exists, but can't just add this team to it without them being logged in first
+			// (that's the separate "add another team" flow). Rendered specially in the template, same
+			// reasoning as emailAlreadyRegistered below.
+			formErrorKey.value = "alreadyRegisteredCannotCreate"
+			return
 		case api.err.USER_EMAIL_EXISTS:
 		case api.err.CANNOT_JOIN_TEAM_ALREADY_MEMBER:
 		case api.err.CANNOT_JOIN_TEAM_ALREADY_ADMIN:
@@ -625,6 +642,15 @@ async function setupPasskey() {
 	settingUpPasskey.value = true
 	passkeyErrorKey.value = undefined
 	try {
+		// A headless Cypress browser has no authenticator, and navigator.credentials.create() just
+		// hangs instead of failing fast, so by default take the same "failed" path a real ceremony
+		// failure would take - same guard as the original welcome-chat.vue's setupPasskey(). The one
+		// exception: a spec that has registered a Chrome DevTools Protocol virtual authenticator (see
+		// setupVirtualAuthenticator() in happy-case.cy.js) sets window.__cypressWebAuthnAvailable
+		// first, in which case the real call below genuinely succeeds against that authenticator.
+		if (window.Cypress && !window.__cypressWebAuthnAvailable) {
+			throw new Error("Passkey registration is not testable in Cypress")
+		}
 		await webauthnService.registerWebauthn(passkeyLabel.value)
 		passkeyDone.value = true
 		// Give the checkmark a moment on screen before sliding on, instead of jumping away the
@@ -659,6 +685,20 @@ function continueAfterPasskey() {
 // ========================================================================
 // FIRST PROPOSAL (create-team path only)
 // ========================================================================
+
+/**
+ * Callback ref, called by Vue with the <section> once it's actually in the DOM (and again with
+ * null right before it's removed). goToPhase() already resets #app's scrollTop synchronously
+ * before this step's render, which is normally enough - but this step is reached via a 600ms
+ * setTimeout after the WebAuthn passkey dialog closes (see continueAfterPasskey()), and a tall
+ * PASSKEY step scrolled down beforehand left this landing scrolled too, the same reset run here
+ * after the DOM has actually settled fixes it reliably.
+ */
+function scrollFirstProposalToTop(el) {
+	if (!el) return
+	const appElem = document.getElementById("app")
+	if (appElem) appElem.scrollTop = 0
+}
 
 function gotoTeam() {
 	router.push({ name: "team" })
@@ -748,9 +788,8 @@ function gotoCreateFirstProposal() {
 
 /*
  * The brand mark lives here instead of in the app header while this phase is showing - the header
- * goes fully transparent (see the phase watcher in <script setup>, which flips the existing
- * store.heroMarkActive/--hero-progress mechanism liquido-header.vue already reads for exactly this
- * purpose) so there is no double "LIQUIDO" on screen and no white bar over the gradient.
+ * is removed outright while LANDING is active (see #rootApp:has(...) #liquidoHeader in the unscoped
+ * <style> block below), so there is no double "LIQUIDO" on screen and no white bar over the gradient.
  */
 .hero-brand {
 	display: flex;

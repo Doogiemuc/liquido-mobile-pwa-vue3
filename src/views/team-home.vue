@@ -82,7 +82,7 @@
 					<img :src="getImgUrl(member.user.picture)" class="member-avatar" alt="Member Avatar" />
 					<div class="member-name">{{ member.user.name }}</div>
 				</div>
-				<div v-if="userIsAdmin" class="member-circle" @click="toggleInvite">
+				<div v-if="userIsAdmin" id="inviteMemberButton" class="member-circle" @click="toggleInvite">
 					<i class="fas fa-plus-circle add-member-icon" :class="{ 'add-member-icon--open': showInvite }" />
 					<div class="member-name">einladen</div>
 				</div>

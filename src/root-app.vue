@@ -50,7 +50,6 @@ import config from "config"
 const page_order = {
 	"index": 0,
 	"welcome": 1,
-	"welcomeV2": 1,   // the alternative landing page - same level, fades in/out like welcome/login
 	"login": 1,     // welcome and login are on the same level, so they fade instead of sliding sideways
 	"loginSms": 2,
 	"forgotPassword": 2,

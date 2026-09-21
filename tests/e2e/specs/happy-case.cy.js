@@ -41,7 +41,7 @@ const NEW_ROW      = '.proposal-row:not([data-proposal-id])'           // the em
  * https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn/
  *
  * Call this once, on the currently-loaded page, before the passkey ceremony you want to actually
- * succeed. It also sets window.__cypressWebAuthnAvailable, which welcome-chat.vue's setupPasskey()
+ * succeed. It also sets window.__cypressWebAuthnAvailable, which welcome-chat-v2.vue's setupPasskey()
  * checks to decide whether to attempt the real ceremony at all - without a virtual authenticator
  * registered, navigator.credentials.create() just hangs in headless Cypress, so every OTHER
  * passkey step in this spec deliberately does NOT call this, and keeps taking the "declined" path.
@@ -135,60 +135,61 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		//GIVEN some prepared test data
 		assert.isString(fix.adminName)
 		assert.isString(fix.teamName)
-		assert.isString(fix.adminName)
+		assert.isString(fix.adminEmail)
 
 		//WHEN we create a new team
 		cy.visit("/")
-		cy.get("#welcome-chat")
-		cy.get('#userNameInput', {timeout: 8000}).type(fix.adminName).type("{enter}")    // implicitly checks that #userNameInput is not disabled
-		
-		cy.get('#createNewTeamButton').scrollIntoView().should('be.visible').click()  // Need to wait for button to become visible, because of andimation.
-		cy.get('#teamNameInput').type(fix.teamName)
-		cy.get('#adminEmailInput').type(fix.adminEmail)
-		cy.get('#adminPasswordInput').type(fix.adminPassword)
+		cy.get('#welcomeV2CreateTeamButton').scrollIntoView().should('be.visible').click()  // Need to wait for button to become visible, because of animation.
+		cy.get('#welcomeV2NicknameInput').type(fix.adminName)
+		cy.get('#welcomeV2TeamNameInput').type(fix.teamName)
+		cy.get('#welcomeV2EmailInput').type(fix.adminEmail)
+		cy.get('#welcomeV2PasswordInput').type(fix.adminPassword)
 		cy.intercept('POST', '**/login/welcomeMail').as('adminWelcomeMail')
-		cy.get('#createNewTeamOkButton').click()
+		cy.get('#welcomeV2RegisterSubmitButton').should('not.be.disabled').click()
 
-		//THEN new team is created successfully
-		// #welcomeChatErrorModal does not exist anywhere in the app, so asserting it is absent could
-		// never fail. The real error surface is the shared root popup.
-		cy.get('#rootPopupModal').should('not.be.visible')
+		//THEN new team is created successfully - no inline error, and we land on the passkey step
+		cy.get('#welcomeV2RegisterError').should('not.exist')
+		cy.get('#welcomeV2PasskeyCard').scrollIntoView().should('be.visible')
 
-		// AND the admin got his welcome mail (fire-and-forget from welcome-chat.vue, so we only
+		// AND the admin got his welcome mail (fire-and-forget from welcome-chat-v2.vue, so we only
 		// assert that the backend was actually asked - the user is not blocked on it)
 		cy.wait('@adminWelcomeMail').its('response.statusCode').should('eq', 200)
-		cy.get('#newTeamCreatedBubble').should(() => {
+		cy.get('#welcomeV2PasskeyCard').should(() => {
 			// AND a JWT was put into the browser's localStorage
 			// (Cypress is async and crazy: This should()-block is retried until jwt is there.)
 			fix.adminJWT = localStorage.getItem("LIQUIDO_JWT")
 			expect(fix.adminJWT, "Expected to find a JWT in localStorage!").to.have.length.of.at.least(10)
 		})
-		
+
 		// ===== Test passkey registration: the admin actually registers one (see below for the
 		// member, who declines instead - the happy case exercises both variants) =====
-		// GIVEN the setupPasskeyCard is shown
-		cy.get('#setupPasskeyCard').scrollIntoView().should('be.visible')
-
 		// AND a virtual authenticator is available, so this ceremony can genuinely succeed
 		setupVirtualAuthenticator()
 
 		//  WHEN test-user registers his passkey
-		cy.get('#passkeyInput').scrollIntoView().should('be.visible').clear().type('My Test Passkey')
-		cy.get('#setupPasskeyButton').scrollIntoView().should('be.visible').click()
+		cy.get('#welcomeV2PasskeyLabelInput').scrollIntoView().should('be.visible').clear().type('My Test Passkey')
+		cy.get('#welcomeV2SetupPasskeyButton').scrollIntoView().should('be.visible').click()
 
-		// THEN it succeeds: no "Try again later" modal, a green checkmark on the button
-		cy.get('#rootPopupModal').should('not.be.visible')
-		cy.get('#setupPasskeyButton .fa-check').scrollIntoView().should('be.visible')
+		// THEN it succeeds: no inline error, a green checkmark on the button
+		cy.get('#welcomeV2PasskeyError').should('not.exist')
+		cy.get('#welcomeV2SetupPasskeyButton .fa-check').scrollIntoView().should('be.visible')
 
 		//  AND passkey label input is disabled
-		cy.get('#passkeyInput').should('be.disabled')
-		
-		// AND the teamQrCode section is visible
-		cy.get('#teamQrCode').scrollIntoView().should('be.visible')
+		cy.get('#welcomeV2PasskeyLabelInput').should('be.disabled')
 
-		// AND there is an invite link with inviteCode
+		// AND (having genuinely registered a passkey) it auto-advances past this step - an admin
+		// who just created a team lands on the first-proposal choice, not straight on their team
+		cy.get('#welcomeV2FirstProposalCard').scrollIntoView().should('be.visible')
+		cy.get('#welcomeV2GotoTeamButton').click()
+
+		// THEN he lands on his brand new team's home page
+		cy.get("#team-home")
+
+		// AND there is an invite code, reachable from team-home now - the new onboarding flow does
+		// not show it itself, since it ends with the admin already on his team.
 		// Here we extract the inviteCode, because we need it later to join this team.
-		cy.get('#inviteCodeButton').invoke("attr", "data-invitecode").then(inviteCode => {   // "data-invitecode" attribute in lowercase!
+		cy.get('#inviteMemberButton').click()
+		cy.get('[data-invitecode]').invoke("attr", "data-invitecode").then(inviteCode => {
 			// Assert the real shape rather than "at least 2 chars", which would also accept "  " or "a-".
 			// 8 alphanumerics mirrors config.inviteCodeLength on BOTH sides (frontend config.common.js
 			// and backend LiquidoConfig) - deliberately duplicated here instead of importing config, so
@@ -364,32 +365,26 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 
 		//WHEN joining a team
 		cy.visit("/")
-		cy.get('#userNameInput', {timeout: 8000}).type(fix.userName).type("{enter}")  // implicitly checks that #userNameInput is not disabled
-		cy.get('#joinTeamButton').scrollIntoView().should('be.visible').click()
-		cy.get('#inviteCodeInput').type(fix.inviteCode)
-		cy.get('#userEmailInput').type(fix.userEmail)
-		cy.get('#userPasswordInput').type(fix.userPassword)
+		cy.get('#welcomeV2JoinTeamButton').scrollIntoView().should('be.visible').click()
+		cy.get('#welcomeV2InviteCodeInput').type(fix.inviteCode)
+		cy.get('#welcomeV2NicknameInput').type(fix.userName)
+		cy.get('#welcomeV2EmailInput').type(fix.userEmail)
+		cy.get('#welcomeV2PasswordInput').type(fix.userPassword)
 		cy.intercept('POST', '**/login/welcomeMail').as('memberWelcomeMail')
-		cy.get('#joinTeamOkButton').click()
+		cy.get('#welcomeV2RegisterSubmitButton').should('not.be.disabled').click()
 
 		//THEN the join succeeded without any error surfacing
-		cy.get('#rootPopupModal').should('not.be.visible')
+		cy.get('#welcomeV2RegisterError').should('not.exist')
+		cy.get('#welcomeV2PasskeyCard').scrollIntoView().should('be.visible')
 		// AND the new member was sent his welcome mail
 		cy.wait('@memberWelcomeMail').its('response.statusCode').should('eq', 200)
 
-		// AND trying to register a passkey, after joining a team
-		cy.get('#setupPasskeyCard').scrollIntoView().should('be.visible')
-		cy.get('#passkeyInput').scrollIntoView().should('be.visible').clear().type('Join team passkey')
-		cy.get('#setupPasskeyButton').scrollIntoView().should('be.visible').click()
-		cy.get('#rootPopupModal').should('be.visible')
-		cy.get('#rootPopupModalSecondaryButton').click()
-		cy.get('#rootPopupModal').should('not.be.visible')
-		cy.get('#passkeyInput').should('be.disabled')		
+		// AND declining passkey registration, after joining a team - unlike the admin above, a
+		// plain member skips straight past the passkey step with no ceremony attempted at all
+		cy.get('#welcomeV2SkipPasskeyButton').scrollIntoView().should('be.visible').click()
 
-		//THEN we can go to our team
-		cy.get('#joinedTeamGoToTeamButton').click()
-
-		// AND team-home is shown for joined user
+		// THEN team-home is shown for joined user - a member gets no first-proposal choice, that
+		// is only offered to the admin who just created the team
 		cy.get("#team-home")
 			.should("have.attr", "data-teamname", fix.teamName)
 			.should("have.attr", "data-username", fix.userName)
