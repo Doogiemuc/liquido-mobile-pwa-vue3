@@ -12,7 +12,7 @@
 		</div>
 
 		<div v-else-if="state === 'verified'" id="verifyEmailSuccess" class="alert liquido-info">
-			<p><i class="fas fa-check-circle" />&nbsp;<liqui-loc-html tag="span" msg-key="verifyEmailSuccess" /></p>
+			<p><i class="fas fa-check-circle" />&nbsp;<liqui-loc-html tag="span" msg-key="verifyEmailSuccess" :params="{ email: verifiedEmail }" /></p>
 			<p v-if="verifiedEmail" class="page-subtitle">{{ verifiedEmail }}</p>
 		</div>
 
@@ -62,7 +62,7 @@ export default {
 			de: {
 				verifyEmailTitle: "E-Mail-Adresse bestätigen",
 				verifyEmailPending: "Einen Moment, deine E-Mail-Adresse wird bestätigt ...",
-				verifyEmailSuccess: "<b>Danke!</b> Deine E-Mail-Adresse <b>{{email}}</b> ist jetzt bestätigt.",
+				verifyEmailSuccess: "<b>Danke!</b> Deine E-Mail-Adresse <b>{email}</b> ist jetzt bestätigt.",
 				verifyEmailError: "Dieser Link ist leider nicht mehr gültig. Es kann auch sein, dass deine E-Mail-Adresse ganz einfach schon bestätigt ist."
 					+ "<br/><br/>Log dich einfach hier bei LIQUIDO ein. Falls deine E-Mail-Adresse noch nicht bestätigt ist, findest du auf deiner "
 					+ "Team-Seite einen Hinweis, über den ich dir auch einen neuen Link schicken kann.",
