@@ -180,6 +180,10 @@ export default {
 	props: {
 		// Only present on the "editPoll" route. Its presence is what selects edit mode.
 		pollId: { type: String, required: false, default: undefined },
+		// Only present on "/polls/new?onboarding=1", set by welcome-chat-v2.vue's first-proposal
+		// step - sends a freshly created admin straight back to their team instead of to the
+		// new poll, since the onboarding flow already told them where the poll landed.
+		onboarding: { type: Boolean, required: false, default: false },
 	},
 	data() {
 		return {
@@ -457,7 +461,9 @@ export default {
 						row.saving = false
 					}
 				}
-				this.$router.push({name: "showPoll", params: {pollId: this.createdPollId}})
+				this.onboarding
+					? this.$router.push({name: "team"})
+					: this.$router.push({name: "showPoll", params: {pollId: this.createdPollId}})
 			} catch (err) {
 				log.error("Cannot create poll with its proposals", err)
 				let errorCode = err?.liquidoException?.liquidoErrorCode

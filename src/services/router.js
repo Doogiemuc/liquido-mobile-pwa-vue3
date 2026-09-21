@@ -38,6 +38,19 @@ const routes = [
 			public: true
 		}
 	},
+	{
+		// An alternative to the chat above: a landing page + an internal step-by-step flow,
+		// kept side by side with /welcome for comparison. See welcome-chat-v2.vue.
+		path: "/welcome-v2",
+		name: "welcomeV2",
+		component: () => import("@/views/welcome-chat-v2.vue"),
+		props: route => ({
+			inviteCodeQueryParam: route.query.inviteCode
+		}),
+		meta: {
+			public: true
+		}
+	},
 
 	// ========= authenticated pages ============
 
@@ -87,6 +100,7 @@ const routes = [
 		path: "/polls/new",
 		name: "newPoll",
 		component: () => import("@/views/poll-edit.vue"),
+		props: route => ({ onboarding: route.query.onboarding === "1" }),
 	},
 	{
 		path: "/polls/:pollId",

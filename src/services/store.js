@@ -36,9 +36,10 @@ export const store = reactive({
 	},
 
 	/**
-	 * Sets the target page for the back link at the left side of the header
-	 * You MUST set this to a vue-router object!
-	 * @param {Object} target  vue-router target e.g. {"name": "teams"}
+	 * Sets the target for the back arrow at the left side of the header.
+	 * @param {Object|Function|"BACK"} target  a vue-router target (e.g. {"name": "teams"}), the
+	 *   literal string "BACK" for browser history back, a plain function for a back that only
+	 *   changes state within the current page (no route change), or undefined to hide the arrow.
 	 */
 	setHeaderBackTarget(target) {
 		this.headerBackTarget = target

@@ -129,11 +129,15 @@ export default {
 		},
 
 		clickLeft() {
-			if (this.$store.headerBackTarget === "BACK") {
+			const target = this.$store.headerBackTarget
+			if (target === "BACK") {
 				console.log("router: going BACK")
 				this.$router.go(-1)
 			}
-			else if (this.$store.headerBackTarget) this.$router.push(this.$store.headerBackTarget)
+			// A plain function, for a "back" that only changes state within the current page (e.g.
+			// welcome-chat-v2.vue's internal stepper) rather than navigating to another route.
+			else if (typeof target === "function") target()
+			else if (target) this.$router.push(target)
 		},
 		
 		clickHeaderCenter() {
