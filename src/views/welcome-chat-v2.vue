@@ -683,16 +683,15 @@ function gotoCreateFirstProposal() {
 
 /*
  * This page's own root IS #appContent (see root-app.vue), so it inherits the global
- * #app #appContent styling - a flat background, and a padding-bottom reserved for
- * liquido-footer.vue's fixed nav bar (about 180px). This page has no footer, so that reserved
- * space would otherwise just eat into the "pin the CTA to the bottom" layout below, and it gets
- * its own soft radial gradient instead of the flat app background. #app #appContent here matches
- * the global rule's specificity (two IDs) so this actually overrides it, rather than losing to a
- * plain class's lower specificity.
+ * #app #appContent styling - including a padding-bottom reserved for liquido-footer.vue's fixed
+ * nav bar (about 180px). This page has no footer, so that reserved space would otherwise just eat
+ * into the "pin the CTA to the bottom" layout below. #app #appContent here matches the global
+ * rule's specificity (two IDs) so this actually overrides it, rather than losing to a plain
+ * class's lower specificity. The background itself needs no override - it's the app-wide gradient
+ * by default (see #app in liquido.css).
  */
 #app #appContent.welcome-v2 {
 	padding-bottom: var(--unit);
-	background: radial-gradient(120% 70% at 50% 10%, #ffffff 0%, #eef5fc 45%, #dbe8f6 100%);
 }
 
 /*
@@ -1152,18 +1151,5 @@ p.join-hint {
    #app #appContent.welcome-v2.is-landing above. */
 #rootApp:has(#appContent.welcome-v2.is-landing) #liquidoHeader {
 	display: none;
-}
-
-/*
- * #app is the actual scrolling element (overflow-y: auto) and paints its own flat
- * --app-background behind #appContent - normally invisible, but iOS Safari's rubber-band
- * overscroll drags #appContent away from #app's edge and reveals it underneath, which read as a
- * plain white/off-white gap interrupting this page's gradient. Giving #app the same gradient
- * (matched to #app's own, unscrolling, viewport-sized box, so it lands at the right edge
- * regardless of how tall #appContent's scrollable content is) makes the overscroll reveal more of
- * the same gradient instead of a mismatched flat color.
- */
-#app:has(#appContent.welcome-v2) {
-	background: radial-gradient(120% 70% at 50% 10%, #ffffff 0%, #eef5fc 45%, #dbe8f6 100%);
 }
 </style>
