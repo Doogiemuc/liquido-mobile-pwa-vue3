@@ -693,16 +693,6 @@ function gotoCreateFirstProposal() {
 	padding-bottom: var(--unit);
 }
 
-/*
- * The LANDING phase has no use for the app header at all - its own, bigger brand mark lives in
- * .hero-brand instead - so its reserved top padding collapses to just the safe-area inset (the
- * actual hiding of #liquidoHeader itself is in the unscoped <style> block below, since that
- * element is a sibling of #appContent under #rootApp, not a descendant of this component).
- */
-#app #appContent.welcome-v2.is-landing {
-	padding-top: env(safe-area-inset-top, 0px);
-}
-
 .step-container {
 	position: relative;
 	flex: 1;
@@ -728,6 +718,24 @@ function gotoCreateFirstProposal() {
 	flex-direction: column;
 }
 
+/*
+ * flex:1 fills whatever height .step-landing has. The negative margin-top on top of that reclaims
+ * the space #appContent otherwise reserves for the app header (this phase has no use for it - its
+ * own, bigger brand mark lives in .hero-brand instead; the header itself is hidden via the
+ * unscoped <style> block below).
+ *
+ * This offset belongs here, on .hero, and deliberately not on .step-landing itself (which is what
+ * the step-slide transition (see .step-slide-left-leave-active etc. below) actually
+ * position:absolute's and slides). Applying it to .step-landing used to also change ITS OWN height
+ * during the transition: while in normal flex flow, flex-grow expands an item to compensate a
+ * negative margin so its far edge stays put, but that compensation stops working the moment the
+ * transition's position:absolute takes the item out of flow, and swapping to an explicit height
+ * (needed for a different fix - see .step-slide-left-leave-active) would fix the top edge but not
+ * reproduce that compensation, so the two states disagreed on where the far edge sat and it jumped
+ * when the transition started. .hero is a plain flex child of .step-landing throughout - untouched
+ * by that position swap either way - so the same margin here never has two different states to
+ * disagree between.
+ */
 .hero {
 	flex: 1;
 	display: flex;
@@ -735,6 +743,7 @@ function gotoCreateFirstProposal() {
 	align-items: center;
 	justify-content: center;
 	text-align: center;
+	margin-top: calc(-1 * var(--liquido-header-height));
 }
 
 /*
@@ -1107,10 +1116,18 @@ p.join-hint {
 }
 .step-slide-left-leave-active,
 .step-slide-right-leave-active {
+	/* Taking the leaving step out of flow like this is what lets it and the entering step overlap
+	   during the slide - but it also strips away the flex layout that normally gives .step its
+	   height (.step is flex:1 inside .step-container; flex-grow only applies within flex flow).
+	   Without an explicit height, the leaving step collapsed to its own content's natural height
+	   the instant the transition started - visible as a sudden shrink right as the slide began.
+	   height: 100% pins it back to .step-container's own (stable - see .step-container's flex:1 in
+	   its own parent) height, matching what it had a moment earlier while still in flow. */
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
+	height: 100%;
 }
 .step-slide-left-leave-to,
 .step-slide-right-enter-from {
