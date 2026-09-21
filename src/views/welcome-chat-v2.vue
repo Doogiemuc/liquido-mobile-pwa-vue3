@@ -576,6 +576,11 @@ async function submitRegister() {
 		// Fire-and-forget: the user is already registered and logged in, so a slow or failing mail
 		// server must not delay the next step.
 		api.sendWelcomeMail().catch(err => log.warn("welcome-chat-v2: could not send welcome mail", err))
+		// Default label so the field is never blank going into the PASSKEY step - the button below
+		// isn't gated on the field's own validity, so an untouched (empty) label would otherwise sail
+		// past the frontend and only fail once the backend rejects it, AFTER the real biometric
+		// ceremony already completed. Same convention as team-home.vue's later "add a passkey" flow.
+		if (!passkeyLabel.value) passkeyLabel.value = nickname.value.trim() + "-Passkey"
 		goToPhase(PHASE.PASSKEY)
 	} catch (err) {
 		handleRegisterError(err)
