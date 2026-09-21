@@ -199,7 +199,7 @@ rules and the `data-error-code` convention for error cases.
 ### 4.1 WebAuthn/passkey ceremony in headless tests
 
 A headless test browser has no authenticator, and `navigator.credentials.create()` doesn't fail fast
-there either — by default it just hangs indefinitely instead of rejecting. `welcome-chat.vue`'s
+there either — by default it just hangs indefinitely instead of rejecting. `welcome-chat-v2.vue`'s
 `setupPasskey()` guards against this: whenever `window.Cypress` is set (only true inside a Cypress
 run) **and** no virtual authenticator has been registered, it short-circuits straight to the same
 "registration failed" path a real ceremony failure already takes, instead of calling the real

@@ -13,7 +13,8 @@
 
 	/*********************** Globals ***********************/
   --app-max-width: 1000px;
-	--app-background: #f8f9ff; 		/* Main app background */
+	--app-background: #f8f9ff; 		/* Flat fallback, e.g. for the design-overview preview frame before its iframe loads */
+	--app-gradient: radial-gradient(120% 70% at 50% 10%, #ffffff 0%, #eef5fc 45%, #dbe8f6 100%); /* Main app background - see #app below */
 	--app-background-alt: #f0f6ff; 	/* Alternate background for sections, cards, etc. */
 	--liquido-border-radius: 0.5rem;
 	--liquido-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);  /* same as bootstrap's --bs-box-shadow-sm */
@@ -133,9 +134,18 @@ body {
 	box-sizing: border-box;
 }
 
-/** Main app container - handles horizontal layout and content bounds */
+/**
+ * Main app container - handles horizontal layout and content bounds.
+ *
+ * #app is the actual scrolling element (overflow-y: auto), so its background paints once onto its
+ * own fixed, viewport-sized box - not onto the (usually taller) scrollable content inside it. That is
+ * exactly why the gradient lives here rather than on #appContent: iOS Safari's rubber-band overscroll
+ * drags #appContent away from #app's edge and reveals #app underneath, and since #app's background
+ * does not scroll with its content, that reveal is more of the same gradient at the right edge colour
+ * instead of a mismatched flat gap.
+ */
 #app {
-	background-color: var(--app-background);
+	background: var(--app-gradient);
 	margin: 0 auto;
 	position: relative;
 	height: 100%;
@@ -148,9 +158,9 @@ body {
 	scrollbar-gutter: stable;
 }
 
-/** Main content area - accounts for fixed header and navbar */
+/** Main content area - accounts for fixed header and navbar. Left transparent on purpose, so
+    #app's gradient behind it shows through - see the comment on #app above. */
 #app #appContent {
-	background-color: var(--app-background);
 	min-height: 100%;  												/* TODO: 100vh? Always fill viewport height, even with minimal content */
 	padding-top: calc(env(safe-area-inset-top) + var(--liquido-header-height));    /*  Space for iOS dynamic island */
 	padding-bottom: calc(var(--liquido-footer-height) + 100px); 		/* allow scrolling up, so that content is visible behind liquido-footer */

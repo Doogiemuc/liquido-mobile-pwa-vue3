@@ -3,7 +3,6 @@ import { store }  from "@/services/store.js"
 import api from "@/services/liquido-graphql-client.js"
 import config from "config"
 import log from 'loglevel'
-import welcomeChat from "@/views/welcome-chat.vue"
 //import { route } from 'fontawesome'
 if (import.meta.env.MODE === "development") log.enableAll()
 
@@ -30,7 +29,7 @@ const routes = [
 	{
 		path: "/welcome",
 		name: "welcome",
-		component: welcomeChat,
+		component: () => import("@/views/welcome-chat-v2.vue"),
 		props: route => ({
 			inviteCodeQueryParam: route.query.inviteCode
 		}),
@@ -87,6 +86,7 @@ const routes = [
 		path: "/polls/new",
 		name: "newPoll",
 		component: () => import("@/views/poll-edit.vue"),
+		props: route => ({ onboarding: route.query.onboarding === "1" }),
 	},
 	{
 		path: "/polls/:pollId",
@@ -307,8 +307,10 @@ router.beforeEach(async (routeTo, routeFrom) => {
 	
 	return tryToAuthenticate().then(() => {
 		log.debug("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
-		if (routeTo.path === "/" || routeTo.path === "/index.html") {
-			return {name: "team"}  
+		// An authenticated visitor has no use for the registration landing page either - straight to
+		// their team, same as "/".
+		if (routeTo.path === "/" || routeTo.path === "/index.html" || routeTo.name === "welcome") {
+			return {name: "team"}
 		} else {
 			return true // allow authenticated navigation
 		}

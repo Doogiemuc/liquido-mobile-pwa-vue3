@@ -128,13 +128,14 @@
 		<!-- Dev login (only in development/test) -->
 		<div v-if="showDevLogin" class="d-flex flex-column px-3" style="margin-top: 8rem;">
 			<button type="button" class="btn btn-outline-secondary d-flex align-items-center justify-content-center"
-				@click="devLoginAdmin">
+				:disabled="!seedAdminEmail" @click="devLoginAdmin">
 				<i class="fas fa-shield-alt me-2"></i>
-				<span class="flex-grow-1 text-center">{{ $t("DevLoginAdmin") }}</span>
+				<span class="flex-grow-1 text-center">{{ seedAdminEmail || $t("DevLoginAdmin") }}</span>
 			</button>
 			<button type="button" class="btn btn-outline-secondary mt-1 d-flex align-items-center justify-content-center"
-				@click="devLoginMember">
-				<span class="flex-grow-1 text-center">{{ $t("DevLoginMember") }}</span>
+				:disabled="!seedMemberEmail" @click="devLoginMember">
+				<i class="fas fa-user me-2"></i>
+				<span class="flex-grow-1 text-center">{{ seedMemberEmail || $t("DevLoginMember") }}</span>
 			</button>
 			<a class="btn btn-outline-secondary mt-1 d-flex align-items-center justify-content-center"
 				:href="graphQlSchemaURL">
@@ -250,6 +251,12 @@ export default {
 			loginErrorMessageId: undefined,
 			emailError: null,
 			passwordError: null,
+			// The backend's TestDataCreator seed team's name and its admin/member emails carry a
+			// timestamp and are no longer fixed, so these are loaded from the newest seed team rather
+			// than read from config.devLogin - see loadDevLoginUsers().
+			seedTeamName: null,
+			seedAdminEmail: null,
+			seedMemberEmail: null,
 		}
 	},
 	computed: {
@@ -298,6 +305,8 @@ export default {
 		this.$store.setHeaderTitle(this.$t("Login"))
 	},
 	mounted() {
+		if (this.showDevLogin) this.loadDevLoginUsers()
+
 		// If only email is passed, then fill it. (This is used when coming back from password reset page)
 		if (this.email) {
 			this.emailInputVal = this.email
@@ -547,30 +556,48 @@ export default {
 
 		// =============== Dev Login ==================
 
+		/**
+		 * Fetch the newest seed team created by the backend's TestDataCreator, so the buttons below can
+		 * always devLogin as its admin or a random member - even after a fresh seed run replaced the
+		 * previous one. Same fix as _design-overview.vue's devLogin buttons.
+		 */
+		loadDevLoginUsers() {
+			if (config.mockBackend) {
+				const teamMembers = teamUserJwtMock?.team?.members || []
+				this.seedTeamName = teamUserJwtMock?.team?.teamName
+				this.seedAdminEmail = teamMembers.find(m => m.role === "ADMIN")?.user?.email
+				this.seedMemberEmail = teamMembers.find(m => m.role === "MEMBER")?.user?.email
+				return
+			}
+			api.getNewestSeedTeam(config.devLogin.token)
+				.then(team => {
+					this.seedTeamName = team.teamName
+					const members = team.members || []
+					const admin = members.find(m => m.role === "ADMIN")
+					const otherMembers = members.filter(m => m.role !== "ADMIN")
+					const member = otherMembers[Math.floor(Math.random() * otherMembers.length)]
+					this.seedAdminEmail = admin?.user?.email
+					this.seedMemberEmail = member?.user?.email
+				})
+				.catch(err => console.error("Could not load newest seed team for DevLogin", err))
+		},
+
 		devLoginAdmin() {
 			if (import.meta.env.MODE !== "development" && import.meta.env.MODE !== "test") return
+			if (!this.seedAdminEmail) return
 			api.logout()
-			api.devLogin(this.getDevLoginUserEmail("ADMIN"), /*teamName*/null , config.devLogin.token)
+			api.devLogin(this.seedAdminEmail, this.seedTeamName, config.devLogin.token)
 				.then(() => this.$root.gotoPolls())
 				.catch(err => console.error("DevLogin Admin failed!", err))
 		},
 
 		devLoginMember() {
 			if (import.meta.env.MODE !== "development" && import.meta.env.MODE !== "test") return
+			if (!this.seedMemberEmail) return
 			api.logout()
-			api.devLogin(this.getDevLoginUserEmail("MEMBER"), /*teamName*/null, config.devLogin.token)
+			api.devLogin(this.seedMemberEmail, this.seedTeamName, config.devLogin.token)
 				.then(() => this.$root.gotoPolls())
 				.catch(err => console.error("DevLogin Member failed!", err))
-		},
-
-		getDevLoginUserEmail(role) {
-			if (config.mockBackend) {
-				// Use the first user with the given role from the mock data
-				const teamMembers = teamUserJwtMock?.team?.members || []
-				return teamMembers.find(m => m.role === role)?.user?.email
-			}
-			// Otherwise use the configured devLogin emails from the application config
-			return role === "ADMIN" ? config.devLogin.admin.email : config.devLogin.member.email
 		},
 	}
 }

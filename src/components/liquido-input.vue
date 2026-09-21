@@ -669,6 +669,13 @@ export default {
 		color: var(--secondary, #959cab);
 		opacity: 0.5;
 		background: transparent;
+		/* Purely decorative - it stands in for the placeholder, not a click target of its own (its
+		   :for="id" would forward a click to the input anyway, but only as a plain focus, not at the
+		   clicked position). Letting the click fall straight through to the input under it is both
+		   the better UX (cursor lands where clicked) and what lets a fresh, never-focused field be
+		   typed into directly - Cypress's actionability check refuses to act on an element it can
+		   see is covered by another, .for or not. */
+		pointer-events: none;
 
 		/*
 		 * A label parked inside the field has to stay inside it. Without a cap a long label runs past

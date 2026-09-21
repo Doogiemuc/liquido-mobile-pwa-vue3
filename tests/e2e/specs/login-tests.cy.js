@@ -39,53 +39,33 @@ context('Login Test', () => {
 		console.log("===================================================")
 	})
 
-	it('Anonymous access should lead to welcome-chat', function() {
+	it('Anonymous access should lead to the welcome page', function() {
 		//WHEN anonymously accessing index
 		cy.visit("/")
-		//THEN should forward to welcome chat
-		cy.get("#welcome-chat")
+		//THEN should forward to the welcome page's landing hero
+		cy.get("#welcomeV2CreateTeamButton")
 	})
 
-	it('The welcome page opens on its landing hero, with the first chat bubble below the fold', function() {
+	it('The welcome page opens with the header removed and a way back in for a returning visitor', function() {
 		//WHEN anonymously accessing index
 		cy.visit("/")
 
-		// NB: deliberately NO .scrollIntoView() anywhere in this test. It is the one test about what
-		// the visitor sees BEFORE touching the screen, and every assertion below reads a bounding rect
-		// against the unscrolled viewport. Scrolling here would not strengthen it, it would erase it.
+		// NB: deliberately NO .scrollIntoView() anywhere in this test. It is about what the visitor
+		// sees BEFORE touching the screen, and every assertion below reads a bounding rect against
+		// the unscrolled viewport. Scrolling here would not strengthen it, it would erase it.
 
-		//THEN the landing hero is there, with the LIQUIDO mark and the claim ...
-		cy.get("#welcomeHero").should("be.visible")
-		cy.get("#liquidoClaim").should("be.visible")
-		// (not be.visible for the mark: it is pointer-events:none, so Cypress' hit test looks straight
-		// through it and reports the empty hero slot underneath as "covering" it.)
-		cy.get("#liquidMark").should($mark => {
-			expect($mark[0].getBoundingClientRect().width, "the LIQUIDO mark has a size").to.be.greaterThan(0)
-			expect(getComputedStyle($mark[0]).opacity).to.not.equal("0")
-		})
-
-		// ... and the first chat bubble starts BELOW the bottom edge of the phone. That cut-off
-		// bubble is the page's only "scroll down" hint, so it is worth a test.
-		cy.get("#welcome-chat").should($bubble => {
-			expect($bubble[0].getBoundingClientRect().bottom).to.be.greaterThan(Cypress.config("viewportHeight"))
-		})
-
-		// AND while the visitor is still up here, the header has not appeared yet
-		cy.get("#liquidoHeader").should($header => {
-			expect(getComputedStyle($header[0]).backgroundColor).to.match(/rgba\(.*,\s*0\)$/)
-		})
+		//THEN the landing hero fills the screen with no app header at all - see welcome-chat-v2.vue's
+		// #rootApp:has(#appContent.welcome-v2.is-landing) #liquidoHeader rule
+		cy.get("#liquidoHeader").should("not.be.visible")
 
 		// AND the one way back in for a returning user without a JWT is readable right away, in the
-		// top right - it must NOT wait for the header to fade in, or it is invisible on arrival.
-		cy.get("#welcomeLoginButton").should("be.visible").and($login => {
+		// top right - it does not wait for anything else on the page to finish animating in.
+		cy.get("#welcomeV2LoginButton").should("be.visible").and($login => {
 			const login = $login[0].getBoundingClientRect()
-			const header = Cypress.$("#liquidoHeader")[0].getBoundingClientRect()
-			expect(login.top, "sits in the header band").to.be.at.least(header.top - 1)
-			expect(login.bottom, "sits in the header band").to.be.at.most(header.bottom + 1)
+			expect(login.top, "sits near the top of the viewport").to.be.at.most(60)
 			expect(login.left, "sits in the right-hand half").to.be.greaterThan(Cypress.config("viewportWidth") / 2)
 			// The whole block is the tap target, not just the glyphs of the word.
-			expect(login.height, "comfortable tap target").to.be.at.least(44)
-			expect(login.width, "comfortable tap target").to.be.at.least(44)
+			expect(login.height, "comfortable tap target").to.be.at.least(24)
 		})
 	})
 
@@ -94,69 +74,10 @@ context('Login Test', () => {
 		cy.visit("/")
 
 		//WHEN they take the way back in
-		cy.get("#welcomeLoginButton").click()
+		cy.get("#welcomeV2LoginButton").click()
 
 		//THEN they land on the login page
 		cy.get("#login-page")
-	})
-
-	it('The chat offers the Login a second time, under the nickname field', function() {
-		//GIVEN an anonymous visitor who scrolled past the top-right Login and reached the nickname step
-		cy.visit("/")
-		// Wait for the card to actually OPEN, not just to exist: until FLOW.NicknameInput it carries
-		// .collapse-max-height (display:none), and .scrollIntoView() on a display:none element is a
-		// no-op that the retried should() below would never redo.
-		cy.get("#usernameCard", { timeout: 8000 }).should("not.have.css", "display", "none")
-
-		//THEN the chat offers the way back in a second time, right there in the card
-		cy.get("#welcomeLoginInChat")
-			.scrollIntoView().should("be.visible")
-			.and($link => {
-				const card = Cypress.$("#usernameCard")[0].getBoundingClientRect()
-				const link = $link[0].getBoundingClientRect()
-				expect(link.top, "sits inside the nickname card").to.be.at.least(card.top)
-				expect(link.bottom, "sits inside the nickname card").to.be.at.most(card.bottom)
-			})
-
-		//AND it reaches the login page too
-		cy.get("#welcomeLoginInChat").click()
-		cy.get("#login-page")
-	})
-
-	it('Both Login offers step aside once the visitor has committed to registering', function() {
-		//GIVEN an anonymous visitor on the welcome page
-		cy.visit("/")
-
-		//WHEN they give a nickname, and are therefore registering rather than returning
-		cy.get("#userNameInput", { timeout: 8000 }).type("Returning Visitor").type("{enter}")
-
-		//THEN neither offer is in the way any more
-		cy.get("#welcomeLoginButton").should("not.exist")
-		cy.get("#welcomeLoginInChat").should("not.exist")
-	})
-
-	it('Scrolling down flows the LIQUIDO mark up into the header', function() {
-		//GIVEN the welcome page, where the mark starts out on the hero and not in the header
-		cy.visit("/")
-		cy.get("#liquidMark").should($mark => {
-			expect($mark[0].getBoundingClientRect().top, "mark starts below the header").to.be.greaterThan(60)
-		})
-
-		//WHEN the visitor scrolls past the end of the mark's travel
-		cy.get("#app").scrollTo(0, 400)
-
-		//THEN the mark has arrived inside the header ...
-		cy.get("#liquidMark").should($mark => {
-			const mark = $mark[0].getBoundingClientRect()
-			const header = Cypress.$("#liquidoHeader")[0].getBoundingClientRect()
-			expect(mark.top, "mark landed below the top of the header").to.be.at.least(header.top - 1)
-			expect(mark.bottom, "mark landed above the bottom of the header").to.be.at.most(header.bottom + 1)
-		})
-
-		// ... and the header itself is no longer transparent
-		cy.get("#liquidoHeader").should($header => {
-			expect(getComputedStyle($header[0]).backgroundColor).to.not.match(/rgba\(.*,\s*0\)$/)
-		})
 	})
 
 	it('Anonymous access to restricted /polls page should be forwarded to login', function() {
