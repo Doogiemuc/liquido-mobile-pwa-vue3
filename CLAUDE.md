@@ -379,3 +379,26 @@ branch from `origin/main` and carry over only the commits that are genuinely unm
 
 `main` moves while you work. Fetch it before branching rather than trusting the base you started
 from — that is also how you notice that a fix you were about to make has already landed.
+
+---
+
+## 9. Agent workflow: commit, push, deploy (standing policy, 2026-09-21)
+
+- **Commit** on `main`: your own judgment, no need to ask. Commit whenever a change set is worth it.
+- **Push** to `main`: also your own judgment, no need to ask — **except** during a large refactoring
+  (a sprawling, multi-file structural change, not an ordinary fix/feature commit), or **except**
+  whenever the next rule applies.
+- **Working on a branch other than `main`:** always ask what to do first, for any git action
+  (commit, push, merge, ...) — do not apply the two defaults above. This lines up with §8: branch
+  work is Robert's to name and merge, and pushes there feed a PR that is his to open, not yours.
+- **Deploy: NEVER on your own. Always ask before running a deploy, every single time, no
+  exceptions** — not even for an obviously small, already-tested, low-risk change, and not even as
+  "verify before I push." Deploy scripts: `./deploy/build-and-deploy-local.sh` (this repo, frontend)
+  and `sg docker -c "./deploy/deployToGismo-docker.sh"` (backend repo).
+- **Always fine, never gated:** running unit/local tests (`npx vitest run`, `npx eslint ...`), and
+  running the e2e suite against whatever is *already* deployed (`./deploy/test-e2e-local.sh`) —
+  that script doesn't deploy anything itself, it just points Cypress at the current live build.
+- **After a deploy actually happens** (once asked-for and approved), run the full regression
+  automatically: `npx vitest run` plus the *entire* Cypress suite (`./deploy/test-e2e-local.sh
+  'tests/e2e/specs/*.cy.js'`), not just a targeted spec — and the backend's own unit tests too if
+  the backend was the thing deployed.
