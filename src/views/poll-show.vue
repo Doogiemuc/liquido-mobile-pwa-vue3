@@ -177,8 +177,8 @@ export default {
 			de: {
 				cannotFindPoll: "<h4>Fehler</h4><hr/><p>Diese Abstimmung konnte nicht gefunden werden.</p>",
 				PollInElaboration_Admin:
-					"<p>Du hast diese Abstimmung neu angelegt. Jetzt kannst du noch weitere Vorschläge hinzufügen.</p>" +
-					"<p>Sobald du die Abstimmung startest, können deine Teammitglieder dann hier anonym und sicher ihre Stimme abgeben.</p>",
+					"<p>Du, als Admin, hast diese Abstimmung neu angelegt. Noch kannst du sie bearbeiten und auch noch weitere Vorschläge hinzufügen.</p>" +
+					"<p>Sobald du die Abstimmung dann unten startest, ist sie fix und jeder im Team kann hier anonym und sicher abstimmen.</p>",
 				PollInElaboration_MemberInfo:
 					"Diese Abstimmung ist gerade neu angelegt worden.",
 				MembersCanAddProposals:  // for member and admin

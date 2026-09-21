@@ -91,7 +91,7 @@ export default {
 		messages: {
 			en: {},
 			de: {
-				createNewPoll: "Neue Abstimmung anlegen",
+				createNewPoll: "Neue Abstimmung erstellen",
 
 				// This info is for the admin, and only shown to him.
 				createPollInfo1: "Du bist der Admin dieses Teams.",
@@ -110,7 +110,7 @@ export default {
 				// Per-poll setting, chosen here and not changeable later.
 				membersCanAddProposals: "Teammitglieder dürfen Vorschläge hinzufügen",
 				membersCanAddProposalsHint: "Wenn du das nicht aktivierst, legst nur du als Admin fest, worüber abgestimmt wird. Diese Einstellung kann später nicht mehr geändert werden.",
-				createPoll: "Abstimmung anlegen",
+				createPoll: "Abstimmung erstellen",
 				votesAreAlwaysAnonymous: "Abstimmungen sind immer anonym.",
 				votesCannotBeChangedOnceCast: "Nachdem eine Stimme einmal abgegeben wurde, kann sie nicht mehr geändert werden.",
 			},

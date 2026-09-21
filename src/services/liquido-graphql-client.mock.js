@@ -229,7 +229,7 @@ const detectOperation = query => {
 		"switchTeam",
 		"createNewTeam", "joinTeam", "createPoll", "addProposal", "updateProposal", "deleteProposal", "likeProposal", "startVotingPhase",
 		"finishVotingPhase", "castVote", "loginWithEmailPassword", "googleOneTapLogin", "loginWithAuthToken",
-		"requestPasswordReset", "resetPassword", "requestEmailLoginLink", "teamForInviteCode", "loginWithJwt",
+		"requestPasswordReset", "resetPassword", "requestEmailLoginLink", "teamForInviteCode", "newestSeedTeam", "loginWithJwt",
 		"devLogin", "authToken", "voterToken", "verifyBallot", "myBallot", "publishedTally", "polls", "poll", "team", "ping",
 	]
 	for (const name of operations) {
@@ -501,6 +501,14 @@ const queryHandlers = {
 		const inviteCode = get(variables, "inviteCode", argFromQuery(query, "inviteCode"))
 		if (inviteCode !== currentTeam().inviteCode) {
 			rejectLiquido(LiquidoExceptionCodes.CANNOT_JOIN_TEAM_INVITE_CODE_INVALID, "Invite code not found")
+		}
+		return deepClone(currentTeam())
+	},
+	/** Mocks the backend's TestDataCreator seed team: there is no real seed run here, so this is just the mock's own default team. */
+	newestSeedTeam: (query, variables = {}) => {
+		const devLoginToken = get(variables, "devLoginToken", argFromQuery(query, "devLoginToken"))
+		if (devLoginToken !== config.devLogin.token) {
+			rejectLiquido(LiquidoExceptionCodes.CANNOT_LOGIN_TOKEN_INVALID, "Invalid devLoginToken passed.")
 		}
 		return deepClone(currentTeam())
 	},

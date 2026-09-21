@@ -701,6 +701,22 @@ let graphQlApi = {
 	},
 
 	/**
+	 * [DEV] Get the newest seed team created by the backend's TestDataCreator. Only used by
+	 * _design-overview.vue to find an admin and a member it can devLogin as - the seed team's name
+	 * and its admin/member emails carry a timestamp and are no longer fixed.
+	 * @param {String} devLoginToken must match the backend's configured devLoginToken
+	 * @returns {Object} the newest seed team, with its members
+	 */
+	async getNewestSeedTeam(devLoginToken) {
+		// MicroProfile GraphQL strips the "get" prefix from the resolver method name, so the backend's
+		// TeamGraphQL.getNewestSeedTeam() is exposed as the field "newestSeedTeam" (same as
+		// getTeamForInviteCode() -> "teamForInviteCode" above).
+		let graphQL = `query newestSeedTeam($devLoginToken: String!) { newestSeedTeam(devLoginToken: $devLoginToken) ${JQL.TEAM} }`
+		return graphQlQuery(graphQL, { devLoginToken })
+			.then(res => res.data.newestSeedTeam)
+	},
+
+	/**
 	 * Join a team with inviteCode
 	 * @param {String} inviteCode alphanumerical invite code that the admin of the team shared
 	 * @param {Object} member user data of the new team member that want's to join
