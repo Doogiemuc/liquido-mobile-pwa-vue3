@@ -391,6 +391,15 @@ from — that is also how you notice that a fix you were about to make has alrea
 - **Working on a branch other than `main`:** always ask what to do first, for any git action
   (commit, push, merge, ...) — do not apply the two defaults above. This lines up with §8: branch
   work is Robert's to name and merge, and pushes there feed a PR that is his to open, not yours.
+- **Merge conflicts: NEVER resolve on your own. Always report them and ask, every single time.**
+  Do not pick a side (`--ours`/`--theirs`, whole-file or otherwise) and do not hand-edit conflict
+  markers without being told how. A conflicted file usually means both branches did *real,
+  unrelated* work on it — the git commit `6718da6` (2026-09-10) resolved a dozen conflicts this
+  way by taking one branch's version of shared files wholesale, and silently deleted the
+  `loadLiquidoConfig()` backend-config-sync mechanism and `team-home.vue`'s direct-to-ballot
+  navigation shortcut, among other things, because that file also carried unrelated main-branch
+  work the merge never looked at. Report which files conflict and a summary of what each side
+  changed, then let Robert say how to reconcile them.
 - **Deploy: NEVER on your own. Always ask before running a deploy, every single time, no
   exceptions** — not even for an obviously small, already-tested, low-risk change, and not even as
   "verify before I push." Deploy scripts: `./deploy/build-and-deploy-local.sh` (this repo, frontend)
