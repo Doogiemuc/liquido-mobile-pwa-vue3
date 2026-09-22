@@ -3,6 +3,7 @@ import { get, isValidString, set } from "@kubric/litedash"
 import config from "config"
 import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
 import LiquidoExceptionCodes from "@/services/LiquidoExceptionCodes.js"
+import { decodeJwtPayload, LIQUIDO_ADMIN_ROLE, LIQUIDO_USER_ROLE } from "@/services/jwt-util.js"
 
 const deepClone = val => JSON.parse(JSON.stringify(val))
 const nowIso = () => new Date().toISOString()
@@ -227,7 +228,7 @@ const detectOperation = query => {
 	// misrouted to them. That is why switchTeam sits at the very front.
 	const operations = [
 		"switchTeam",
-		"createNewTeam", "joinTeam", "createPoll", "addProposal", "updateProposal", "deleteProposal", "likeProposal", "startVotingPhase",
+		"createNewTeam", "joinTeam", "createPoll", "updatePoll", "addProposal", "updateProposal", "deleteProposal", "likeProposal", "startVotingPhase",
 		"finishVotingPhase", "castVote", "loginWithEmailPassword", "googleOneTapLogin", "loginWithAuthToken",
 		"requestPasswordReset", "resetPassword", "requestEmailLoginLink", "teamForInviteCode", "newestSeedTeam", "loginWithJwt",
 		"devLogin", "authToken", "voterToken", "verifyBallot", "myBallot", "publishedTally", "polls", "poll", "team", "ping",
@@ -259,7 +260,6 @@ const findMemberAnywhere = predicate =>
 
 const findMemberByEmail = email => findMemberAnywhere(m => m.user?.email === email)
 const findMemberByMobile = mobile => findMemberAnywhere(m => m.user?.mobilephone === mobile)
-const findMemberByUserId = userId => findMemberAnywhere(m => String(m.user?.id) === String(userId))
 const findPoll = pollId => (currentTeam().polls || []).find(p => p.id === pollId)
 
 const jwtFromAuthHeader = () => {
@@ -268,11 +268,33 @@ const jwtFromAuthHeader = () => {
 	return match ? match[1] : undefined
 }
 
+/**
+ * Mint a structurally real JWT: header.payload.signature, base64url encoded, carrying the same
+ * "groups" claim the backend mints in JwtTokenUtils.generateToken.
+ *
+ * Not signed - the signature segment is a constant, and nothing in the mock ever verifies it. But it
+ * must have the right SHAPE, because api.isAdmin() reads the admin role out of this claim (see
+ * jwt-util.js). The old plain `mock-jwt-<id>` string had no payload at all, so with a JWT-based
+ * isAdmin() the mock backend would have had no admins anywhere.
+ *
+ * @returns {String} a JWT whose "sub" is the user's email and "groups" reflects their role in `team`
+ */
+const mintMockJwt = (user, team) => {
+	const isAdmin = (team?.members || []).some(m => m.role === "ADMIN" && String(m.user?.id) === String(user.id))
+	const groups = isAdmin ? [LIQUIDO_ADMIN_ROLE, LIQUIDO_USER_ROLE] : [LIQUIDO_USER_ROLE]
+	// UTF-8 before base64: a JWT segment encodes BYTES. Handing btoa() a string with non-ASCII in it
+	// encodes Latin-1, which decodeJwtPayload would then read back as mojibake - and btoa throws
+	// outright above U+00FF, which would take the whole mock login down for one unusual address.
+	const b64url = obj => btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(obj))))
+		.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
+	return b64url({ alg: "none", typ: "JWT" }) + "." +
+		b64url({ sub: user.email, teamId: String(team?.id), groups }) + ".mocksignature"
+}
+
+/** Every mock JWT (and the real fixture one) carries "sub" as the user's email - decode and look them up by it. */
 const findMemberByJwt = jwt => {
-	if (jwt === teamUserJwtMock.jwt) return findMemberByUserId(teamUserJwtMock.user.id)
-	const match = (jwt || "").match(/^mock-jwt-(.+)$/)
-	if (!match) return undefined
-	return findMemberByUserId(match[1])
+	const email = decodeJwtPayload(jwt)?.sub
+	return email ? findMemberByEmail(email) : undefined
 }
 
 const currentUserOrThrow = () => {
@@ -322,7 +344,7 @@ const loginMock = (email, teamId) => {
 
 	// Simulate the cache initialization that happens in graphQlApi.login()
 	mockState.currentUser = deepClone(user)
-	mockState.jwt = `mock-jwt-${user.id}`
+	mockState.jwt = mintMockJwt(user, team)
 	saveMockState(mockState)
 
 	console.log("Mock login successful for <" + user.email + "> into team '" + team.teamName + "'")
@@ -551,7 +573,7 @@ const mutationHandlers = {
 			teams: [newTeam],
 			currentTeamIndex: 0,
 			currentUser: adminUser,
-			jwt: `mock-jwt-${userId}`,
+			jwt: mintMockJwt(adminUser, newTeam),
 			issuedAuthTokensByMobile: {},
 			voterTokensByPollAndUser: {},
 			ballotsByPollAndUser: {},
@@ -614,6 +636,18 @@ const mutationHandlers = {
 		}
 		currentTeam().polls.unshift(poll)
 		return enrichPollForCurrentUser(poll)
+	},
+	updatePoll: (query, variables = {}) => {
+		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))
+		const title = get(variables, "title", argFromQuery(query, "title"))
+		const poll = findPoll(pollId)
+		if (!poll) rejectLiquido(LiquidoExceptionCodes.CANNOT_FIND_ENTITY, `Poll ${pollId} not found`)
+		if (poll.status !== "ELABORATION") {
+			rejectLiquido(LiquidoExceptionCodes.CANNOT_UPDATE_POLL, `Cannot rename poll: poll(id=${pollId}) has already started.`)
+		}
+		poll.title = title
+		poll.updatedAt = nowIso()
+		return deepClone(poll)
 	},
 	addProposal: (query, variables = {}) => {
 		const pollId = asInt(get(variables, "pollId", argFromQuery(query, "pollId", "-1")))

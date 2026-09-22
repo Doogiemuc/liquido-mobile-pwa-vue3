@@ -13,6 +13,7 @@ import EventBus from "@/services/event-bus.js"
 import { graphQlQueryMock, initializeLiquidoGraphQlMock } from "./liquido-graphql-client.mock.js"
 /** Liquido backend error codes. Must match LiquidoException.java from backend*/
 import LiquidoExceptionCodes from "./LiquidoExceptionCodes.js"
+import { LIQUIDO_ADMIN_ROLE, jwtHasRole } from "@/services/jwt-util.js"
 
 const logNetworkCall = (level, message) => {
 	EventBus.emit(EventBus.Event.MOBILE_DEBUG_LOG, { level, message })
@@ -360,15 +361,19 @@ let graphQlApi = {
 		return this.teamCache.getSync(this.ALL_USER_TEAMS_KEY, false) || []
 	},
 
-	/** 
-	 * Check if currently logged in user is the admin of his team. 
-	 * @return false if no one is logged in or currently logged in user is not the admin
+	/**
+	 * Is the currently logged in user the admin of the team they are currently in?
+	 *
+	 * Read straight out of the JWT's "groups" claim - the very same claim the backend authorises on
+	 * (JwtTokenUtils.isAdmin). That makes frontend and backend agree by construction. It also has
+	 * exactly one failure mode: no token, no admin.
+	 *
+	 * Not a security boundary - see decodeJwtPayload. It decides what to show, never what to allow.
+	 *
+	 * @return true only if the current JWT carries the admin role
 	 */
 	isAdmin() {
-		let cachedUser = this.getCachedUser()
-		let team        = this.getCachedTeam()
-		if (!cachedUser || !team) return false
-		return team.members.filter(tm => tm.role == "ADMIN").map(admin => admin.user.id).includes(cachedUser.id)
+		return jwtHasRole(this.teamCache.getSync(this.JWT_KEY, false), LIQUIDO_ADMIN_ROLE)
 	},
 
 	/**
@@ -756,6 +761,27 @@ let graphQlApi = {
 				let poll = res.data.createPoll
 				this.pollsCache.put("polls/"+poll.id, poll)
 				console.debug("Created new poll:", poll)
+				return poll
+			})
+	},
+
+	/**
+	 * Rename a poll. Admin only, and only while the poll is still in ELABORATION.
+	 * The backend refuses everything else: a member calling this, a poll that already started,
+	 * or a title that another poll in the team already uses.
+	 * Will update the poll in pollsCache.
+	 *
+	 * @param {Number} pollId the poll to rename
+	 * @param {String} title the new title. Must be unique within the team.
+	 * @returns {Object} the updated poll
+	 */
+	async updatePoll(pollId, title) {
+		let graphQL = `mutation updatePoll($pollId: BigInteger!, $title: String!) { updatePoll(pollId: $pollId, title: $title) ${JQL.POLL} }`
+		return graphQlQuery(graphQL, { pollId: Number(pollId), title })
+			.then(res => {
+				let poll = res.data.updatePoll
+				this.pollsCache.put("polls/"+poll.id, poll)
+				console.debug("Renamed poll:", poll)
 				return poll
 			})
 	},
