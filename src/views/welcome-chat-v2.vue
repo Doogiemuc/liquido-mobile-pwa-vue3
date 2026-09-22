@@ -19,6 +19,19 @@
 							<span class="liquido" />
 						</div>
 
+						<p class="headline" aria-hidden="true">
+							<span class="cycle-word-box">
+								<Transition name="word-fade">
+									<span :key="currentWord" class="cycle-word" :class="{ 'is-liquide': currentWord === 'liquide' }">
+										{{ currentWord }}
+									</span>
+								</Transition>
+							</span>
+							<span class="headline-fixed">{{ $t("headlineNoun") }}</span>
+						</p>
+						<!-- p class="headline" aria-hidden="true">{{ $t("headlineSubline") }}</p-->
+						<span class="visually-hidden">{{ $t("headlineSrSentence") }}</span>
+
 						<div class="water-stage" aria-hidden="true">
 							<div class="ambient-glow" />
 							<div class="water-plane">
@@ -30,19 +43,6 @@
 								<div class="droplet-inner" />
 							</div>
 						</div>
-
-						<p class="headline" aria-hidden="true">
-							<span class="cycle-word-box">
-								<Transition name="word-fade">
-									<span :key="currentWord" class="cycle-word" :class="{ 'is-liquide': currentWord === 'liquide' }">
-										{{ currentWord }}
-									</span>
-								</Transition>
-							</span>
-							<span class="headline-fixed">{{ $t("headlineNoun") }}</span>
-						</p>
-						<p class="headline" aria-hidden="true">{{ $t("headlineSubline") }}</p>
-						<span class="visually-hidden">{{ $t("headlineSrSentence") }}</span>
 						<p class="page-subtitle hero-manifesto">{{ $t("heroManifesto") }}</p>
 					</div>
 
@@ -291,7 +291,7 @@ export default {
 				loginLinkV2: "Log in",
 				headlineNoun: "Abstimmungen",
 				headlineSubline: "für alle",
-				heroManifesto: "Jeder Tropfen zählt. Jede Stimme zählt. Eine kleine, bewusste Handlung wird zu einer anschwellenden Flut kollektiver Kraft.",
+				heroManifesto: "Jeder Tropfen zählt. Jede Stimme zählt. So kann aus einer kleinen, bewussten Handlung eine anschwellenden Flut kollektiver Kraft werden.",
 				headlineSrSentence: "Freie, sichere, anonyme, faire, liquide Abstimmungen für alle.",
 
 				createTeamButton: "Neues Team erstellen",
@@ -383,7 +383,7 @@ onMounted(() => store.setHeaderTitle(undefined))
  * German adjectives inflected to agree with "Abstimmungen" (fem. plural) - see the comment on the
  * i18n block above for why these are not translation keys.
  */
-const ADJECTIVES = ["freie", "sichere", "anonyme", "faire", "liquide"]
+const ADJECTIVES = ["anonyme", "freie", "gleich", "sichere", "faire", "liquide"]
 // Matches the .droplet's drop-float CSS animation duration exactly (see <style> below), so a new
 // adjective fades in right as the drop touches the water.
 const WORD_INTERVAL_MS = 3200
@@ -719,6 +719,11 @@ function gotoCreateFirstProposal() {
 
 .welcome-v2 {
 	--liquide-accent: #2569c9;
+	/* Single source of truth for the water-drop cycle - shadow-pulse, ripple-touch, drop-float and
+	   liquide-shimmer all run on this, and WORD_INTERVAL_MS in the script above is kept in step
+	   with it by hand (a plain JS constant can't read a CSS custom property without a runtime
+	   getComputedStyle call, which isn't worth it for a value this stable). Change it here only. */
+	--water-anim-duration: 3.2s;
 	position: relative;
 	min-height: calc(100vh - var(--liquido-header-height) - env(safe-area-inset-top, 0px));
 	display: flex;
@@ -802,8 +807,8 @@ function gotoCreateFirstProposal() {
 	align-items: center;
 	gap: 0.4rem;
 	font-family: var(--serif-font);
-	margin-bottom: 1.5rem;
-	font-size: 3rem;
+	
+	font-size: clamp(1.8rem, 8vw, 2.6rem);
 	color: var(--primary);
 }
 .hero-brand i {
@@ -816,7 +821,6 @@ function gotoCreateFirstProposal() {
 
 .hero-manifesto {
 	max-width: 20rem;
-	margin: 0.75rem auto 0;
 }
 
 /*
@@ -835,6 +839,7 @@ function gotoCreateFirstProposal() {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	margin-top: 1.5rem;
 	
 }
 
@@ -878,7 +883,7 @@ function gotoCreateFirstProposal() {
 	   on the water, not floating with a half-size shadow. */
 	transform: translate(-50%, -50%) scale(1);
 	opacity: 0.7;
-	animation: shadow-pulse 3.2s infinite;
+	animation: shadow-pulse var(--water-anim-duration) infinite;
 }
 
 /* Touch-down is at the 50% mark now (see drop-float below) - full and darkest exactly then,
@@ -907,7 +912,7 @@ function gotoCreateFirstProposal() {
 	box-shadow: 0 0 0.4rem rgba(78, 141, 184, 0.35), inset 0 0 0.3rem rgba(255, 255, 255, 0.4);
 	transform: translate(-50%, -50%) scale(1);
 	opacity: 0;
-	animation: ripple-touch 3.2s ease-out infinite;
+	animation: ripple-touch var(--water-anim-duration) ease-out infinite;
 }
 .ripple--b {
 	animation-delay: 0.45s;
@@ -944,7 +949,7 @@ function gotoCreateFirstProposal() {
 	overflow: hidden;
 	border-radius: 50% 50% 50% 0;
 	transform: translate(-50%, -50%) translateY(-1.25rem) rotate(135deg);
-	animation: drop-float 3.2s ease-in-out infinite;
+	animation: drop-float var(--water-anim-duration) ease-in-out infinite;
 	z-index: 2;
 }
 
@@ -1033,7 +1038,7 @@ function gotoCreateFirstProposal() {
 	-webkit-background-clip: text;
 	background-clip: text;
 	-webkit-text-fill-color: transparent;
-	animation: liquide-shimmer 3.2s linear infinite;
+	animation: liquide-shimmer var(--water-anim-duration) linear infinite;
 }
 
 @keyframes liquide-shimmer {
@@ -1103,7 +1108,10 @@ p.join-hint {
 .hero-login {
 	position: fixed;
 	top: env(safe-area-inset-top, 0px);
-	right: 0;
+	/* #app is centered and capped at --app-max-width; position:fixed ignores that and anchors to
+	   the raw viewport, so on wide screens this drifts outside the frame. Anchor to #app's own
+	   right edge instead - the gap outside it, or 0 once the viewport is narrower than the cap. */
+	right: max(0px, calc((100vw - var(--app-max-width)) / 2));
 	z-index: 10001;
 	display: flex;
 	align-items: center;
