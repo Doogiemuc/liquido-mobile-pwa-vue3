@@ -51,10 +51,10 @@
 							{{ $t("createTeamButton") }}
 						</button>
 
-						<button v-if="invite.team" id="welcomeV2JoinTeamButton" type="button" class="inline-link join-hint" @click="goToJoin">
-							{{ $t("invitedByAdminV2", { adminName: invite.adminName, teamName: invite.teamName }) }}
+						<button v-if="invite.team" id="welcomeV2JoinTeamButton" type="button" class="inline-link join-hint liquido-small-text" @click="goToJoin">
+							<liqui-loc-html msg-key="invitedByAdminV2" :params="{ adminName: invite.adminName, teamName: invite.teamName }" />
 						</button>
-						<p v-else class="join-hint">
+						<p v-else class="join-hint liquido-small-text">
 							{{ $t("joinHintPrefix") }}<button id="welcomeV2JoinTeamButton" type="button" class="inline-link" @click="goToJoin">{{ $t("joinTeamButton") }}</button>
 						</p>
 					</div>
@@ -72,15 +72,17 @@
 							<div class="text-center mb-3">
 								<i class="fas fa-people-group fa-3x" style="color: var(--primary)" />
 							</div>
-							<div class="text-center mb-3">
-								<p>{{ path === "create" ? $t("createTeamIntro") : $t("joinTeamIntro") }}</p>
+							<div v-if="path === 'create'" class="text-center liquido-small-text mb-3">
+								<p>{{ $t("createTeamIntro") }}</p>
 							</div>
+							<liqui-loc-html v-if="path === 'join' && invite.team" id="welcomeV2RegisterGreeting" tag="p" class="text-center liquido-small-text mb-3"
+								msg-key="invitedByAdminV2" :params="{ adminName: invite.adminName, teamName: invite.teamName }" />
 
 							<liquido-input
 									v-if="path === 'join'"
 									id="welcomeV2InviteCodeInput"
 									v-model="inviteCode"
-									class="mb-2"
+									class=""
 									:floating-label="true"
 									:show-empty-as-error="false"
 									type="text"
@@ -96,21 +98,17 @@
 									@blur="onInviteCodeBlur"
 								/>
 
-								<p v-if="path === 'join' && invite.team" id="welcomeV2RegisterGreeting" class="page-subtitle mb-3">
-									{{ $t("invitedByAdminV2", { adminName: invite.adminName, teamName: invite.teamName }) }}
-								</p>
+								
 
 								<liquido-input
 									id="welcomeV2NicknameInput"
 									v-model="nickname"
-									class="mb-2"
-									:floating-label="true"
+									class=""
 									:show-empty-as-error="false"
 									type="text"
 									name="nickname"
 									autocomplete="nickname"
 									:label="$t('nickname')"
-									:placeholder="$t('nicknamePlaceholder')"
 									:min-length="usernameMinLength"
 									:max-length="100"
 									:invalid-feedback="$t('nicknameInvalid')"
@@ -124,13 +122,11 @@
 									v-if="path === 'create'"
 									id="welcomeV2TeamNameInput"
 									v-model="teamName"
-									class="mb-2"
-									:floating-label="true"
+									class=""
 									:show-empty-as-error="false"
 									type="text"
 									name="teamName"
 									:label="$t('teamName')"
-									:placeholder="$t('teamNamePlaceholder')"
 									:min-length="6"
 									:max-length="100"
 									:invalid-feedback="$t('teamNameInvalid')"
@@ -144,13 +140,11 @@
 									id="welcomeV2EmailInput"
 									v-model="email"
 									class="mb-2"
-									:floating-label="true"
 									:show-empty-as-error="false"
 									type="email"
 									name="email"
 									autocomplete="email"
 									:label="$t('YourEmail')"
-									:placeholder="$t('emailPlaceholder')"
 									:max-length="300"
 									:invalid-feedback="$t('emailInvalid')"
 									:empty-feedback="$t('emailInvalid')"
@@ -163,13 +157,11 @@
 									id="welcomeV2PasswordInput"
 									v-model="password"
 									class="mb-2"
-									:floating-label="true"
 									:show-empty-as-error="false"
 									type="password"
 									name="password"
 									autocomplete="new-password"
 									:label="$t('Password')"
-									:placeholder="$t('passwordPlaceholder')"
 									:min-length="minPasswordLength"
 									:max-length="300"
 									:invalid-feedback="$t('passwordTooShort', { minLength: minPasswordLength })"
@@ -297,11 +289,11 @@ export default {
 				createTeamButton: "Neues Team erstellen",
 				joinTeamButton: "Team beitreten",
 				joinHintPrefix: "Einladungslink bekommen? ",
-				invitedByAdminV2: "{adminName} hat dich eingeladen, Team „{teamName}“ beizutreten.",
+				invitedByAdminV2: "<b>{adminName}</b> hat dich zu seinem Team <b>{teamName}</b> eingeladen.",
 
 				createTeamTitle: "Team erstellen",
 				joinTeamTitle: "Team beitreten",
-				createTeamIntro: "Erstelle dein LIQUIDO Team",
+				createTeamIntro: "Du wirst der Admin des neuen Teams.",
 				joinTeamIntro: "Tritt einem bestehenden LIQUIDO Team bei",
 
 				inviteCodeLabel: "Einladungscode",
@@ -383,7 +375,7 @@ onMounted(() => store.setHeaderTitle(undefined))
  * German adjectives inflected to agree with "Abstimmungen" (fem. plural) - see the comment on the
  * i18n block above for why these are not translation keys.
  */
-const ADJECTIVES = ["anonyme", "freie", "gleich", "sichere", "faire", "liquide"]
+const ADJECTIVES = ["anonyme", "freie", "gleiche", "sichere", "faire", "liquide"]
 // Matches the .droplet's drop-float CSS animation duration exactly (see <style> below), so a new
 // adjective fades in right as the drop touches the water.
 const WORD_INTERVAL_MS = 3200
@@ -1081,10 +1073,6 @@ function gotoCreateFirstProposal() {
 .join-hint {
 	display: block;
 	margin: 0.75rem 0 0;
-	font-size: var(--font-size-small);
-}
-p.join-hint {
-	color: var(--secondary);
 }
 
 .inline-link {

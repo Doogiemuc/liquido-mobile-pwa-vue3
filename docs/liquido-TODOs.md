@@ -9,6 +9,8 @@ Do I need a tool for managing my own backlog? => No just, this .md file
 
 # Technical Dept
 
+ * Backend config sync. `api.getLiquidoConfig()` was already implemented but then overwritten by the merge 6718da6 ("Merge origin/polly/2.0: adopt the complete Polly implementation", 2026-09-10) 
+ * localization: loc() instead of t(), defineOptions instead of <script setup> <script> blocks
  * Detail: Make all components pass the page-title into liquido-header via normal properties
  * OR Larger refactoring: Go through state store. Make rootApp include the header. (Do I have a header on all pages?)
                What about side scrolling?
@@ -27,9 +29,9 @@ Do I need a tool for managing my own backlog? => No just, this .md file
 
  * Finally finalize the final login flow :-) Login via
    * Login via Email - 
-	 * Google - DONE
+	 * Login via Google - DONE
 	 * [Login with Apple](https://developer.apple.com/documentation/signinwithapple/configuring-your-webpage-for-sign-in-with-apple). - still TODO
-	 * Authy App: Need good docu and UX guide.
+	 * Authy App: Need good docu and UX guide. => Passkey is even better.
 	 * SMS - Not possible due to costs :-(
 
 #### Settings

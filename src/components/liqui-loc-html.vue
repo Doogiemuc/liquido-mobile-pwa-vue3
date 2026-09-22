@@ -49,8 +49,15 @@ export default {
 	computed: {
 		html() {
 			// $options.i18n of the PARENT, not of this component: the message belongs to whoever wrote
-			// the markup. $parent is the component whose template contains this tag.
-			const localMessages = this.$parent?.$options?.i18n?.messages
+			// the markup. Usually $parent IS that component directly - but a tag placed inside
+			// <Transition> (e.g. welcome-chat-v2's step transitions) gets Transition's own anonymous
+			// wrapper instance as $parent instead, which never has an i18n option. So climb until an
+			// ancestor with local messages turns up. Transition/BaseTransition contribute none, so this
+			// climbs past exactly them and lands on the real owner - it does not walk further astray,
+			// because that owner is the nearest ancestor that has any i18n at all.
+			let owner = this.$parent
+			while (owner && !owner.$options?.i18n?.messages) owner = owner.$parent
+			const localMessages = owner?.$options?.i18n?.messages
 			const escaped = this.params
 				? Object.fromEntries(Object.entries(this.params).map(([k, v]) => [k, escapeHtml(v)]))
 				: undefined

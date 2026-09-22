@@ -198,7 +198,7 @@ body {
 	transition: opacity 0.2s linear;
 }
 
-.page-subtitle {
+.page-subtitle, .liquido-small-text {
 	color: var(--secondary);
 	font-family: var(--sans-serif-font);
 	font-size: var(--font-size-small);
