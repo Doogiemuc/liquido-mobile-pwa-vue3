@@ -6,12 +6,17 @@
  * Which frontend the browser opens, and which backend that frontend talks to, are two separate
  * questions. Pick a pair with LIQUIDO_E2E_MODE:
  *
- *   mode             | frontend               | backend                  | what it is for
- *   -----------------|------------------------|--------------------------|----------------------------
- *   local (default)  | localhost:3001         | localhost:8443           | the normal full-stack run
- *   mock             | localhost:3001         | none - mocked in the app | frontend only, no backend
- *   remote-backend   | localhost:3001         | liquido.dynv6.net        | your code, real data
- *   deployed         | liquido.dynv6.net      | liquido.dynv6.net        | smoke-test a deployment
+ *   mode             | frontend                  | backend                  | what it is for
+ *   -----------------|---------------------------|--------------------------|----------------------------
+ *   local (default)  | shadow.fritz.box:3001     | shadow.fritz.box:8443    | the normal full-stack run
+ *   mock             | shadow.fritz.box:3001     | none - mocked in the app | frontend only, no backend
+ *   remote-backend   | shadow.fritz.box:3001     | liquido.dynv6.net        | your code, real data
+ *   deployed         | liquido.dynv6.net         | liquido.dynv6.net        | smoke-test a deployment
+ *
+ * The local frontend is opened by hostname, not "localhost" and not a bare IP: WebAuthn ties a
+ * credential to the exact origin it was created on, and the backend's dev profile only accepts
+ * https://shadow.fritz.box:3001 (quarkus.webauthn.origins in application-dev.properties). Any other
+ * host would make every passkey ceremony fail its origin check.
  *
  * Point the deployed modes somewhere else with CYPRESS_REMOTE_URL.
  *
@@ -35,8 +40,9 @@ import { fileURLToPath } from "node:url"
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 
-const LOCAL_FRONTEND = "https://localhost:3001"
-const LOCAL_BACKEND = "https://localhost:8443"
+// See the WebAuthn note above: must stay shadow.fritz.box, not localhost or a bare IP.
+const LOCAL_FRONTEND = "https://shadow.fritz.box:3001"
+const LOCAL_BACKEND = "https://shadow.fritz.box:8443"
 const DEPLOYED = (process.env.CYPRESS_REMOTE_URL || "https://liquido.dynv6.net").replace(/\/+$/, "")
 
 /** frontend = what the browser opens; backend = what the SPECS call directly (null: there is none) */
