@@ -21,10 +21,6 @@ Password"]
     --> RegisterPasskey["Register Passkey<br>(if device supports it)"]
     --> NewUserRegistered
 
-    Login("<pre><b>/login</b></pre>")
-    --> LoginInput["Username & password<br>or KeePass"]
-    --> LoggedIn
-
     Index("<pre><b>/</b></pre>") 
     --> IsAuthenticated{{"Is authenticated?"}}
     IsAuthenticated == Yes ==> TeamHome
@@ -38,6 +34,7 @@ Password"]
     PollStatus -- IN_ELABORATION --> PollInElaboration
     PollStatus -- IN VOTING --> PollInVoting
     
+    TeamHome -- Team to poll in voting shortcut --> PollInVoting
 
     PollInVoting
     ==> CastVote("<pre><b>/polls/:id/castVote</b></pre> Cast vote in a poll")
@@ -45,17 +42,21 @@ Password"]
     ==> BallotCasted
     
     PollCreate("<pre><b>/poll/create</b></pre>Create a new poll") 
-    --> PollTitleInput("Admin sets a poll title\nand saves poll.")
-    --> PollInElaboration(["Poll in ELABORATION"])
+    --> PollTitleInput("Admin sets a poll title\nand adds proposals.")
+    -- save --> PollInElaboration(["Poll in ELABORATION"])
     --> AddProposal("<pre><b>/polls/:id/add</b></pre> Every Team member can add a proposals with descriptions") 
     --> StartVoting
     --> PollInVoting(["Poll in VOTING<br>Team members can now cast their votes"])
     --> EndVoting
     --> PollFinished
 
+    Login("<pre><b>/login</b></pre>")
+    --> LoginInput["Login with Username&password<br>or passkey"]
+    --> TeamHome
+
     CreatePolly("<pre><b>/polly</b></pre>")
     --> AddPollyOptions["Polly Admin sets title\nand adds options"]
-    --> ClickCreatePasskey["Admin creates his Passkey"]
+    --> ClickCreatePasskey["Polly admin registers his Passkey"]
     --> PollyCreated(["New polly is created and started. Members can immideately cast votes."])
     --> SharePollyLink["Admin share polly link\nto friends"]
     --> FriendsVoteInPolly["<pre><b>/polly/:id</b></pre>Friends and admin\nvote in Polly"]
@@ -69,19 +70,23 @@ Password"]
      RegisterPasskey:::UserInput
      IsAuthenticated:::Decision
      LoginInput:::UserInput
+     Welcome:::Aqua
+     JoinTeam:::Aqua
      TeamHome:::Aqua
+     Login:::Aqua
      Polls:::Aqua
+     PollCreate:::Aqua
      PollShow:::Aqua
      PollStatus:::Decision
      CastVoteInput:::UserInput
      PollTitleInput:::UserInput
      AddPollyOptions:::UserInput
      NewUserRegistered@{ shape: dbl-circ, label: "New user<bR>registered" }
-     LoggedIn@{ shape: dbl-circ, label: "Logged In" }
      StartVoting@{ shape: trap-b, label: "Admin starts voting phase" }
      EndVoting@{ shape: trap-t, label: "Admin ends voting phase" }
      PollFinished@{ shape: dbl-circ, label: "Poll FINSIHED" }
      BallotCasted@{ shape: dbl-circ, label: "Ballot counted<bR>successfully" }
+     CreatePolly:::Aqua
      PollyFinished@{ shape: dbl-circ, label: "Polly is finished.\nWinner is\nshown" }
     classDef UserInput fill:#FFF,color:#333
     classDef Decision fill:#3F3,color:#333
