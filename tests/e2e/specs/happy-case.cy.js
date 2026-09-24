@@ -74,10 +74,13 @@ afterEach(function() {
   }
 });
 
-// testIsolation:false — the happy case is one sequential flow whose steps build on each other.
-// The mocked backend keeps its "database" in sessionStorage (see liquido-graphql-client.mock.js).
-// With Cypress' default testIsolation:true, sessionStorage is wiped before every test, which would
-// discard the team/admin created in earlier steps and make the JWT re-login fail (JWT_TOKEN_INVALID).
+// testIsolation:false — the happy case is one sequential flow whose steps build on each other,
+// carrying state (fix, the admin/member JWTs) across `it()` blocks. With Cypress' default
+// testIsolation:true, localStorage is wiped before every test, which would discard the JWT set in
+// an earlier step and make the next step's re-login fail (JWT_TOKEN_INVALID) before it ever gets to
+// set its own. In mock mode the backend itself lives in the Vite dev server process (see
+// mock-backend/liquido-mock-domain.js), not in the browser, so it survives regardless of this
+// setting - same as the real backend always did.
 context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 
 	/** 

@@ -1,7 +1,7 @@
 /**
  * Mock backend for the Polly module.
  *
- * Entirely separate from liquido-graphql-client.mock.js: its own state, its own
+ * Entirely separate from mock-backend/liquido-mock-domain.js: its own state, its own
  * sessionStorage key, its own id space. A polly in here can never turn up in the team's
  * poll list, because the two mocks share no data at all.
  */

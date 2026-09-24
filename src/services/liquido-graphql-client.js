@@ -10,7 +10,14 @@ import axios from "axios"
 import config from "config"
 import PopulatingCache from "populating-cache"
 import EventBus from "@/services/event-bus.js"
-import { graphQlQueryMock, initializeLiquidoGraphQlMock } from "./liquido-graphql-client.mock.js"
+/**
+ * Only used for config.test.js (vitest, configSource "test"): there is no Vite dev server there to
+ * route an HTTP call through, so graphQlQuery() below calls this in-process instead. Cypress e2e
+ * runs use config.development.js, which always goes over real HTTP, answered by the Vite
+ * dev-middleware in mock-backend/liquido-mock-http-server.js - see that file's module doc comment,
+ * and graphQlQuery() below, for why.
+ */
+import { graphQlQueryMock, setAuthHeader } from "../../mock-backend/liquido-mock-domain.js"
 /** Liquido backend error codes. Must match LiquidoException.java from backend*/
 import LiquidoExceptionCodes from "./LiquidoExceptionCodes.js"
 import { LIQUIDO_ADMIN_ROLE, jwtHasRole } from "@/services/jwt-util.js"
@@ -46,8 +53,16 @@ if (!config || !config.LIQUIDO_API_URL) {
 	}
 }
 
-// Configure axios HTTP REST client to point to our graphQL backend
-axios.defaults.baseURL = config.LIQUIDO_API_URL
+/**
+ * Configure axios to point to our graphQL backend - or, when config.mockBackend is on for a real
+ * Vite dev server (configSource "development"/"deployed", NOT vitest's "test"), to this page's own
+ * origin instead, where vite-plugin-mock-backend.js answers every call for real. Ignores
+ * LIQUIDO_API_URL in that case on purpose: mock mode means "talk to the dev server we are already
+ * being served from," regardless of whatever real backend LIQUIDO_API_URL happens to be configured
+ * for. Vitest keeps using LIQUIDO_API_URL (irrelevant, since graphQlQuery() never reaches axios for
+ * GraphQL calls there) because there is no dev server for an empty baseURL to even mean anything.
+ */
+axios.defaults.baseURL = (config.mockBackend && config.configSource !== "test") ? "" : config.LIQUIDO_API_URL
 
 // Default global timeout = 10 secs
 axios.defaults.timeout = 10000
@@ -111,7 +126,11 @@ axios.interceptors.response.use(onSuccess, onError)
  * @returns GraphQL result as specified by GraphQL-spec { data: {}, errors: [] }
  */
 const graphQlQuery = function(query, variables) {
-	if (config.mockBackend) {
+	if (config.mockBackend && config.configSource === "test") {
+		// vitest: no Vite dev server exists to route an HTTP call through - call the mock in-process.
+		// Cypress e2e (configSource "development"/"deployed") falls through to the real axios.post()
+		// below instead, same as the real backend, so cy.intercept()/cy.wait() can see it.
+		setAuthHeader(axios.defaults.headers.common["Authorization"])
 		return graphQlQueryMock(query, variables)
 	} else {
 		logNetworkCall("debug", query?.slice(0,40))
@@ -1012,8 +1031,5 @@ let graphQlApi = {
 	/** Error codes from LIQUIDO backend. This is read from an automatically generated file LiquidoExceptionCodes.js */
 	err: LiquidoExceptionCodes,
 }
-
-if (config.mockBackend) initializeLiquidoGraphQlMock(graphQlApi, teamCache)
-
 
 export default graphQlApi
