@@ -9,7 +9,7 @@
 
 import { beforeEach, describe, expect, test } from 'vitest'
 import client from '@/services/liquido-graphql-client'
-import { resetGraphQlMockState } from '@/services/liquido-graphql-client.mock.js'
+import { resetGraphQlMockState } from '../../mock-backend/liquido-mock-domain.js'
 import teamUserJwtMock from '@/mockdata/teamUserJwt.json'
 
 const FIRST_TEAM_ID = teamUserJwtMock.team.id

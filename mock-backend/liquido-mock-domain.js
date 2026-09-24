@@ -1,4 +1,21 @@
-import axios from "axios"
+/**
+ * The mock backend's domain logic: state, GraphQL query/mutation handlers, login. Deliberately free
+ * of Node-only APIs (no crypto, no Buffer, no raw HTTP req/res) so it can be imported from BOTH:
+ *
+ *  - liquido-graphql-client.js, browser-bundled code, for config.test.js (vitest, configSource
+ *    "test") - there is no Vite dev server in a vitest run to route an HTTP call through, so
+ *    graphQlQuery() calls graphQlQueryMock() here directly, in-process.
+ *  - mock-backend/liquido-mock-http-server.js, which answers the SAME logic over real HTTP inside
+ *    the Vite dev server's Node process, for config.development.js (Cypress e2e runs). That is what
+ *    lets cy.intercept()/cy.wait() see mocked traffic exactly like they would the real backend, so
+ *    the same e2e spec source works unmodified against either backend - see that file's module doc
+ *    comment for the rest of the story (REST endpoints, WebAuthn) and why it has to be a separate,
+ *    Node-only file.
+ *
+ * Ported from the old src/services/liquido-graphql-client.mock.js, which did the same job by
+ * intercepting axios requests client-side. Most of the actual mock domain logic below (state,
+ * queryHandlers, mutationHandlers) is unchanged - only what calls into it changed.
+ */
 import { get, isValidString, set } from "@kubric/litedash"
 import config from "config"
 import teamUserJwtMock from "@/mockdata/teamUserJwt.json"
@@ -8,7 +25,8 @@ import { decodeJwtPayload, LIQUIDO_ADMIN_ROLE, LIQUIDO_USER_ROLE } from "@/servi
 const deepClone = val => JSON.parse(JSON.stringify(val))
 const nowIso = () => new Date().toISOString()
 
-class MockLiquidoError extends Error {
+/** Exported so liquido-mock-http-server.js's writeGraphQlResponse() can recognize it with instanceof. */
+export class MockLiquidoError extends Error {
 	constructor(code, message) {
 		super(message)
 		this.code = code
@@ -125,52 +143,30 @@ const createSecondTeam = (seed, pollId, firstProposalId) => {
 	}
 }
 
-const MOCK_STATE_KEY = "LIQUIDO_MOCK_STATE"
+/**
+ * The mock "database". Module-scoped, so it simply lives for as long as the importing process
+ * does - a vitest run, or the Vite dev server - no sessionStorage/localStorage needed now that this
+ * never runs in the browser. That is a closer match to a real backend anyway (one shared database,
+ * not one per browser tab): restart the dev server (or call resetGraphQlMockState(), as the vitest
+ * specs do between tests) for a fresh one, same as you would a real database.
+ *
+ * Exported as a live binding: liquido-mock-http-server.js reads/writes it directly (its
+ * passwordResetTokensByEmail/emailLoginTokensByEmail in particular) rather than going through this
+ * file's handlers for everything.
+ */
+export let mockState = createState()
 
 /**
- * Persists the current mock state to the browser's sessionStorage.
- * This allows the mock "database" to survive page reloads within the same tab.
- * @param {Object} state - The mock state object to save.
+ * The Authorization header of the request currently being handled, so the pure handler functions
+ * below (queryHandlers.loginWithJwt) and findMemberByCurrentAuthHeader() (used by
+ * liquido-mock-http-server.js's WebAuthn handlers) can read "who is calling" without threading it
+ * through every function signature - see setAuthHeader() below. Mirrors how the old browser version
+ * read axios.defaults.headers.common.Authorization, a similar single-current-session shortcut.
  */
-const saveMockState = (state) => {
-	try {
-		if (typeof window !== 'undefined' && window.sessionStorage) {
-			window.sessionStorage.setItem(MOCK_STATE_KEY, JSON.stringify(state))
-		}
-	} catch (e) {
-		console.error("Failed to save mock state to sessionStorage", e)
-	}
-}
+let currentAuthHeader
 
-/**
- * Loads the mock state from sessionStorage.
- * If no saved state is found, it initializes a new state using createState().
- * @returns {Object} The loaded or newly created mock state.
- */
-const loadMockState = () => {
-	try {
-		if (typeof window !== 'undefined' && window.sessionStorage) {
-			const saved = window.sessionStorage.getItem(MOCK_STATE_KEY)
-			if (saved) {
-				const state = JSON.parse(saved)
-				// A state saved before the mock grew a team LIST has a single `team` and no `teams`.
-				// Such a state would break every currentTeam() call, so start over instead.
-				if (!Array.isArray(state.teams)) {
-					console.log("MOCK: discarding mock state from an older schema")
-					return createState()
-				}
-				console.log("MOCK: loaded mock state from sessionStorage")
-				return state
-			}
-		}
-	} catch (e) {
-		console.error("Failed to load mock state from sessionStorage", e)
-	}
-	return createState()
-}
-
-let mockState = loadMockState()
-let mockRequestInterceptorInstalled = false
+/** Set before handling a request - see graphQlQueryMock() and liquido-mock-http-server.js. */
+export const setAuthHeader = value => { currentAuthHeader = value }
 
 const asInt = value => parseInt(value, 10)
 const ballotKey = (pollId, userId) => `${pollId}:${userId}`
@@ -199,67 +195,13 @@ const rejectLiquido = (code, message) => {
 	throw new MockLiquidoError(code, message)
 }
 
-const mockErrorResponse = err => {
-	if (!(err instanceof MockLiquidoError)) return err
-	const liquidoException = {
-		liquidoErrorCode: err.code,
-		msg: err.message,
-	}
-	return {
-		msg: err.message,
-		liquidoException,
-		errors: [
-			{
-				message: err.message,
-				extensions: { liquidoException },
-			},
-		],
-		response: {
-			data: {
-				liquidoErrorCode: err.code,
-				msg: err.message,
-			},
-		},
-	}
-}
-
 /**
  * A one-time token for a mocked email link (password reset, email login), stored in mockState
- * keyed by email so a later request in the same browser can present it back - see
- * initializeLiquidoGraphQlMock()'s REST interceptor below. Not cryptographically meaningful, this
- * only has to be unguessable enough that a Cypress spec must read it from mock state rather than
- * making it up.
+ * keyed by email so a later request can present it back - see requestPasswordResetEmail/
+ * resetPassword/requestEmailLoginLink below. Not cryptographically meaningful, this only has to be
+ * unguessable enough that a Cypress spec must read it from mock state rather than making it up.
  */
-const generateMockToken = prefix => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
-
-/** A resolved axios response for a mocked REST endpoint (as opposed to a mocked GraphQL query). */
-const mockRestSuccess = (config, data) => Promise.resolve({
-	data,
-	status: 200,
-	statusText: "OK",
-	headers: { "Content-Type": "application/json" },
-	config,
-	request: {},
-})
-
-/**
- * A rejected axios error for a mocked REST endpoint, carrying a `response.data.liquidoErrorCode`
- * the same way the real backend's REST error responses do (see join-team-v2.vue/welcome-chat-v2.vue,
- * which read errors from exactly that path for the REST calls they make).
- */
-const mockRestError = (config, liquidoErrorCode, msg) => {
-	const error = new Error(msg)
-	error.config = config
-	error.request = {}
-	error.response = {
-		data: { liquidoErrorCode, msg },
-		status: 400,
-		statusText: "Bad Request",
-		headers: { "Content-Type": "application/json" },
-		config,
-	}
-	return Promise.reject(error)
-}
+export const generateMockToken = prefix => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 
 const detectOperation = query => {
 	// ORDER MATTERS: the first name found anywhere in the query string wins, and the query string
@@ -282,7 +224,7 @@ const detectOperation = query => {
 }
 
 /** The team the mock session is currently scoped to. This replaced the old single mockState.team. */
-const currentTeam = () => mockState.teams[mockState.currentTeamIndex]
+export const currentTeam = () => mockState.teams[mockState.currentTeamIndex]
 
 /** Every team the given email is a member (or admin) of - the mock's TeamMemberEntity.findTeamsByMember. */
 const teamsOfMember = email =>
@@ -298,13 +240,12 @@ const findMemberAnywhere = predicate =>
 	findMemberIn(currentTeam(), predicate) ||
 	(mockState.teams || []).flatMap(t => t.members || []).find(predicate)
 
-const findMemberByEmail = email => findMemberAnywhere(m => m.user?.email === email)
+export const findMemberByEmail = email => findMemberAnywhere(m => m.user?.email === email)
 const findMemberByMobile = mobile => findMemberAnywhere(m => m.user?.mobilephone === mobile)
 const findPoll = pollId => (currentTeam().polls || []).find(p => p.id === pollId)
 
 const jwtFromAuthHeader = () => {
-	const authHeader = axios.defaults.headers.common.Authorization || ""
-	const match = authHeader.match(/^Bearer\s+(.+)$/i)
+	const match = (currentAuthHeader || "").match(/^Bearer\s+(.+)$/i)
 	return match ? match[1] : undefined
 }
 
@@ -337,6 +278,9 @@ const findMemberByJwt = jwt => {
 	return email ? findMemberByEmail(email) : undefined
 }
 
+/** The member the CURRENT request's Authorization header belongs to - see setAuthHeader(). */
+export const findMemberByCurrentAuthHeader = () => findMemberByJwt(jwtFromAuthHeader())
+
 const currentUserOrThrow = () => {
 	if (!mockState.currentUser) {
 		rejectLiquido(LiquidoExceptionCodes.UNAUTHORIZED, "Mock user is not authenticated")
@@ -358,7 +302,7 @@ const currentUserOrThrow = () => {
  * @returns {Object} login result { team, user, jwt, teams } ready to be passed to real graphQlApi.login()
  * @throws MockLiquidoError if email is not found, or is not a member of teamId
  */
-const loginMock = (email, teamId) => {
+export const loginMock = (email, teamId) => {
 	const member = findMemberByEmail(email)
 	if (!member) {
 		rejectLiquido(LiquidoExceptionCodes.UNAUTHORIZED, "Cannot mockLogin: user email not found: " + email)
@@ -385,12 +329,14 @@ const loginMock = (email, teamId) => {
 	// Simulate the cache initialization that happens in graphQlApi.login()
 	mockState.currentUser = deepClone(user)
 	mockState.jwt = mintMockJwt(user, team)
-	saveMockState(mockState)
 
 	console.log("Mock login successful for <" + user.email + "> into team '" + team.teamName + "'")
 
 	return {
-		team: deepClone(team),
+		// Enriched, not a bare deepClone: userAlreadyVoted/numBallots are PER-USER computed values
+		// (see enrichPollForCurrentUser), and mockState.currentUser was just set above to whoever is
+		// logging in now - a stale/bare clone would carry another user's already-voted state instead.
+		team: enrichTeamForCurrentUser(team),
 		user: deepClone(user),
 		jwt: mockState.jwt,
 		// ALL teams of this user, so the frontend can offer the team switcher.
@@ -535,7 +481,10 @@ const queryHandlers = {
 			duelMatrix,
 			winnerId: poll.winner ? poll.winner.id : null,
 			winnerIds: poll.winner ? [poll.winner.id] : [],
-			numBallots: poll.numBallots || 0,
+			// Same seeded-baseline-plus-session-ballots computation as enrichPollForCurrentUser: a poll
+			// created during this session (not from the seed) starts with no numBallots field at all,
+			// so poll.numBallots alone is always 0 and the winner page's "more details" never showed.
+			numBallots: (poll.numBallots || 0) + countVotesForPoll(pollId),
 		}
 	},
 	voterToken: (query, variables = {}) => {
@@ -597,6 +546,9 @@ const mutationHandlers = {
 			mobilephone: admin.mobilephone || null,
 			picture: admin.picture || "Avatar1.png",
 			website: admin.website || null,
+			// A freshly registered user has not clicked the link in their welcome mail yet - matches
+			// the real backend, and is what shows team-home.vue's "please verify your email" reminder.
+			emailVerified: false,
 		}
 		const newTeam = {
 			id: userId,
@@ -620,7 +572,6 @@ const mutationHandlers = {
 			nextPollId: 1,
 			nextProposalId: 1,
 		}
-		saveMockState(mockState)
 
 		// Return login result with the newly created team and admin
 		return {
@@ -652,9 +603,9 @@ const mutationHandlers = {
 			mobilephone: memberInput.mobilephone || null,
 			picture: memberInput.picture || "Avatar1.png",
 			website: memberInput.website || null,
+			emailVerified: false,   // see the identical comment in createNewTeam above
 		}
 		currentTeam().members.push({ role: "MEMBER", joinedAt: nowIso(), user: newUser })
-		saveMockState(mockState)
 		// Log in the newly created member
 		return loginMock(newUser.email)
 	},
@@ -795,7 +746,9 @@ const mutationHandlers = {
 			voteOrder: voteOrderIds.map(id => ({ id })),
 		}
 		set(mockState, `ballotsByPollAndUser.${ballotKey(pollId, user.id)}`, ballot)
-		poll.userAlreadyVoted = true
+		// NOT poll.userAlreadyVoted = true: that field is PER-USER (see enrichPollForCurrentUser /
+		// hasCurrentUserVoted), and this poll object is shared by every voter - setting it here would
+		// make the poll look already-voted to everyone the moment anyone casts a ballot.
 		poll.updatedAt = nowIso()
 		return {
 			voteCount: countVotesForPoll(pollId),
@@ -804,154 +757,53 @@ const mutationHandlers = {
 	},
 }
 
-export const graphQlQueryMock = function(query, variables) {
+/**
+ * Runs one GraphQL mock operation and returns its `data` payload. Throws MockLiquidoError for a
+ * rejected operation, or a plain Error for a query this mock does not recognize at all. Exported so
+ * liquido-mock-http-server.js's writeGraphQlResponse() can share this same dispatch.
+ */
+export const runMockOperation = (query, variables) => {
 	console.log("MOCK request for", query, variables)
+	const operation = detectOperation(query)
+	if (!operation) throw new Error(`Unhandled mock query: ${query}`)
+	const isMutation = /^\s*mutation\b/.test(query)
+	const handler = isMutation ? mutationHandlers[operation] : queryHandlers[operation]
+	if (!handler) throw new Error(`Unhandled mock ${isMutation ? "mutation" : "query"}: ${operation}`)
+	const payload = handler(query, variables)
+	return operation === "myBallot" ? { myBallot: payload, ballot: payload } : { [operation]: payload }
+}
+
+/**
+ * Promise-based mock GraphQL call, matching graphQlQuery()'s real-backend contract exactly:
+ * resolves {data}, or rejects with an object shaped so a caller reading err.liquidoException or
+ * err.response.data.liquidoErrorCode still finds it (see mockErrorResponse's old equivalent).
+ *
+ * This is a SEPARATE path from the real-HTTP one in liquido-mock-http-server.js: vitest unit tests
+ * run in plain Node/jsdom with no Vite dev server to route an HTTP call through at all, so
+ * liquido-graphql-client.js's graphQlQuery() calls this directly for config.test.js (configSource
+ * "test"). Cypress e2e runs use config.development.js instead, which goes through the real HTTP
+ * path so that cy.intercept()/cy.wait() can see mocked traffic exactly like they would the real
+ * backend - see this file's module doc comment at the top.
+ */
+export const graphQlQueryMock = (query, variables) => {
 	try {
-		const operation = detectOperation(query)
-		if (!operation) {
-			return Promise.reject(`Unhandled mock query: ${query}`)
-		}
-		const isMutation = /^\s*mutation\b/.test(query)
-		const handler = isMutation ? mutationHandlers[operation] : queryHandlers[operation]
-		if (!handler) {
-			return Promise.reject(`Unhandled mock ${isMutation ? "mutation" : "query"}: ${operation}`)
-		}
-		const payload = handler(query, variables)
-		saveMockState(mockState)
-		if (operation === "myBallot") {
-			return Promise.resolve({ data: { myBallot: payload, ballot: payload } })
-		}
-		return Promise.resolve({ data: { [operation]: payload } })
+		return Promise.resolve({ data: runMockOperation(query, variables) })
 	} catch (err) {
-		return Promise.reject(mockErrorResponse(err))
-	}
-}
-
-/**
- * Resets the global mockState to its initial default values and 
- * persists this reset state to sessionStorage.
- */
-export const resetGraphQlMockState = function() {
-	mockState = createState()
-	saveMockState(mockState)
-}
-
-/**
- * Initializes the Liquido GraphQL mock environment.
- * This function restores state from storage, seeds the application's internal 
- * teamCache if a valid session exists, and installs axios interceptors to 
- * mock specific REST endpoints (like WebAuthn).
- */
-export const initializeLiquidoGraphQlMock = function(graphQlApi, teamCache) {
-	console.warn("==================================")
-	console.warn("======== MOCK is active! =========")
-	console.warn("==================================")
-	if (typeof window !== 'undefined' && window.sessionStorage && !window.sessionStorage.getItem(MOCK_STATE_KEY)) {
-		resetGraphQlMockState()
-	} else {
-		mockState = loadMockState()
-	}
-
-	/**
-	 * Only seed the app's internal cache if we have a mock session saved 
-	 * AND there isn't a real JWT in localStorage being handled by the router.
-	 */
-	if (mockState.currentUser && localStorage.getItem(graphQlApi.LIQUIDO_JWT_KEY) === mockState.jwt) {
-		teamCache.put(graphQlApi.TEAM_KEY, currentTeam())
-		teamCache.put(graphQlApi.CURRENT_USER_KEY, mockState.currentUser)
-		teamCache.put(graphQlApi.JWT_KEY, mockState.jwt)
-		// Restore the user's team list too, or the team switcher would silently disappear on reload.
-		teamCache.put(graphQlApi.ALL_USER_TEAMS_KEY,
-			teamsOfMember(mockState.currentUser.email).map(t => ({ id: t.id, teamName: t.teamName })))
-		graphQlApi.putPollsIntoCache(currentTeam().polls)
-	}
-
-	if (mockRequestInterceptorInstalled) return
-	mockRequestInterceptorInstalled = true
-
-	axios.interceptors.request.use(config => {
-		if (config.url.includes("/login/check-login-email")) {
-			const email = config.params.email
-			const member = currentTeam().members.find(m => m.user.email === email)
-			if (member) {
-				console.log("MOCK: /check-login-email for " + email + " -> existing user")
-				config.adapter = config => {
-					return Promise.resolve({
-						data: { status: "REGISTERED", webauthn: true },
-						status: 200,
-						statusText: "OK",
-						headers: { "Content-Type": "application/json" },
-						config: config,
-						request: {},
-					})
-				}
-			} else {
-				console.log("MOCK: /check-login-email for " + email + " -> email not registered")
-				config.adapter = config => {
-					return Promise.resolve({
-						data: { status: "UNKNOWN", webauthn: false },
-						status: 200,
-						statusText: "OK",
-						headers: { "Content-Type": "application/json" },
-						config: config,
-						request: {},
-					})
-				}
-			}
-		} else if (
-			config.url.includes("/webauthn/register-options-challenge") ||
-			config.url.includes("/webauthn/register") ||
-			config.url.includes("/webauthn/login-options-challenge")
-		) {
-			console.log("MOCK: /webauthn mock request to " + config.url + " -> simulating connection error")
-			config.adapter = config => {
-				const error = new Error("Network Error")
-				error.code = "ECONNREFUSED"
-				error.config = config
-				error.request = {}
-				return Promise.reject(error)
-			}
-		} else if (config.url.includes("/login/welcomeMail")) {
-			// No real mailer in mock mode - just acknowledge the request the way the backend would.
-			console.log("MOCK: /login/welcomeMail -> simulated success")
-			config.adapter = config => mockRestSuccess(config, {})
-		} else if (config.url.includes("/login/requestPasswordResetEmail")) {
-			const email = config.params.email
-			if (!findMemberByEmail(email)) {
-				console.log("MOCK: /login/requestPasswordResetEmail for " + email + " -> unknown email")
-				config.adapter = config => mockRestError(config, LiquidoExceptionCodes.WONT_RESET_PASSWORD, "Cannot reset password for unknown email")
-			} else {
-				const resetToken = generateMockToken("mock-reset-token")
-				mockState.passwordResetTokensByEmail[email] = resetToken
-				saveMockState(mockState)
-				console.log("MOCK: /login/requestPasswordResetEmail for " + email + " -> token " + resetToken)
-				config.adapter = config => mockRestSuccess(config, {})
-			}
-		} else if (config.url.includes("/login/resetPassword")) {
-			const { email, resetPasswordToken } = config.data || {}
-			const expectedToken = mockState.passwordResetTokensByEmail[email]
-			if (!findMemberByEmail(email) || !expectedToken || expectedToken !== resetPasswordToken) {
-				console.log("MOCK: /login/resetPassword for " + email + " -> invalid or expired token")
-				config.adapter = config => mockRestError(config, LiquidoExceptionCodes.WONT_RESET_PASSWORD, "Cannot reset password: invalid or expired token")
-			} else {
-				delete mockState.passwordResetTokensByEmail[email]   // one-time use, like the real backend
-				saveMockState(mockState)
-				console.log("MOCK: /login/resetPassword for " + email + " -> success")
-				config.adapter = config => mockRestSuccess(config, {})
-			}
-		} else if (config.url.includes("/login/requestEmailLoginLink")) {
-			const email = config.params.email
-			if (!findMemberByEmail(email)) {
-				console.log("MOCK: /login/requestEmailLoginLink for " + email + " -> unknown email")
-				config.adapter = config => mockRestError(config, LiquidoExceptionCodes.CANNOT_LOGIN_EMAIL_NOT_FOUND, "Unknown email")
-			} else {
-				const loginToken = generateMockToken("mock-login-token")
-				mockState.emailLoginTokensByEmail[email] = loginToken
-				saveMockState(mockState)
-				console.log("MOCK: /login/requestEmailLoginLink for " + email + " -> token " + loginToken)
-				config.adapter = config => mockRestSuccess(config, {})
-			}
+		if (err instanceof MockLiquidoError) {
+			const liquidoException = { liquidoErrorCode: err.code, msg: err.message }
+			return Promise.reject({
+				liquidoException,
+				errors: [{ message: err.message, extensions: { liquidoException } }],
+				response: { data: { liquidoErrorCode: err.code, msg: err.message } },
+			})
 		}
-		return config
-	})
+		return Promise.reject(err)
+	}
 }
+
+/**
+ * Back to a fresh database. Used directly by vitest specs (e.g. switchTeam.spec.js) between tests -
+ * there is no dev server there to restart instead. Not wired to a route for the Cypress/real-HTTP
+ * path today; restarting the Vite dev server does the same thing there.
+ */
+export const resetGraphQlMockState = () => { mockState = createState() }
