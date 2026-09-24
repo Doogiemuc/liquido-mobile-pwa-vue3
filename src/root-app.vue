@@ -21,7 +21,7 @@
 				<component :is="Component" id="appContent" class="router-view container-lg" />
 			</transition>
 		</router-view>
-		<mobile-debug-log v-if="config.showDebugLog" ref="mobileDebugLogRef"></mobile-debug-log>
+		<mobile-debug-log v-if="showMobileDebugLog" ref="mobileDebugLogRef"></mobile-debug-log>
 	</div>
 </template>
 
@@ -114,6 +114,17 @@ export default {
 			const iosStandalone = window.navigator.standalone === true  // Apple iOs specific
 			const displayModeStandalone = window.matchMedia('(display-mode: standalone)').matches  // generic standard
 			return iosStandalone || displayModeStandalone
+		},
+		/**
+		 * config.showDebugLog is a per-developer convenience (on-screen console.log, for debugging on
+		 * a real phone with no attached devtools) - it must never show up in an automated test run
+		 * regardless of what a developer's own local config.development.js has it set to, since the
+		 * floating icon it renders can sit on top of real UI elements and block Cypress clicks
+		 * (window.Cypress is only set inside an actual Cypress run, on every mode: mock, local,
+		 * remote-backend or deployed).
+		 */
+		showMobileDebugLog() {
+			return config.showDebugLog && !window.Cypress
 		}
 	},
 	// watch the `$route` to determine the transition to use
