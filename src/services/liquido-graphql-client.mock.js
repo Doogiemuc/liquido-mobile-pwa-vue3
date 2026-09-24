@@ -57,6 +57,8 @@ const createState = () => {
 		//currentUser: seed.user,
 		//jwt: seed.jwt,
 		issuedAuthTokensByMobile: {},
+		passwordResetTokensByEmail: {},
+		emailLoginTokensByEmail: {},
 		voterTokensByPollAndUser: {},
 		ballotsByPollAndUser: {},
 		nextPollId: nextPollId + 1,          // +1 for the poll createSecondTeam() just used
@@ -219,6 +221,44 @@ const mockErrorResponse = err => {
 			},
 		},
 	}
+}
+
+/**
+ * A one-time token for a mocked email link (password reset, email login), stored in mockState
+ * keyed by email so a later request in the same browser can present it back - see
+ * initializeLiquidoGraphQlMock()'s REST interceptor below. Not cryptographically meaningful, this
+ * only has to be unguessable enough that a Cypress spec must read it from mock state rather than
+ * making it up.
+ */
+const generateMockToken = prefix => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+
+/** A resolved axios response for a mocked REST endpoint (as opposed to a mocked GraphQL query). */
+const mockRestSuccess = (config, data) => Promise.resolve({
+	data,
+	status: 200,
+	statusText: "OK",
+	headers: { "Content-Type": "application/json" },
+	config,
+	request: {},
+})
+
+/**
+ * A rejected axios error for a mocked REST endpoint, carrying a `response.data.liquidoErrorCode`
+ * the same way the real backend's REST error responses do (see join-team-v2.vue/welcome-chat-v2.vue,
+ * which read errors from exactly that path for the REST calls they make).
+ */
+const mockRestError = (config, liquidoErrorCode, msg) => {
+	const error = new Error(msg)
+	error.config = config
+	error.request = {}
+	error.response = {
+		data: { liquidoErrorCode, msg },
+		status: 400,
+		statusText: "Bad Request",
+		headers: { "Content-Type": "application/json" },
+		config,
+	}
+	return Promise.reject(error)
 }
 
 const detectOperation = query => {
@@ -870,6 +910,46 @@ export const initializeLiquidoGraphQlMock = function(graphQlApi, teamCache) {
 				error.config = config
 				error.request = {}
 				return Promise.reject(error)
+			}
+		} else if (config.url.includes("/login/welcomeMail")) {
+			// No real mailer in mock mode - just acknowledge the request the way the backend would.
+			console.log("MOCK: /login/welcomeMail -> simulated success")
+			config.adapter = config => mockRestSuccess(config, {})
+		} else if (config.url.includes("/login/requestPasswordResetEmail")) {
+			const email = config.params.email
+			if (!findMemberByEmail(email)) {
+				console.log("MOCK: /login/requestPasswordResetEmail for " + email + " -> unknown email")
+				config.adapter = config => mockRestError(config, LiquidoExceptionCodes.WONT_RESET_PASSWORD, "Cannot reset password for unknown email")
+			} else {
+				const resetToken = generateMockToken("mock-reset-token")
+				mockState.passwordResetTokensByEmail[email] = resetToken
+				saveMockState(mockState)
+				console.log("MOCK: /login/requestPasswordResetEmail for " + email + " -> token " + resetToken)
+				config.adapter = config => mockRestSuccess(config, {})
+			}
+		} else if (config.url.includes("/login/resetPassword")) {
+			const { email, resetPasswordToken } = config.data || {}
+			const expectedToken = mockState.passwordResetTokensByEmail[email]
+			if (!findMemberByEmail(email) || !expectedToken || expectedToken !== resetPasswordToken) {
+				console.log("MOCK: /login/resetPassword for " + email + " -> invalid or expired token")
+				config.adapter = config => mockRestError(config, LiquidoExceptionCodes.WONT_RESET_PASSWORD, "Cannot reset password: invalid or expired token")
+			} else {
+				delete mockState.passwordResetTokensByEmail[email]   // one-time use, like the real backend
+				saveMockState(mockState)
+				console.log("MOCK: /login/resetPassword for " + email + " -> success")
+				config.adapter = config => mockRestSuccess(config, {})
+			}
+		} else if (config.url.includes("/login/requestEmailLoginLink")) {
+			const email = config.params.email
+			if (!findMemberByEmail(email)) {
+				console.log("MOCK: /login/requestEmailLoginLink for " + email + " -> unknown email")
+				config.adapter = config => mockRestError(config, LiquidoExceptionCodes.CANNOT_LOGIN_EMAIL_NOT_FOUND, "Unknown email")
+			} else {
+				const loginToken = generateMockToken("mock-login-token")
+				mockState.emailLoginTokensByEmail[email] = loginToken
+				saveMockState(mockState)
+				console.log("MOCK: /login/requestEmailLoginLink for " + email + " -> token " + loginToken)
+				config.adapter = config => mockRestSuccess(config, {})
 			}
 		}
 		return config
