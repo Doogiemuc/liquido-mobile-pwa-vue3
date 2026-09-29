@@ -271,7 +271,7 @@ const detectOperation = query => {
 		"createNewTeam", "joinTeam", "createPoll", "updatePoll", "addProposal", "updateProposal", "deleteProposal", "likeProposal", "startVotingPhase",
 		"finishVotingPhase", "castVote", "loginWithEmailPassword", "googleOneTapLogin", "loginWithAuthToken",
 		"requestPasswordReset", "resetPassword", "requestEmailLoginLink", "teamForInviteCode", "newestSeedTeam", "loginWithJwt",
-		"devLogin", "authToken", "voterToken", "verifyBallot", "myBallot", "publishedTally", "polls", "poll", "team", "ping",
+		"devLogin", "authToken", "voterToken", "verifyBallot", "myBallot", "publishedTally", "polls", "poll", "team", "liquidoConfig", "ping",
 	]
 	for (const name of operations) {
 		if (new RegExp(`\\b${name}\\s*\\(`).test(query) || new RegExp(`\\b${name}\\b`).test(query)) {
@@ -428,6 +428,17 @@ const enrichTeamForCurrentUser = team => ({
 	
 const queryHandlers = {
 	ping: () => "MOCK responses are active!",
+	// Read straight off the live config module, so the mock can never drift from config.common.js.
+	liquidoConfig: () => ({
+		usernameMinLength: config.usernameMinLength,
+		inviteCodeLength: config.inviteCodeLength,
+		minPasswordLength: config.minPasswordLength,
+		pollTitleMinLength: config.pollTitleMinLength,
+		pollDefaultRuntimeDays: config.pollDefaultRuntimeDays,
+		proposalTitleMinLength: config.proposalTitleMinLength,
+		proposalDescriptionMinLength: config.proposalDescriptionMinLength,
+		inviteLinkPrefix: config.inviteLinkPrefix,
+	}),
 	team: () => enrichTeamForCurrentUser(currentTeam()),
 	loginWithJwt: () => {
 		console.log("========> MOCKED loginWithJwt")
