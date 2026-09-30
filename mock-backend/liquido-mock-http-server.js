@@ -27,6 +27,7 @@ import {
 	generateMockToken,
 	mockState,
 	MockLiquidoError,
+	MOCK_GRAPHQL_SCHEMA,
 } from "./liquido-mock-domain.js"
 
 /** Reads and JSON-parses a request body. Resolves {} for an empty body (e.g. a bare POST). */
@@ -246,6 +247,10 @@ export async function handleMockRequest(req, res) {
 		if (match("POST", "/graphql")) {
 			const { query, variables } = await readJsonBody(req)
 			writeGraphQlResponse(res, query, variables)
+		} else if (match("GET", "/graphql/schema.graphql")) {
+			res.statusCode = 200
+			res.setHeader("Content-Type", "text/plain")
+			res.end(MOCK_GRAPHQL_SCHEMA)
 		} else if (match("GET", "/login/check-login-email")) {
 			handleCheckLoginEmail(res, url.searchParams.get("email"))
 		} else if (match("POST", "/login/welcomeMail")) {

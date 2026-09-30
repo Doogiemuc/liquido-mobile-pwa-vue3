@@ -12,12 +12,12 @@ import PopulatingCache from "populating-cache"
 import EventBus from "@/services/event-bus.js"
 /**
  * Only used for config.test.js (vitest, configSource "test"): there is no Vite dev server there to
- * route an HTTP call through, so graphQlQuery() below calls this in-process instead. Cypress e2e
- * runs use config.development.js, which always goes over real HTTP, answered by the Vite
- * dev-middleware in mock-backend/liquido-mock-http-server.js - see that file's module doc comment,
- * and graphQlQuery() below, for why.
+ * route an HTTP call through, so graphQlQuery() and getGraphQLSchema() below call this in-process
+ * instead. Cypress e2e runs use config.development.js, which always goes over real HTTP, answered by
+ * the Vite dev-middleware in mock-backend/liquido-mock-http-server.js - see that file's module doc
+ * comment, and graphQlQuery() below, for why.
  */
-import { graphQlQueryMock, setAuthHeader } from "../../mock-backend/liquido-mock-domain.js"
+import { graphQlQueryMock, setAuthHeader, MOCK_GRAPHQL_SCHEMA } from "../../mock-backend/liquido-mock-domain.js"
 /** Liquido backend error codes. Must match LiquidoException.java from backend*/
 import LiquidoExceptionCodes from "./LiquidoExceptionCodes.js"
 import { LIQUIDO_ADMIN_ROLE, jwtHasRole } from "@/services/jwt-util.js"
@@ -279,6 +279,8 @@ let graphQlApi = {
 	 * @returns the GraphQL schema
 	 */ 
 	async getGraphQLSchema() {
+		// vitest has no dev server to answer this - same split as in graphQlQuery()
+		if (config.mockBackend && config.configSource === "test") return { status: 200, data: MOCK_GRAPHQL_SCHEMA }
 		return axios.get('/graphql/schema.graphql')
 	},
 	

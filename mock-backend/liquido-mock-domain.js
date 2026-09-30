@@ -203,6 +203,20 @@ const rejectLiquido = (code, message) => {
  */
 export const generateMockToken = prefix => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 
+/**
+ * Stand-in for the backend's GET /graphql/schema.graphql. The real one serves the full schema as
+ * SDL text, not JSON; callers only use it to see that the GraphQL API answers at all, so a tiny
+ * excerpt is enough. Keep castVote in it - LiquqidoGraphQL.spec.js checks for exactly that name.
+ */
+export const MOCK_GRAPHQL_SCHEMA = `type Query {
+  ping: String
+}
+
+type Mutation {
+  castVote(pollId: BigInteger!, voteOrderIds: [BigInteger]!, voterToken: String!): CastVoteResult
+}
+`
+
 const detectOperation = query => {
 	// ORDER MATTERS: the first name found anywhere in the query string wins, and the query string
 	// includes the whole result selection. So an operation whose result mentions "team" or "polls"
