@@ -13,9 +13,10 @@ import EventBus from "@/services/event-bus.js"
 /**
  * Only used for config.test.js (vitest, configSource "test"): there is no Vite dev server there to
  * route an HTTP call through, so graphQlQuery() and getGraphQLSchema() below call this in-process
- * instead. Cypress e2e runs use config.development.js, which always goes over real HTTP, answered by
- * the Vite dev-middleware in mock-backend/liquido-mock-http-server.js - see that file's module doc
- * comment, and graphQlQuery() below, for why.
+ * instead. A mocked Cypress e2e run (config.mock.js, or config.development.js with mockBackend on)
+ * always goes over real HTTP, answered by the Vite dev-middleware in
+ * mock-backend/liquido-mock-http-server.js - see that file's module doc comment, and graphQlQuery()
+ * below, for why.
  */
 import { graphQlQueryMock, setAuthHeader, MOCK_GRAPHQL_SCHEMA } from "../../mock-backend/liquido-mock-domain.js"
 /** Liquido backend error codes. Must match LiquidoException.java from backend*/
@@ -55,7 +56,7 @@ if (!config || !config.LIQUIDO_API_URL) {
 
 /**
  * Configure axios to point to our graphQL backend - or, when config.mockBackend is on for a real
- * Vite dev server (configSource "development"/"deployed", NOT vitest's "test"), to this page's own
+ * Vite dev server (configSource "mock"/"development", NOT vitest's "test"), to this page's own
  * origin instead, where vite-plugin-mock-backend.js answers every call for real. Ignores
  * LIQUIDO_API_URL in that case on purpose: mock mode means "talk to the dev server we are already
  * being served from," regardless of whatever real backend LIQUIDO_API_URL happens to be configured
@@ -128,7 +129,7 @@ axios.interceptors.response.use(onSuccess, onError)
 const graphQlQuery = function(query, variables) {
 	if (config.mockBackend && config.configSource === "test") {
 		// vitest: no Vite dev server exists to route an HTTP call through - call the mock in-process.
-		// Cypress e2e (configSource "development"/"deployed") falls through to the real axios.post()
+		// Cypress e2e (configSource "mock"/"development") falls through to the real axios.post()
 		// below instead, same as the real backend, so cy.intercept()/cy.wait() can see it.
 		setAuthHeader(axios.defaults.headers.common["Authorization"])
 		return graphQlQueryMock(query, variables)
