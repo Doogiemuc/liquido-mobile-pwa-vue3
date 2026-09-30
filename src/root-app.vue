@@ -191,6 +191,7 @@ export default {
 			.then(() => {
 				console.log("We are online and backend is reachable at "+config.LIQUIDO_API_URL)
 				this.$refs.rootPopupModal.hide()
+				return this.loadLiquidoConfig()
 			})
 			.catch(res => {
 				if (res.response && res.response.status === 401) {
@@ -207,6 +208,23 @@ export default {
 		//
 		// These methods are available as this.$root.<method> in all vue sub components of root-app
 		//
+		/**
+		 * Fetch the validation rules from the backend and merge them over our own defaults.
+		 * The values in config.common.js are FALLBACKS, not the truth: if the backend is unreachable
+		 * the app keeps working with the numbers it shipped with. When the backend does answer, its
+		 * numbers win, because it is the side that actually enforces them.
+		 */
+		loadLiquidoConfig() {
+			return api.getLiquidoConfig()
+				.then(settings => {
+					Object.assign(config, settings)
+					log.debug("Loaded settings from backend", settings)
+				})
+				.catch(err => {
+					console.warn("Cannot load settings from backend, keeping local defaults", err)
+				})
+		},
+
 		gotoPoll(pollId) {
 			const poll = api.getCachedPolls().find(p => p.id == pollId)
 			if (poll?.status === "FINISHED") {

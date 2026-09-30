@@ -164,7 +164,7 @@ export default {
 			proposal: {},
 			titleMinLength: config.proposalTitleMinLength || 3,
 			descriptionValidated: false,
-			descriptionMinLength: config.proposalDescriptionMinLength || 10,
+			descriptionMinLength: config.proposalDescriptionMinLength || 20,
 			descriptionState: null,
 			iconSearch: "",
 			chosenIcon: "atom",

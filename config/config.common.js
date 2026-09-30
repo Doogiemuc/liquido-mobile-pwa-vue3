@@ -16,12 +16,24 @@ export default {
 	mockBackend: false,
 	mockPasskey: false,											// DEV only: skip the real WebAuthn browser ceremony (see src/polly/polly-passkey.js)
 
+	// ============ Validation rules and limits shared with the backend ============
+	//
+	// These are FALLBACKS only, used until the real values are fetched from the backend's
+	// `query liquidoConfig` at startup (see root-app.vue's loadLiquidoConfig()) and merged in via
+	// Object.assign. Keep them equal to LiquidoConfig's @WithDefault values in the backend, so an
+	// unreachable backend degrades to the same rules the server actually enforces. This file is NOT
+	// the source of truth - it had already drifted once: proposalDescriptionMinLength read 10 here
+	// while the backend enforced @Size(min=20), so a 12-character description passed the client and
+	// was then rejected by the server.
 	//TODO: implement these settings per Team! in the backend!
 	usernameMinLength: 3,
 	inviteCodeLength: 8,			       				// used for validating inviteCodes in welcome-chat.vue
 	minPasswordLength: 10, 									// used in forgot-password.vue
 	allowMembersToInvite: true,
 	pollTitleMinLength: 5,
+	pollDefaultRuntimeDays: 7,								// how many days a poll runs by default, see poll-show.vue / poll-create.vue
+	proposalTitleMinLength: 3,
+	proposalDescriptionMinLength: 20,				// MUST match the backend's ProposalEntity.description @Size(min=20)
 	avatarPath: "./img/avatars",
 	inviteLinkPrefix: "http://app.liquido.vote/welcome?inviteCode=",
 	// Base for the ONE link an admin shares: <prefix><publicId>. There is no separate admin link -
