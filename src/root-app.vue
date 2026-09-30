@@ -65,6 +65,7 @@ const page_order = {
 	"showPoll": 13,
 	"addProposal": 14,
 	"castVote": 15,
+	"pollWinner": 16,   // after castVote, so finishing a poll from the ballot slides forward to its winner
 	// Legal pages, only linked from the bottom of team-home - not part of the main navigation flow
 	"impressum": 20,
 	"agb": 20,

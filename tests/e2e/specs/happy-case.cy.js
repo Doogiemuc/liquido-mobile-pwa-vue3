@@ -866,6 +866,11 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		// WHEN admin finishes the voting phase
 		cy.get("#finishVoteButton").click()
 
+		// THEN he must confirm first, because finishing cannot be undone
+		// (scoped to this modal - the shared root popup uses the same button ids)
+		cy.get('#finishPollModal').should('be.visible')
+		cy.get('#finishPollModalPrimaryButton').click()
+
 		// THEN poll is FINISHED
 		cy.get("#finishedPollInfo").scrollIntoView().should("be.visible")
 		cy.get(".poll-card[data-poll-status='FINISHED']")
