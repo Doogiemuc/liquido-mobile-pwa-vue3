@@ -1,5 +1,5 @@
 <template>
-	<div class="poll-card card border-opacity-25" :data-poll-status="poll.status" :data-poll-id="poll.id" :data-num-ballots="poll.numBallots || 0">
+	<div class="poll-card card border-opacity-25" :data-poll-status="poll.status" :data-poll-id="poll.id" :data-num-ballots="poll.numBallots || 0" :data-voting-end-at="poll.votingEndAt">
 		<div class="card-body d-flex flex-nowrap" :class="{ clickable: !showProposals }" @click="$emit('click', poll.id)">
 			<div class="flex-grow-1 d-flex flex-column justify-content-between">
 				<div class="poll-eyebrow">

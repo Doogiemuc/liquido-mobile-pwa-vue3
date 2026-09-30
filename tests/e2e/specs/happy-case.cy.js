@@ -877,7 +877,19 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		// THEN poll is FINISHED
 		cy.get("#finishedPollInfo").scrollIntoView().should("be.visible")
 		cy.get(".poll-card[data-poll-status='FINISHED']")
-			.should("have.attr", "data-poll-status", "FINISHED")  
+			.should("have.attr", "data-poll-status", "FINISHED")
+		//  AND votingEndAt is now - the moment he finished it - not the planned end 3 days ahead.
+		//  "Roughly" on purpose: votingEndAt is a zoneless LocalDateTime in the backend, which the
+		//  browser reads as its own local time. A backend running in UTC (e.g. in Docker) is then off
+		//  by whole hours. 14 hours covers any timezone and still cannot be mistaken for the planned
+		//  end, which is midnight three days ahead - at least 48 hours away.
+		cy.get(".poll-card[data-poll-status='FINISHED']")
+			.should("have.attr", "data-voting-end-at")
+			.then(votingEndAt => {
+				const endMillis = new Date(votingEndAt).getTime()
+				expect(Math.abs(Date.now() - endMillis), "votingEndAt must be the time the admin finished the poll")
+					.to.be.lessThan(14 * 60 * 60 * 1000)
+			})
 		//  AND there is exactly one winner (because we casted exactly one vote)
 		cy.get(".poll-card .proposal-list-group-item.winner").should("have.length", 1)
 	})

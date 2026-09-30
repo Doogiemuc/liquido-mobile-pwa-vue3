@@ -465,13 +465,14 @@ export default {
 		confirmFinishVote() {
 			if (this.finishVoteLoading) return  // do not allow double click
 			this.finishVoteLoading = true
-			api.finishVotingPhase(this.poll.id).then(winner => {
+			api.finishVotingPhase(this.poll.id)
+				// Reload the poll: finishing changes more than status and winner. The backend overwrites
+				// votingEndAt with the actual end, and sets every proposal to LAW or LOST.
+				.then(() => api.getPollById(this.poll.id, true))
+				.then(poll => {
 				this.finishVoteLoading = false
-				// Locally update poll status also in cache. No need to reload poll from backend
-				this.poll.status = "FINISHED"
-				this.poll.winner = winner
-				api.pollsCache.put("polls/"+this.poll.id, this.poll)
-        document.getElementsByTagName("html").scrollTop = 0
+				this.poll = poll
+				document.getElementsByTagName("html").scrollTop = 0
 				//$("html, body").animate({ scrollTop: 0 }, 500)
 			}).catch(err => {
 				this.finishVoteLoading = false
