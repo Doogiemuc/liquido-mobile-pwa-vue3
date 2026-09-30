@@ -229,8 +229,12 @@ function goToPoll(id) {
 	// keep compatibility with event payload
 	const pollId = typeof id === "object" ? id?.id : id
 	const poll = api.getCachedPolls().find(p => p.id == pollId)
+	// Same decision as root-app.vue's gotoPoll(): a running poll the user has not voted in yet goes
+	// straight to the ballot - one step, not via the detail page. Back from there returns here.
 	if (poll?.status === "FINISHED") {
 		router.push({ name: "pollWinner", params: { pollId } })
+	} else if (poll?.status === "VOTING" && !poll?.userAlreadyVoted) {
+		router.push({ name: "castVote", params: { pollId } })
 	} else {
 		router.push({ name: "showPoll", params: { pollId } })
 	}

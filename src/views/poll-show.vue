@@ -156,6 +156,9 @@
 				{{ $t("finishVotingPhase") }}
 			</button>
 		</div>
+
+		<!-- Finishing cannot be undone: the winner is computed and nobody can vote any more. So ask first. -->
+		<popup-modal id="finishPollModal" ref="finishPollModal" />
 	</div>
 </template>
 
@@ -206,6 +209,9 @@ export default {
 				cancel: "Abbrechen",
 				finishVotingPhaseInfo: "Hallo Admin! Bisher wurden in dieser Abstimmung {numBallots} Stimmen abgegeben.",
 				finishVotingPhase: "Abstimmung beenden",
+				finishPollConfirmTitle: "Abstimmung beenden?",
+				finishPollConfirmMessage: "Bist du sicher? Sobald die Abstimmung beendet ist, kann niemand mehr abstimmen und der Gewinner wird ermittelt. Das lässt sich nicht rückgängig machen.",
+				finishPollConfirmButton: "Jetzt beenden",
 				votingPhaseStartedSuccessfully: "Die Abstimmung ist jetzt gestartet.",
 				votingPhaseIsRunning: "Diese Abstimmung läuft gerade.",
 				votingPhaseInfo: "Du kannst jetzt deine Stimme abgeben.",
@@ -443,7 +449,20 @@ export default {
 			})
 		},
 
+		/** Finishing a poll cannot be undone, so ask before doing it. */
 		clickFinishVote() {
+			if (this.finishVoteLoading) return  // do not allow double click
+			this.$refs.finishPollModal.showWarning(
+				this.$t("finishPollConfirmMessage"),
+				this.$t("finishPollConfirmTitle"),
+				this.$t("finishPollConfirmButton"),
+				this.$t("cancel"),
+				this.confirmFinishVote
+			)
+		},
+
+		/** The admin confirmed: finish the voting phase. The backend computes the winner. */
+		confirmFinishVote() {
 			if (this.finishVoteLoading) return  // do not allow double click
 			this.finishVoteLoading = true
 			api.finishVotingPhase(this.poll.id).then(winner => {
@@ -451,7 +470,7 @@ export default {
 				// Locally update poll status also in cache. No need to reload poll from backend
 				this.poll.status = "FINISHED"
 				this.poll.winner = winner
-				api.pollsCache.put("poll/"+this.poll.id, this.poll)
+				api.pollsCache.put("polls/"+this.poll.id, this.poll)
         document.getElementsByTagName("html").scrollTop = 0
 				//$("html, body").animate({ scrollTop: 0 }, 500)
 			}).catch(err => {

@@ -81,6 +81,20 @@
 			<liqui-loc-html tag="p" msg-key="castVoteInfo" />
 		</div>
 
+		<!--
+			Admin only, at the very bottom: finish the voting phase. The same alert as on poll-show.vue.
+			It is needed here too, because a running poll the admin has not voted in yet always opens
+			this page (from the poll list and from team-home), never the detail page.
+		-->
+		<div v-if="!loading && poll?.status === 'VOTING' && userIsAdmin()" class="alert alert-admin alert-has-action mt-5" :data-num-ballots="poll.numBallots">
+			<liqui-loc-html tag="p" msg-key="finishVotingPhaseInfo" :params="{numBallots: poll.numBallots}" />
+			<button id="finishVoteButton" type="button" :disabled="finishVoteLoading" class="btn btn-primary alert-action" @click="clickFinishVote()">
+				<span v-if="finishVoteLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+				<i v-else class="fas fa-user-shield" />
+				{{ $t("finishVotingPhase") }}
+			</button>
+		</div>
+
 		<liquido-footer>
 			<template #primary>
 				<button v-if="loading || castVoteLoading" id="loadingButton" type="button" class="btn btn-primary" disabled="true">
@@ -109,6 +123,9 @@
 				/>
 			</template>
 		</popup-modal>
+
+		<!-- Finishing cannot be undone: the winner is computed and nobody can vote any more. So ask first. -->
+		<popup-modal id="finishPollModal" ref="finishPollModal" />
 	</div>
 </template>
 
@@ -182,7 +199,15 @@ export default {
 				checksumOfYourBallot: "Mit dieser Checksumme kannst du prüfen ob deine Stimme korrekt gezählt wurde:",
 				verifyBallotButton: "Prüfen",
 				ballotIsVerified: "Deine Stimme wurde erfolgreich gezählt.",
-				backToPolls: "Zurück zu euren Abstimmungen"
+				backToPolls: "Zurück zu euren Abstimmungen",
+
+				// Admin can finish the voting phase
+				finishVotingPhaseInfo: "Hallo Admin! Bisher wurden in dieser Abstimmung {numBallots} Stimmen abgegeben.",
+				finishVotingPhase: "Abstimmung beenden",
+				finishPollConfirmTitle: "Abstimmung beenden?",
+				finishPollConfirmMessage: "Bist du sicher? Sobald die Abstimmung beendet ist, kann niemand mehr abstimmen und der Gewinner wird ermittelt. Das lässt sich nicht rückgängig machen.",
+				finishPollConfirmButton: "Jetzt beenden",
+				finishPollCancel: "Abbrechen",   // not "cancel" - on this page that one reads "Stimmzettel bearbeiten"
 			},
 		}
 	},
@@ -201,6 +226,7 @@ export default {
 			existingBallot: undefined,
 			voteCount: 0,
 			castVoteLoading: false,
+			finishVoteLoading: false,
 			isUnmounted: false,
 			voterTokenPromise: null,   // ← add this
 			confirmationMessage: "",
@@ -321,6 +347,46 @@ export default {
 		if (window.Cypress) delete window.liquidoCastVoteTest
 	},
 	methods: {
+		/**
+		 * A METHOD, deliberately not a computed. api.isAdmin() decodes the cached JWT and has no
+		 * reactive dependency, so a computed wrapping it would evaluate once and never re-run.
+		 */
+		userIsAdmin() {
+			return api.isAdmin()
+		},
+
+		/** Finishing a poll cannot be undone, so ask before doing it. */
+		clickFinishVote() {
+			if (this.finishVoteLoading) return  // do not allow double click
+			this.$refs.finishPollModal.showWarning(
+				this.$t("finishPollConfirmMessage"),
+				this.$t("finishPollConfirmTitle"),
+				this.$t("finishPollConfirmButton"),
+				this.$t("finishPollCancel"),
+				this.confirmFinishVote
+			)
+		},
+
+		/**
+		 * The admin confirmed: finish the voting phase, then go forward to the winner. A ballot he may
+		 * have started to fill here is dropped - the confirmation message says nobody can vote any more.
+		 */
+		confirmFinishVote() {
+			if (this.finishVoteLoading) return  // do not allow double click
+			this.finishVoteLoading = true
+			api.finishVotingPhase(this.poll.id).then(winner => {
+				this.finishVoteLoading = false
+				// Locally update poll status also in cache, so that poll-winner.vue and the list see it at once
+				this.poll.status = "FINISHED"
+				this.poll.winner = winner
+				api.pollsCache.put("polls/" + this.poll.id, this.poll)
+				this.$router.push({name: "pollWinner", params: {pollId: this.pollId}})
+			}).catch(err => {
+				this.finishVoteLoading = false
+				log.error("Cannot finish voting phase of poll(id=" + this.poll.id + ")", err)
+			})
+		},
+
 		/** 
 		 * Show one empty slot for every proposal in the ballot 
 		 * But the ballot is set to overflow: hidden and has a minHeight, 
