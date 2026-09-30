@@ -28,6 +28,7 @@ import {
 	mockState,
 	MockLiquidoError,
 	MOCK_GRAPHQL_SCHEMA,
+	resetGraphQlMockState,
 } from "./liquido-mock-domain.js"
 
 /** Reads and JSON-parses a request body. Resolves {} for an empty body (e.g. a bare POST). */
@@ -251,6 +252,10 @@ export async function handleMockRequest(req, res) {
 			res.statusCode = 200
 			res.setHeader("Content-Type", "text/plain")
 			res.end(MOCK_GRAPHQL_SCHEMA)
+		} else if (match("POST", "/mock/reset")) {
+			// Mock-only, no real backend counterpart: the red LIQUIDO icon in liquido-header.vue
+			resetGraphQlMockState()
+			writeRestSuccess(res, {})
 		} else if (match("GET", "/login/check-login-email")) {
 			handleCheckLoginEmail(res, url.searchParams.get("email"))
 		} else if (match("POST", "/login/welcomeMail")) {

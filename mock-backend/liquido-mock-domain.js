@@ -828,7 +828,7 @@ export const graphQlQueryMock = (query, variables) => {
 
 /**
  * Back to a fresh database. Used directly by vitest specs (e.g. switchTeam.spec.js) between tests -
- * there is no dev server there to restart instead. Not wired to a route for the Cypress/real-HTTP
- * path today; restarting the Vite dev server does the same thing there.
+ * there is no dev server there to restart instead - and over HTTP by POST /mock/reset, which the
+ * red LIQUIDO icon in liquido-header.vue calls.
  */
 export const resetGraphQlMockState = () => { mockState = createState() }

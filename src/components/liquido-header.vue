@@ -154,12 +154,10 @@ export default {
 		 */
 		resetMockState() {
 			if (!this.isMockBackend) return
-			try {
-				sessionStorage.removeItem("LIQUIDO_MOCK_STATE")
-				window.location.reload()
-			} catch (err) {
-				console.warn("Cannot reset mock state", err)
-			}
+			// The mocked database lives in the dev server process, not in this tab - see mock-backend/
+			fetch("/mock/reset", { method: "POST" })
+				.catch(err => console.warn("Cannot reset mock state", err))
+				.finally(() => window.location.reload())
 		},
 
 	}
