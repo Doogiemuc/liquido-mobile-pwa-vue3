@@ -5,10 +5,12 @@
  * backend, and the same spec source works unmodified against either backend).
  *
  * Only active when config.mockBackend is true - checked per request, not at plugin-registration
- * time, so toggling config/config.development.js and restarting the dev server is all it takes.
+ * time. `npm run dev:mock` serves the checked-in config/config.mock.js, which has it on; for a
+ * plain `npm run dev`, toggling it in config/config.development.js and restarting is all it takes.
  *
- * @param {String} configPath absolute path to config/config.<NODE_ENV>.js, computed by vite.config.js
- * the same way it already computes the "config" alias target. Passed in as an absolute path rather
+ * @param {String} configPath absolute path to config/config.<name>.js (LIQUIDO_CONFIG, else
+ * NODE_ENV), computed by vite.config.js the same way it computes the "config" alias target.
+ * Passed in as an absolute path rather
  * than resolved here with a relative import: Vite bundles vite.config.js (and whatever it imports)
  * into a temp file under node_modules/.vite-temp/ to load it, which would silently break a relative
  * import from this file - a plain dynamic import of an absolute path has no such ambiguity.

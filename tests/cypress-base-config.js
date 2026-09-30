@@ -9,7 +9,7 @@
  *   mode             | frontend                  | backend                  | what it is for
  *   -----------------|---------------------------|--------------------------|----------------------------
  *   local (default)  | shadow.fritz.box:3001     | shadow.fritz.box:8443    | the normal full-stack run
- *   mock             | shadow.fritz.box:3001     | none - mocked in the app | frontend only, no backend
+ *   mock             | localhost:3002            | none - mock dev server   | frontend only, no backend
  *   remote-backend   | shadow.fritz.box:3001     | liquido.dynv6.net        | your code, real data
  *   deployed         | liquido.dynv6.net         | liquido.dynv6.net        | smoke-test a deployment
  *
@@ -18,16 +18,22 @@
  * https://shadow.fritz.box:3001 (quarkus.webauthn.origins in application-dev.properties). Any other
  * host would make every passkey ceremony fail its origin check.
  *
+ * Mock mode is the exception, and deliberately on localhost: there is no backend origin check to
+ * satisfy - the mock backend takes the relying party id from the request's own Host header - so it
+ * needs no /etc/hosts entry, and a fresh clone can run it as is. Its own port 3002 keeps it clear of
+ * a normal dev server already running on 3001. `npm run test:e2e:mock` starts that server itself.
+ *
  * Point the deployed modes somewhere else with CYPRESS_REMOTE_URL.
  *
  * <h2>The half Cypress cannot set</h2>
  *
  * Cypress only decides which URL the browser opens. Which backend the FRONTEND calls is baked into
- * config/config.development.js (mockBackend and LIQUIDO_API_URL) and is read when the dev server
- * starts - so `mock` and `remote-backend` also need that file set accordingly, and the dev server
- * restarted. Getting this wrong is the dangerous case: the suite would pass against mocked data
- * while you believe it just proved a real backend works. So the mode is checked against that file
- * below, and a mismatch stops the run instead of quietly producing a green lie.
+ * the dev server's config file (mockBackend and LIQUIDO_API_URL), read once when it starts:
+ * config/config.development.js for local and remote-backend, which therefore has to be set
+ * accordingly and the dev server restarted, and the checked-in config/config.mock.js for mock.
+ * Getting this wrong is the dangerous case: the suite would pass against mocked data while you
+ * believe it just proved a real backend works. So the mode is checked against that file below, and
+ * a mismatch stops the run instead of quietly producing a green lie.
  *
  * <h2>Careful with the two deployed modes</h2>
  *
@@ -43,30 +49,35 @@ const HERE = path.dirname(fileURLToPath(import.meta.url))
 // See the WebAuthn note above: must stay shadow.fritz.box, not localhost or a bare IP.
 const LOCAL_FRONTEND = "https://shadow.fritz.box:3001"
 const LOCAL_BACKEND = "https://shadow.fritz.box:8443"
+// See the mock note above. Must match the port `npm run dev:mock` starts the dev server on.
+const MOCK_FRONTEND = "https://localhost:3002"
 const DEPLOYED = (process.env.CYPRESS_REMOTE_URL || "https://liquido.dynv6.net").replace(/\/+$/, "")
 
-/** frontend = what the browser opens; backend = what the SPECS call directly (null: there is none) */
+/**
+ * frontend = what the browser opens; backend = what the SPECS call directly (null: there is none);
+ * configFile = the config/ file that frontend's dev server reads, checked below (null: not ours).
+ */
 const MODES = {
-	local:            { frontend: LOCAL_FRONTEND, backend: LOCAL_BACKEND, wantMock: false, wantApi: LOCAL_BACKEND },
-	mock:             { frontend: LOCAL_FRONTEND, backend: null,          wantMock: true,  wantApi: null },
-	"remote-backend": { frontend: LOCAL_FRONTEND, backend: DEPLOYED,      wantMock: false, wantApi: DEPLOYED },
-	deployed:         { frontend: DEPLOYED,       backend: DEPLOYED,      wantMock: null,  wantApi: null },
+	local:            { frontend: LOCAL_FRONTEND, backend: LOCAL_BACKEND, wantMock: false, wantApi: LOCAL_BACKEND, configFile: "config.development.js" },
+	mock:             { frontend: MOCK_FRONTEND,  backend: null,          wantMock: true,  wantApi: null,          configFile: "config.mock.js" },
+	"remote-backend": { frontend: LOCAL_FRONTEND, backend: DEPLOYED,      wantMock: false, wantApi: DEPLOYED,      configFile: "config.development.js" },
+	deployed:         { frontend: DEPLOYED,       backend: DEPLOYED,      wantMock: null,  wantApi: null,          configFile: null },
 }
 
 /** The mode this run uses, unless a config file asks configForMode() for a specific one. */
 export const mode = process.env.LIQUIDO_E2E_MODE || "local"
 
 /**
- * Read mockBackend and LIQUIDO_API_URL out of config/config.development.js.
+ * Read mockBackend and LIQUIDO_API_URL out of config/<configFile>.
  *
- * Deliberately a forgiving text scan rather than an import: the file is gitignored, so it may not
- * exist at all, and importing it would make this config async, which Cypress does not want. When
- * anything is unclear this returns undefined and the caller stays quiet - a guess here would be
- * worse than no check.
+ * Deliberately a forgiving text scan rather than an import: config.development.js is gitignored, so
+ * it may not exist at all, and importing it would make this config async, which Cypress does not
+ * want. When anything is unclear this returns undefined and the caller stays quiet - a guess here
+ * would be worse than no check.
  */
-function readDevConfig() {
+function readDevConfig(configFile) {
 	try {
-		const src = fs.readFileSync(path.join(HERE, "..", "config", "config.development.js"), "utf8")
+		const src = fs.readFileSync(path.join(HERE, "..", "config", configFile), "utf8")
 		const uncommented = src.replace(/^\s*\/\/.*$/gm, "")
 		const mock = uncommented.match(/mockBackend\s*:\s*(true|false)/)
 		const api = uncommented.match(/LIQUIDO_API_URL\s*:\s*["'`]([^"'`]+)["'`]/)
@@ -81,14 +92,15 @@ function readDevConfig() {
 
 /** Stop the run when the dev server is serving a different pairing than the mode promises. */
 function assertFrontendMatchesMode(mode, picked) {
-	if (picked.wantMock === null) return              // deployed: the served bundle has its own config
-	const dev = readDevConfig()
+	if (!picked.configFile) return                    // deployed: the served bundle has its own config
+	const dev = readDevConfig(picked.configFile)
 	if (!dev) return                                  // cannot tell - say nothing
-	const hint = "Fix config/config.development.js and RESTART the dev server (vite reads it at startup)."
+	const file = `config/${picked.configFile}`
+	const hint = `Fix ${file} and RESTART the dev server (vite reads it at startup).`
 
 	if (dev.mockBackend !== undefined && dev.mockBackend !== picked.wantMock) {
 		throw new Error(
-			`LIQUIDO_E2E_MODE=${mode} needs mockBackend: ${picked.wantMock} in config/config.development.js, ` +
+			`LIQUIDO_E2E_MODE=${mode} needs mockBackend: ${picked.wantMock} in ${file}, ` +
 			`but it is ${dev.mockBackend}. ${hint}`
 		)
 	}
@@ -96,7 +108,7 @@ function assertFrontendMatchesMode(mode, picked) {
 	if (picked.wantApi && dev.apiUrl && !dev.apiUrl.startsWith(picked.wantApi)) {
 		throw new Error(
 			`LIQUIDO_E2E_MODE=${mode} needs LIQUIDO_API_URL to point at ${picked.wantApi} in ` +
-			`config/config.development.js, but it is "${dev.apiUrl}". ${hint}`
+			`${file}, but it is "${dev.apiUrl}". ${hint}`
 		)
 	}
 }

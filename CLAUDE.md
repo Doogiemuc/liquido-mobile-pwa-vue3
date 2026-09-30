@@ -247,11 +247,19 @@ files bundled with this PWA, so it stays local.
 not `#modalPrimaryButton`. `root-app.vue` always mounts `#rootPopupModal`, so an unscoped selector
 grabs the wrong button.
 
-**The mock backend shares code with the real client.** `config.mockBackend` swaps in
-`liquido-graphql-client.mock.js`, but it *decorates* the real `graphQlApi` — it does not replace
-`isAdmin()` or `jwt-util.js`. If you change how the client reads something, the mock must produce
-data of the same shape (it mints structurally real JWTs for exactly this reason). Its `operations`
-list is **order-sensitive**: the first name found anywhere in the query string wins.
+**The mock backend is a real HTTP server, not a swapped-in client.** With `config.mockBackend` on,
+the frontend makes exactly the calls it makes against Quarkus; `vite-plugin-mock-backend.js` answers
+them inside the Vite dev server, from `mock-backend/` (`liquido-mock-domain.js`: state and GraphQL
+handlers; `liquido-mock-http-server.js`: the REST and WebAuthn endpoints). That is what lets a
+spec's `cy.intercept()`/`cy.wait()` work unchanged against either backend — do not reintroduce a
+client-side shortcut. The one exception is vitest (`configSource: "test"`): there is no dev server
+there, so `graphQlQuery()` and `getGraphQLSchema()` call the domain file in-process. The mock goes
+through the real `isAdmin()` and `jwt-util.js`, so it must produce data of the same shape as the
+backend (it mints structurally real JWTs for exactly this reason). Its `operations` list is
+**order-sensitive**: the first name found anywhere in the query string wins. Its state lives in the
+dev server process, not in the browser — restart the server, or `POST /mock/reset` (the red LIQUIDO
+icon), for a fresh one. The Polly mock (`src/polly/polly-client.mock.js`) is not part of this yet
+and still runs in the browser.
 
 ---
 
@@ -296,11 +304,18 @@ enforced per-component via `api.isAdmin()`, and properly by the backend.
 
 ```bash
 npm run dev            # Vite dev server, HTTPS on :3001 (mkcert certs in tls-certs/)
+npm run dev:mock       # the same, on :3002, with the mock backend (config/config.mock.js)
 npm run build          # production bundle
-npx vitest run         # unit tests
+npm test               # unit tests, once (npx vitest run); `npm run test:unit` is watch mode
+npm run test:e2e:mock  # starts its own mock dev server, runs all Cypress specs, stops it
+npm run test:all       # both of the above
 npx eslint src tests --ext .vue,.js
 npx cypress run --e2e --spec tests/e2e/specs/happy-case.cy.js
 ```
+
+A fresh clone needs nothing but `npm install` for `npm test` and `npm run test:e2e:mock`: the
+configs they use (`config.test.js`, `config.mock.js`) and the dev TLS certs are checked in. See
+`docs/liquido-testing.md` §0.
 
 ### The four e2e modes
 
@@ -310,25 +325,29 @@ questions. `LIQUIDO_E2E_MODE` picks the pair; the table lives at the top of
 
 | mode | frontend | backend | script |
 |---|---|---|---|
-| `local` *(default)* | `localhost:3001` | `localhost:8443` | `npm run test:e2e` |
-| `mock` | `localhost:3001` | none, mocked in the app | `npm run test:e2e:mock` |
-| `remote-backend` | `localhost:3001` | `liquido.dynv6.net` | `npm run test:e2e:remote-backend` |
+| `local` *(default)* | `shadow.fritz.box:3001` | `shadow.fritz.box:8443` | `npm run test:e2e` |
+| `mock` | `localhost:3002` | none, the mock dev server | `npm run test:e2e:mock` |
+| `remote-backend` | `shadow.fritz.box:3001` | `liquido.dynv6.net` | `npm run test:e2e:remote-backend` |
 | `deployed` | `liquido.dynv6.net` | `liquido.dynv6.net` | `npm run test:e2e:deployed` |
 
 `CYPRESS_REMOTE_URL` aims the two deployed modes elsewhere. `npm run test:e2e:remote` is kept as an
-alias of `deployed`.
+alias of `deployed`. `mock` is on `localhost` on purpose: `shadow.fritz.box` is only needed to
+satisfy the real backend's WebAuthn origin check, which the mock does not have — so it needs no
+`/etc/hosts` entry, and its own port keeps it clear of a normal dev server on 3001.
 
 **Cypress only decides which URL the browser opens.** Which backend the *frontend* calls comes from
-`config/config.development.js` (`mockBackend`, `LIQUIDO_API_URL`), read once when the dev server
-starts — so `mock`, `local` and `remote-backend` need that file set to match, and the dev server
-restarted. The mode is checked against that file and **a mismatch aborts the run**, because the
-alternative is the dangerous one: a green suite that only proved the mock works while you believed
-it exercised a real backend.
+the dev server's config (`mockBackend`, `LIQUIDO_API_URL`), read once when it starts:
+`config/config.development.js` for `local` and `remote-backend`, which need that file set to match
+and the dev server restarted, and the checked-in `config/config.mock.js` for `mock`, which
+`npm run test:e2e:mock` starts itself. The mode is checked against that file and **a mismatch
+aborts the run**, because the alternative is the dangerous one: a green suite that only proved the
+mock works while you believed it exercised a real backend.
 
-In `mock` mode the backend-availability check in `login-tests.cy.js` is skipped, along with the two
-cases that need real GraphQL over HTTP (the password-reset round-trip and the
-backend-unreachable warning) — `Cypress.expose("LIQUIDO_API")` is `null` there, and those tests
-`this.skip()` on it. That mode is green, not partially red.
+In `mock` mode the backend-availability check in `login-tests.cy.js` is skipped, along with the
+cases that need real GraphQL over HTTP straight from the spec (the password-reset round-trip, the
+backend-unreachable warning, the direct API calls in `validation-limits.cy.js`) —
+`Cypress.expose("LIQUIDO_API")` is `null` there, and those tests `this.skip()` on it. `mock` is
+**not** fully green yet: see `docs/liquido-testing.md` §0 for the specs with known mock-data gaps.
 
 **Both dev servers are Claude's to manage** — Vite on `https://localhost:3001` and the Quarkus
 backend on `https://localhost:8443`. Start the frontend via `preview_start {name: "liquido-pwa"}`,
@@ -336,8 +355,8 @@ never a bare Bash dev server. **Leave both running when a larger task is finishe
 test immediately.
 
 The e2e suite runs against the **real backend and the real `LIQUIDO-DEV` database** — every run
-leaves a team behind. `config.development.js` can flip `mockBackend: true` for a backend-free run
-(remember to restore it).
+leaves a team behind. For a backend-free run use `npm run test:e2e:mock` instead — it does not need
+`config.development.js` touched at all.
 
 **Running against an already-deployed instance** (e.g. `https://liquido.dynv6.net`), without any
 local dev server or database: `npm run test:e2e:remote` (or `cypress:open:remote`) uses

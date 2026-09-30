@@ -4,10 +4,85 @@ There is a lot of setup and configuration for debugging and testing LIQUIDO. Thi
 testing (local and on a real device) and the automated Cypress e2e suite, including the test-data
 contract both rely on.
 
+0. [Quick start from a fresh clone](#0-quick-start-from-a-fresh-clone)
 1. [Manual testing setup](#1-manual-testing-setup)
 2. [Testing on a real device](#2-testing-on-a-real-device)
 3. [Test data & fixtures](#3-test-data--fixtures)
 4. [Automated tests (Cypress)](#4-automated-tests-cypress)
+
+---
+
+## 0. Quick start from a fresh clone
+
+Everything below runs **without a backend, without a database and without any config file you have
+to create first** — the e2e suite runs against the mock backend built into the dev server
+([§4.6](#46-the-mock-backend)).
+
+**Prerequisites**
+* **Node 22** (≥ 22.12) or **Node 24**. Vite 8 and `start-server-and-test` both refuse older ones.
+* On a **Linux machine without a desktop**: `Xvfb` installed (`apt install xvfb`). Cypress starts it
+  on its own when `DISPLAY` is unset — you do not need `xvfb-run`. macOS, Windows and any Linux
+  desktop need nothing extra.
+* Network access during `npm install`: it downloads the Cypress binary (several hundred MB, cached
+  in `~/.cache/Cypress` afterwards).
+
+**Run it**
+
+```bash
+git clone https://github.com/Doogiemuc/liquido-mobile-pwa-vue3.git
+cd liquido-mobile-pwa-vue3
+npm install
+
+npm test                 # unit tests (vitest), ~ 10 s
+npm run test:e2e:mock    # starts the mock dev server on https://localhost:3002, runs every Cypress spec, stops it
+npm run test:all         # both, in that order
+```
+
+`test:e2e:mock` needs port **3002** free. It does not touch 3001, so a normal `npm run dev` can keep
+running alongside.
+
+**What makes this work without setup**
+
+| Needed | Where it comes from |
+|---|---|
+| Unit-test config | `config/config.test.js` — checked in, no secrets |
+| E2E config | `config/config.mock.js` — checked in, no secrets; `npm run dev:mock` selects it via `LIQUIDO_CONFIG=mock` |
+| TLS certificate | `tls-certs/liquido-local-*.pem` — checked in (a local mkcert pair, covers `localhost`). Cypress's browser accepts it without `mkcert -install`; `start-server-and-test` is told to with `START_SERVER_AND_TEST_INSECURE=1` |
+| A backend | the mock, served by the dev server itself |
+| A hostname in `/etc/hosts` | not needed — mock mode runs on `localhost` ([why](#46-the-mock-backend)) |
+| Cypress config | `cypress.config.js` + `tests/cypress-base-config.js` — checked in |
+
+`config/config.development.js` is **not** needed for any of this. It is gitignored and only
+required for `npm run dev` against a real backend (copy it from `config.development.js.example`).
+
+**One spec, or interactively.** `test:e2e:mock` always runs the whole suite. For anything else,
+start the mock dev server yourself and point Cypress at it in a second terminal:
+
+```bash
+npm run dev:mock                                                                     # terminal 1
+LIQUIDO_E2E_MODE=mock npx cypress run --e2e --spec tests/e2e/specs/happy-case.cy.js  # terminal 2
+LIQUIDO_E2E_MODE=mock npx cypress open --e2e                                         # or interactively
+```
+
+The mock's data lives in that dev server process and survives between runs — restart it (or click
+the red LIQUIDO icon in the app's header) for an empty database.
+
+**Expected result — the mock run is not fully green yet.** `npm test` and `happy-case.cy.js` pass
+completely. These e2e cases fail in mock mode, and therefore `test:e2e:mock` (and `test:all`)
+**exits non-zero** today:
+
+| Spec | Case | Why it fails in mock mode |
+|---|---|---|
+| `login-tests.cy.js` | Login via email & password | Signs in as the backend's fixed seed identity (`loginadmin@liquido.vote`, [§3](#3-test-data--fixtures)), which the mock's data does not contain |
+| `switch-team.cy.js` | both cases | Same reason: needs the seeded `multiTeamA`/`multiTeamB` member |
+| `polly-happy-case.cy.js` | the friend's vote | The Polly mock still runs in the browser (`src/polly/polly-client.mock.js`) and cannot tell the friend's "device" from the creator's |
+
+By design, and not failures: the two cases in `login-tests.cy.js` and the two in
+`validation-limits.cy.js` that call a real backend's HTTP API directly skip themselves in mock mode
+(`Cypress.expose("LIQUIDO_API")` is `null` there).
+
+The other three modes (`local`, `remote-backend`, `deployed`) need a real backend and some setup —
+see [§1](#1-manual-testing-setup) and [§4](#4-automated-tests-cypress).
 
 ---
 
@@ -164,7 +239,8 @@ The e2e suite uses **Cypress** (not Playwright — this section used to say othe
 `tests/e2e/specs/`:
 
 * `happy-case.cy.js` — **the primary regression test.** One long, sequential flow (`testIsolation:
-  false`) that walks a brand new team through the entire product against the real backend: create
+  false`) that walks a brand new team through the entire product — against the real backend or the
+  mock, with the identical spec source: create
   team → register passkey → create a poll with two proposals → a member joins, adds and edits their
   own proposal → admin starts voting → member casts a vote and verifies its checksum → admin
   finishes voting → winner is shown. An `afterEach` stops the whole run on the first failure, so a
@@ -185,12 +261,19 @@ The e2e suite uses **Cypress** (not Playwright — this section used to say othe
   `browserSupportsWebAuthn()` genuinely returns false rather than stubbing our own code, and
   asserts the passkey step is never offered (as opposed to offered-and-declined, which
   `happy-case.cy.js` covers).
+* `validation-limits.cy.js` — the length limits served by `query liquidoConfig`: once in the UI
+  (the submit button stays disabled), and twice straight against the GraphQL API with `cy.request()`,
+  proving the backend rejects a too-short value even from a client that skips the form. The two API
+  cases skip themselves in mock mode.
 * `user-home-tests.cy.js.FIXME` — disabled (the `.FIXME` extension excludes it from `specPattern`),
   not currently run.
 
-Run with `npm run test:e2e` (all specs) or `npx cypress run --e2e --spec tests/e2e/specs/<file>` for
-one spec. `npx cypress open --e2e --browser firefox` for interactive mode. See `CLAUDE.md` §7 for the
-full command list.
+Run with `npm run test:e2e` (all specs, against the local backend) or
+`npx cypress run --e2e --spec tests/e2e/specs/<file>` for one spec.
+`npx cypress open --e2e --browser firefox` for interactive mode. Without a backend:
+`npm run test:e2e:mock`, see [§0](#0-quick-start-from-a-fresh-clone). Which frontend and backend a
+run uses is picked by `LIQUIDO_E2E_MODE` — the table of the four modes is at the top of
+`tests/cypress-base-config.js`, and `CLAUDE.md` §7 has the full command list.
 
 **Testing rule:** never assert on displayed UI text (a translated/reworded string must not break the
 suite) — assert on DOM ids or `data-*` attributes instead. See `CLAUDE.md` §3 for the full list of
@@ -269,7 +352,9 @@ consistently at `:1` in practice, so the script just does `export DISPLAY="${DIS
 reuses whatever is already there rather than installing or starting anything. This is specific to
 GISMO having a desktop session at all — a genuinely headless environment (e.g. a cloud CI runner or
 a remote-isolated agent for the outside-the-network verification above) has no `:1` to fall back to,
-and needs Xvfb or an equivalent instead.
+and needs Xvfb or an equivalent instead. Having it installed is enough: when `DISPLAY` is unset,
+Cypress starts Xvfb itself. (This script's `${DISPLAY:-:1}` default is exactly what would stop that
+from happening on such a machine — there, run `npx cypress` directly.)
 
 ### 4.4 Negative test cases
 
@@ -287,3 +372,50 @@ Both of the negative cases this section used to list as TODO now exist:
   a winner, but no e2e spec reaches that state: the happy case casts a single ballot, and a tie needs
   two voters who split 1:1 on one pair while both beating a third proposal. The pure algorithm side
   is covered by `tests/unit/ranked-pairs.spec.js` and the backend's `PublishedTallyTest`.
+
+### 4.6 The mock backend
+
+`LIQUIDO_E2E_MODE=mock` runs the e2e suite with no backend at all. The requirement that shaped it:
+**the spec source must be identical** against the mock and against the real backend. A spec that
+waits for a request (`cy.intercept(...).as(...)` + `cy.wait(...)`) can only do that if the request
+actually goes over the network — so the mock is a real HTTP server, not a swapped-in client.
+
+| File | Role |
+|---|---|
+| `config/config.mock.js` | `mockBackend: true`. Selected by `npm run dev:mock` (`LIQUIDO_CONFIG=mock`, see `vite.config.js`) |
+| `vite-plugin-mock-backend.js` | Mounts the mock as dev-middleware in the Vite dev server, when `config.mockBackend` is on |
+| `mock-backend/liquido-mock-http-server.js` | Node-only HTTP layer: `/graphql`, `/graphql/schema.graphql`, `/login/*`, `/webauthn/*`, and the mock-only `/mock/reset` |
+| `mock-backend/liquido-mock-domain.js` | The "database" and the GraphQL query/mutation handlers. No Node APIs, so vitest can load it too |
+
+With `mockBackend` on, `liquido-graphql-client.js` only changes its base URL: it sends every request
+to the dev server's own origin instead of `LIQUIDO_API_URL`, and the middleware answers it. Nothing
+else in the app knows it is talking to a mock, except the red LIQUIDO icon in the header, which is
+there so nobody forgets.
+
+**State** lives in the dev server process: one shared database for every tab and every spec, like a
+real backend, and gone when the server stops. `POST /mock/reset` (the red icon) empties it.
+
+**vitest** has no dev server. Under `config/config.test.js` (`configSource: "test"`) the client
+calls `liquido-mock-domain.js` in-process instead, and specs reset it between tests with
+`resetGraphQlMockState()`.
+
+**Why `localhost`, when the other modes insist on `shadow.fritz.box`:** the real backend accepts a
+passkey only from the one origin in its `quarkus.webauthn.origins`. The mock has no such list — it
+takes the relying-party id from the request's own `Host` header — so any host works, and `localhost`
+needs no `/etc/hosts` entry. Port 3002 keeps it clear of a normal dev server on 3001.
+
+**WebAuthn in the mock** is a deliberately simple workaround, not an implementation. The mock serves
+a spec-valid challenge, so the browser (in the e2e run: Chrome's CDP virtual authenticator, [§4.1](#41-webauthnpasskey-ceremony-in-headless-tests))
+runs the real client-side ceremony. The attestation or assertion that comes back is **not
+verified** — registration simply sets the user's `hasWebauthn`, which makes the team page drop its
+passkey reminder, exactly as `happy-case.cy.js` checks. Real passkeys still need a real device and a
+real backend.
+
+**Emails** are not sent. The endpoints that would send one (welcome, password reset, login link)
+answer like the backend does; the password-reset and login-link tokens are kept in the mock's state
+(and logged to the dev server's console). There is no route yet for a spec to read them, which is
+why the password-reset round trip in `login-tests.cy.js` still needs a real backend.
+
+**Not covered by it yet:** the fixed seed identities of [§3](#3-test-data--fixtures) (see the
+failing cases in [§0](#0-quick-start-from-a-fresh-clone)), and Polly, whose mock
+(`src/polly/polly-client.mock.js`) still runs in the browser.
