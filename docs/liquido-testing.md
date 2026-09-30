@@ -75,11 +75,23 @@ completely. These e2e cases fail in mock mode, and therefore `test:e2e:mock` (an
 |---|---|---|
 | `login-tests.cy.js` | Login via email & password | Signs in as the backend's fixed seed identity (`loginadmin@liquido.vote`, [§3](#3-test-data--fixtures)), which the mock's data does not contain |
 | `switch-team.cy.js` | both cases | Same reason: needs the seeded `multiTeamA`/`multiTeamB` member |
-| `polly-happy-case.cy.js` | the friend's vote | The Polly mock still runs in the browser (`src/polly/polly-client.mock.js`) and cannot tell the friend's "device" from the creator's |
+| `polly-happy-case.cy.js` | the friend's vote (the 4 steps after it are then skipped, fail-fast) | The Polly mock still runs in the browser (`src/polly/polly-client.mock.js`) and cannot tell the friend's "device" from the creator's |
 
 By design, and not failures: the two cases in `login-tests.cy.js` and the two in
 `validation-limits.cy.js` that call a real backend's HTTP API directly skip themselves in mock mode
-(`Cypress.expose("LIQUIDO_API")` is `null` there).
+(`Cypress.expose("LIQUIDO_API")` is `null` there), and `login-tests.cy.js` has two more `it.skip`
+cases that are pending in every mode.
+
+So a run from a fresh clone ends like this today (last checked 2026-09-30) — anything else is news:
+
+```
+  ✔  happy-case.cy.js           17 tests   17 passing
+  ✖  login-tests.cy.js          12 tests    7 passing   1 failing   4 pending
+  ✔  no-webauthn-support.cy.js   1 test     1 passing
+  ✖  polly-happy-case.cy.js     10 tests    5 passing   1 failing               4 skipped
+  ✖  switch-team.cy.js           2 tests                2 failing
+  ✔  validation-limits.cy.js     3 tests    1 passing               2 pending
+```
 
 The other three modes (`local`, `remote-backend`, `deployed`) need a real backend and some setup —
 see [§1](#1-manual-testing-setup) and [§4](#4-automated-tests-cypress).
