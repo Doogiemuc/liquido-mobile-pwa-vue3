@@ -470,7 +470,7 @@ export default {
 				// Locally update poll status also in cache. No need to reload poll from backend
 				this.poll.status = "FINISHED"
 				this.poll.winner = winner
-				api.pollsCache.put("poll/"+this.poll.id, this.poll)
+				api.pollsCache.put("polls/"+this.poll.id, this.poll)
         document.getElementsByTagName("html").scrollTop = 0
 				//$("html, body").animate({ scrollTop: 0 }, 500)
 			}).catch(err => {

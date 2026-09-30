@@ -85,6 +85,7 @@ cases that are pending in every mode.
 So a run from a fresh clone ends like this today (last checked 2026-09-30) — anything else is news:
 
 ```
+  ✔  finish-poll-from-ballot.cy.js  3 tests  3 passing
   ✔  happy-case.cy.js           17 tests   17 passing
   ✖  login-tests.cy.js          12 tests    7 passing   1 failing   4 pending
   ✔  no-webauthn-support.cy.js   1 test     1 passing
@@ -257,6 +258,12 @@ The e2e suite uses **Cypress** (not Playwright — this section used to say othe
   own proposal → admin starts voting → member casts a vote and verifies its checksum → admin
   finishes voting → winner is shown. An `afterEach` stops the whole run on the first failure, so a
   failing early step hides everything after it — read the "Skipped:" count, not just "Passing:".
+* `finish-poll-from-ballot.cy.js` — an admin finishes a running poll straight from the ballot page,
+  after a confirmation he can also cancel. A running poll the user has not voted in yet opens the
+  ballot directly (from the poll list and from team-home), so an admin who has not voted never sees
+  the detail page — `happy-case.cy.js` only covers the admin who votes first and finishes there. Also
+  checks that Back from the ballot returns to the list, and that a member gets no finish action.
+  **Mock mode only**: it relies on the mock seed's poll 305, and skips itself in every other mode.
 * `login-tests.cy.js` — anonymous access, route guards, login via email/password, forgot-password.
 * `switch-team.cy.js` — switching between a user's teams. Needs the seeded multi-team scenario
   (`multiteammember@liquido.vote` in both `multiTeamA` and `multiTeamB`) from the backend's

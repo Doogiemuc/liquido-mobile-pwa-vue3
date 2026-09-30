@@ -379,7 +379,7 @@ export default {
 				// Locally update poll status also in cache, so that poll-winner.vue and the list see it at once
 				this.poll.status = "FINISHED"
 				this.poll.winner = winner
-				api.pollsCache.put("poll/" + this.poll.id, this.poll)
+				api.pollsCache.put("polls/" + this.poll.id, this.poll)
 				this.$router.push({name: "pollWinner", params: {pollId: this.pollId}})
 			}).catch(err => {
 				this.finishVoteLoading = false
