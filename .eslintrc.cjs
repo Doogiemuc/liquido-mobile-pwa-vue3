@@ -49,6 +49,16 @@ module.exports = {
         'tests/unit/**/*.js'
       ],
       env: { node: true }
+    },
+    {
+      // The mock backend: a Vite dev-middleware, so it runs in the Vite dev server's Node process,
+      // not the browser - see mock-backend/liquido-mock-backend.js's module doc comment.
+      files: [
+        'vite.config.js',
+        'vite-plugin-mock-backend.js',
+        'mock-backend/**/*.js'
+      ],
+      env: { node: true }
     }
   ],
   parserOptions: {

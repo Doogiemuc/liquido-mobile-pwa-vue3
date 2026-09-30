@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from "path"
+import mockBackend from './vite-plugin-mock-backend.js'
 
 // TLS certificates
 // Created with mkcert. The SANs must cover every name the app is reached by - the dev host name
@@ -15,6 +16,15 @@ import path from "path"
 // Copy the same pair to the backend at src/main/resources/liquido-local-{cert,key}.pem.
 const key = fs.readFileSync(path.resolve(__dirname, 'tls-certs/liquido-local-key.pem'), 'utf8');
 const cert = fs.readFileSync(path.resolve(__dirname, 'tls-certs/liquido-local-cert.pem'), 'utf8');
+
+// Which config/config.<name>.js the bare `config` import resolves to: NODE_ENV by default
+// (development for `vite`, test for vitest), or LIQUIDO_CONFIG to override it - `npm run dev:mock`
+// sets LIQUIDO_CONFIG=mock to serve the checked-in config.mock.js instead of config.development.js.
+const configName = process.env.LIQUIDO_CONFIG || process.env.NODE_ENV
+
+// Same target as the "config" alias below, but as an absolute path with its extension, for
+// vite-plugin-mock-backend.js to dynamically import directly - see that file for why.
+const configPath = path.join(__dirname, "config", "config." + configName + ".js")
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -59,14 +69,15 @@ export default defineConfig({
   plugins: [
     vue(),
 		//mkcert()  -> we use real TLS certs
+		mockBackend(configPath),   // answers config.mockBackend's traffic over real HTTP - see vite-plugin-mock-backend.js
   ],
   resolve: {
     alias: {
 			// map @ to ./src   but imports MUST have file endings (.js or .vue) !
     	'@' : fileURLToPath(new URL('./src', import.meta.url)),
 
-			// laod a specific config file per environment
-			'config': path.join(__dirname, "config/config."+process.env.NODE_ENV)  
+			// laod a specific config file per environment - see configName above
+			'config': path.join(__dirname, "config/config."+configName)
     }
 		
   },

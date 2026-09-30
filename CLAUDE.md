@@ -166,7 +166,8 @@ Match the surrounding file. Broadly:
   When *editing* an existing Options API file, match what is there — do not rewrite it wholesale as a
   side effect of an unrelated change. Leave that to the planned migration.
 - **Imports keep the file extension** — `@/components/foo.vue`, `@/services/bar.js`. The `@` alias is
-  `src/`, and a bare `config` resolves to `config/config.<MODE>.js`.
+  `src/`, and a bare `config` resolves to `config/config.<name>.js` — `<name>` is `LIQUIDO_CONFIG` if
+  set (`npm run dev:mock` sets `mock`), else `NODE_ENV`.
 - **kebab-case filenames**, PascalCase `name:` (they often do not match — that is fine,
   `vue/multi-word-component-names` is off).
 - `.then()/.catch()` chains are preferred over `async/await` in views — except where a genuine
@@ -247,41 +248,67 @@ files bundled with this PWA, so it stays local.
 not `#modalPrimaryButton`. `root-app.vue` always mounts `#rootPopupModal`, so an unscoped selector
 grabs the wrong button.
 
-**The mock backend shares code with the real client.** `config.mockBackend` swaps in
-`liquido-graphql-client.mock.js`, but it *decorates* the real `graphQlApi` — it does not replace
-`isAdmin()` or `jwt-util.js`. If you change how the client reads something, the mock must produce
-data of the same shape (it mints structurally real JWTs for exactly this reason). Its `operations`
-list is **order-sensitive**: the first name found anywhere in the query string wins.
+**The mock backend is a real HTTP server, not a swapped-in client.** With `config.mockBackend` on,
+the frontend makes exactly the calls it makes against Quarkus; `vite-plugin-mock-backend.js` answers
+them inside the Vite dev server, from `mock-backend/` (`liquido-mock-domain.js`: state and GraphQL
+handlers; `liquido-mock-http-server.js`: the REST and WebAuthn endpoints). That is what lets a
+spec's `cy.intercept()`/`cy.wait()` work unchanged against either backend — do not reintroduce a
+client-side shortcut. The one exception is vitest (`configSource: "test"`): there is no dev server
+there, so `graphQlQuery()` and `getGraphQLSchema()` call the domain file in-process. The mock goes
+through the real `isAdmin()` and `jwt-util.js`, so it must produce data of the same shape as the
+backend (it mints structurally real JWTs for exactly this reason). Its `operations` list is
+**order-sensitive**: the first name found anywhere in the query string wins. Its state lives in the
+dev server process, not in the browser — restart the server, or `POST /mock/reset` (the red LIQUIDO
+icon), for a fresh one. The Polly mock (`src/polly/polly-client.mock.js`) is not part of this yet
+and still runs in the browser.
 
 ---
 
 ## 6. Routes
 
-Order matters: `/polls/create` and `/polls/new` are declared **before** `/polls/:pollId`, or the param
-route swallows them.
+Order matters: `/polls/new` is declared **before** `/polls/:pollId`, or the param route swallows it.
 
 | Path | Name | Public | Notes |
 |---|---|---|---|
-| `/login` `/welcome` `/joinTeam` | | ✅ | registration + login |
-| `/forgotPassword` `/resetPassword` | | ✅ | |
+| `/` | index | | redirects: to `/team` when logged in, else `/welcome` |
+| `/login` | login | ✅ | |
+| `/welcome` | welcome | ✅ | registration, and joining a team: invite links are `/welcome?inviteCode=` |
+| `/forgotPassword` `/resetPassword` | forgotPassword, resetPassword | ✅ | both `forgot-password.vue`; `/resetPassword` takes `?resetPasswordToken=` |
 | `/verifyEmail` | verifyEmail | ✅ | opened from a mail, `?verifyToken=` |
+| `/login-via-sms` | loginSms | ✅ | |
 | `/team` | team | 🔒 | team home |
 | `/userhome` | userhome | 🔒 | |
 | `/polls` | polls | 🔒 | list |
 | `/polls/new` | newPoll | 🔒 | **the all-in-one poll editor** |
-| `/polls/:pollId/edit` | editPoll | 🔒 | same editor, existing poll |
 | `/polls/:pollId` | showPoll | 🔒 | read-only poll |
+| `/polls/:pollId/edit` | editPoll | 🔒 | same editor, existing poll |
+| `/polls/:pollId/add` | addProposal | 🔒 | old two-step flow, deprecated — see below |
 | `/polls/:pollId/castVote` | castVote | 🔒 | rank + submit ballot |
 | `/polls/:pollId/winner` | pollWinner | 🔒 | winner, pairwise breakdown, duel matrix, lock-in graph |
-| `/polly/create` | createPolly | ✅ | separate, simpler poll type |
+| `/polly` | createPolly | ✅ | Polly: separate, simpler, teamless poll type — create one |
+| `/polly/:publicId` | showPolly | ✅ | the one link a Polly creator shares |
 | `/impressum` `/agb` `/datenschutz` | impressum, agb, datenschutz | ✅ | German legal pages, linked only from the bottom of `team-home.vue` |
-| `/devLogin` `/_design-overview` | | | **development mode only** |
+| `/404`, any unknown path | pageNotFound | ✅ | |
+| `/devLogin` `/_design-overview` | devLogin | ✅ | **development mode only** |
 
-`/polls/create` (`poll-create.vue`) and `/polls/:pollId/add` (`proposal-add.vue`) are the **old**
-two-step flow, now **deprecated**. Nothing links to them any more — `polls.vue` and `poll-show.vue`
-point at the editor — but they are **deliberately kept and reachable by URL** while the new editor is
-still being exercised, and will be removed in a future release. **Do not delete them**, and keep them
-working: they are the fallback if the editor turns out to have a problem.
+`/polls/:pollId/add` (`proposal-add.vue`) is the second half of the **old** two-step flow, now
+**deprecated**. Nothing links to it any more — `polls.vue` and `poll-show.vue` point at the editor —
+but it is **deliberately kept and reachable by URL** while the new editor is still being exercised,
+and will be removed in a future release. **Do not delete it**, and keep it working: it is the
+fallback if the editor turns out to have a problem.
+
+Two routes are **retired on purpose** — do not restore them:
+
+- **`/polls/create`** (`poll-create.vue`, title and `membersCanAddProposals` only) is replaced by
+  `/polls/new`, the all-in-one editor, which does all of that plus the proposals. Commit `16ac374`
+  (2026-09-20) removed the route and pointed everything at `newPoll`.
+- **`/joinTeam`** (`join-team-v2.vue`) is replaced by the new registration flow in
+  `welcome-chat-v2.vue` at `/welcome`, which handles creating a team *and* joining one
+  (`?inviteCode=`). One deliberate difference: the old page checked while typing whether the email
+  was already registered; the new flow finds out on submit (`USER_EMAIL_EXISTS` and friends) and
+  links to `/login` from there. The route itself disappeared in merge `6718da6` (see §9).
+
+Both `.vue` files are still in the repo, unused. Ask before deleting them.
 
 **Adding a route?** Also add its name to the `page_order` map in `root-app.vue`, or the page-slide
 transition picks the wrong direction. And add the page to `_design-overview.vue`, a dev-only gallery
@@ -296,11 +323,18 @@ enforced per-component via `api.isAdmin()`, and properly by the backend.
 
 ```bash
 npm run dev            # Vite dev server, HTTPS on :3001 (mkcert certs in tls-certs/)
+npm run dev:mock       # the same, on :3002, with the mock backend (config/config.mock.js)
 npm run build          # production bundle
-npx vitest run         # unit tests
+npm test               # unit tests, once (npx vitest run); `npm run test:unit` is watch mode
+npm run test:e2e:mock  # starts its own mock dev server, runs all Cypress specs, stops it
+npm run test:all       # both of the above
 npx eslint src tests --ext .vue,.js
 npx cypress run --e2e --spec tests/e2e/specs/happy-case.cy.js
 ```
+
+A fresh clone needs nothing but `npm install` for `npm test` and `npm run test:e2e:mock`: the
+configs they use (`config.test.js`, `config.mock.js`) and the dev TLS certs are checked in. See
+`docs/liquido-testing.md` §0.
 
 ### The four e2e modes
 
@@ -310,25 +344,29 @@ questions. `LIQUIDO_E2E_MODE` picks the pair; the table lives at the top of
 
 | mode | frontend | backend | script |
 |---|---|---|---|
-| `local` *(default)* | `localhost:3001` | `localhost:8443` | `npm run test:e2e` |
-| `mock` | `localhost:3001` | none, mocked in the app | `npm run test:e2e:mock` |
-| `remote-backend` | `localhost:3001` | `liquido.dynv6.net` | `npm run test:e2e:remote-backend` |
+| `local` *(default)* | `shadow.fritz.box:3001` | `shadow.fritz.box:8443` | `npm run test:e2e` |
+| `mock` | `localhost:3002` | none, the mock dev server | `npm run test:e2e:mock` |
+| `remote-backend` | `shadow.fritz.box:3001` | `liquido.dynv6.net` | `npm run test:e2e:remote-backend` |
 | `deployed` | `liquido.dynv6.net` | `liquido.dynv6.net` | `npm run test:e2e:deployed` |
 
 `CYPRESS_REMOTE_URL` aims the two deployed modes elsewhere. `npm run test:e2e:remote` is kept as an
-alias of `deployed`.
+alias of `deployed`. `mock` is on `localhost` on purpose: `shadow.fritz.box` is only needed to
+satisfy the real backend's WebAuthn origin check, which the mock does not have — so it needs no
+`/etc/hosts` entry, and its own port keeps it clear of a normal dev server on 3001.
 
 **Cypress only decides which URL the browser opens.** Which backend the *frontend* calls comes from
-`config/config.development.js` (`mockBackend`, `LIQUIDO_API_URL`), read once when the dev server
-starts — so `mock`, `local` and `remote-backend` need that file set to match, and the dev server
-restarted. The mode is checked against that file and **a mismatch aborts the run**, because the
-alternative is the dangerous one: a green suite that only proved the mock works while you believed
-it exercised a real backend.
+the dev server's config (`mockBackend`, `LIQUIDO_API_URL`), read once when it starts:
+`config/config.development.js` for `local` and `remote-backend`, which need that file set to match
+and the dev server restarted, and the checked-in `config/config.mock.js` for `mock`, which
+`npm run test:e2e:mock` starts itself. The mode is checked against that file and **a mismatch
+aborts the run**, because the alternative is the dangerous one: a green suite that only proved the
+mock works while you believed it exercised a real backend.
 
-In `mock` mode the backend-availability check in `login-tests.cy.js` is skipped, along with the two
-cases that need real GraphQL over HTTP (the password-reset round-trip and the
-backend-unreachable warning) — `Cypress.expose("LIQUIDO_API")` is `null` there, and those tests
-`this.skip()` on it. That mode is green, not partially red.
+In `mock` mode the backend-availability check in `login-tests.cy.js` is skipped, along with the
+cases that need real GraphQL over HTTP straight from the spec (the password-reset round-trip, the
+backend-unreachable warning, the direct API calls in `validation-limits.cy.js`) —
+`Cypress.expose("LIQUIDO_API")` is `null` there, and those tests `this.skip()` on it. `mock` is
+**not** fully green yet: see `docs/liquido-testing.md` §0 for the specs with known mock-data gaps.
 
 **Both dev servers are Claude's to manage** — Vite on `https://localhost:3001` and the Quarkus
 backend on `https://localhost:8443`. Start the frontend via `preview_start {name: "liquido-pwa"}`,
@@ -336,8 +374,8 @@ never a bare Bash dev server. **Leave both running when a larger task is finishe
 test immediately.
 
 The e2e suite runs against the **real backend and the real `LIQUIDO-DEV` database** — every run
-leaves a team behind. `config.development.js` can flip `mockBackend: true` for a backend-free run
-(remember to restore it).
+leaves a team behind. For a backend-free run use `npm run test:e2e:mock` instead — it does not need
+`config.development.js` touched at all.
 
 **Running against an already-deployed instance** (e.g. `https://liquido.dynv6.net`), without any
 local dev server or database: `npm run test:e2e:remote` (or `cypress:open:remote`) uses
@@ -364,9 +402,10 @@ detailed `AGENTS.md` — read those before touching the API, the schema or the s
 
 ## 8. How work is organised
 
-**One branch per piece of work** — a feature, or a batch of related fixes. Robert names it and
-Robert merges it when the work is finished. Pull requests are his to open, not yours; do not open
-one unless he asks.
+**One feature branch per session, and all work happens on it** — never directly on `main`. Before
+the first change of a session, propose a branch name that says what the work is (`mock-mode`,
+`fix-winner-tie`) and ask Robert whether it is OK; create it only once he agrees. Robert merges it
+when the work is finished. Pull requests are his to open, not yours; do not open one unless he asks.
 
 **A merged branch is finished.** When the branch you were given has been merged, the next feature —
 and the next session — starts a **new** branch cut from the freshly merged `main`. Never continue on
@@ -382,15 +421,17 @@ from — that is also how you notice that a fix you were about to make has alrea
 
 ---
 
-## 9. Agent workflow: commit, push, deploy (standing policy, 2026-09-21)
+## 9. Agent workflow: branch, commit, push, merge, deploy (standing policy, 2026-09-30)
 
-- **Commit** on `main`: your own judgment, no need to ask. Commit whenever a change set is worth it.
-- **Push** to `main`: also your own judgment, no need to ask — **except** during a large refactoring
-  (a sprawling, multi-file structural change, not an ordinary fix/feature commit), or **except**
-  whenever the next rule applies.
-- **Working on a branch other than `main`:** always ask what to do first, for any git action
-  (commit, push, merge, ...) — do not apply the two defaults above. This lines up with §8: branch
-  work is Robert's to name and merge, and pushes there feed a PR that is his to open, not yours.
+- **Branch:** always the session's feature branch, never `main` — propose its name and ask first,
+  see §8.
+- **Commit: not after every prompt.** When a fix or a step of a feature is complete and verified
+  (lint and tests clean), *suggest* a commit — say briefly what it would contain — and commit once
+  Robert agrees. Unfinished work stays uncommitted.
+- **Push: every commit, right away**, to the same branch (`git push -u origin <branch>`). No separate
+  question for the push, and no commits left sitting only in the local clone.
+- **Merge: NEVER on your own.** Robert merges branches manually. That includes bringing `main` into
+  the feature branch (e.g. to clear a PR conflict) — propose it and ask first.
 - **Merge conflicts: NEVER resolve on your own. Always report them and ask, every single time.**
   Do not pick a side (`--ours`/`--theirs`, whole-file or otherwise) and do not hand-edit conflict
   markers without being told how. A conflicted file usually means both branches did *real,

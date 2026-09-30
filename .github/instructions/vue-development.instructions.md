@@ -16,13 +16,16 @@ Use this guide as the default implementation and workflow reference for future f
 - Use `npm` / `npx` on macOS and Linux.
 - Use `npm.cmd` / `npx.cmd` in Windows PowerShell, because the `npm` shim can be blocked by execution policy.
 - The app runs as a Vite HTTPS dev server on port `3001` with self-signed TLS certificates from `tls-certs/`.
-- The backend should be reached through the configured `LIQUIDO_API_URL` in `config/config.development.js`.
+- The backend should be reached through the configured `LIQUIDO_API_URL` in `config/config.development.js` (gitignored — copy `config.development.js.example`).
+- `npm run dev:mock` serves the same app on port `3002` with the mock backend instead (`config/config.mock.js`, checked in). No backend and no config file needed.
+- The bare `config` import resolves to `config/config.<name>.js`, where `<name>` is `LIQUIDO_CONFIG` if set, else `NODE_ENV`.
 - When running a local build check, force development mode rather than a production build:
   - macOS/Linux: `NODE_ENV=development npm run build`
   - Windows PowerShell: `$env:NODE_ENV="development"; npm.cmd run build`
 - A plain production build is not a reliable local compile check in this repo because the environment alias expects the development config to exist.
 - Indentation is tabs. Match the surrounding file exactly.
-- Unit tests use Vitest; a one-shot run is `npx vitest run` or `npx.cmd vitest run` on Windows.
+- Unit tests use Vitest; a one-shot run is `npm test` (`npx vitest run`, or `npx.cmd vitest run` on Windows).
+- `npx eslint src tests --ext .vue,.js` is clean — zero errors, zero warnings. Keep it that way.
 
 ## 2. High-level architecture
 
@@ -36,29 +39,32 @@ This is a single-page Vue 3 app with no SSR, no Vuex/Pinia, and a very small rea
 - Global state lives in `src/services/store.js` as a tiny `reactive()` object used for header title, back target, and shared UI actions.
 - The router is in `src/services/router.js` and includes a global authentication navigation guard.
 - All backend access must flow through the single gateway module `src/services/liquido-graphql-client.js`.
-- `src/services/liquido-graphql-client.mock.js` is the mock twin used when `config.mockBackend` is enabled.
+- There is no mock twin of the client any more. With `config.mockBackend` enabled the client only changes its base URL to the dev server's own origin, where `vite-plugin-mock-backend.js` answers from `mock-backend/` — see §9.
 
 ## 3. Routing and auth lifecycle
 
 The router uses `createWebHistory(config.BASE_URL)` and disables default scroll behavior, leaving scroll management to `root-app.vue`.
 
+The authoritative route list is `src/services/router.js`. `meta.public` is the only flag — there are no role guards in the router; admin-vs-member is decided per component with `api.isAdmin()`, and enforced by the backend.
+
 Public routes:
-- `/login`
-- `/welcome`
-- `/forgotPassword`
-- `/resetPassword`
-- `/login-via-sms`
-- `/404`
-- any fallback redirect to `/404`
+- `/login`, `/welcome`
+- `/forgotPassword`, `/resetPassword`, `/verifyEmail`, `/login-via-sms`
+- `/polly`, `/polly/:publicId` (the teamless Polly poll type)
+- `/impressum`, `/agb`, `/datenschutz`
+- `/404`, and any unknown path redirects there
 
 Protected routes include:
 - `/team`
 - `/userhome`
 - `/polls`
-- `/polls/create`
+- `/polls/new` and `/polls/:pollId/edit` — the all-in-one poll editor
 - `/polls/:pollId`
-- `/polls/:pollId/add`
+- `/polls/:pollId/add` — the old two-step flow, deprecated but deliberately kept reachable
 - `/polls/:pollId/castVote`
+- `/polls/:pollId/winner`
+
+Order matters: `/polls/new` must be declared before `/polls/:pollId`.
 
 Development-only routes can be added for `MODE === "development"` (for example `/devLogin` and `/_design-overview`).
 
@@ -92,7 +98,7 @@ Log the full technical error to the console for debugging, then show only the sa
 The global error boundary in `src/main.js` (`app.config.errorHandler` and `unhandledrejection`)
 already follows this rule and reloads the window when the user dismisses the modal.
 
-## Component & styling conventions
+## 4. API gateway
 
 The API gateway is the only module that should talk to the backend.
 
@@ -136,6 +142,7 @@ LIQUIDO supports several login flows and they should all be routed through the c
 
 ## 7. Component and styling conventions
 
+- Prefer `<script setup>` (Composition API) for new components — it is the target the app is migrating to. When editing an existing Options API file, match what is there; do not rewrite it as a side effect.
 - Routed components must have a single top-level root element.
 - Use Bootstrap 5 utility classes together with LIQUIDO design tokens from `src/styles/liquido.css`.
 - Prefer LIQUIDO CSS custom properties such as `--primary`, `--secondary`, `--unit`, `--two`, `--header-bg`, and `--light-bg` over hard-coded values.
@@ -146,24 +153,30 @@ LIQUIDO supports several login flows and they should all be routed through the c
 
 ## 8. Internationalization conventions
 
-- Vue i18n runs in legacy mode with `allowComposition: true`.
-- Global messages are defined in `src/main.js`.
-- Component-local messages should be provided through the Vue `i18n:` option in Options API components.
-- There are no SFC `<i18n>` blocks in this codebase.
-- In `<script setup>`, use `useI18n()` to get a `t` function and use it for both script and template logic.
-- In Options API components, use `this.$t("...")`.
+- Localisation is **liqui-loc**, the project's own library in `src/services/liqui-loc.js`. vue-i18n has been removed.
+- Global messages are defined in `globalTranslations` in `src/main.js`. German is the only complete locale; `en: {}` is normal.
+- Component-local messages go in the `i18n: { messages: { en: {}, de: {…} } }` component option — not in an `<i18n>` SFC block.
+- `$t`, `$tc`, `$d` and `$fromNow` are global properties: use them in templates and as `this.$t("...")` in Options API components.
+- In `<script setup>`, call `useLoc()`. Unlike vue-i18n's `useI18n()`, it also sees the component's own messages.
+- Never write `v-html="$t(…)"`. Messages containing HTML go through `<liqui-loc-html>`, which escapes parameters and sanitises.
+- A missing key logs a warning and renders the key itself — treat those warnings as real gaps.
 
 ## 9. Mock backend conventions
 
-When `config.mockBackend === true` in `config/config.development.js`, the app replaces the real GraphQL API with the mock implementation.
+When `config.mockBackend === true` (always in `config/config.mock.js`, served by `npm run dev:mock`), the frontend still makes exactly the HTTP calls it makes against the real backend. `vite-plugin-mock-backend.js` answers them inside the Vite dev server:
+
+- `mock-backend/liquido-mock-domain.js` — the state and the GraphQL query/mutation handlers. No Node-only APIs, because vitest (`config/config.test.js`, no dev server) calls it in-process.
+- `mock-backend/liquido-mock-http-server.js` — Node-only HTTP layer: `/graphql`, `/login/*`, `/webauthn/*`, and the mock-only `POST /mock/reset`.
+
+This is what lets the same Cypress spec run against the mock and the real backend. Do not reintroduce a client-side shortcut that bypasses the network.
 
 Mock backend rules:
-- Maintain all mutable state in a single `mockState` object.
-- Persist it to `sessionStorage` under `"LIQUIDO_MOCK_STATE"` after mutating operations.
+- Maintain all mutable state in the single `mockState` object. It lives in the dev server process, not in the browser — restart the server or `POST /mock/reset` for a fresh one. Nothing is persisted to `sessionStorage` any more.
 - Seed state from `src/mockdata/teamUserJwt.json` and derive new IDs safely.
+- Return data of the same shape as the real backend: the mock goes through the real `isAdmin()` and `jwt-util.js` (it mints structurally real JWTs for that reason).
 - Centralize login state changes through `loginMock(email)` so all login variants stay consistent.
 - When returning poll objects, use `enrichPollForCurrentUser()` rather than a raw deep copy, so derived flags like `userAlreadyVoted` stay accurate.
-- Add new GraphQL operation handlers in `detectOperation()`.
+- Add new GraphQL operation handlers in `detectOperation()`. Its `operations` list is order-sensitive: the first name found anywhere in the query string wins.
 - Domain errors should use `rejectLiquido(code, message)` with the proper `LiquidoExceptionCodes` constant.
 
 ## 10. Quick gotcha checklist
