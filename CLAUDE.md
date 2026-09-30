@@ -402,9 +402,10 @@ detailed `AGENTS.md` — read those before touching the API, the schema or the s
 
 ## 8. How work is organised
 
-**One branch per piece of work** — a feature, or a batch of related fixes. Robert names it and
-Robert merges it when the work is finished. Pull requests are his to open, not yours; do not open
-one unless he asks.
+**One feature branch per session, and all work happens on it** — never directly on `main`. Before
+the first change of a session, propose a branch name that says what the work is (`mock-mode`,
+`fix-winner-tie`) and ask Robert whether it is OK; create it only once he agrees. Robert merges it
+when the work is finished. Pull requests are his to open, not yours; do not open one unless he asks.
 
 **A merged branch is finished.** When the branch you were given has been merged, the next feature —
 and the next session — starts a **new** branch cut from the freshly merged `main`. Never continue on
@@ -420,15 +421,17 @@ from — that is also how you notice that a fix you were about to make has alrea
 
 ---
 
-## 9. Agent workflow: commit, push, deploy (standing policy, 2026-09-21)
+## 9. Agent workflow: branch, commit, push, merge, deploy (standing policy, 2026-09-30)
 
-- **Commit** on `main`: your own judgment, no need to ask. Commit whenever a change set is worth it.
-- **Push** to `main`: also your own judgment, no need to ask — **except** during a large refactoring
-  (a sprawling, multi-file structural change, not an ordinary fix/feature commit), or **except**
-  whenever the next rule applies.
-- **Working on a branch other than `main`:** always ask what to do first, for any git action
-  (commit, push, merge, ...) — do not apply the two defaults above. This lines up with §8: branch
-  work is Robert's to name and merge, and pushes there feed a PR that is his to open, not yours.
+- **Branch:** always the session's feature branch, never `main` — propose its name and ask first,
+  see §8.
+- **Commit: not after every prompt.** When a fix or a step of a feature is complete and verified
+  (lint and tests clean), *suggest* a commit — say briefly what it would contain — and commit once
+  Robert agrees. Unfinished work stays uncommitted.
+- **Push: every commit, right away**, to the same branch (`git push -u origin <branch>`). No separate
+  question for the push, and no commits left sitting only in the local clone.
+- **Merge: NEVER on your own.** Robert merges branches manually. That includes bringing `main` into
+  the feature branch (e.g. to clear a PR conflict) — propose it and ask first.
 - **Merge conflicts: NEVER resolve on your own. Always report them and ask, every single time.**
   Do not pick a side (`--ours`/`--theirs`, whole-file or otherwise) and do not hand-edit conflict
   markers without being told how. A conflicted file usually means both branches did *real,
