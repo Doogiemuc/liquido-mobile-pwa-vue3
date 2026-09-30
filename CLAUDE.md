@@ -166,7 +166,8 @@ Match the surrounding file. Broadly:
   When *editing* an existing Options API file, match what is there — do not rewrite it wholesale as a
   side effect of an unrelated change. Leave that to the planned migration.
 - **Imports keep the file extension** — `@/components/foo.vue`, `@/services/bar.js`. The `@` alias is
-  `src/`, and a bare `config` resolves to `config/config.<MODE>.js`.
+  `src/`, and a bare `config` resolves to `config/config.<name>.js` — `<name>` is `LIQUIDO_CONFIG` if
+  set (`npm run dev:mock` sets `mock`), else `NODE_ENV`.
 - **kebab-case filenames**, PascalCase `name:` (they often do not match — that is fine,
   `vue/multi-word-component-names` is off).
 - `.then()/.catch()` chains are preferred over `async/await` in views — except where a genuine
@@ -265,31 +266,49 @@ and still runs in the browser.
 
 ## 6. Routes
 
-Order matters: `/polls/create` and `/polls/new` are declared **before** `/polls/:pollId`, or the param
-route swallows them.
+Order matters: `/polls/new` is declared **before** `/polls/:pollId`, or the param route swallows it.
 
 | Path | Name | Public | Notes |
 |---|---|---|---|
-| `/login` `/welcome` `/joinTeam` | | ✅ | registration + login |
-| `/forgotPassword` `/resetPassword` | | ✅ | |
+| `/` | index | | redirects: to `/team` when logged in, else `/welcome` |
+| `/login` | login | ✅ | |
+| `/welcome` | welcome | ✅ | registration, and joining a team: invite links are `/welcome?inviteCode=` |
+| `/forgotPassword` `/resetPassword` | forgotPassword, resetPassword | ✅ | both `forgot-password.vue`; `/resetPassword` takes `?resetPasswordToken=` |
 | `/verifyEmail` | verifyEmail | ✅ | opened from a mail, `?verifyToken=` |
+| `/login-via-sms` | loginSms | ✅ | |
 | `/team` | team | 🔒 | team home |
 | `/userhome` | userhome | 🔒 | |
 | `/polls` | polls | 🔒 | list |
 | `/polls/new` | newPoll | 🔒 | **the all-in-one poll editor** |
-| `/polls/:pollId/edit` | editPoll | 🔒 | same editor, existing poll |
 | `/polls/:pollId` | showPoll | 🔒 | read-only poll |
+| `/polls/:pollId/edit` | editPoll | 🔒 | same editor, existing poll |
+| `/polls/:pollId/add` | addProposal | 🔒 | old two-step flow, deprecated — see below |
 | `/polls/:pollId/castVote` | castVote | 🔒 | rank + submit ballot |
 | `/polls/:pollId/winner` | pollWinner | 🔒 | winner, pairwise breakdown, duel matrix, lock-in graph |
-| `/polly/create` | createPolly | ✅ | separate, simpler poll type |
+| `/polly` | createPolly | ✅ | Polly: separate, simpler, teamless poll type — create one |
+| `/polly/:publicId` | showPolly | ✅ | the one link a Polly creator shares |
 | `/impressum` `/agb` `/datenschutz` | impressum, agb, datenschutz | ✅ | German legal pages, linked only from the bottom of `team-home.vue` |
-| `/devLogin` `/_design-overview` | | | **development mode only** |
+| `/404`, any unknown path | pageNotFound | ✅ | |
+| `/devLogin` `/_design-overview` | devLogin | ✅ | **development mode only** |
 
-`/polls/create` (`poll-create.vue`) and `/polls/:pollId/add` (`proposal-add.vue`) are the **old**
-two-step flow, now **deprecated**. Nothing links to them any more — `polls.vue` and `poll-show.vue`
-point at the editor — but they are **deliberately kept and reachable by URL** while the new editor is
-still being exercised, and will be removed in a future release. **Do not delete them**, and keep them
-working: they are the fallback if the editor turns out to have a problem.
+`/polls/:pollId/add` (`proposal-add.vue`) is the second half of the **old** two-step flow, now
+**deprecated**. Nothing links to it any more — `polls.vue` and `poll-show.vue` point at the editor —
+but it is **deliberately kept and reachable by URL** while the new editor is still being exercised,
+and will be removed in a future release. **Do not delete it**, and keep it working: it is the
+fallback if the editor turns out to have a problem.
+
+Two routes are **retired on purpose** — do not restore them:
+
+- **`/polls/create`** (`poll-create.vue`, title and `membersCanAddProposals` only) is replaced by
+  `/polls/new`, the all-in-one editor, which does all of that plus the proposals. Commit `16ac374`
+  (2026-09-20) removed the route and pointed everything at `newPoll`.
+- **`/joinTeam`** (`join-team-v2.vue`) is replaced by the new registration flow in
+  `welcome-chat-v2.vue` at `/welcome`, which handles creating a team *and* joining one
+  (`?inviteCode=`). One deliberate difference: the old page checked while typing whether the email
+  was already registered; the new flow finds out on submit (`USER_EMAIL_EXISTS` and friends) and
+  links to `/login` from there. The route itself disappeared in merge `6718da6` (see §9).
+
+Both `.vue` files are still in the repo, unused. Ask before deleting them.
 
 **Adding a route?** Also add its name to the `page_order` map in `root-app.vue`, or the page-slide
 transition picks the wrong direction. And add the page to `_design-overview.vue`, a dev-only gallery
