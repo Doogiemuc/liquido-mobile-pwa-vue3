@@ -154,12 +154,10 @@ export default {
 		 */
 		resetMockState() {
 			if (!this.isMockBackend) return
-			try {
-				sessionStorage.removeItem("LIQUIDO_MOCK_STATE")
-				window.location.reload()
-			} catch (err) {
-				console.warn("Cannot reset mock state", err)
-			}
+			// The mocked database lives in the dev server process, not in this tab - see mock-backend/
+			fetch("/mock/reset", { method: "POST" })
+				.catch(err => console.warn("Cannot reset mock state", err))
+				.finally(() => window.location.reload())
 		},
 
 	}
@@ -315,8 +313,8 @@ export default {
 }
 
 /**
- * config.mockBackend is on: there is NO backend behind this app, and every team, poll and ballot
- * on screen is invented by liquido-graphql-client.mock.js. That has to be impossible to miss -
+ * config.mockBackend is on: there is NO real backend behind this app, and every team, poll and
+ * ballot on screen is invented by mock-backend/liquido-mock-domain.js. That has to be impossible to miss -
  * forgetting it is on is exactly the mistake that wastes an afternoon - so the LIQUIDO mark itself
  * turns red. It used to be a separate red "M" button in the corner, which was easy to overlook and
  * spent a slot in the header that real content wants.

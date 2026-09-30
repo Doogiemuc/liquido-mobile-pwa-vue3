@@ -93,12 +93,17 @@ Entry point: `src/main.js`
 ## 4. Configuration System
 
 - Components import a bare specifier: `import config from "config"`.
-- `vite.config.js` maps `config` to `config/config.<NODE_ENV>.js` at build time.
+- `vite.config.js` maps `config` to `config/config.<name>.js` at build time, where `<name>` is
+  `LIQUIDO_CONFIG` if set, else `NODE_ENV` (`development` for `vite`, `test` for vitest).
+  `npm run dev:mock` sets `LIQUIDO_CONFIG=mock`.
 - Shared defaults live in `config/config.common.js`.
+- Checked in, because they hold no credentials: `config.common.js`, `config.test.js` (vitest) and
+  `config.mock.js` (the backend-free e2e run). `config.development.js` is gitignored — copy it from
+  `config.development.js.example`.
 - Exposes values such as `LIQUIDO_API_URL`, `BASE_URL`, `mockBackend`, `avatarPath`,
   `inviteLinkPrefix`, and `configSource`.
-- `config.mockBackend` toggles the mocked GraphQL client and turns the header red as a
-  visual warning.
+- `config.mockBackend` makes the Vite dev server answer every backend call itself (see §6) and
+  turns the LIQUIDO icon in the header red as a visual warning.
 
 ---
 
@@ -160,8 +165,15 @@ flowchart TD
 
 ## 6. API Layer — `liquido-graphql-client.js`
 
-Central gateway; the **only** module that talks to the backend. A mock twin,
-`liquido-graphql-client.mock.js`, is swapped in when `config.mockBackend` is set.
+Central gateway; the **only** module that talks to the backend.
+
+When `config.mockBackend` is set, this module stays exactly the same except for one thing: it sends
+its requests to the dev server's own origin instead of `LIQUIDO_API_URL`. There
+`vite-plugin-mock-backend.js` answers them from `mock-backend/` — GraphQL, the `/login/*` REST calls
+and the `/webauthn/*` ceremony — as real HTTP, so Cypress sees mocked traffic exactly like real
+traffic and the e2e specs run unmodified against either. The mock's "database" lives in the dev
+server process. vitest has no dev server, so under `config.test.js` the client calls
+`mock-backend/liquido-mock-domain.js` in-process instead. Details: `docs/liquido-testing.md` §4.6.
 
 ### Responsibilities
 - GraphQL transport over axios.
@@ -293,7 +305,7 @@ src/
   root-app.vue                Shell: router-view + footer, scroll handling
   components/                 Reusable UI (header, footer, input, poll-card, modals…)
   services/
-    liquido-graphql-client.js API gateway + caches (+ .mock.js twin)
+    liquido-graphql-client.js API gateway + caches
     router.js                 Routes + auth navigation guard
     store.js                  Reactive UI state
     event-bus.js              tiny-emitter pub/sub
@@ -309,6 +321,10 @@ src/
     polly-constants.js        Status + error codes
   styles/liquido.css          Design tokens + Bootstrap overrides
 config/                       Env-specific config (mapped to bare "config" import)
+mock-backend/                 Mock backend, served over HTTP by the dev server (see §6)
+  liquido-mock-domain.js      State + GraphQL handlers (also used in-process by vitest)
+  liquido-mock-http-server.js Routes: /graphql, /login/*, /webauthn/*, /mock/reset
+vite-plugin-mock-backend.js   Mounts mock-backend/ as dev-middleware when config.mockBackend
 public/                       Static assets (Font Awesome, icons, manifest)
 tests/                        unit (vitest) + e2e (cypress)
 ```
@@ -331,6 +347,7 @@ tests/                        unit (vitest) + e2e (cypress)
 - JWTs are stored in `localStorage` and re-validated against the backend on load;
   expired/invalid tokens are proactively purged.
 - WebAuthn provides passwordless / phishing-resistant authentication.
-- The mocked backend is clearly signalled in the UI (red header) to avoid confusing
-  test data with production.
+- The mocked backend is clearly signalled in the UI (red LIQUIDO icon) to avoid confusing
+  test data with production. It only exists in the dev server: a production build has no
+  middleware to answer it.
 - All backend access is centralised in one module, keeping the auth surface small.
