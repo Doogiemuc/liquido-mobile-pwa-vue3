@@ -148,7 +148,9 @@ export function configForMode(name = mode) {
 		testPasswordResetToken: "PASSWORD_RESET_TOKEN_DEV",
 		mailtrap: {
 			messagesUrl: "https://mailtrap.io/api/accounts/1416880/inboxes/1983138/messages",
-			apiToken: "13d57536b61611395106a3992fc32bec"
+			// A real credential, so never in this file: export MAILTRAP_API_TOKEN before running Cypress.
+			// Only the skipped magic-link test in login-tests.cy.js reads it.
+			apiToken: process.env.MAILTRAP_API_TOKEN,
 		}
 	},
 
