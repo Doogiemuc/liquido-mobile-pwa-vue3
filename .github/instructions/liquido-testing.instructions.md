@@ -7,134 +7,101 @@ description: 'LIQUIDO Cypress E2E testing workflow, prerequisites, and verificat
 
 Testing is a core part of LIQUIDO development. The frontend is a privacy-sensitive mobile PWA, so automated end-to-end coverage must be treated as a first-class part of the delivery workflow.
 
-This repository already has a Cypress E2E setup and should be used as the default regression and UX safety net.
+The full, authoritative guide is `docs/liquido-testing.md`; the testing rules are in `CLAUDE.md` §3. This file is the short version. When they disagree, those two win.
 
-## 1. Prerequisites for local frontend testing
+## 1. Quick start — no backend needed
 
-The frontend must be served over HTTPS with a valid trusted TLS certificate.
+From a fresh clone, with Node 22.12+ or 24:
 
-Required conditions:
-- Frontend runs on HTTPS, typically via the Vite dev server and `tls-certs/` certificates.
-- The frontend can reach the LIQUIDO Quarkus backend over HTTPS.
-- The certificate must include all required domains as SAN entries.
-- For WebAuthn, the frontend must be reachable via a real domain name, not just an IP address.
+```bash
+npm install
+npm test                 # unit tests (vitest)
+npm run test:e2e:mock    # starts a mock dev server on https://localhost:3002, runs every Cypress spec, stops it
+npm run test:all         # both
+```
 
-Recommended local setup:
-- start the backend with the Quarkus dev server
-- start the frontend with `npm run dev`
-- visit the backend GraphQL schema URL once in the browser to trust the self-signed certificate
-- visit the backend root once to confirm the API version is reachable
-- open the frontend in a browser and inspect the Vite dev output / browser console when debugging
+No config file, backend, database or `/etc/hosts` entry is needed: `config/config.test.js`, `config/config.mock.js` and the dev TLS certificates in `tls-certs/` are checked in. On a Linux machine without a desktop, install Xvfb; Cypress starts it on its own.
 
-## 2. Backend connectivity patterns
+The mock run is **not fully green yet** — a few specs need the backend's fixed seed identities, which the mock does not have. `docs/liquido-testing.md` §0 lists exactly which cases fail and the expected result. Anything beyond that list is a real failure.
 
-There are two common local testing setups:
+One spec, or interactively:
 
-1. Frontend and backend on the same host or IP
-   - configure `LIQUIDO_API_URL` directly in `config/config.development.js`
+```bash
+npm run dev:mock                                                                     # terminal 1
+LIQUIDO_E2E_MODE=mock npx cypress run --e2e --spec tests/e2e/specs/happy-case.cy.js  # terminal 2
+LIQUIDO_E2E_MODE=mock npx cypress open --e2e
+```
 
-2. Frontend and backend on different machines
-   - set `LIQUIDO_API_URL` to `/graphql_proxy`
-   - configure the Vite proxy target in `vite.config.js`
-   - adjust path rewrite rules if needed
+## 2. The four e2e modes
 
-In the proxy setup, the frontend sends requests to a local path, and Vite forwards them to the actual backend server.
+`LIQUIDO_E2E_MODE` picks which frontend the browser opens and which backend that frontend talks to. The table lives at the top of `tests/cypress-base-config.js`:
 
-## 3. WebAuthn-specific testing requirements
+| mode | frontend | backend | script |
+|---|---|---|---|
+| `local` (default) | `https://shadow.fritz.box:3001` | `https://shadow.fritz.box:8443` | `npm run test:e2e` |
+| `mock` | `https://localhost:3002` | none — the mock dev server | `npm run test:e2e:mock` |
+| `remote-backend` | `https://shadow.fritz.box:3001` | `liquido.dynv6.net` | `npm run test:e2e:remote-backend` |
+| `deployed` | `liquido.dynv6.net` | `liquido.dynv6.net` | `npm run test:e2e:deployed` |
 
-For WebAuthn and Passkey-related flows:
-- serve the frontend on a real domain, not an IP-only address
-- add that domain to the backend `application-dev.properties` origin whitelist, including schema, host, and port
-- use a hardware authenticator supported by the browser and OS, such as iPhone Face ID, Android fingerprint, or a desktop platform authenticator
+- `local` and `remote-backend` need `config/config.development.js` (gitignored — copy `config.development.js.example`) set to match, and the dev server restarted. A mismatch between the mode and that file **aborts the run** on purpose.
+- The local frontend must be opened as `shadow.fritz.box`, not `localhost`: the real backend accepts passkeys only from that exact origin. Mock mode has no such check, which is why it can use `localhost`.
+- `local`, `remote-backend` and `deployed` create real teams, polls and ballots. Never point them at an instance with real users.
 
-## 4. Mobile Safari / iOS remote testing notes
+Configuration files:
+- `cypress.config.js` → the mode from `LIQUIDO_E2E_MODE`
+- `cypress.config.remote.js` → pins the `deployed` mode (`CYPRESS_REMOTE_URL` aims it elsewhere)
+- `tests/cypress-base-config.js` → the mode table, viewport, and the values below
 
-When testing on iOS Safari:
-- open every relevant URL at least once so Safari trusts the self-signed certificates
-- include the schema endpoint in the trust flow
-- use a physical cable connection for remote debugging from Safari on macOS
+## 3. Test values
 
-For console access on remote devices, the repo already contains a crude mobile debug overlay approach via `mobile-debug-service.js` and `mobile-debug-log.vue`. This is useful for debugging on-device logs, but it intentionally sacrifices some file-origin detail and `this` context fidelity.
+- Secrets live in `env` and are read with `cy.env([...])`: `passwordSuffix`, `devLoginToken`, `testPasswordResetToken`. The last two must match the backend's dev profile.
+- Public values live in `expose` and are read with `Cypress.expose(...)`: `mode`, `LIQUIDO_API`, and the fixed seed identities (`teamName`, `admin`, `multiTeam`).
+- Never commit a real credential to `tests/cypress-base-config.js`. The Mailtrap API token is read from the `MAILTRAP_API_TOKEN` environment variable.
+- The viewport is mobile: `375 × 667`.
 
-## 5. Automated E2E setup
+## 4. Rules for writing specs
 
-The repo uses Cypress as the main E2E framework.
+- **Never assert on text displayed in the UI.** A translated or reworded UI must not break the suite. Assert on DOM ids (`#createPollButton`) or `data-*` attributes (`[data-poll-id]`, `[data-row-state]`, …). Error cases carry `data-error-code` — assert on that, not on the message. If no hook exists, add `data-qa="…"` to the component. The only acceptable text assertions are on data the test itself typed.
+- **DOM ids are a public contract.** Renaming one breaks e2e — grep the specs first.
+- **`should('be.visible')` does not scroll.** On the small viewport, use `.scrollIntoView().should('be.visible')` for anything below the fold.
+- **Never edit source while Cypress is running** — Vite HMR mid-run produces failures that look real and are not.
+- **The same spec source must work against the mock and the real backend.** A `cy.request()` straight to the backend must be guarded: `if (!Cypress.expose("LIQUIDO_API")) this.skip()` — it is `null` in mock mode.
+- `happy-case.cy.js` is one sequential flow that stops on the first failure. The steps after a failure are reported as *skipped*, not failed — always read the "Skipped:" count.
+- `tests/e2e/support/commands.js` is **not loaded** (`supportFile: false`), so its `cy.devLogin()` is not available in specs.
 
-Primary scripts:
-- `npm run test:e2e` → headless Cypress run
-- `npm run cypress:open` → interactive Cypress runner in Chrome
+## 5. The mock backend
 
-Key configuration sources:
-- `cypress.config.js` → default local config
-- `cypress.config.INT.js` → integration environment overrides
-- `tests/cypress-base-config.js` → shared base URL, credentials, viewport, and fixture paths
+- It is a real HTTP server: `vite-plugin-mock-backend.js` answers the frontend's requests inside the Vite dev server, from `mock-backend/`. That is why `cy.intercept()` / `cy.wait()` work unchanged against it. Do not reintroduce a client-side shortcut.
+- Its state lives in the **dev server process**, shared by every tab and spec. For a fresh database, restart the dev server or `POST /mock/reset` (the red LIQUIDO icon in the header does that).
+- Its state is **not** in `sessionStorage` any more. The `sessionStorage.removeItem("LIQUIDO_MOCK_STATE")` still in `happy-case.cy.js` has no effect — do not copy it into new specs.
+- WebAuthn: the mock serves a valid challenge, so the CDP virtual authenticator in the spec runs a real client-side ceremony; the mock does not verify the result. Real passkeys still need a real device and a real backend.
+- The Polly mock (`src/polly/polly-client.mock.js`) is not part of this yet and still runs in the browser.
 
-Default local base URL:
-- `https://localhost:3001/`
+## 6. Manual testing with a real backend
 
-Default test spec pattern:
-- `tests/e2e/specs/**/*.cy.{js,jsx,ts,tsx}`
+- Frontend and backend must both be served over HTTPS with trusted certificates whose SANs cover every host name used.
+- For WebAuthn, the frontend must be reached via a real domain name (currently `shadow.fritz.box`), and the backend's `quarkus.webauthn.origins` must list it with schema, host and port.
+- Start the backend with `./mvnw quarkus:dev`, the frontend with `npm run dev`, and open the backend's `/graphql/schema.graphql` once so the browser trusts its certificate.
+- iOS Safari: open every URL once to trust the certificates; remote-debug over a cable from Safari on macOS.
 
-## 6. Test environment conventions
+Details: `docs/liquido-testing.md` §1–2.
 
-The current Cypress setup uses a mobile viewport:
-- `viewportWidth: 375`
-- `viewportHeight: 667`
+## 7. Coverage
 
-Common test environment variables:
-- `passwordSuffix: "_PWD"`
-- `devLoginToken: "DEV_LOGIN_TOKEN_INT"`
-- `testPasswordResetToken: "DEV_PASSWORD_RESET_TOKEN"`
-- Mailtrap credentials and endpoint are wired through `Cypress.env()`
+Negative cases that exist:
+- backend unreachable — `login-tests.cy.js`
+- device without WebAuthn support — `no-webauthn-support.cy.js`
 
-## 7. Cypress workflow expectations
+Still missing:
+- passkey supported, but registration fails because the origin/domain is wrong
+- a Ranked Pairs tie on the winner page (`docs/liquido-testing.md` §4.5)
 
-When adding or editing E2E tests:
-- prefer real user flows over overly mocked UI assertions
-- keep tests focused on actual navigation, login, poll lifecycle, and voting behavior
-- use the real app route structure and live DOM interactions
-- do not assert on test-only mock artifacts unless the test explicitly verifies the real integration contract
+When a change touches polls or voting, run `happy-case.cy.js` and the relevant negative case.
 
-Useful repository patterns:
-- `cy.visit("/")` and route-specific visits are used throughout the specs
-- `cy.request()` is used for backend-facing setup and validation
-- custom command helpers live in `tests/e2e/support/commands.js`
-- dev login helper flows should use the real route and token input contract, not a fake shortcut
+## 8. Quick checklist
 
-## 8. Mock-state reset rule
-
-The mock backend persists state under `sessionStorage` with the key `"LIQUIDO_MOCK_STATE"`.
-
-This means Cypress tests must reset that state explicitly in their `before()` hooks when they rely on a clean mock environment.
-
-Repository precedent:
-- `sessionStorage.removeItem("LIQUIDO_MOCK_STATE")` in the test setup before running the scenario
-
-This is necessary to avoid cross-test contamination and state bleed between runs.
-
-## 9. Test coverage priorities
-
-The existing automated coverage is centered on the main happy path for LIQUIDO user flows. The documentation also explicitly calls out the following negative tests as important future work:
-
-- backend unreachable
-- device does not support Passkey / WebAuthn
-- Passkey is supported but registration fails because the origin/domain is wrong
-
-These should be formalized as future Cypress regression scenarios.
-
-## 10. Good testing practices for LIQUIDO
-
-- Verify the app in the same way a real mobile user would interact with it.
-- Re-run a scenario after any routing, auth, or voting-flow change.
-- Treat certificate and origin trust as part of the test environment, not as an optional local detail.
-- Prefer stable selectors and meaningful user-visible assertions over brittle implementation details.
-- When a change touches polling or voting flow, validate it with the Cypress happy-path suite and the relevant negative case.
-
-## 11. Quick testing checklist
-
-- [ ] Dev backend is running.
-- [ ] Frontend is running on HTTPS via the local Vite server.
-- [ ] The backend schema URL has been visited once to trust the self-signed cert.
-- [ ] The E2E test environment is using the correct Cypress config.
-- [ ] Test state is reset before the scenario if the mock backend is involved.
-- [ ] Any auth or WebAuthn change is verified on a real browser environment, not only in unit tests.
+- [ ] `npm test` passes.
+- [ ] `npm run test:e2e:mock` shows no failures beyond the known list in `docs/liquido-testing.md` §0.
+- [ ] For a run against a real backend: the mode matches `config/config.development.js`, and the dev server was restarted after changing it.
+- [ ] New assertions use ids or `data-*` attributes, never UI text.
+- [ ] Any auth or WebAuthn change is also verified in a real browser, not only in automated tests.
