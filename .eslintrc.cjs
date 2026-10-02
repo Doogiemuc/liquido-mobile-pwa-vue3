@@ -32,7 +32,7 @@ module.exports = {
       },
       rules: {
         // OFF deliberately, and not because it is noisy: it contradicts this repo's own documented
-        // idiom. CLAUDE.md section 3 requires `.scrollIntoView().should('be.visible')` for anything
+        // idiom. docs/liquido-testing.md section 6.4 requires `.scrollIntoView().should('be.visible')` for anything
         // below the fold on the 375x667 viewport, and that is exactly the shape this rule rejects.
         // Switching it on the day the override started matching would also have meant rewriting 27
         // chains inside happy-case.cy.js - the primary regression test - for a style preference.

@@ -10,7 +10,9 @@ import common from "./config.common.js"
 
 export default Object.assign({}, common, {
 	configSource: "test",
-	LIQUIDO_API_URL: "https://localhost:8443/graphql",
+	// Never called: under vitest the client answers GraphQL in-process from mock-backend/. Set anyway,
+	// because the client refuses to start without one. The API ROOT, like every LIQUIDO_API_URL.
+	LIQUIDO_API_URL: "https://localhost:8443",
 	mockBackend: true,
 	mockPasskey: true,
 })

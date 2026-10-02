@@ -43,28 +43,10 @@ export default defineConfig({
 			unhandledErrors: true,
 			logLevels: ['debug', 'info', 'log', 'warn', 'error']
 		},
-		
-
-		// Problems with Cross-origin resource sharing (CORS)? 
-		// Either allow all origins in the backend (see application.properties)
-		//   OR
-		// Vue Dev serve can proxy API requests for you:
-		// https://cli.vuejs.org/config/#devserver-proxy
-		// https://github.com/http-party/node-http-proxy#options=
-		// https://github.com/chimurai/http-proxy-middleware/blob/master/README.md
-		// https://mattslifebytes.com/2025/03/30/unbreaking-cookies-in-local-dev-with-vite-proxy/ 
-		proxy: {      							
-			"/graphql_proxy": {  		// Only proxy API requests. There are others, eg. Webservice "/ws" that sould stay		
-				//ignorePath: true,
-				target: "https://shadow.fritz.box:8443",    			// the full matched path will be appended to this!
-				rewrite: (path) => path.replace(/^\/graphql_proxy/, '/'),  
-				secure: false   // allow self-signed backend certificate
-				//ws: true,     // also proxy-websockets
-				//changeOrigin: true
-			}
-		}
-		
-		
+		// No API proxy: the frontend calls the backend directly at config.LIQUIDO_API_URL, and the
+		// backend allows the cross origin (quarkus.http.cors in application.properties). There used to
+		// be a "/graphql_proxy" here for a backend on another machine; nothing used it any more.
+		// If you ever need one again: https://vite.dev/config/server-options#server-proxy
 	},
   plugins: [
     vue(),

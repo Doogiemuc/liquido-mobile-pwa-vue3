@@ -1,17 +1,17 @@
 /**
  * Cypress configuration, shared by every cypress.config*.js in the repo root.
  *
- * <h2>The four modes</h2>
+ * <h2>The three modes</h2>
  *
  * Which frontend the browser opens, and which backend that frontend talks to, are two separate
- * questions. Pick a pair with LIQUIDO_E2E_MODE:
+ * questions. Pick a pair with LIQUIDO_E2E_MODE. Each mode belongs to one of the environments in
+ * docs/liquido-testing.md (DEV, MOCK, INT):
  *
- *   mode             | frontend                  | backend                  | what it is for
- *   -----------------|---------------------------|--------------------------|----------------------------
- *   local (default)  | shadow.fritz.box:3001     | shadow.fritz.box:8443    | the normal full-stack run
- *   mock             | localhost:3002            | none - mock dev server   | frontend only, no backend
- *   remote-backend   | shadow.fritz.box:3001     | liquido.dynv6.net/api/v2 | your code, real data
- *   deployed         | liquido.dynv6.net         | liquido.dynv6.net/api/v2 | smoke-test a deployment
+ *   mode             | env  | frontend                  | backend API root         | what it is for
+ *   -----------------|------|---------------------------|--------------------------|----------------------------
+ *   local (default)  | DEV  | shadow.fritz.box:3001     | shadow.fritz.box:8443    | the normal full-stack run
+ *   mock             | MOCK | localhost:3002            | none - mock dev server   | frontend only, no backend
+ *   deployed         | INT  | liquido.dynv6.net         | liquido.dynv6.net/api/v2 | test a deployment
  *
  * The local frontend is opened by hostname, not "localhost" and not a bare IP: WebAuthn ties a
  * credential to the exact origin it was created on, and the backend's dev profile only accepts
@@ -23,21 +23,21 @@
  * needs no /etc/hosts entry, and a fresh clone can run it as is. Its own port 3002 keeps it clear of
  * a normal dev server already running on 3001. `npm run test:e2e:mock` starts that server itself.
  *
- * Point the deployed modes somewhere else with CYPRESS_REMOTE_URL.
+ * Point the deployed mode somewhere else with CYPRESS_REMOTE_URL.
  *
  * <h2>The half Cypress cannot set</h2>
  *
  * Cypress only decides which URL the browser opens. Which backend the FRONTEND calls is baked into
  * the dev server's config file (mockBackend and LIQUIDO_API_URL), read once when it starts:
- * config/config.development.js for local and remote-backend, which therefore has to be set
- * accordingly and the dev server restarted, and the checked-in config/config.mock.js for mock.
+ * config/config.development.js for local, which therefore has to be set accordingly and the dev
+ * server restarted, and the checked-in config/config.mock.js for mock.
  * Getting this wrong is the dangerous case: the suite would pass against mocked data while you
  * believe it just proved a real backend works. So the mode is checked against that file below, and
  * a mismatch stops the run instead of quietly producing a green lie.
  *
- * <h2>Careful with the two deployed modes</h2>
+ * <h2>Careful with the deployed mode</h2>
  *
- * Every run creates real teams, polls and ballots on whatever backend it points at. Never aim them
+ * Every run creates real teams, polls and ballots on whatever backend it points at. Never aim it
  * at an instance with real users on it.
  */
 import fs from "node:fs"
@@ -70,7 +70,6 @@ const DEPLOYED_API = DEPLOYED + "/api/v2"
 const MODES = {
 	local:            { frontend: LOCAL_FRONTEND, backend: LOCAL_BACKEND, wantMock: false, wantApi: LOCAL_BACKEND, configFile: "config.development.js" },
 	mock:             { frontend: MOCK_FRONTEND,  backend: null,          wantMock: true,  wantApi: null,          configFile: "config.mock.js" },
-	"remote-backend": { frontend: LOCAL_FRONTEND, backend: DEPLOYED_API,  wantMock: false, wantApi: DEPLOYED_API,  configFile: "config.development.js" },
 	deployed:         { frontend: DEPLOYED,       backend: DEPLOYED_API,  wantMock: null,  wantApi: null,          configFile: null },
 }
 
@@ -151,7 +150,7 @@ export function configForMode(name = mode) {
 	// These MUST match the local backend's dev profile (liquido-backend-quarkus/config/application-dev.properties):
 	//   liquido.dev-login-token           -> devLoginToken
 	//   liquido.test-password-reset-token -> testPasswordResetToken
-	// This file is the DEFAULT (local) config. The INT values live in cypress.config.INT.js.
+	// These are the DEV values - see "What to configure where" in docs/liquido-testing.md.
 	env: {
 		passwordSuffix: "_PWD",  // passwords of test users = email + passwordSuffix
 		devLoginToken: "devLoginTokenDev",

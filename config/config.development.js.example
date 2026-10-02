@@ -7,16 +7,11 @@ import common from "./config.common.js"
 export default Object.assign({}, common, {
 	configSource: "development",
 
-	// The API ROOT of the backend. The client appends "/graphql" itself (GRAPHQL in
-	// liquido-graphql-client.js), so do NOT end this in /graphql. Must be the host name
-	// shadow.fritz.box, not localhost: WebAuthn origin check + `npm run test:e2e` verifies it
-	// (tests/cypress-base-config.js). To use the deployed backend instead (mode remote-backend):
-	// "https://liquido.dynv6.net/api/v2"
+	// The API ROOT of the backend. The client appends "/graphql", "/login/..." and "/webauthn/..."
+	// itself, so do NOT end this in /graphql. Must be the host name shadow.fritz.box, not localhost:
+	// WebAuthn origin check, and `npm run test:e2e` verifies it (tests/cypress-base-config.js).
+	// This is environment DEV - see docs/liquido-testing.md.
 	LIQUIDO_API_URL: "https://shadow.fritz.box:8443",
-
-	// If the backend runs on another machine, use the vite proxy instead
-	// (see the "/graphql_proxy" target in vite.config.js):
-	// LIQUIDO_API_URL: "/graphql_proxy",
 
 	// Set to true to run against the mocked GraphQL client, without a backend at all.
 	// The header turns red as a visual warning while this is active.

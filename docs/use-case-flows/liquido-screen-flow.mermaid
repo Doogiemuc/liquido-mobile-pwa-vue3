@@ -7,7 +7,7 @@ title: LIQUIDO - Use Cases
 flowchart TB
     Welcome("<pre><b>/welcome</b></pre> Register as a new user") 
     --> NickNameInput["NickNameInput"]
-    --> CreateOrJoinTeam{{"Crete new team or
+    --> CreateOrJoinTeam{{"Create new team or
 Join a team?"}}
     CreateOrJoinTeam -- Create new team --> CreateTeamInput["TeamName
 E-Mail
@@ -15,7 +15,7 @@ Password"]
     CreateOrJoinTeam -- Join a team --> JoinTeamInput["InviteCode
 E-Mail
 Password"]
-    JoinTeam("<pre><b>/joinTeam?inviteCode=...</b></pre> Join an existing team with an inviteCode. A user can join more than one team!") 
+    JoinTeam("<pre><b>/welcome?inviteCode=...</b></pre> Join an existing team with an inviteCode. A user can join more than one team!") 
     --> JoinTeamInput    
     CreateTeamInput & JoinTeamInput
     --> RegisterPasskey["Register Passkey<br>(if device supports it)"]
@@ -31,8 +31,8 @@ Password"]
     ==> PollStatus{{"Poll status?"}}
 
     PollStatus -- FINISHED --> ShowWinner["Finished poll\nShow winner"]
-    PollStatus -- IN_ELABORATION --> PollInElaboration
-    PollStatus -- IN VOTING --> PollInVoting
+    PollStatus -- ELABORATION --> PollInElaboration
+    PollStatus -- VOTING --> PollInVoting
     
     TeamHome -- Team to poll in voting shortcut --> PollInVoting
 
@@ -41,10 +41,10 @@ Password"]
     ==> CastVoteInput["User sorts all proposals into his preferred order and then casts his vote."]
     ==> BallotCasted
     
-    PollCreate("<pre><b>/poll/create</b></pre>Create a new poll") 
+    PollCreate("<pre><b>/polls/new</b></pre>Admin creates a new poll") 
     --> PollTitleInput("Admin sets a poll title\nand adds proposals.")
     -- save --> PollInElaboration(["Poll in ELABORATION"])
-    --> AddProposal("<pre><b>/polls/:id/add</b></pre> Every Team member can add a proposals with descriptions") 
+    --> AddProposal("<pre><b>/polls/:id/edit</b></pre> Team members can add proposals with descriptions (if the admin allowed it)") 
     --> StartVoting
     --> PollInVoting(["Poll in VOTING<br>Team members can now cast their votes"])
     --> EndVoting
@@ -57,8 +57,8 @@ Password"]
     CreatePolly("<pre><b>/polly</b></pre>")
     --> AddPollyOptions["Polly Admin sets title\nand adds options"]
     --> ClickCreatePasskey["Polly admin registers his Passkey"]
-    --> PollyCreated(["New polly is created and started. Members can immideately cast votes."])
-    --> SharePollyLink["Admin share polly link\nto friends"]
+    --> PollyCreated(["New polly is created and started. Members can immediately cast votes."])
+    --> SharePollyLink["Admin shares polly link\nto friends"]
     --> FriendsVoteInPolly["<pre><b>/polly/:id</b></pre>Friends and admin\nvote in Polly"]
     --> AdminClosesPolly["Admin closes polly"]
     --> PollyFinished
@@ -84,7 +84,7 @@ Password"]
      NewUserRegistered@{ shape: dbl-circ, label: "New user<bR>registered" }
      StartVoting@{ shape: trap-b, label: "Admin starts voting phase" }
      EndVoting@{ shape: trap-t, label: "Admin ends voting phase" }
-     PollFinished@{ shape: dbl-circ, label: "Poll FINSIHED" }
+     PollFinished@{ shape: dbl-circ, label: "Poll FINISHED" }
      BallotCasted@{ shape: dbl-circ, label: "Ballot counted<bR>successfully" }
      CreatePolly:::Aqua
      PollyFinished@{ shape: dbl-circ, label: "Polly is finished.\nWinner is\nshown" }
