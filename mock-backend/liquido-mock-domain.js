@@ -776,7 +776,10 @@ const mutationHandlers = {
 		// make the poll look already-voted to everyone the moment anyone casts a ballot.
 		poll.updatedAt = nowIso()
 		return {
-			voteCount: countVotesForPoll(pollId),
+			// How often THIS ballot counts - 1 plus the votes delegated to this voter as a proxy (see
+			// cast-vote.vue's voteCountedNTimes). Not the poll's total: that is numBallots. The mock has
+			// no delegations, so it is always 1.
+			voteCount: 1,
 			ballot: deepClone(ballot),
 		}
 	},
