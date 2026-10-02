@@ -11,8 +11,9 @@ import common from "./config.common.js"
 export default Object.assign({}, common, {
 	configSource: "mock",
 	// Never called in mock mode: liquido-graphql-client.js points axios at the dev server's own origin
-	// instead. Set anyway, because the client refuses to start without one.
-	LIQUIDO_API_URL: "https://localhost:3002/graphql",
+	// instead. Set anyway, because the client refuses to start without one. Like every LIQUIDO_API_URL
+	// it is the API ROOT - the client appends "/graphql" itself.
+	LIQUIDO_API_URL: "https://localhost:3002",
 	mockBackend: true,
 	mockPasskey: false,
 	showDebugLog: false,

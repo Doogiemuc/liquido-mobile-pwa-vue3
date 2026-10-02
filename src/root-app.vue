@@ -121,8 +121,8 @@ export default {
 		 * a real phone with no attached devtools) - it must never show up in an automated test run
 		 * regardless of what a developer's own local config.development.js has it set to, since the
 		 * floating icon it renders can sit on top of real UI elements and block Cypress clicks
-		 * (window.Cypress is only set inside an actual Cypress run, on every mode: mock, local,
-		 * remote-backend or deployed).
+		 * (window.Cypress is only set inside an actual Cypress run, on every mode: local, mock or
+		 * deployed).
 		 */
 		showMobileDebugLog() {
 			return config.showDebugLog && !window.Cypress
