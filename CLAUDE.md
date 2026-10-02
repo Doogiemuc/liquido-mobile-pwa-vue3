@@ -346,8 +346,8 @@ questions. `LIQUIDO_E2E_MODE` picks the pair; the table lives at the top of
 |---|---|---|---|
 | `local` *(default)* | `shadow.fritz.box:3001` | `shadow.fritz.box:8443` | `npm run test:e2e` |
 | `mock` | `localhost:3002` | none, the mock dev server | `npm run test:e2e:mock` |
-| `remote-backend` | `shadow.fritz.box:3001` | `liquido.dynv6.net` | `npm run test:e2e:remote-backend` |
-| `deployed` | `liquido.dynv6.net` | `liquido.dynv6.net` | `npm run test:e2e:deployed` |
+| `remote-backend` | `shadow.fritz.box:3001` | `liquido.dynv6.net/api/v2` | `npm run test:e2e:remote-backend` |
+| `deployed` | `liquido.dynv6.net` | `liquido.dynv6.net/api/v2` | `npm run test:e2e:deployed` |
 
 `CYPRESS_REMOTE_URL` aims the two deployed modes elsewhere. `npm run test:e2e:remote` is kept as an
 alias of `deployed`. `mock` is on `localhost` on purpose: `shadow.fritz.box` is only needed to

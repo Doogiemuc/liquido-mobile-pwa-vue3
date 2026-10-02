@@ -7,8 +7,12 @@ import common from "./config.common.js"
 export default Object.assign({}, common, {
 	configSource: "development",
 
-	// If frontend and backend run on the same host, point directly at the backend:
-	LIQUIDO_API_URL: "https://localhost:8443/graphql",
+	// The API ROOT of the backend. The client appends "/graphql" itself (GRAPHQL in
+	// liquido-graphql-client.js), so do NOT end this in /graphql. Must be the host name
+	// shadow.fritz.box, not localhost: WebAuthn origin check + `npm run test:e2e` verifies it
+	// (tests/cypress-base-config.js). To use the deployed backend instead (mode remote-backend):
+	// "https://liquido.dynv6.net/api/v2"
+	LIQUIDO_API_URL: "https://shadow.fritz.box:8443",
 
 	// If the backend runs on another machine, use the vite proxy instead
 	// (see the "/graphql_proxy" target in vite.config.js):

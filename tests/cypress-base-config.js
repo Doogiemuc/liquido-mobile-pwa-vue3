@@ -10,8 +10,8 @@
  *   -----------------|---------------------------|--------------------------|----------------------------
  *   local (default)  | shadow.fritz.box:3001     | shadow.fritz.box:8443    | the normal full-stack run
  *   mock             | localhost:3002            | none - mock dev server   | frontend only, no backend
- *   remote-backend   | shadow.fritz.box:3001     | liquido.dynv6.net        | your code, real data
- *   deployed         | liquido.dynv6.net         | liquido.dynv6.net        | smoke-test a deployment
+ *   remote-backend   | shadow.fritz.box:3001     | liquido.dynv6.net/api/v2 | your code, real data
+ *   deployed         | liquido.dynv6.net         | liquido.dynv6.net/api/v2 | smoke-test a deployment
  *
  * The local frontend is opened by hostname, not "localhost" and not a bare IP: WebAuthn ties a
  * credential to the exact origin it was created on, and the backend's dev profile only accepts
@@ -52,16 +52,26 @@ const LOCAL_BACKEND = "https://shadow.fritz.box:8443"
 // See the mock note above. Must match the port `npm run dev:mock` starts the dev server on.
 const MOCK_FRONTEND = "https://localhost:3002"
 const DEPLOYED = (process.env.CYPRESS_REMOTE_URL || "https://liquido.dynv6.net").replace(/\/+$/, "")
+// Behind Caddy the backend does not live at the site root but under /api/v2/ (Caddyfile:
+// `handle /api/v2/*` strips that prefix, then proxies to Quarkus). It is the same path that
+// config/config.production.js has in LIQUIDO_API_URL. The local dev backend on :8443 has no prefix.
+const DEPLOYED_API = DEPLOYED + "/api/v2"
 
 /**
- * frontend = what the browser opens; backend = what the SPECS call directly (null: there is none);
+ * frontend = what the browser opens;
+ * backend  = the backend's API ROOT that the SPECS call directly - the base that "graphql" or
+ *            "graphql/schema.graphql" is appended to (null: there is none, mock mode);
+ * wantApi  = what the frontend dev server's LIQUIDO_API_URL must start with (null: not checked);
  * configFile = the config/ file that frontend's dev server reads, checked below (null: not ours).
+ *
+ * `backend` and the frontend's LIQUIDO_API_URL are the same thing seen from two sides: both are the
+ * API root, and both get "/graphql" appended. That is why wantApi is just an origin prefix of it.
  */
 const MODES = {
 	local:            { frontend: LOCAL_FRONTEND, backend: LOCAL_BACKEND, wantMock: false, wantApi: LOCAL_BACKEND, configFile: "config.development.js" },
 	mock:             { frontend: MOCK_FRONTEND,  backend: null,          wantMock: true,  wantApi: null,          configFile: "config.mock.js" },
-	"remote-backend": { frontend: LOCAL_FRONTEND, backend: DEPLOYED,      wantMock: false, wantApi: DEPLOYED,      configFile: "config.development.js" },
-	deployed:         { frontend: DEPLOYED,       backend: DEPLOYED,      wantMock: null,  wantApi: null,          configFile: null },
+	"remote-backend": { frontend: LOCAL_FRONTEND, backend: DEPLOYED_API,  wantMock: false, wantApi: DEPLOYED_API,  configFile: "config.development.js" },
+	deployed:         { frontend: DEPLOYED,       backend: DEPLOYED_API,  wantMock: null,  wantApi: null,          configFile: null },
 }
 
 /** The mode this run uses, unless a config file asks configForMode() for a specific one. */
@@ -159,8 +169,10 @@ export function configForMode(name = mode) {
 		/** Which pairing this run uses, so a spec can skip what its mode cannot do. */
 		mode: name,
 		/**
-		 * Base URL of the backend the SPECS may call directly, or null in mock mode where there is
-		 * no backend at all. Guard every cy.request() to it with this.
+		 * API root of the backend the SPECS may call directly, ending in "/" - append "graphql" to get
+		 * the GraphQL endpoint: https://liquido.dynv6.net/api/v2/ , https://shadow.fritz.box:8443/ .
+		 * Null in mock mode where there is no backend at all. Guard every cy.request() to it with this.
+		 * NOT the site origin: on a deployment that would hit Caddy's SPA fallback and answer HTML.
 		 */
 		LIQUIDO_API: picked.backend ? picked.backend + "/" : null,
 		/*
