@@ -1,7 +1,11 @@
 # LIQUIDO Mobile PWA — Technical Architecture
 
 > Technical overview of the LIQUIDO mobile Progressive Web App (Vue 3).
-> Audience: developers working on the codebase.
+> Audience: developers working on the codebase. Companion documents: [README-tech.md](README-tech.md)
+> (setup, build, deploy), [liquido-testing.md](liquido-testing.md) (all testing and the environments
+> DEV / TEST / MOCK / INT), [use cases](use-case-flows/liquido-use-cases.md) (what the app does for its
+> users), [AGENTS.md](../AGENTS.md) (rules for AI agents) and the backend's
+> [architecture](../../liquido-backend-quarkus/docs/liquido-architecture.md).
 
 ---
 
@@ -12,7 +16,7 @@
 | UI framework | Vue | `^3.5.21` | Mixed Options API (legacy pages) and `<script setup>` Composition API (newer pages) |
 | Build tool / dev server | Vite | `^8.0.10` | HTTPS dev server, env-based config alias |
 | Router | vue-router | `^4.2.5` | `createWebHistory`, global auth navigation guard |
-| i18n | vue-i18n | `^9.7.1` | Legacy mode with `allowComposition: true` |
+| i18n | liqui-loc | own | `src/services/liqui-loc.js` — replaced vue-i18n |
 | CSS framework | Bootstrap | `^5.3.8` | Imported via npm in `main.js`; overridden by `liquido.css` design tokens |
 | Icons | Font Awesome | 6.5.2 (free) | Static files under `public/fontawesome-free-6.5.2-web/` |
 | HTTP transport | axios | `^1.16.0` | Used by the GraphQL client |
@@ -20,12 +24,13 @@
 | WebAuthn | @simplewebauthn/browser | `^13.2.2` | Passkey / 2FA registration and login |
 | Local DB | dexie | `^4.4.2` | IndexedDB wrapper (e.g. local user photo store) |
 | Event bus | tiny-emitter | `^2.1.0` | Cross-component pub/sub |
+| Drag & drop | vuedraggable | `^4.1.0` | Sorting proposals into a ballot (`liquido-ballot.vue`, `polly-vote.vue`) |
 | QR codes | qrcode | `^1.5.3` | Team invite links |
 | Animation | gsap | `^3.12.2` | |
 | Logging | loglevel | `^1.9.2` | Full logging enabled in dev/test |
 | Date/time | dayjs | `^1.11.10` | |
 | Unit tests | vitest | `^3.2.4` | + `@vue/test-utils`, jsdom |
-| E2E tests | cypress | `^15.17.0` | |
+| E2E tests | cypress | `^15.20.0` | |
 
 ---
 
@@ -62,7 +67,13 @@ graph TD
 
 The app is a single-page PWA. All backend communication is funnelled through a single
 gateway module, `liquido-graphql-client.js`, which owns authentication (JWT), transport,
-and in-memory caching.
+and in-memory caching. (Polly has its own client, see §8b.)
+
+**System context.** The backend is a Quarkus service with a GraphQL API at `/graphql` plus REST
+endpoints for login and WebAuthn (`/login/*`, `/webauthn/*`, `/polly/webauthn/*`). In development the
+PWA talks to it directly at `https://shadow.fritz.box:8443`; on GISMO (INT) Caddy serves the PWA's static
+files and forwards `https://liquido.dynv6.net/api/v2/*` to the backend container. Which frontend talks to
+which backend in each environment: [liquido-testing.md §2](liquido-testing.md#2-environments-dev-test-mock-int).
 
 ---
 
@@ -77,16 +88,20 @@ Entry point: `src/main.js`
    `@/styles/liquido.css` — the LIQUIDO stylesheet must load *after* Bootstrap so its
    design-token overrides win.
 5. Creates the Vue app from `root-app.vue`.
-6. Installs plugins: `router`, `vue-i18n` (`createI18n`), and the reactive `store`.
-7. Mounts the app.
+6. Installs plugins: `router`, liqui-loc (`createLoc`), and the reactive `store`; registers the
+   global `<liqui-loc-html>` component.
+7. Installs the global error boundary (`app.config.errorHandler`, `unhandledrejection`), which shows a
+   localised message instead of raw backend errors.
+8. Mounts the app.
 
-### i18n configuration
-- `createI18n` is set up with `locale: "de"`, `fallbackLocale: "de"`,
-  `allowComposition: true`, `silentFallbackWarn: true`, `warnHtmlInMessage: 'off'`.
-- Global translations live in `globalTranslations` inside `main.js`.
-- **Local component messages** must be added to `globalTranslations` (or an `<i18n>`
-  SFC custom block). `useI18n({ useScope: "local" })` alone throws in legacy mode
-  because no custom-block plugin is configured.
+### i18n — liqui-loc
+- Our own small library, `src/services/liqui-loc.js`; it replaced vue-i18n, whose legacy mode could not
+  give `<script setup>` components access to their own messages.
+- Global translations live in `globalTranslations` inside `main.js`; German is the only complete locale.
+- Component-local messages go in the `i18n: { messages: { … } }` component option. `$t`, `$tc`, `$d`,
+  `$fromNow` are global properties; `<script setup>` uses `useLoc()`.
+- Messages containing HTML are rendered only through `<liqui-loc-html>`, which escapes parameters and
+  sanitises. The usage rules for writing code are in [AGENTS.md §4](../AGENTS.md#4-house-style).
 
 ---
 
@@ -98,10 +113,15 @@ Entry point: `src/main.js`
   `npm run dev:mock` sets `LIQUIDO_CONFIG=mock`.
 - Shared defaults live in `config/config.common.js`.
 - Checked in, because they hold no credentials: `config.common.js`, `config.test.js` (vitest) and
-  `config.mock.js` (the backend-free e2e run). `config.development.js` is gitignored — copy it from
-  `config.development.js.example`.
-- Exposes values such as `LIQUIDO_API_URL`, `BASE_URL`, `mockBackend`, `avatarPath`,
-  `inviteLinkPrefix`, and `configSource`.
+  `config.mock.js` (the backend-free e2e run). Gitignored: `config.development.js` (copy it from
+  `config.development.js.example`) and `config.production.js` (used by `npm run build`).
+- Exposes values such as `LIQUIDO_API_URL`, `BASE_URL`, `mockBackend`, `mockPasskey`, `avatarPath`,
+  `inviteLinkPrefix`, `pollyLinkPrefix` and `configSource`.
+- `LIQUIDO_API_URL` is the backend's **API root** (e.g. `https://shadow.fritz.box:8443` or
+  `https://liquido.dynv6.net/api/v2`); the clients append `/graphql`, `/login/…` and `/webauthn/…`
+  themselves, so it never ends in `/graphql`.
+- Validation limits in `config.common.js` are only fallbacks: at startup `root-app.vue` fetches
+  `query liquidoConfig` from the backend and merges the real values over them.
 - `config.mockBackend` makes the Vite dev server answer every backend call itself (see §6) and
   turns the LIQUIDO icon in the header red as a visual warning.
 
@@ -115,28 +135,36 @@ Router: `src/services/router.js` using `createWebHistory(config.BASE_URL)`.
 
 ### Routes
 
-| Path | Name | Public | Component |
-|---|---|---|---|
-| `/` | index | — | (redirect logic only) |
-| `/login` | login | ✅ | login-page.vue |
-| `/welcome` | welcome | ✅ | welcome-chat.vue |
-| `/team` | team | 🔒 | team-home.vue |
-| `/userhome` | userhome | 🔒 | user-home.vue |
-| `/polls` | polls | 🔒 | polls.vue |
-| `/polls/create` | createPoll | 🔒 | poll-create.vue |
-| `/polls/:pollId` | showPoll | 🔒 | poll-show.vue |
-| `/polls/:pollId/add` | addProposal | 🔒 | proposal-add.vue |
-| `/polls/:pollId/castVote` | castVote | 🔒 | cast-vote.vue |
-| `/polls/:pollId/winner` | pollWinner | 🔒 | poll-winner.vue |
-| `/polly` | createPolly | ✅ | polly-page.vue |
-| `/polly/:publicId` | showPolly | ✅ | polly-page.vue |
-| `/forgotPassword` | forgotPassword | ✅ | forgot-password.vue |
-| `/resetPassword` | resetPassword | ✅ | forgot-password.vue |
-| `/login-via-sms` | loginSms | ✅ | login-via-sms.vue |
-| `/404` | pageNotFound | ✅ | not-found-page.vue |
-| `/:pathMatch(.*)*` | — | — | redirect → `/404` |
+The authoritative list is `src/services/router.js`. Order matters: `/polls/new` is declared **before**
+`/polls/:pollId`, or the param route swallows it.
 
-Dev-only routes (added when `MODE === "development"`): `/devLogin`, `/_design-overview`.
+| Path | Name | Public | Component / notes |
+|---|---|---|---|
+| `/` | index | | redirect only: to `/team` when logged in, else `/welcome` |
+| `/login` | login | ✅ | `login-page.vue`; `?email=&emailToken=` logs in from an email link |
+| `/welcome` | welcome | ✅ | `welcome-chat-v2.vue`: registration — creating a team, or joining one via `?inviteCode=` |
+| `/forgotPassword`, `/resetPassword` | forgotPassword, resetPassword | ✅ | both `forgot-password.vue`; `/resetPassword` takes `?resetPasswordToken=` |
+| `/verifyEmail` | verifyEmail | ✅ | `verify-email.vue`, opened from a mail with `?verifyToken=` |
+| `/login-via-sms` | loginSms | ✅ | `login-via-sms.vue` — unused: nothing links to it, and the backend's SMS mutations are commented out |
+| `/team` | team | 🔒 | `team-home.vue` |
+| `/userhome` | userhome | 🔒 | `user-home.vue` |
+| `/polls` | polls | 🔒 | `polls.vue`, the list |
+| `/polls/new` | newPoll | 🔒 | `poll-edit.vue`: the all-in-one poll editor |
+| `/polls/:pollId` | showPoll | 🔒 | `poll-show.vue`, read-only |
+| `/polls/:pollId/edit` | editPoll | 🔒 | `poll-edit.vue`, existing poll |
+| `/polls/:pollId/add` | addProposal | 🔒 | `proposal-add.vue`: old two-step flow, deprecated but deliberately kept reachable |
+| `/polls/:pollId/castVote` | castVote | 🔒 | `cast-vote.vue`: rank and submit a ballot |
+| `/polls/:pollId/winner` | pollWinner | 🔒 | `poll-winner.vue`: winner, pairwise breakdown, duel matrix, Ranked Pairs graph |
+| `/polly` | createPolly | ✅ | `polly-page.vue`: create a Polly (§8b) |
+| `/polly/:publicId` | showPolly | ✅ | `polly-page.vue`: the one link a Polly creator shares |
+| `/impressum`, `/agb`, `/datenschutz` | impressum, agb, datenschutz | ✅ | German legal pages, linked from the bottom of `team-home.vue` |
+| `/404`, any unknown path | pageNotFound | ✅ | `not-found-page.vue` |
+
+Dev-only routes (added when `MODE === "development"`): `/devLogin` and `/_design-overview` (a gallery of
+every screen). Retired on purpose: `/polls/create` (`poll-create.vue`, replaced by `/polls/new`) and
+`/joinTeam` (`join-team-v2.vue`, replaced by `/welcome?inviteCode=`; the old page checked while typing
+whether an email was already registered, the new flow finds out on submit and links to `/login`). Both
+files are still in the repo, unused. Rules for adding routes: [AGENTS.md §6](../AGENTS.md#6-routes--the-rules).
 
 ### Navigation guard (`router.beforeEach`)
 
@@ -173,7 +201,7 @@ its requests to the dev server's own origin instead of `LIQUIDO_API_URL`. There
 and the `/webauthn/*` ceremony — as real HTTP, so Cypress sees mocked traffic exactly like real
 traffic and the e2e specs run unmodified against either. The mock's "database" lives in the dev
 server process. vitest has no dev server, so under `config.test.js` the client calls
-`mock-backend/liquido-mock-domain.js` in-process instead. Details: `docs/liquido-testing.md` §4.6.
+`mock-backend/liquido-mock-domain.js` in-process instead. Details: [liquido-testing.md §6.6](liquido-testing.md#66-the-mock-backend).
 
 ### Responsibilities
 - GraphQL transport over axios.
@@ -206,7 +234,8 @@ server process. vitest has no dev server, so under `config.test.js` the client c
 - **JWT auto-login** — silent re-auth from `localStorage` on every navigation.
 - **Email + password** — `login-page.vue`.
 - **Email magic link / token** — `email` + `emailToken` query params on `/login`.
-- **SMS** — `login-via-sms.vue`.
+- **Email verification** — `/verifyEmail?verifyToken=…`, from the welcome mail.
+- **SMS** — `login-via-sms.vue`; currently switched off (no link to it, backend SMS mutations commented out).
 - **WebAuthn / Passkey** — `webauthn-service.js` (`@simplewebauthn/browser`) for
   passwordless login and 2FA registration.
 - **Forgot / reset password** — `forgot-password.vue` (shared by `/forgotPassword`
@@ -219,24 +248,30 @@ server process. vitest has no dev server, so under `config.test.js` the client c
 
 ```mermaid
 stateDiagram-v2
-    [*] --> NEW: Admin creates poll
-    NEW --> ELABORATION: Members add proposals
+    [*] --> ELABORATION: Admin creates a poll with its first proposals
     ELABORATION --> VOTING: Admin starts voting phase
     VOTING --> FINISHED: Admin finishes voting
     FINISHED --> [*]
 ```
 
-| Status | German label | Meaning |
-|---|---|---|
-| `NEW` / `ELABORATION` | "Neue Abstimmung" / "Diskussion" | Proposals are being collected |
-| `VOTING` | "Wahl läuft" | Ballots are being cast |
-| `FINISHED` | "Abgeschlossen" | Result available |
+There are exactly three statuses; a poll starts in `ELABORATION` (there is no `NEW`).
+
+| Status | Meaning |
+|---|---|
+| `ELABORATION` | Proposals are being collected, edited, liked |
+| `VOTING` | Proposals are frozen, ballots are being cast |
+| `FINISHED` | The winner is calculated and shown |
+
+Who may do what in each phase is a business rule — see the [use cases](use-case-flows/liquido-use-cases.md).
 
 ### Voting flow
-1. Member opens a poll in `VOTING` state (`poll-show.vue`).
-2. Navigates to `cast-vote.vue` (`/polls/:pollId/castVote`).
-3. Orders proposals into a preference ballot and submits.
-4. Admin later finishes the voting phase; results become visible.
+1. Member opens a poll in `VOTING` state. A running poll the member has not voted in yet opens the
+   ballot directly — from the poll list and from `team-home.vue` (`/polls/:pollId/castVote`).
+2. In `cast-vote.vue` the member drags proposals into a preference ballot and submits it; the client
+   first fetches a one-time `voterToken`, then calls `castVote` with it.
+3. The member gets a checksum back and can verify their ballot.
+4. The admin finishes the voting phase (also possible straight from the ballot page); the winner page
+   shows the result.
 
 ---
 
@@ -312,6 +347,8 @@ src/
     webauthn-service.js       Passkey / 2FA
     local-user-photo-db.js    Dexie / IndexedDB
     login-rest-client.js      REST auth calls
+    liqui-loc.js              Our own i18n library
+    jwt-util.js               Decodes the cached JWT (admin role per team)
   views/                      Pages (one per route)
   polly/                      Self-contained Polly module (see §8b)
     polly-client.js           Own GraphQL client + axios instance (+ .mock.js twin)
@@ -320,6 +357,7 @@ src/
     polly-i18n.js             Own translations + usePollyI18n()
     polly-constants.js        Status + error codes
   styles/liquido.css          Design tokens + Bootstrap overrides
+  mockdata/                   Seed data of the mock backend (teamUserJwt.json)
 config/                       Env-specific config (mapped to bare "config" import)
 mock-backend/                 Mock backend, served over HTTP by the dev server (see §6)
   liquido-mock-domain.js      State + GraphQL handlers (also used in-process by vitest)
@@ -333,14 +371,14 @@ tests/                        unit (vitest) + e2e (cypress)
 
 ## 11. Build & Deploy
 
-- **Dev**: `npm start` (or `npm run dev`) → Vite dev server over HTTPS using the
-  mkcert certificates in `tls-certs/`.
-- **Build**: `npm run build` → static bundle via Vite.
-- **Preview**: `npm run preview`.
-- **Container**: `Dockerfile` builds the image; `fly.toml` configures Fly.io deploy;
-  `deploy/build-and-deploy.sh` orchestrates the pipeline.
-
----
+- **Dev**: `npm run dev` (alias `npm start`) → Vite dev server over HTTPS on port 3001, using the mkcert
+  certificates in `tls-certs/`. `npm run dev:mock` → the same with the mock backend on port 3002.
+- **Build**: `npm run build` → static bundle in `dist/`, built with `config/config.production.js`.
+- **Deploy**: on GISMO, Caddy serves `dist/` as static files from `/var/www/liquido-frontend` (with an
+  SPA fallback to `index.html`); `deploy/build-and-deploy-local.sh` builds and copies it there
+  (`deploy/build-and-deploy.sh` does the same from the laptop via rsync). Deploying is always a human
+  decision. Details: [README-tech.md](README-tech.md#build-and-deploy).
+- `Dockerfile` and `fly.toml` are left over from a Fly.io trial and are not used.
 
 ## 12. Security Notes
 

@@ -2,11 +2,11 @@
 # Run a Cypress e2e spec locally, directly against this machine's own Caddy - no dependency on
 # public DNS at all. This only makes sense run ON GISMO itself (the box that actually serves
 # https://liquido.dynv6.net): Claude Code sessions in this project run there directly, not via
-# SSH from a laptop - see CLAUDE.md's [[gismo-deployment-setup]] note.
+# SSH from a laptop - see docs/liquido-testing.md, section 6.5 and environment INT in section 2.
 #
 # Why this exists: liquido.dynv6.net's public DNS record has repeatedly gone stale (the FritzBox's
 # DDNS client doesn't reliably update it when the home connection's public IP rotates - see
-# AGENTS.md/CLAUDE.md). That only affects reaching the site from OUTSIDE this machine. Local runs
+# docs/liquido-testing.md 6.5). That only affects reaching the site from OUTSIDE this machine. Local runs
 # don't need to go anywhere near the public internet or its DNS at all.
 #
 # Technique: an unprivileged user+mount namespace (`unshare -Urm`) bind-mounts a private copy of

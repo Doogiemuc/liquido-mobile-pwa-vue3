@@ -668,7 +668,7 @@ function skipPasskey() {
 /**
  * api.isAdmin() is called directly here, NOT wrapped in a computed - it reads the JWT synchronously
  * and a computed would latch whatever it saw on its first evaluation (see liquido-mobile-pwa-vue3's
- * CLAUDE.md §5). A brand new admin (just created a team) gets the first-proposal step; a brand new
+ * AGENTS.md §5). A brand new admin (just created a team) gets the first-proposal step; a brand new
  * member (just joined) goes straight to their team.
  */
 function continueAfterPasskey() {

@@ -929,7 +929,7 @@ context('LIQUIDO Happy Case', { testIsolation: false }, () => {
 		cy.get("#toggleMoreDetailsButton").scrollIntoView().click()
 
 		// THEN the full duel matrix and the lock-in graph are shown. Both are well below the fold on
-		// the mobile viewport, and should('be.visible') does not auto-scroll - see CLAUDE.md §3.
+		// the mobile viewport, and should('be.visible') does not auto-scroll - see docs/liquido-testing.md §6.4.
 		cy.get("#moreDetailsSection").scrollIntoView().should("be.visible")
 		cy.get("#duelMatrixTable").scrollIntoView().should("be.visible")
 		cy.get("#duelMatrixTable td[data-duel-row][data-duel-col]").should("have.length", 9)  // 3x3 matrix
