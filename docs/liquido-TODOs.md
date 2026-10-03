@@ -2,9 +2,13 @@
 
 Do I need a tool for managing my own backlog? => No just, this .md file
 
-# Design Decisions
+# UX/UI 
+
+ * Need my own team SVG icon (also in large on join team page)
 
  * Header that scrolls away? Or no header at all? Other native apps in modern iOS have the rounded bubbles with transparent background. I don't like this.
+
+  
 
 
 # Technical Dept
@@ -19,7 +23,7 @@ Do I need a tool for managing my own backlog? => No just, this .md file
 
 ## Use Case features
  
-### Registration
+### Register / Join Team
 
  * Verify a user's email   [done] Optional, never blocks registration. The welcome mail carries a
    ?verifyToken link to /verifyEmail, which flips UserEntity.emailVerified and grants nothing else.

@@ -57,8 +57,9 @@ let inviteCode = api.getCachedTeam()?.inviteCode || "mock-invite-code"
 
 const pages = [
 	{ name: 'Login', route: '/login' },
-	{ name: 'Welcome', route: '/welcome' },
-	{ name: 'Join a Team', route: `/welcome?inviteCode=${inviteCode}` },
+	// forceAnonymous=1: the router would otherwise redirect a logged-in user from /welcome to /team (see router.js)
+	{ name: 'Welcome (anon)', route: '/welcome?forceAnonymous=1' },
+	{ name: 'Join a Team (anon)', route: `/welcome?inviteCode=${inviteCode}&forceAnonymous=1` },
 	{ name: 'Team', route: '/team' },
 	{ name: 'User home', route: '/userhome' },
 	{ name: 'List of Polls', route: '/polls' },

@@ -43,20 +43,25 @@
 								<div class="droplet-inner" />
 							</div>
 						</div>
-						<p class="page-subtitle hero-manifesto">{{ $t("heroManifesto") }}</p>
+						<p class="hero-manifesto">{{ $t("heroManifesto") }}</p>
 					</div>
 
 					<div class="landing-cta">
-						<button id="welcomeV2CreateTeamButton" type="button" class="btn btn-primary btn-lg w-100" @click="goToCreate">
-							{{ $t("createTeamButton") }}
-						</button>
-
-						<button v-if="invite.team" id="welcomeV2JoinTeamButton" type="button" class="inline-link join-hint liquido-small-text" @click="goToJoin">
+						<div v-if="invite.team" class="mb-3">
 							<liqui-loc-html msg-key="invitedByAdminV2" :params="{ adminName: invite.adminName, teamName: invite.teamName }" />
-						</button>
-						<p v-else class="join-hint liquido-small-text">
-							{{ $t("joinHintPrefix") }}<button id="welcomeV2JoinTeamButton" type="button" class="inline-link" @click="goToJoin">{{ $t("joinTeamButton") }}</button>
-						</p>
+							<button id="welcomeV2JoinTeamButton" type="button" class="btn btn-primary btn-lg w-100 mt-3" @click="goToJoin">
+								{{ $t("joinTeamButton") }}
+							</button>
+						</div>
+
+						<div v-else>
+							<button id="welcomeV2CreateTeamButton" type="button" class="btn btn-primary btn-lg w-100" @click="goToCreate">
+								{{ $t("createTeamButton") }}
+							</button>
+							<p class="liquido-small-text mt-3 text-center">
+								{{ $t("joinHintPrefix") }}<button id="welcomeV2JoinTeamButton" type="button" class="inline-link" @click="goToJoin">{{ $t("joinTeamButton") }}</button>
+							</p>
+						</div>
 					</div>
 				</section>
 
@@ -70,12 +75,12 @@
 						<form class="card-body p-4" @submit.prevent="submitRegister">
 
 							<div class="text-center mb-3">
-								<i class="fas fa-people-group fa-3x" style="color: var(--primary)" />
+								<i class="fas fa-users fa-3x" style="color: var(--primary)" />
 							</div>
 							<div v-if="path === 'create'" class="text-center liquido-small-text mb-3">
 								<p>{{ $t("createTeamIntro") }}</p>
 							</div>
-							<liqui-loc-html v-if="path === 'join' && invite.team" id="welcomeV2RegisterGreeting" tag="p" class="text-center liquido-small-text mb-3"
+							<liqui-loc-html v-if="path === 'join' && invite.team" id="welcomeV2RegisterGreeting" tag="p" class="text-center mb-3"
 								msg-key="invitedByAdminV2" :params="{ adminName: invite.adminName, teamName: invite.teamName }" />
 
 							<liquido-input
@@ -97,8 +102,6 @@
 									feedback-placeholder
 									@blur="onInviteCodeBlur"
 								/>
-
-								
 
 								<liquido-input
 									id="welcomeV2NicknameInput"
@@ -196,6 +199,11 @@
 
 						</form>
 					</div>
+
+					<p v-if="path === 'join'" class="liquido-small-text mt-5 text-center">
+						{{ $t("orDoYouWantTo") }}
+						<button id="welcomeV2JoinTeamButton" type="button" class="inline-link" @click="goToCreate">{{ $t("createYourOnwTeam") }}</button>
+					</p>
 				</section>
 
 				<!-- ================= PASSKEY (skippable) ================= -->
@@ -289,7 +297,9 @@ export default {
 				createTeamButton: "Neues Team erstellen",
 				joinTeamButton: "Team beitreten",
 				joinHintPrefix: "Einladungslink bekommen? ",
-				invitedByAdminV2: "<b>{adminName}</b> hat dich zu seinem Team <b>{teamName}</b> eingeladen.",
+				invitedByAdminV2: "{adminName}<br/>hat dich in das Team<br/>{teamName}<br/>eingeladen.",
+				orDoYouWantTo: "Oder mächtest du",
+				createYourOnwTeam: "dein eigenes Team erstellen",
 
 				createTeamTitle: "Team erstellen",
 				joinTeamTitle: "Team beitreten",
@@ -453,9 +463,8 @@ const invite = ref({ team: undefined, adminName: undefined, teamName: undefined 
 onMounted(() => {
 	if (props.inviteCodeQueryParam && props.inviteCodeQueryParam.trim() !== "") {
 		loadInviteInfo(props.inviteCodeQueryParam.trim())
-		// A link with an inviteCode means someone specifically set out to join a team - skip the
-		// landing page's choice entirely and land them straight in the join form, code prefilled.
-		goToJoin()
+		//MAYBE: auto-advance to the join form if the code resolves? That would be a shortcut for someone. But then we skip our beautiful landing page
+		// goToJoin()
 	}
 })
 
@@ -1070,17 +1079,12 @@ function gotoCreateFirstProposal() {
 	text-align: center;
 }
 
-.join-hint {
-	display: block;
-	margin: 0.75rem 0 0;
-}
-
 .inline-link {
 	padding: 0;
 	border: 0;
 	background: none;
 	font: inherit;
-	color: var(--primary);
+	color: var(--secondary);
 	text-decoration: underline;
 	text-decoration-color: var(--light-border);
 	text-underline-offset: 3px;

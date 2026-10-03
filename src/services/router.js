@@ -309,7 +309,10 @@ router.beforeEach(async (routeTo, routeFrom) => {
 		log.debug("vue-router: authenticated", routeFrom.path, routeFrom.params, "=>", routeTo.path, routeTo.params)
 		// An authenticated visitor has no use for the registration landing page either - straight to
 		// their team, same as "/".
-		if (routeTo.path === "/" || routeTo.path === "/index.html" || routeTo.name === "welcome") {
+		// Exception: _design-overview.vue embeds /welcome in iframes with ?forceAnonymous=1, so that it can
+		// show the registration screens while the developer is logged in. Development mode only.
+		const forceAnonymousWelcome = import.meta.env.MODE === "development" && routeTo.query.forceAnonymous === "1"
+		if (routeTo.path === "/" || routeTo.path === "/index.html" || (routeTo.name === "welcome" && !forceAnonymousWelcome)) {
 			return {name: "team"}
 		} else {
 			return true // allow authenticated navigation
