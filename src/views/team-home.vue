@@ -57,9 +57,11 @@
 				</p>
 				<template v-else>
 					<p>
-						Deine Email <b>{{ currentUserEmail }}</b> ist noch nicht verifiziert. Ich hatte dir eine
-						Email mit einem Bestätigen Link geschickt. Bitte klicke einmal auf diesen Link. Falls du
-						die Email nicht mehr findest, kann ich dir auch noch eine neue schicken.
+						Deine Email <b>{{ currentUserEmail }}</b> ist noch nicht verifiziert. Ich hatte dir bereits eine
+						Email mit einem Bestätigen Link geschickt. Bitte klicke einmal auf diesen Link. 
+					</p>
+					<p> 
+						Falls du die Email nicht mehr findest, kann ich dir eine Neue schicken.
 					</p>
 					<!-- "Neuen" carries the point: this sends a fresh link, it does not re-send the old one. -->
 					<button

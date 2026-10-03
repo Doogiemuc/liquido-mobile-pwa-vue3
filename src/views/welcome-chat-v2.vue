@@ -248,9 +248,9 @@
 					</div>
 				</section>
 
-				<!-- ================= FIRST PROPOSAL (create-team path only) ================= -->
-				<section v-else key="firstProposal" class="step step-first-proposal" :ref="scrollFirstProposalToTop">
-					<div id="welcomeV2FirstProposalCard" class="card first-proposal-card text-center">
+				<!-- ================= FIRST POLL (create-team path only) ================= -->
+				<section v-else key="firstPoll" class="step step-first-poll" :ref="scrollFirstPollToTop">
+					<div id="welcomeV2FirstPollCard" class="card first-poll-card text-center">
 						<div class="card-body">
 							<i class="fas fa-check-circle success-icon" />
 							<h2>{{ $t("TeamCreatedTitle") }}</h2>
@@ -259,9 +259,9 @@
 							<button id="welcomeV2GotoTeamButton" type="button" class="btn btn-primary w-100" @click="gotoTeam">
 								{{ $t("ContinueToTeam") }}
 							</button>
-							<button id="welcomeV2CreateFirstProposalButton" type="button" class="btn btn-outline-secondary w-100 mt-2"
-								@click="gotoCreateFirstProposal">
-								{{ $t("CreateFirstProposalButton") }}
+							<button id="welcomeV2CreateFirstPollButton" type="button" class="btn btn-outline-secondary w-100 mt-2"
+								@click="gotoCreateFirstPoll">
+								{{ $t("CreateFirstPollButton") }}
 							</button>
 						</div>
 					</div>
@@ -344,10 +344,10 @@ export default {
 				passkeySetupFailed: "Der Passkey konnte nicht eingerichtet werden. Du kannst es noch einmal versuchen oder später fortfahren.",
 				SkipForNow: "Später",
 
-				TeamCreatedTitle: "Euer Team ist bereit",
-				TeamCreatedInfo: "Möchtest du direkt einen ersten Vorschlag für eine Abstimmung anlegen? Du kannst das auch jederzeit später von eurer Teamseite aus tun.",
+				TeamCreatedTitle: "Dein Team ist bereit",
+				TeamCreatedInfo: "Möchtest du direkt eine erste Abstimmung anlegen? Du kannst das auch jederzeit später von eurer Teamseite aus tun.",
 				ContinueToTeam: "Weiter zum Team",
-				CreateFirstProposalButton: "Ersten Vorschlag erstellen",
+				CreateFirstPollButton: "Erste Abstimmung erstellen",
 			},
 			en: {
 			}
@@ -418,8 +418,8 @@ onUnmounted(() => {
 // (see .step-slide-* below), just driven locally instead of by the router.
 // ========================================================================
 
-const PHASE = Object.freeze({ LANDING: "LANDING", REGISTER: "REGISTER", PASSKEY: "PASSKEY", FIRST_PROPOSAL: "FIRST_PROPOSAL" })
-const PHASE_ORDER = { LANDING: 0, REGISTER: 1, PASSKEY: 2, FIRST_PROPOSAL: 3 }
+const PHASE = Object.freeze({ LANDING: "LANDING", REGISTER: "REGISTER", PASSKEY: "PASSKEY", FIRST_POLL: "FIRST_POLL" })
+const PHASE_ORDER = { LANDING: 0, REGISTER: 1, PASSKEY: 2, FIRST_POLL: 3 }
 
 const phase = ref(PHASE.LANDING)
 const path = ref(undefined)   // "create" | "join" - which LANDING button was pressed
@@ -677,19 +677,19 @@ function skipPasskey() {
 /**
  * api.isAdmin() is called directly here, NOT wrapped in a computed - it reads the JWT synchronously
  * and a computed would latch whatever it saw on its first evaluation (see liquido-mobile-pwa-vue3's
- * CLAUDE.md §5). A brand new admin (just created a team) gets the first-proposal step; a brand new
+ * CLAUDE.md §5). A brand new admin (just created a team) gets the first-poll step; a brand new
  * member (just joined) goes straight to their team.
  */
 function continueAfterPasskey() {
 	if (api.isAdmin()) {
-		goToPhase(PHASE.FIRST_PROPOSAL)
+		goToPhase(PHASE.FIRST_POLL)
 	} else {
 		router.push({ name: "team" })
 	}
 }
 
 // ========================================================================
-// FIRST PROPOSAL (create-team path only)
+// FIRST POLL (create-team path only)
 // ========================================================================
 
 /**
@@ -700,7 +700,7 @@ function continueAfterPasskey() {
  * PASSKEY step scrolled down beforehand left this landing scrolled too, the same reset run here
  * after the DOM has actually settled fixes it reliably.
  */
-function scrollFirstProposalToTop(el) {
+function scrollFirstPollToTop(el) {
 	if (!el) return
 	const appElem = document.getElementById("app")
 	if (appElem) appElem.scrollTop = 0
@@ -710,7 +710,7 @@ function gotoTeam() {
 	router.push({ name: "team" })
 }
 
-function gotoCreateFirstProposal() {
+function gotoCreateFirstPoll() {
 	router.push({ name: "newPoll", query: { onboarding: 1 } })
 }
 </script>
@@ -1138,7 +1138,7 @@ function gotoCreateFirstProposal() {
 	padding-right: 0;
 }
 
-/* ============ PASSKEY / FIRST PROPOSAL ============ */
+/* ============ PASSKEY / FIRST POLL ============ */
 
 .passkey-icon,
 .success-icon {
