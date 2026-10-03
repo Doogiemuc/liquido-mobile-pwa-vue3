@@ -56,7 +56,7 @@
 				<liqui-loc-html v-if="availableProposals.length === 0" class="available-proposals-empty" tag="p" msg-key="youVotedForAllProposals" />
 
 				<draggable v-if="!hasAlreadyVoted" id="availableDraggable" v-model="availableProposals" class="draggable" group="proposals" item-key="id"
-					:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500"
+					:disabled="loading || castVoteLoading" :swap-threshold="0.5" :delay="40" :animation="500" :fallback-on-body="true"
 					:move="onDragMove" @end="onDragEnd"
 					:can-scroll-x="false">
 					<template #item="{ element: proposal }">

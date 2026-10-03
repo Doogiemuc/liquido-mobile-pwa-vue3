@@ -27,6 +27,7 @@
 					:move="move"
 					@end="$emit('drag-end')"
 					:disabled="!interactive || disabled"
+					:fallback-on-body="true"
 					:can-scroll-x="false"
 				>
 					<template #item="{ element: proposal, index }">
