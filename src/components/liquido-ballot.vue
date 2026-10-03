@@ -1,34 +1,43 @@
 <template>
 	<div class="the-ballot" :class="{ 'ballot-drag-over': isDraggingOver }">
-		<div v-if="showEmptySlots" class="empty-slots-behind">
-			<div v-for="index in proposalCount" :key="`empty-${index}`" class="empty-slot d-flex flex-row align-items-center user-select-none" aria-hidden="true">
-				<div class="proposal-icon">{{ index }}</div>
-				<div class="d-flex"><p class="mb-0">{{ emptySlotTitle(index - 1) }}</p></div>
-			</div>
+		<div v-if="title || subtitle" class="ballot-header">
+			<h2 v-if="title" class="page-title ballot-title mt-0">{{ title }}</h2>
+			<p v-if="subtitle" class="page-subtitle ballot-subtitle">{{ subtitle }}</p>
 		</div>
 
-		<draggable
-			:id="draggableId"
-			v-model="ballot"
-			class="draggable ballot-draggable"
-			group="proposals"
-			item-key="id"
-			animation="500"
-			swap-threshold="0.60"
-			:move="move"
-			@end="$emit('drag-end')"
-			:disabled="!interactive || disabled"
-			:can-scroll-x="false"
-		>
-			<template #item="{ element: proposal, index }">
-				<liquido-proposal
-					:proposal="proposal"
-					:rank="index + 1"
-					:show-drag-handle="showDragHandle"
-					:created-by-label="createdByLabel"
-				/>
-			</template>
-		</draggable>
+		<!-- The empty slots are positioned absolutely behind the draggable. This wrapper is their
+			positioning context, so that they stay aligned with the draggable below the optional header. -->
+		<div class="ballot-slots">
+			<div v-if="showEmptySlots" class="empty-slots-behind">
+				<div v-for="index in proposalCount" :key="`empty-${index}`" class="empty-slot d-flex flex-row align-items-center user-select-none" aria-hidden="true">
+					<div class="proposal-icon">{{ index }}</div>
+					<div class="d-flex"><p class="mb-0">{{ emptySlotTitle(index - 1) }}</p></div>
+				</div>
+			</div>
+
+			<draggable
+				:id="draggableId"
+				v-model="ballot"
+				class="draggable ballot-draggable"
+				group="proposals"
+				item-key="id"
+				animation="500"
+				swap-threshold="0.60"
+				:move="move"
+				@end="$emit('drag-end')"
+				:disabled="!interactive || disabled"
+				:can-scroll-x="false"
+			>
+				<template #item="{ element: proposal, index }">
+					<liquido-proposal
+						:proposal="proposal"
+						:rank="index + 1"
+						:show-drag-handle="showDragHandle"
+						:created-by-label="createdByLabel"
+					/>
+				</template>
+			</draggable>
+		</div>
 
 		<!-- div v-if="showEmptySlots" class="proposals-counter">
 			{{ proposals?.length }}/{{ proposalCount }}
@@ -45,6 +54,8 @@ export default {
 	components: { draggable, liquidoProposal },
 	props: {
 		proposals: { type: Array, required: true },
+		title: { type: String, default: undefined },      // optional heading inside the ballot, above the slots
+		subtitle: { type: String, default: undefined },   // optional hint text below the title
 		proposalCount: { type: Number, default: 0 },
 		showEmptySlots: { type: Boolean, default: false },
 		emptySlotTitle: { type: Function, default: () => "" },
@@ -71,8 +82,8 @@ export default {
 .the-ballot {
 	position: relative;
 	padding: var(--unit) var(--unit) 0;
-	background-color: var(--ballot-bg);
-	border: 1px solid var(--ballot-border);
+	background-color: white;
+	border: 1px solid var(--light-border);
 	border-radius: var(--liquido-border-radius);
 }
 
@@ -85,12 +96,22 @@ export default {
 	bottom: 0;
 }
 
+/* --secondary would be unreadable on the blue --ballot-bg */
+.ballot-subtitle {
+	color: var(--primary);
+	text-align: center;
+	margin-bottom: var(--unit);
+}
+
+/* Positioning context for .empty-slots-behind. Its height comes from the draggable alone,
+   so the ballot still grows with the number of proposals dropped into it. */
+.ballot-slots {
+	position: relative;
+}
+
 .empty-slots-behind {
 	position: absolute;
-	top: var(--unit);
-	bottom: 0;
-	left: var(--unit);
-	right: var(--unit);
+	inset: 0;
 	overflow: hidden;
 }
 

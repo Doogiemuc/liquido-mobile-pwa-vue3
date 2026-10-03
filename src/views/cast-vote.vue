@@ -17,16 +17,12 @@
 			</div>
 		</div>
 
-		<div>
-			<h2 class="page-title">{{ $t('yourBallot') }}</h2>
-			<p class="page-subtitle text-center">{{ $t('castVoteSubtitle') }}</p>
-		</div>
-		
-
 		<div v-if="!loading" class="cast-vote-wrapper">
 			<liquido-ballot
 				id="ballot"
-				class="shadow"
+				class="shadow mt-4"
+				:title="$t('yourBallot')"
+				:subtitle="$t('castVoteSubtitle')"
 				:proposals="proposalsInBallot"
 				:proposal-count="poll?.proposals?.length"
 				:show-empty-slots="!hasAlreadyVoted"
@@ -607,44 +603,6 @@ let showDraggingHint = async function () {
 	*/
 	--polly-proposal-height: 4rem;
 	--polly-proposal-margin-bottom: 0.5rem;
-
-	/* The ballot where the user drops & sorts the proposals he wants to vote for */
-	.the-ballot {
-		position: relative;
-		margin: 0;
-		/* UX fix: the draggable has the padding-bottom, to react quicker, when dragging a proposal upwards */
-		padding: var(--unit) var(--unit) 0 var(--unit);  
-		background-color: var(--ballot-bg);
-		border: 1px solid var(--ballot-border);
-		border-radius: var(--liquido-border-radius);
-		transition: background-color 0.15s ease, border-color 0.15s ease;
-
-		/* Highlighted while the user drags a proposal over the ballot. */
-		&.ballot-drag-over {
-			filter: brightness(1.1);
-		}
-
-		/* Empty placeholder slots, behind the proposals in the ballot */
-		.empty-slots-behind {
-			position: absolute;
-			top: var(--unit);
-			bottom: 0;
-			left: var(--unit);
-			right: var(--unit);
-			overflow: hidden;
-			z-index: 1;
-		}
-		
-		/* Must also position the draggable absolute with a higher z-index *before* the .empty-slots-behind */
-		#ballot-draggable {
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			z-index: 10;
-			height: 500px;
-		}
-	}
 
 	/* The proposal-panel, empty-slot and rank-circle styles now live globally in
 	   src/styles/liquido.css (shared with liquido-proposal.vue / liquido-ballot.vue). */
