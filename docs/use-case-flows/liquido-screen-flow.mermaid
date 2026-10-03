@@ -5,14 +5,16 @@ config:
 title: LIQUIDO - Use Cases
 ---
 flowchart TB
-    Welcome("<pre><b>/welcome</b></pre> Register as a new user") 
-    --> NickNameInput["NickNameInput"]
+    Welcome("<pre><b>/ without JWT or
+/welcome</b></pre> Register as a new user") 
     --> CreateOrJoinTeam{{"Crete new team or
 Join a team?"}}
     CreateOrJoinTeam -- Create new team --> CreateTeamInput["TeamName
+Nickname
 E-Mail
 Password"]
     CreateOrJoinTeam -- Join a team --> JoinTeamInput["InviteCode
+Nickname
 E-Mail
 Password"]
     JoinTeam("<pre><b>/joinTeam?inviteCode=...</b></pre> Join an existing team with an inviteCode. A user can join more than one team!") 
@@ -21,14 +23,12 @@ Password"]
     --> RegisterPasskey["Register Passkey<br>(if device supports it)"]
     --> NewUserRegistered
 
-    Index("<pre><b>/</b></pre>") 
-    --> IsAuthenticated{{"Is authenticated?"}}
-    IsAuthenticated == Yes ==> TeamHome
-    IsAuthenticated -- No --> Login
+    
     TeamHome("<pre><b>/team</b></pre> Team Homepage")
     ==> Polls("<pre><b>/polls</b></pre> List of polls of this team")
     ==> PollShow("<pre><b>/polls/:id</b></pre> Show one poll")
     ==> PollStatus{{"Poll status?"}}
+    Polls --> PollCreate
 
     PollStatus -- FINISHED --> ShowWinner["Finished poll\nShow winner"]
     PollStatus -- IN_ELABORATION --> PollInElaboration
@@ -41,7 +41,7 @@ Password"]
     ==> CastVoteInput["User sorts all proposals into his preferred order and then casts his vote."]
     ==> BallotCasted
     
-    PollCreate("<pre><b>/poll/create</b></pre>Create a new poll") 
+    PollCreate("<pre><b>/polls/new</b></pre>Admin creates a new poll") 
     --> PollTitleInput("Admin sets a poll title\nand adds proposals.")
     -- save --> PollInElaboration(["Poll in ELABORATION"])
     --> AddProposal("<pre><b>/polls/:id/add</b></pre> Every Team member can add a proposals with descriptions") 
@@ -50,9 +50,15 @@ Password"]
     --> EndVoting
     --> PollFinished
 
+    subgraph loginGraph [Login]
+    Index("<pre><b>/login</b></pre>") 
+    --> IsAuthenticated{{"Is authenticated?"}}
+    IsAuthenticated == Yes ==> TeamHome
+    IsAuthenticated -- No --> Login
     Login("<pre><b>/login</b></pre>")
     --> LoginInput["Login with Username&password<br>or passkey"]
     --> TeamHome
+    end
 
     CreatePolly("<pre><b>/polly</b></pre>")
     --> AddPollyOptions["Polly Admin sets title\nand adds options"]
@@ -63,7 +69,6 @@ Password"]
     --> AdminClosesPolly["Admin closes polly"]
     --> PollyFinished
 
-     NickNameInput:::UserInput
      CreateOrJoinTeam:::Decision
      CreateTeamInput:::UserInput
      JoinTeamInput:::UserInput
@@ -73,6 +78,7 @@ Password"]
      Welcome:::Aqua
      JoinTeam:::Aqua
      TeamHome:::Aqua
+     loginGraph:::Grey
      Login:::Aqua
      Polls:::Aqua
      PollCreate:::Aqua
@@ -94,3 +100,4 @@ Password"]
     classDef Pine stroke-width:1px, stroke-dasharray:none, stroke:#254336, fill:#27654A, color:#FFFFFF
     classDef Rose stroke-width:1px, stroke-dasharray:none, stroke:#FF5978, fill:#FFDFE5, color:#8E2236
     classDef Aqua stroke-width:1px, stroke-dasharray:none, stroke:#46EDC8, fill:#DEFFF8, color:#378E7A
+    classDef Grey stroke-width:1px, stroke-dasharray:none, stroke:#666666, fill:#333333, color:#DDDDDD
