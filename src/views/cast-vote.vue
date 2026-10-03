@@ -67,8 +67,15 @@
 			</div>
 		</div>
 
-		<div class="page-subtitle mt-5">
-			<liqui-loc-html tag="p" msg-key="castVoteInfo" />
+		<!-- How ranked voting works, in three steps, and why the ballot is secret -->
+		<div id="castVoteExplanation" class="alert liquido-info cast-vote-explanation mt-5">
+			<h3>{{ $t('howItWorksTitle') }}</h3>
+			<ol>
+				<li><span class="step-number">1</span><span>{{ $t('howItWorksStep1') }}</span></li>
+				<li><span class="step-number">2</span><span>{{ $t('howItWorksStep2') }}</span></li>
+				<li><span class="step-number">3</span><span>{{ $t('howItWorksStep3') }}</span></li>
+			</ol>
+			<p class="ballot-secret"><i class="fas fa-shield-halved"></i><span>{{ $t('howItWorksSecret') }}</span></p>
 		</div>
 
 		<!--
@@ -134,7 +141,6 @@ export default {
 		messages: {
 			en: {
 				castVoteTitle: "Cast your vote",
-				castVoteInfo: "Please sort the proposals into your personally preferred order. With your favorite proposal at the top.",
 				castVote: "Cast vote",
 				dropProposalsHere: "Drop the proposals that you want to vote for here. And sort them according to your preferences.",
 				availableProposals: "Available proposals",
@@ -143,6 +149,11 @@ export default {
 				confirmVoteBallot: "Your ballot:",
 				confirmVoteButton: "Cast final vote",
 				cancel: "Edit ballot",
+				howItWorksTitle: "How it works",
+				howItWorksStep1: "Drag the proposals that you support onto your ballot.",
+				howItWorksStep2: "Put them into your order. Your favorite goes on top.",
+				howItWorksStep3: "Proposals you do not support simply stay down below.",
+				howItWorksSecret: "Your vote is secret. Nobody can trace back how you voted. With the checksum that you get after casting your vote, you can check for yourself that it was counted.",
 			},
 			de: {
 				// User can cast a vote
@@ -158,11 +169,11 @@ export default {
 
 				youVotedForAllProposals: "Danke dass du alle Vorschläge unterstützt. Sortiere sie oben nach deiner Präferenz und gib dann deine Stimme ab.",
 				availableProposals: "Verfügbare Vorschläge",
-				castVoteInfo:
-					"<p>In <span class='liquido'></span> stimmst du nicht nur für <em>einen</em> Vorschlag, sondern erstellst eine Rangfolge derjenigen Vorschläge, " +
-					"die du unterstützen möchtest. Ziehe diese auf den Stimmzettel oben und ordne sie nach deiner Präferenz - dein Favorit ganz oben. " +
-					"Vorschläge die du nicht unterstützen möchtest lässt du ganz einfach unten.</p>" +
-					"<p><i class='fa fa-shield-halved'></i> Deine stimme ist sicher und anonym. Niemand kann zurückverfolgen wie du abgestimmt hast.</p>",
+				howItWorksTitle: "So funktioniert's",
+				howItWorksStep1: "Ziehe die Vorschläge, die du unterstützt, auf deinen Stimmzettel.",
+				howItWorksStep2: "Bring sie in deine Reihenfolge. Ganz oben steht dein Favorit.",
+				howItWorksStep3: "Was du nicht unterstützt, lässt du einfach unten liegen.",
+				howItWorksSecret: "Deine Stimme ist geheim. Niemand kann zurückverfolgen, wie du abgestimmt hast. Mit der Prüfsumme, die du nach der Abgabe bekommst, kannst du selbst kontrollieren, dass sie gezählt wurde.",
 				
 				voteCountedNTimes: "Deine Stimme als Proxy wurde {voteCount} mal gezählt.",
 				updateBallotButton: "Eigene Stimme aktualisieren",
@@ -695,5 +706,59 @@ let showDraggingHint = async function () {
 #verifyBallotButton {
 	font-family: monospace;
 	margin: 0 auto;
+}
+
+/* "So funktioniert's": three numbered steps and the ballot secrecy note, in a .liquido-info box */
+.cast-vote-explanation {
+	padding: 18px 18px 16px;
+
+	h3 {
+		margin: 0 0 14px;
+		color: var(--primary);
+		font-size: 1.05rem;
+	}
+
+	ol {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	li {
+		display: flex;
+		gap: 12px;
+		align-items: flex-start;
+		margin-bottom: 10px;
+		font-size: 0.8rem;
+		line-height: 1.55;
+	}
+
+	.step-number {
+		flex: 0 0 22px;
+		height: 22px;
+		margin-top: 1px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		background-color: var(--primary);
+		color: white;
+		font-size: 0.68rem;
+		font-weight: 700;
+	}
+
+	.ballot-secret {
+		display: flex;
+		gap: 12px;
+		margin: 16px 0 0;
+		padding-top: 14px;
+		border-top: 1px solid var(--liquido-info-border-color);
+		font-size: 0.8rem;
+		line-height: 1.55;
+
+		i {
+			margin-top: 4px;
+		}
+	}
 }
 </style>
