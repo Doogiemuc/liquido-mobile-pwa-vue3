@@ -39,7 +39,9 @@
  *   - the available proposals pool (cast-vote.vue) → omit :rank to show the proposal icon
  *   - inside the ballot (liquido-ballot.vue)       → pass :rank (1-based) to show the rank number
  *
- * All styling lives globally in src/styles/liquido.css (shared with liquido-ballot.vue).
+ * All `.proposal-panel` styles (title, subtitle, rank-circle, proposal-icon, liked,
+ * drag-handle) are defined globally in src/styles/liquido.css and shared with liquido-ballot.vue.
+ * 
  * The "created by" label is supplied by the parent (createdByLabel prop) so this component
  * needs no i18n of its own, which keeps this component purely presentational.
  */
@@ -55,5 +57,4 @@ defineProps({
 })
 </script>
 
-<!-- All proposal-panel styles (card, title, subtitle, rank-circle, proposal-icon, liked,
-     drag-handle) are defined globally in src/styles/liquido.css and shared with liquido-ballot.vue. -->
+<!--  -->

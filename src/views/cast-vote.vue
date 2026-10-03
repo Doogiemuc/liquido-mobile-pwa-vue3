@@ -1,32 +1,27 @@
 <template>
 	<div>
-		<div class="liquido-hero">
-			<h2 id="cast-vote-page" class="page-title">
-				{{ $t('castVotePageTitle') }}
-			</h2>
+		<h2 id="cast-vote-page" class="page-title">
+			{{ $t('castVotePageTitle') }}
+		</h2>
 
-			<div v-if="loading" class="draggable">
-				<div class="spinner-border" role="status">
-					<span class="visually-hidden">{{ $t('Loading') }}</span>
-				</div>
-				&nbsp;{{ $t('Loading') }}
+		<div v-if="loading" class="draggable">
+			<div class="spinner-border" role="status">
+				<span class="visually-hidden">{{ $t('Loading') }}</span>
 			</div>
+			&nbsp;{{ $t('Loading') }}
+		</div>
 
-			<div v-if="!loading" class="poll-card-wrapper">
-				<poll-card :poll="poll" :show-arrow-right="false" class="poll-card shadow-sm"></poll-card>
-			</div>
+		<div v-if="!loading" class="poll-card-wrapper">
+			<poll-card :poll="poll" :show-arrow-right="false" class="poll-card shadow-sm"></poll-card>
 		</div>
 
 		<div v-if="!loading" class="cast-vote-wrapper">
 			<liquido-ballot
 				id="ballot"
 				class="shadow mt-4"
-				show-ballot-header
 				:proposals="proposalsInBallot"
 				:proposal-count="poll?.proposals?.length"
 				:show-empty-slots="!hasAlreadyVoted"
-				:empty-slot-title="emptySlotTitle"
-				:created-by-label="$t('createdBy')"
 				:interactive="!hasAlreadyVoted"
 				:disabled="loading || castVoteLoading || hasAlreadyVoted"
 				:show-drag-handle="!hasAlreadyVoted"
@@ -113,7 +108,6 @@
 				<liquido-ballot
 					class="shadow"
 					:proposals="proposalsInBallot"
-					:created-by-label="$t('createdBy')"
 					draggable-id="confirmationBallotDraggable"
 				/>
 			</template>
@@ -162,9 +156,6 @@ export default {
 				voteCastedSubtitle: "Danke, du hast diese Stimme abgegeben.",
 				alreadyVotedButton: "Stimme bereits abgegeben",
 
-				favoriteDropTargetInfo: "Slot 1 - dein Lieblingsvorschlag",
-				emptySlotNumber: "Slot {n} - leer",
-				
 				youVotedForAllProposals: "Danke dass du alle Vorschläge unterstützt. Sortiere sie oben nach deiner Präferenz und gib dann deine Stimme ab.",
 				availableProposals: "Verfügbare Vorschläge",
 				castVoteInfo:
@@ -173,8 +164,6 @@ export default {
 					"Vorschläge die du nicht unterstützen möchtest lässt du ganz einfach unten.</p>" +
 					"<p><i class='fa fa-shield-halved'></i> Deine stimme ist sicher und anonym. Niemand kann zurückverfolgen wie du abgestimmt hast.</p>",
 				
-				createdBy: "von",
-
 				voteCountedNTimes: "Deine Stimme als Proxy wurde {voteCount} mal gezählt.",
 				updateBallotButton: "Eigene Stimme aktualisieren",
 				
@@ -379,21 +368,6 @@ export default {
 			})
 		},
 
-		/** 
-		 * Show one empty slot for every proposal in the ballot 
-		 * But the ballot is set to overflow: hidden and has a minHeight, 
-		 * just right to show at least two slots and one half one. 
-		 * To visualy give a hint that the user CAN drag more proposals up into the ballot,
-		 * but does not have to.
-		 */
-		emptySlotTitle(index) {
-			if (index == 0) {
-				return this.$t('favoriteDropTargetInfo')
-			} else {
-				return this.$t('emptySlotNumber', { n: index+1 })
-			}
-		},
-
 		/** Collapse the descriptions of all proposals in the ballot (not used) */
 		toggleBallotCollapse() {
 			this.$refs["proposalsInBallot"].forEach(pollPanel => {
@@ -575,11 +549,6 @@ let showDraggingHint = async function () {
  /* Hero below liquido-header with same white background as header */
 .liquido-hero {
 	padding: var(--unit);
-	
-	margin-right: calc(-1*var(--unit)) !important;
-	margin-left: calc(-1*var(--unit)) !important;
-	background-color: var(--header-bg);
-
 	#cast-vote-page.page-title {
 		margin-top: 0;
 	}
@@ -595,10 +564,10 @@ let showDraggingHint = async function () {
 .cast-vote-wrapper {
 	/* 
 		These heights are extremly important.  
-	  The minHeight of both draggable areas is calcolated based on these. 
+	  The minHeight of both draggable areas, inside the ballot and the available proposals, is calculated based on these. 
 	*/
-	--polly-proposal-height: 4rem;
-	--polly-proposal-margin-bottom: 0.5rem;
+	--cast-vote-proposal-height: 5rem;
+	--cast-vote-proposal-margin-bottom: 0.5rem;
 
 	/* The proposal-panel, empty-slot and rank-circle styles now live globally in
 	   src/styles/liquido.css (shared with liquido-proposal.vue / liquido-ballot.vue). */
@@ -614,7 +583,7 @@ let showDraggingHint = async function () {
 	.draggable {
 		position: relative;
 		flex-grow: 1;
-		min-height: calc(2 * (var(--polly-proposal-height) + var(--polly-proposal-margin-bottom)) + var(--unit));	
+		min-height: calc(2 * (var(--cast-vote-proposal-height) + var(--cast-vote-proposal-margin-bottom)) + var(--unit));
 		padding-bottom: var(--unit);
 		z-index: 20;
 
@@ -652,7 +621,7 @@ let showDraggingHint = async function () {
 		top: var(--proposal-icon-size);
 		background-color: var(--primary);
 		width: 2px;
-		height: var(--polly-proposal-height);
+		height: var(--cast-vote-proposal-height);
 		z-index: 25;
 	}	
 	*/

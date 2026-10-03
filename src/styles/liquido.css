@@ -341,9 +341,8 @@ body {
  *   - liquido-proposal.vue → available proposals pool (shows the proposal icon)
  *   - liquido-ballot.vue   → proposals in the ballot (shows a rank number),
  *                            and as dashed empty placeholder slots
- * The two --polly-* custom properties are declared on .cast-vote-wrapper and
- * inherit down; the fallbacks keep the panel usable when rendered elsewhere
- * (e.g. the confirmation modal).
+ * The cast-vote sizing properties are declared on .cast-vote-wrapper and inherit down;
+ * the fallbacks keep the panel usable when rendered elsewhere (e.g. the confirmation modal).
  *
  * The inner-element rules are deliberately scoped under .proposal-panel / .empty-slot
  * so they do NOT leak into poll-card.vue, which uses the same .proposal-title /
@@ -351,8 +350,8 @@ body {
  */
 
 .proposal-panel {
-	height: var(--polly-proposal-height, 4rem);
-	margin-bottom: var(--polly-proposal-margin-bottom, 0.5rem);
+	height: var(--cast-vote-proposal-height, 4rem);
+	margin-bottom: var(--cast-vote-proposal-margin-bottom, 0.5rem);
 	padding: 0 var(--half);
 	cursor: grab;
 }
@@ -404,7 +403,6 @@ body {
 	color: white;
 	font-family: var(--sans-serif-font);
 	font-size: 1rem;
-	z-index: 30;
 }
 
 .proposal-panel .liked {

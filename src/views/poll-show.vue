@@ -65,7 +65,6 @@
 			<p class="page-subtitle text-center">{{ $t('alreadyVotedSubtitle') }}</p>
 			<liquido-ballot
 				:proposals="proposalsInBallot"
-				:created-by-label="$t('createdBy')"
 				:interactive="false"
 				:disabled="true"
 				:show-drag-handle="false"
@@ -222,7 +221,6 @@ export default {
 				checksumOfYourBallot: "Mit dieser Checksumme kannst du prüfen ob deine Stimme korrekt gezählt wurde:",
 				verifyBallotButton: "Prüfen",
 				ballotIsVerified: "Deine Stimme wurde erfolgreich gezählt.",
-				createdBy: "von",
 				finishedPollInfo: "Diese Abstimmung ist abgeschlossen. Gewonnen hat der Vorschlag '{winnerTitle}'. " +
 					"Es wurden {numBallots} Stimmen abgegeben.",
 				backToPolls: "zurück",
