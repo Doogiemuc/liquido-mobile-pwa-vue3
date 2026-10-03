@@ -1,8 +1,8 @@
 <template>
 	<div class="the-ballot" :class="{ 'ballot-drag-over': isDraggingOver }">
-		<div v-if="title || subtitle" class="ballot-header">
-			<h2 v-if="title" class="page-title ballot-title mt-0">{{ title }}</h2>
-			<p v-if="subtitle" class="page-subtitle ballot-subtitle">{{ subtitle }}</p>
+		<div v-if="showBallotHeader" class="ballot-header">
+			<h2 class="page-title ballot-title mt-0">{{ loc('yourBallot') }}</h2>
+			<p class="page-subtitle ballot-subtitle">{{ loc('castVoteSubtitle') }}</p>
 		</div>
 
 		<!-- The empty slots are positioned absolutely behind the draggable. This wrapper is their
@@ -51,11 +51,22 @@ import liquidoProposal from "@/components/liquido-proposal.vue"
 
 export default {
 	name: "LiquidoBallot",
+	i18n: {
+		messages: {
+			en: {
+				yourBallot: "Your ballot",
+				castVoteSubtitle: "Drag the proposals you want to support up from below into the slots and rank them by preference.",
+			},
+			de: {
+				yourBallot: "Dein Stimmzettel",
+				castVoteSubtitle: "Ziehe die Vorschläge, welche du unterstützen möchtest, von unten hoch in die Slots und ordne sie nach deiner Präferenz.",
+			},
+		},
+	},
 	components: { draggable, liquidoProposal },
 	props: {
 		proposals: { type: Array, required: true },
-		title: { type: String, default: undefined },      // optional heading inside the ballot, above the slots
-		subtitle: { type: String, default: undefined },   // optional hint text below the title
+		showBallotHeader: { type: Boolean, default: false },
 		proposalCount: { type: Number, default: 0 },
 		showEmptySlots: { type: Boolean, default: false },
 		emptySlotTitle: { type: Function, default: () => "" },
@@ -75,6 +86,12 @@ export default {
 		},
 	},
 }
+</script>
+
+<script setup>
+import { useLoc } from "@/services/liqui-loc.js"
+
+const { t: loc } = useLoc()
 </script>
 
 <style scoped>

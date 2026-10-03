@@ -21,8 +21,7 @@
 			<liquido-ballot
 				id="ballot"
 				class="shadow mt-4"
-				:title="$t('yourBallot')"
-				:subtitle="$t('castVoteSubtitle')"
+				show-ballot-header
 				:proposals="proposalsInBallot"
 				:proposal-count="poll?.proposals?.length"
 				:show-empty-slots="!hasAlreadyVoted"
@@ -143,7 +142,6 @@ export default {
 				castVoteTitle: "Cast your vote",
 				castVoteInfo: "Please sort the proposals into your personally preferred order. With your favorite proposal at the top.",
 				castVote: "Cast vote",
-				yourBallot: "Your ballot",
 				dropProposalsHere: "Drop the proposals that you want to vote for here. And sort them according to your preferences.",
 				availableProposals: "Available proposals",
 				confirmVoteTitle: "Confirm ballot",
@@ -156,7 +154,6 @@ export default {
 				// User can cast a vote
 				castVotePageTitle: "Stimme abgeben",
 				castVoteBallotTitle: "Dein Stimmzettel",
-				castVoteSubtitle: "Ziehe die Vorschläge, welche du unterstützen möchtest, von unten hoch in die Slots und ordne sie nach deiner Präferenz.",
 				castVoteButton: "Diese Stimme abgeben",
 
 				// User has already voted
@@ -179,7 +176,6 @@ export default {
 				createdBy: "von",
 
 				voteCountedNTimes: "Deine Stimme als Proxy wurde {voteCount} mal gezählt.",
-				yourBallot: "Dein Stimmzettel",
 				updateBallotButton: "Eigene Stimme aktualisieren",
 				
 				confirmVoteTitle: "Stimmzettel bestätigen",
